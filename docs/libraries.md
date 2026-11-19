@@ -61,7 +61,7 @@ Todas las animaciones respetan `prefers-reduced-motion` y se pueden saltar sin a
 
 | Uso | Librería | Versión | Licencia | Notas |
 | --- | --- | --- | --- | --- |
-| UI (acciones, menús, navegación) | `lucide-react` | 1.76 | ISC | Único set de UI |
+| UI (acciones, menús, navegación) | `lucide-react` | 1.75 | ISC | Único set de UI |
 | Conceptos de juego (moral, entrenamiento, objetivos) | `@iconify/react` + `@iconify-json/game-icons` | 6.0 / 1.2 | MIT / **CC BY 3.0** | game-icons.net exige atribución: se añade a `NOTICE.md` al integrarlo. Iconos empaquetados offline, no cargados desde la API de Iconify |
 | Campeones, roles, objetos de LoL | Data Dragon en tiempo de ejecución | — | Riot | Nunca en el repo (ver `NOTICE.md`) |
 
@@ -92,6 +92,7 @@ Todas las animaciones respetan `prefers-reduced-motion` y se pueden saltar sin a
 | Componentes | `@testing-library/react` | 16.3 | MIT |
 | Peer de Testing Library | `@testing-library/dom` | 10.4 | MIT |
 | DOM para tests de componentes | `happy-dom` | 21.0 | MIT |
+| Teclado y puntero en tests de componentes | `@testing-library/user-event` | 14.6 | MIT |
 | E2E (Electron) | `@playwright/test` | 1.65 | Apache-2.0 |
 | Mutación | `@stryker-mutator/core` | 10.1 | Apache-2.0 |
 | Lint y formato | `@biomejs/biome` | 2.6 | MIT o Apache-2.0 |

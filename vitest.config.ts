@@ -6,7 +6,14 @@ export default defineConfig({
 			{
 				test: {
 					name: "ui-kit",
-					include: ["packages/ui-kit/**/*.test.{ts,tsx}"],
+					include: ["packages/ui-kit/**/*.test.ts"],
+				},
+			},
+			{
+				test: {
+					name: "ui-kit-dom",
+					include: ["packages/ui-kit/**/*.test.tsx"],
+					environment: "happy-dom",
 				},
 			},
 			{
