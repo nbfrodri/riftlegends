@@ -1,0 +1,14 @@
+name: Funcionalidad
+description: Proponer una funcionalidad o mejora
+labels: ["type:feature"]
+body:
+  - type: textarea
+    id: problem
+    attributes: {label: Problema o necesidad, description: "Qué decide o siente el jugador y por qué importa (pilares de IDEA.md)"}
+    validations: {required: true}
+  - type: textarea
+    id: proposal
+    attributes: {label: Propuesta}
+  - type: textarea
+    id: tests
+    attributes: {label: Comportamientos a probar, description: "Lista de tests que definirían 'hecho'"}
