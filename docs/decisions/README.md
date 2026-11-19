@@ -27,6 +27,7 @@ Resumen de las decisiones **vigentes**, para empezar cualquier sesión sin volve
 | Fecha | Decisión | Fuente |
 | --- | --- | --- |
 | 2026-11-19 | Ventana **sin marco** con barra de título propia; **solo tema oscuro**; i18n ES/EN con selector en Ajustes; tests visuales con capturas en el CI de Linux | [plan 02](../plans/02-ui-kit-shell.md) |
+| 2026-11-19 | El botón **minimizar se oculta** en compositores Wayland en mosaico que no lo soportan (Hyprland, sway, river y niri); en el resto se muestra | PR #54 |
 | 2026-11-19 | Estilo **Caja** (Frecuencia con Unbounded + Archivo), **barra lateral izquierda** fija y plegable, e icono **Corte · Puntera** | [ADR 0002](0002-estilo-visual.md), [design/](../../design/README.md) |
 
 ## Repositorio y proceso
