@@ -2,11 +2,14 @@ import { createI18n } from "@rift-legends/i18n";
 import { RouterProvider } from "@tanstack/react-router";
 import { createRoot } from "react-dom/client";
 import { I18nextProvider } from "react-i18next";
+import { initialLocale } from "./language";
 import { createAppRouter } from "./router";
 import { TitleBar } from "./title-bar";
 
 async function start(root: HTMLElement) {
-	const i18n = await createI18n(await window.riftlegends.systemLocale());
+	const i18n = await createI18n(
+		initialLocale(await window.riftlegends.systemLocale()),
+	);
 	document.documentElement.lang = i18n.language;
 	createRoot(root).render(
 		<I18nextProvider i18n={i18n}>
