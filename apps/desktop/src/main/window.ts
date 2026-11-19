@@ -6,6 +6,8 @@ export function createMainWindowOptions(): BrowserWindowConstructorOptions {
 		title: "Rift Legends",
 		frame: false,
 		width: 1366,
+		minWidth: 1280,
+		minHeight: 720,
 		height: 768,
 		webPreferences: {
 			preload: join(__dirname, "../preload/index.js"),

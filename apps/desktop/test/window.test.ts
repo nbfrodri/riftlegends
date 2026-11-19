@@ -5,6 +5,13 @@ test("creates a frameless window", () => {
 	expect(createMainWindowOptions().frame).toBe(false);
 });
 
+test("cannot shrink below the 1280×720 minimum", () => {
+	expect(createMainWindowOptions()).toMatchObject({
+		minWidth: 1280,
+		minHeight: 720,
+	});
+});
+
 test("isolates and sandboxes the renderer without Node integration", () => {
 	expect(createMainWindowOptions().webPreferences).toMatchObject({
 		contextIsolation: true,

@@ -6,7 +6,7 @@ const sidebar = (page: Page) =>
 const sections = (page: Page) =>
 	page.getByRole("navigation", { name: "Club sections" });
 const sidebarToggle = (page: Page) =>
-	page.getByRole("button", { name: /^(collapse|expand) sidebar$/i });
+	page.getByRole("button", { name: /^(collapse|expand)$/i });
 const heading = (page: Page) => page.getByRole("heading", { level: 1 });
 const sidebarWidth = (page: Page) => () =>
 	sidebar(page).evaluate((element) => element.getBoundingClientRect().width);
