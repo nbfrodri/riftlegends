@@ -11,6 +11,13 @@ export default defineConfig({
 			},
 			{
 				test: {
+					name: "i18n",
+					include: ["packages/i18n/**/*.test.{ts,tsx}"],
+					environment: "happy-dom",
+				},
+			},
+			{
+				test: {
 					name: "core",
 					include: ["packages/core/**/*.test.ts"],
 				},
