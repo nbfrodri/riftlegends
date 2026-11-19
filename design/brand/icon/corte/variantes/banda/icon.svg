@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Corte · Banda oblicua">
+	<title>Corte · Banda oblicua</title>
+	<defs>
+		<clipPath id="letter">
+			<path d="M213 -422 L486 -422 Q536 -422 564 -445 Q592 -468 592 -509 Q592 -551 564 -573 Q536 -596 486 -596 L184 -596 L277 -695 L277 0 L70 0 L70 -750 L515 -750 Q601 -750 665 -719 Q729 -689 765 -635 Q801 -582 801 -509 Q801 -438 765 -384 Q729 -330 665 -300 Q601 -270 515 -270 L213 -270 L213 -422 Z M325 -351 L558 -351 L827 0 L587 0 L325 -351 Z" transform="translate(9.57860 49.00000) scale(0.0488771 0.0453333)"/>
+		</clipPath>
+	</defs>
+	<path fill="#101420" stroke="#b6c0d2" stroke-opacity=".66" stroke-width="1.5" d="M7 3.75h39l14.25 14.5V57L57 60.25H18L3.75 46V7Z"/>
+	<path fill="#88d6ff" d="M39 4.5h7L59.5 18v6Z"/>
+	<!-- La silueta se aplica una sola vez sobre las dos capas de tinta. -->
+	<g clip-path="url(#letter)">
+		<rect width="64" height="64" fill="#f4f6ff"/>
+		<path id="accent" fill="#ff9eab" d="M26 40L50 36V43L26 47Z"/>
+	</g>
+</svg>
