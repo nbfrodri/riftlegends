@@ -1,6 +1,6 @@
 # Rift Legends: guía para agentes
 
-Juego de gestión de esports de LoL para Windows y Linux. Antes de trabajar, lee el **[registro de decisiones](docs/decisions/README.md)** (las decisiones vigentes, con enlaces), [IDEA.md](IDEA.md) y el [plan general](docs/plans/00-plan-general.md). No vuelvas a preguntar lo que ya está decidido ahí. Cuando se tome o cambie una decisión, actualiza el registro en el mismo PR.
+Juego de gestión de esports de LoL para Windows y Linux. **Al empezar una sesión, ejecuta `scripts/session-context.sh`:** muestra los handoffs abiertos, los worktrees y los issues en curso. En Claude Code se ejecuta solo con un hook `SessionStart`, y `CLAUDE.md` importa el registro de decisiones. Antes de trabajar, lee el **[registro de decisiones](docs/decisions/README.md)** (las decisiones vigentes, con enlaces), [IDEA.md](IDEA.md) y el [plan general](docs/plans/00-plan-general.md). No vuelvas a preguntar lo que ya está decidido ahí. Cuando se tome o cambie una decisión, actualiza el registro en el mismo PR.
 
 ## Delegación en Codex
 
