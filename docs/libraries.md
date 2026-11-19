@@ -90,6 +90,8 @@ Todas las animaciones respetan `prefers-reduced-motion` y se pueden saltar sin a
 | Tipos para el tooling de Node.js | `@types/node` | 26.6 | MIT |
 | Propiedades | `fast-check` | 4.10 | MIT |
 | Componentes | `@testing-library/react` | 16.3 | MIT |
+| Peer de Testing Library | `@testing-library/dom` | 10.4 | MIT |
+| DOM para tests de componentes | `happy-dom` | 21.0 | MIT |
 | E2E (Electron) | `@playwright/test` | 1.65 | Apache-2.0 |
 | Mutación | `@stryker-mutator/core` | 10.1 | Apache-2.0 |
 | Lint y formato | `@biomejs/biome` | 2.6 | MIT o Apache-2.0 |
