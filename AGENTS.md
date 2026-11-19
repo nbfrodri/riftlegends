@@ -1,6 +1,10 @@
 # Rift Legends: guía para agentes
 
-Juego de gestión de esports de LoL para Windows y Linux. Antes de trabajar, lee [IDEA.md](IDEA.md), el [ADR 0001](docs/decisions/0001-stack-tecnologico.md) y el [plan general](docs/plans/00-plan-general.md).
+Juego de gestión de esports de LoL para Windows y Linux. Antes de trabajar, lee el **[registro de decisiones](docs/decisions/README.md)** (las decisiones vigentes, con enlaces), [IDEA.md](IDEA.md) y el [plan general](docs/plans/00-plan-general.md). No vuelvas a preguntar lo que ya está decidido ahí. Cuando se tome o cambie una decisión, actualiza el registro en el mismo PR.
+
+## Delegación en Codex
+
+El diseño visual y el trabajo mecánico o de mucha lectura se delegan en Codex. **El usuario elige el modelo y el effort:** antes de delegar, preséntale las opciones (los niveles de `tack models`; por ejemplo `gpt-6-luna`, `gpt-6.2-sol` o `gpt-6.2-astra`, con effort low, medium o high) junto con una recomendación. Para no arrastrar historial largo, abre una sesión nueva con un encargo resumido en vez de retomar una sesión pesada.
 
 ## App de escritorio
 
