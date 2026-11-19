@@ -30,7 +30,7 @@
 - **PI de Riot:** se usará contenido real de LoL (campeones, ligas, jugadores) **asumiendo el riesgo**.
 - **Nombre:** se mantiene "Rift Legends", aunque coincide con la ERL oficial de Polonia.
 - **Distribución:** solo GitHub Releases (itch.io queda descartado por ahora).
-- **Licencia:** código MIT/Apache. **Repositorio privado** (ver los puntos abiertos).
+- **Licencia:** código MIT/Apache. **Repositorio privado**; las releases se publican en un repo público aparte (ver los puntos abiertos).
 - **DraftSim:** no se reutiliza su código; solo sus funcionalidades e ideas, que se irán redefiniendo una a una. No hay paridad numérica.
 - **Lenguaje:** sin preferencia; la elección es técnica.
 - **Draft:** de nivel *broadcast*, con cartas y transiciones. El detalle se definirá más adelante.
@@ -76,6 +76,6 @@ S4 y S5 se omiten porque G y B están descartadas. S6 (tamaño del log) se aplaz
 
 ## Puntos abiertos
 
-- **Repo privado frente a distribución (propuesta, pendiente de confirmar):** el repo principal es **privado**, con la documentación en español y el código en inglés. Un **repo público solo de releases** (por ejemplo `riftlegends-releases`), con un README, notas de versión, LICENSE y aviso de Riot en inglés, recibe los binarios desde un workflow del repo privado. Si algún día el repo principal se hace público, se traducirán los documentos, y solo entonces se solicitará SignPath. Hay que vigilar los minutos de Actions en el repo privado: la matriz de Windows se ejecutará solo en `main` y en las releases.
+- **Repo privado frente a distribución (confirmado el 19-11-2026):** el repo principal es **privado**, con la documentación en español y el código en inglés. Un **repo público solo de releases** (por ejemplo `riftlegends-releases`), con un README, notas de versión, LICENSE y aviso de Riot en inglés, recibe los binarios desde un workflow del repo privado. Si algún día el repo principal se hace público, se traducirán los documentos, y solo entonces se solicitará SignPath. Hay que vigilar los minutos de Actions en el repo privado: la matriz de Windows se ejecutará solo en `main` y en las releases.
 - **Estilo visual:** delegado a Codex (rama `design/visual-style`). Se elegirá entre cuatro direcciones.
 - Detalle del draft *broadcast*, de la IA de draft y de cada sistema: se definirán en planes específicos derivados del plan general.
