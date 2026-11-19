@@ -1,0 +1,25 @@
+@theme static {
+	--color-canvas: #101420;
+	--color-panel: #191f2f;
+	--color-surface: #222b3e;
+	--color-text: #f4f6ff;
+	--color-muted: #b6c0d2;
+	--color-action: #a8deff;
+	--color-on-action: #101828;
+	--color-side-blue: #88d6ff;
+	--color-side-red: #ff9eab;
+	--color-line: #3c455b;
+
+	--font-display: "Unbounded Variable", sans-serif;
+	--font-sans: "Archivo Variable", sans-serif;
+	--tracking-heading: -0.025em;
+	--tracking-champion: -0.035em;
+	--tracking-team: -0.015em;
+	--text-table: clamp(13px, 0.83vw, 16px);
+	--text-table--line-height: 1.2;
+	--spacing-gutter: clamp(18px, 2vw, 44px);
+	--spacing-gap: clamp(10px, 1vw, 20px);
+	--radius-control: 2px;
+	--ease-lock: cubic-bezier(0.23, 1, 0.32, 1);
+	--duration-lock: 320ms;
+}

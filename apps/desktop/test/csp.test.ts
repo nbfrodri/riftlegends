@@ -18,6 +18,7 @@ test("restricts the renderer to local resources and cached asset images", () => 
 	).toEqual([
 		"base-uri 'none'",
 		"default-src 'none'",
+		"font-src 'self'",
 		"form-action 'none'",
 		"img-src 'self' rl-asset:",
 		"script-src 'self'",

@@ -37,3 +37,30 @@ test("exposes only ping and receives pong from main", async ({ appWindow }) => {
 		"pong",
 	);
 });
+
+test("T3: loads both bundled Caja fonts while offline", async ({
+	appWindow,
+}) => {
+	const context = appWindow.context();
+	const requests: string[] = [];
+	context.on("request", (request) => requests.push(request.url()));
+	await context.setOffline(true);
+	await appWindow.reload();
+	const loaded = await appWindow.evaluate(async () => {
+		await Promise.all(Array.from(document.fonts, (face) => face.load()));
+		return Promise.all(
+			['700 24px "Unbounded Variable"', '400 16px "Archivo Variable"'].map(
+				async (font) => {
+					const faces = await document.fonts.load(font, "Ajustes 0123");
+					return (
+						faces.length > 0 &&
+						faces.every((face) => face.status === "loaded") &&
+						document.fonts.check(font)
+					);
+				},
+			),
+		);
+	});
+	expect(loaded).toEqual([true, true]);
+	expect(requests.filter((url) => !/^(file:|rl-asset:)/.test(url))).toEqual([]);
+});

@@ -32,6 +32,10 @@
 	},
 	"overrides": [
 		{
+			"includes": ["**/*.css"],
+			"css": { "parser": { "tailwindDirectives": true } }
+		},
+		{
 			"includes": ["packages/core/**", "!packages/core/test/**"],
 			"linter": {
 				"rules": {

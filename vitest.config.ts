@@ -5,6 +5,12 @@ export default defineConfig({
 		projects: [
 			{
 				test: {
+					name: "ui-kit",
+					include: ["packages/ui-kit/**/*.test.{ts,tsx}"],
+				},
+			},
+			{
+				test: {
 					name: "desktop",
 					include: ["apps/desktop/**/*.test.{ts,tsx}"],
 				},
