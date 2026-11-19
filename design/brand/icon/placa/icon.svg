@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Placa">
+	<title>Placa</title>
+	<path fill="#191f2f" stroke="#b6c0d2" stroke-opacity=".67" stroke-width="1.5" d="M3.75 16h49l7.5 7.5V48h-49L3.75 40.5Z"/>
+	<path fill="#f4f6ff" d="M7 20h44l6 6v15H13l-6-6Z"/>
+	<path fill="#88d6ff" d="M7 20h5v20l-5-5ZM40 41h17v4H40Z"/>
+	<path fill="#101828" d="M213 -422 L486 -422 Q536 -422 564 -445 Q592 -468 592 -509 Q592 -551 564 -573 Q536 -596 486 -596 L184 -596 L277 -695 L277 0 L70 0 L70 -750 L515 -750 Q601 -750 665 -719 Q729 -689 765 -635 Q801 -582 801 -509 Q801 -438 765 -384 Q729 -330 665 -300 Q601 -270 515 -270 L213 -270 L213 -422 Z M325 -351 L558 -351 L827 0 L587 0 L325 -351 Z" transform="translate(15.70542 37.00000) scale(0.0184941 0.0173333)"/>
+	<path fill="#101828" d="M277 -750 L277 -92 L184 -184 L745 -184 L745 0 L70 0 L70 -750 L277 -750 Z" transform="translate(32.65185 37.00000) scale(0.0192593 0.0173333)"/>
+</svg>

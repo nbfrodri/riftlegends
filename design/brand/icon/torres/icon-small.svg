@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Torres">
+	<title>Torres</title>
+	<path fill="#191f2f" stroke="#b6c0d2" stroke-opacity=".62" stroke-width="1.5" d="M6 8H25L31 14H59V52L55 56H35L29 50H5V9Z"/>
+	<path fill="#88d6ff" d="M8 12h15l3 4v28H8Z"/>
+	<path fill="#ff9eab" d="M38 20h18v32H41l-3-4Z"/>
+	<path fill="#f4f6ff" d="M29 27h6v10h-6Z"/>
+	<path fill="#222b3e" d="M12 32h10v4H12Zm30 4h10v4H42Z"/>
+</svg>
