@@ -1,6 +1,6 @@
 # Rift Legends — Documento de idea
 
-> Estado: idea. El stack tecnológico y la arquitectura se decidirán más adelante.
+> Estado: idea. Stack decidido en el [ADR 0001](docs/decisions/0001-stack-tecnologico.md) (Electron + TypeScript + React). Hoja de ruta en [docs/plans/00-plan-general.md](docs/plans/00-plan-general.md).
 
 ## 1. Qué es
 
@@ -136,13 +136,27 @@ Rift Legends es un **fan project no oficial y gratuito**, sin afiliación con Ri
 - Debe cumplir la política de contenido de fans de Riot ("Legal Jibber Jabber"): sin monetización, con el aviso legal correspondiente y sin aparentar ser un producto oficial.
 - Nombres, ilustraciones, iconos y sonidos de League of Legends pertenecen a Riot Games.
 - Los datos de la comunidad (CommunityDragon, Meraki Analytics, Leaguepedia) se atribuyen según sus condiciones.
-- **Pendiente de revisar**: si el nombre "Rift Legends" puede confundirse con las marcas de Riot (*Summoner's Rift*, *League of Legends*, *Legends of Runeterra*) y si conviene ajustarlo.
+- **Cláusula de juegos**: la política de Riot prohíbe expresamente usar su PI en juegos y apps, aunque sean gratuitos. Se usa contenido real de LoL **asumiendo ese riesgo** (Riot podría pedir la retirada).
+- **Nombre**: "Rift Legends" coincide con la European Regional League (ERL) oficial de Polonia y Europa del Este. Se mantiene igualmente, como riesgo asumido.
+- **Mitigaciones**: el repositorio y los binarios no contienen assets de Riot (el arte se descarga de Data Dragon en tiempo de ejecución a una caché local); los datos de esports proceden de un snapshot de Leaguepedia con atribución CC BY-SA; un dataset ficticio mínimo permite jugar sin red; el código se licencia por separado (MIT/Apache).
 
 ## 12. Preguntas abiertas
 
-- ¿Se empieza en una liga top o se puede subir desde ligas menores?
-- ¿Jugadores reales, ficticios o ambos (reales al inicio y regens después)?
-- ¿Cuánto detalle tiene la visualización de partidas: resumen, timeline o minimapa animado?
-- ¿Existe el despido o la carrera es infinita?
-- ¿Draft local entre dos personas desde el inicio?
-- Stack tecnológico y arquitectura: **por investigar**.
+Resueltas (19-11-2026):
+
+- ~~¿Se empieza en una liga top o se puede subir desde ligas menores?~~ Primero ligas top; ligas menores y ascensos en una fase posterior.
+- ~~¿Jugadores reales, ficticios o ambos?~~ Reales al inicio y regens ficticios con el paso de los años.
+- ~~¿Cuánto detalle tiene la visualización de partidas?~~ Primero timeline de eventos; minimapa animado 2D después.
+- ~~¿Existe el despido o la carrera es infinita?~~ Sin despido por ahora (los objetivos de directiva sí existen).
+- ~~¿Draft local entre dos personas desde el inicio?~~ No por ahora.
+- ~~Stack tecnológico y arquitectura~~ Ver el [ADR 0001](docs/decisions/0001-stack-tecnologico.md).
+
+Otras decisiones:
+
+- Interfaz en español e inglés (i18n) desde el inicio.
+- Primer hito jugable: draft rápido completo contra la IA (draft broadcast, serie simulada y resultado).
+
+Abiertas:
+
+- Estilo visual (cuatro direcciones propuestas en `design/visual-style`).
+- Detalle de cada sistema: se define en los planes específicos de `docs/plans/`.
