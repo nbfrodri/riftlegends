@@ -91,6 +91,7 @@ Todas las animaciones respetan `prefers-reduced-motion` y se pueden saltar sin a
 | E2E (Electron) | `@playwright/test` | 1.65 | Apache-2.0 |
 | Mutación | `@stryker-mutator/core` | 10.1 | Apache-2.0 |
 | Lint y formato | `@biomejs/biome` | 2.6 | MIT o Apache-2.0 |
+| Hooks de Git | `lefthook` | 2.2 | MIT |
 
 ## Descartadas
 
