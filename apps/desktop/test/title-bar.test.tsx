@@ -12,7 +12,7 @@ import type { WindowControls } from "../src/shared/bridge";
 
 afterEach(cleanup);
 
-function fakeControls(maximized = false) {
+function fakeControls(maximized = false, canMinimize = true) {
 	let notify: (maximized: boolean) => void = () => {};
 	const unsubscribe = vi.fn();
 	const controls = {
@@ -20,6 +20,7 @@ function fakeControls(maximized = false) {
 		toggleMaximize: vi.fn(),
 		close: vi.fn(),
 		isMaximized: vi.fn().mockResolvedValue(maximized),
+		canMinimize: vi.fn().mockResolvedValue(canMinimize),
 		onMaximizedChange: vi.fn((listener: (maximized: boolean) => void) => {
 			notify = listener;
 			return unsubscribe;
@@ -42,10 +43,10 @@ test("shows the game icon to the left of the title, decorative and bundled", () 
 	).toBeTruthy();
 });
 
-test("routes minimize and close to the window controls", () => {
+test("routes minimize and close to the window controls", async () => {
 	const { controls } = fakeControls();
 	render(<TitleBar controls={controls} />);
-	fireEvent.click(screen.getByRole("button", { name: "Minimize" }));
+	fireEvent.click(await screen.findByRole("button", { name: "Minimize" }));
 	fireEvent.click(screen.getByRole("button", { name: "Close" }));
 	expect(controls.minimize).toHaveBeenCalledOnce();
 	expect(controls.close).toHaveBeenCalledOnce();
@@ -82,4 +83,13 @@ test("a change event wins over a slower initial query", async () => {
 	act(() => emit(true));
 	await act(async () => resolveInitial(false));
 	expect(screen.getByRole("button", { name: "Restore" })).toBeTruthy();
+});
+
+test("hides minimize where the window manager cannot minimize", async () => {
+	const { controls } = fakeControls(false, false);
+	render(<TitleBar controls={controls} />);
+	await screen.findByRole("button", { name: "Maximize" });
+	await act(async () => {});
+	expect(screen.queryByRole("button", { name: "Minimize" })).toBeNull();
+	expect(screen.getByRole("button", { name: "Close" })).toBeTruthy();
 });

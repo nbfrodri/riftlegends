@@ -12,6 +12,7 @@ contextBridge.exposeInMainWorld("riftlegends", {
 		toggleMaximize: () => ipcRenderer.invoke(windowChannels.toggleMaximize),
 		close: () => ipcRenderer.invoke(windowChannels.close),
 		isMaximized: () => ipcRenderer.invoke(windowChannels.isMaximized),
+		canMinimize: () => ipcRenderer.invoke(windowChannels.canMinimize),
 		onMaximizedChange: (listener) => {
 			const notify = (_event: IpcRendererEvent, maximized: boolean) =>
 				listener(maximized);

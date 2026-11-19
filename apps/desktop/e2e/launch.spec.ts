@@ -39,9 +39,7 @@ test("keeps Node globals out of the renderer", async ({ appWindow }) => {
 	).toEqual(["undefined", "undefined", "undefined"]);
 });
 
-test("exposes only ping and the five window controls", async ({
-	appWindow,
-}) => {
+test("exposes only ping and the window controls", async ({ appWindow }) => {
 	expect(
 		await appWindow.evaluate(() => Object.keys(window.riftlegends).sort()),
 	).toEqual(["ping", "window"]);
@@ -50,6 +48,7 @@ test("exposes only ping and the five window controls", async ({
 			Object.keys(window.riftlegends.window).sort(),
 		),
 	).toEqual([
+		"canMinimize",
 		"close",
 		"isMaximized",
 		"minimize",
@@ -107,11 +106,11 @@ test("shows the title bar with the bundled game icon before the title", async ({
 	]);
 	expect(iconBox?.height).toBeCloseTo(16, 0);
 	expect(iconBox?.x).toBeLessThan(titleBox?.x ?? 0);
-	for (const name of [/^minimize$/i, /^(maximize|restore)$/i, /^close$/i]) {
-		await expect(bar.getByRole("button", { name })).toHaveCSS(
-			"app-region",
-			"no-drag",
-		);
+	// Minimize is hidden on tiling Wayland compositors, so check every button shown.
+	const buttons = await bar.getByRole("button").all();
+	expect(buttons.length).toBeGreaterThanOrEqual(2);
+	for (const button of buttons) {
+		await expect(button).toHaveCSS("app-region", "no-drag");
 	}
 });
 

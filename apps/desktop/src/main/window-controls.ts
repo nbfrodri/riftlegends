@@ -1,9 +1,25 @@
 import type { BrowserWindow, IpcMain } from "electron";
 import { windowChannels } from "../shared/bridge";
 
+// Tiling Wayland compositors ignore xdg_toplevel minimize requests; Electron then
+// treats the window as minimized and stops painting until it is reconfigured.
+const desktopsWithoutMinimize = ["hyprland", "sway", "river", "niri"];
+
+export function supportsMinimize(
+	platform: NodeJS.Platform,
+	env: Readonly<Record<string, string | undefined>>,
+): boolean {
+	if (platform !== "linux") return true;
+	const desktops = [env.XDG_CURRENT_DESKTOP, env.XDG_SESSION_DESKTOP].flatMap(
+		(value) => value?.toLowerCase().split(":") ?? [],
+	);
+	return !desktops.some((desktop) => desktopsWithoutMinimize.includes(desktop));
+}
+
 export function registerWindowControls(
 	window: BrowserWindow,
 	ipc: Pick<IpcMain, "handle" | "removeHandler">,
+	{ canMinimize }: { canMinimize: boolean },
 ) {
 	const actions = {
 		[windowChannels.minimize]: () => window.minimize(),
@@ -13,6 +29,7 @@ export function registerWindowControls(
 		},
 		[windowChannels.close]: () => window.close(),
 		[windowChannels.isMaximized]: () => window.isMaximized(),
+		[windowChannels.canMinimize]: () => canMinimize,
 	};
 	for (const [channel, action] of Object.entries(actions)) {
 		ipc.handle(channel, (event) => {
