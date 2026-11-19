@@ -76,6 +76,6 @@ S4 y S5 se omiten porque G y B están descartadas. S6 (tamaño del log) se aplaz
 
 ## Puntos abiertos
 
-- **Repo privado frente a distribución:** los binarios de GitHub Releases de un repo privado no se pueden descargar públicamente, y SignPath exige un proyecto público. Opciones: un repo público solo para releases, hacer público el repo más adelante o aplazar la distribución.
+- **Repo privado frente a distribución (propuesta, pendiente de confirmar):** el repo principal es **privado**, con la documentación en español y el código en inglés. Un **repo público solo de releases** (por ejemplo `riftlegends-releases`), con un README, notas de versión, LICENSE y aviso de Riot en inglés, recibe los binarios desde un workflow del repo privado. Si algún día el repo principal se hace público, se traducirán los documentos, y solo entonces se solicitará SignPath. Hay que vigilar los minutos de Actions en el repo privado: la matriz de Windows se ejecutará solo en `main` y en las releases.
 - **Estilo visual:** delegado a Codex (rama `design/visual-style`). Se elegirá entre cuatro direcciones.
 - Detalle del draft *broadcast*, de la IA de draft y de cada sistema: se definirán en planes específicos derivados del plan general.
