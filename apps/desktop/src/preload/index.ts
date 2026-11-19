@@ -1,6 +1,24 @@
-import { contextBridge, ipcRenderer } from "electron";
-import { pingChannel, type RiftLegendsAPI } from "../shared/bridge";
+import { contextBridge, type IpcRendererEvent, ipcRenderer } from "electron";
+import {
+	pingChannel,
+	type RiftLegendsAPI,
+	windowChannels,
+} from "../shared/bridge";
 
 contextBridge.exposeInMainWorld("riftlegends", {
 	ping: () => ipcRenderer.invoke(pingChannel),
+	window: {
+		minimize: () => ipcRenderer.invoke(windowChannels.minimize),
+		toggleMaximize: () => ipcRenderer.invoke(windowChannels.toggleMaximize),
+		close: () => ipcRenderer.invoke(windowChannels.close),
+		isMaximized: () => ipcRenderer.invoke(windowChannels.isMaximized),
+		onMaximizedChange: (listener) => {
+			const notify = (_event: IpcRendererEvent, maximized: boolean) =>
+				listener(maximized);
+			ipcRenderer.on(windowChannels.maximizedChange, notify);
+			return () => {
+				ipcRenderer.off(windowChannels.maximizedChange, notify);
+			};
+		},
+	},
 } satisfies RiftLegendsAPI);

@@ -1,18 +1,28 @@
-import { test as base, expect, type Page } from "@playwright/test";
+import {
+	test as base,
+	type ElectronApplication,
+	expect,
+	type Page,
+} from "@playwright/test";
 
-const test = base.extend<{ appWindow: Page }>({
-	appWindow: async ({ playwright }, use, testInfo) => {
-		const app = await playwright._electron.launch({
-			args: [".", `--user-data-dir=${testInfo.outputPath("profile")}`],
-			chromiumSandbox: true,
-		});
-		try {
-			await use(await app.firstWindow());
-		} finally {
-			await app.close();
-		}
+const test = base.extend<{ electronApp: ElectronApplication; appWindow: Page }>(
+	{
+		electronApp: async ({ playwright }, use, testInfo) => {
+			const app = await playwright._electron.launch({
+				args: [".", `--user-data-dir=${testInfo.outputPath("profile")}`],
+				chromiumSandbox: true,
+			});
+			try {
+				await use(app);
+			} finally {
+				await app.close();
+			}
+		},
+		appWindow: async ({ electronApp }, use) => {
+			await use(await electronApp.firstWindow());
+		},
 	},
-});
+);
 
 test("opens the Rift Legends window", async ({ appWindow }) => {
 	await expect(appWindow).toHaveTitle("Rift Legends");
@@ -29,10 +39,23 @@ test("keeps Node globals out of the renderer", async ({ appWindow }) => {
 	).toEqual(["undefined", "undefined", "undefined"]);
 });
 
-test("exposes only ping and receives pong from main", async ({ appWindow }) => {
+test("exposes only ping and the five window controls", async ({
+	appWindow,
+}) => {
 	expect(
-		await appWindow.evaluate(() => Object.keys(window.riftlegends)),
-	).toEqual(["ping"]);
+		await appWindow.evaluate(() => Object.keys(window.riftlegends).sort()),
+	).toEqual(["ping", "window"]);
+	expect(
+		await appWindow.evaluate(() =>
+			Object.keys(window.riftlegends.window).sort(),
+		),
+	).toEqual([
+		"close",
+		"isMaximized",
+		"minimize",
+		"onMaximizedChange",
+		"toggleMaximize",
+	]);
 	expect(await appWindow.evaluate(() => window.riftlegends.ping())).toBe(
 		"pong",
 	);
@@ -63,4 +86,92 @@ test("T3: loads both bundled Caja fonts while offline", async ({
 	});
 	expect(loaded).toEqual([true, true]);
 	expect(requests.filter((url) => !/^(file:|rl-asset:)/.test(url))).toEqual([]);
+});
+
+test("shows the title bar with the bundled game icon before the title", async ({
+	appWindow,
+}) => {
+	const bar = appWindow.getByRole("banner");
+	const icon = bar.locator("img");
+	await expect(bar).toBeVisible();
+	await expect(bar).toHaveCSS("height", "32px");
+	await expect(bar).toHaveCSS("app-region", "drag");
+	await expect(bar.getByText("Rift Legends")).toBeVisible();
+	await expect(icon).toBeVisible();
+	expect(
+		await icon.evaluate((img: HTMLImageElement) => img.naturalWidth),
+	).toBeGreaterThan(0);
+	const [iconBox, titleBox] = await Promise.all([
+		icon.boundingBox(),
+		bar.getByText("Rift Legends").boundingBox(),
+	]);
+	expect(iconBox?.height).toBeCloseTo(16, 0);
+	expect(iconBox?.x).toBeLessThan(titleBox?.x ?? 0);
+	for (const name of [/^minimize$/i, /^(maximize|restore)$/i, /^close$/i]) {
+		await expect(bar.getByRole("button", { name })).toHaveCSS(
+			"app-region",
+			"no-drag",
+		);
+	}
+});
+
+test("title bar asks the main process to maximize and restore", async ({
+	electronApp,
+	appWindow,
+}) => {
+	// Replace the native calls with a recorder so the test checks our wiring
+	// (button -> IPC -> main -> state event -> label) and not the window manager,
+	// which Xvfb in CI does not have and tiling managers override.
+	await electronApp.evaluate(({ BrowserWindow }) => {
+		const window = BrowserWindow.getAllWindows()[0];
+		if (!window) throw new Error("No window");
+		let maximized = false;
+		const calls: string[] = [];
+		Object.assign(globalThis, { windowControlCalls: calls });
+		window.isMaximized = () => maximized;
+		window.maximize = () => {
+			calls.push("maximize");
+			maximized = true;
+			window.emit("maximize");
+		};
+		window.unmaximize = () => {
+			calls.push("unmaximize");
+			maximized = false;
+			window.emit("unmaximize");
+		};
+	});
+	const toggle = appWindow.getByRole("button", {
+		name: /^(maximize|restore)$/i,
+	});
+	const calls = () =>
+		electronApp.evaluate(
+			() =>
+				(globalThis as { windowControlCalls?: string[] }).windowControlCalls,
+		);
+
+	await toggle.click();
+	await expect.poll(calls).toEqual(["maximize"]);
+	await expect(toggle).toHaveAccessibleName("Restore");
+	await toggle.click();
+	await expect.poll(calls).toEqual(["maximize", "unmaximize"]);
+	await expect(toggle).toHaveAccessibleName("Maximize");
+});
+
+test("maximizes and restores the native window on Windows", async ({
+	appWindow,
+}) => {
+	test.skip(
+		process.platform !== "win32",
+		"only Windows CI has a real window manager; Xvfb and tiling managers do not honour it",
+	);
+	const toggle = appWindow.getByRole("button", {
+		name: /^(maximize|restore)$/i,
+	});
+	const isMaximized = () =>
+		appWindow.evaluate(() => window.riftlegends.window.isMaximized());
+	const initial = await isMaximized();
+	await toggle.click();
+	await expect.poll(isMaximized).toBe(!initial);
+	await toggle.click();
+	await expect.poll(isMaximized).toBe(initial);
 });
