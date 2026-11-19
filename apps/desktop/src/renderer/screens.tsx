@@ -10,7 +10,9 @@ import { useTranslation } from "react-i18next";
 import { isLocale, storeLanguage } from "./language";
 
 // Placeholder screens: each one only names itself until its real content lands
-// (Draft in the draft plans, Mercado's table in #44).
+// (the draft screen lands with the draft plans). Mercado has its own file.
+
+export { MarketScreen } from "./market-screen";
 
 function Screen({ title }: { title: string }) {
 	return (
@@ -25,11 +27,6 @@ function Screen({ title }: { title: string }) {
 export function DraftScreen() {
 	const { t } = useTranslation();
 	return <Screen title={t("shell.nav.draft")} />;
-}
-
-export function MarketScreen() {
-	const { t } = useTranslation();
-	return <Screen title={t("shell.nav.market")} />;
 }
 
 export function SettingsScreen() {

@@ -20,6 +20,8 @@ const notColours = new Set([
 	...["xs", "sm", "base", "lg", "xl", "2xl", "table"],
 	...["left", "center", "right", "wrap", "nowrap", "ellipsis", "clip"],
 	...["solid", "dashed", "dotted", "none", "hidden", "offset"],
+	// Table borders, and `border-b` and friends, which the pattern reads as a colour.
+	...["separate", "collapse", "spacing", "t", "r", "b", "l", "x", "y"],
 ]);
 
 const colourUtility =
