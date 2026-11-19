@@ -4,6 +4,7 @@
 	"type": "module",
 	"packageManager": "pnpm@12.21.0",
 	"scripts": {
+		"postinstall": "pnpm --filter @rift-legends/desktop exec install-electron",
 		"dev": "pnpm --filter @rift-legends/desktop dev",
 		"e2e": "pnpm --filter @rift-legends/desktop build && pnpm --filter @rift-legends/desktop e2e",
 		"lint": "biome check .",
