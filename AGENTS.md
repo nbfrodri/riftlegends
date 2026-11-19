@@ -2,6 +2,15 @@
 
 Juego de gestión de esports de LoL para Windows y Linux. Antes de trabajar, lee [IDEA.md](IDEA.md), el [ADR 0001](docs/decisions/0001-stack-tecnologico.md) y el [plan general](docs/plans/00-plan-general.md).
 
+## App de escritorio
+
+Es una **app de escritorio instalable** (Electron) que funciona sin conexión, no una web: sin servidor, sin rutas por URL y con las fuentes empaquetadas. Las reglas completas están en [docs/libraries.md](docs/libraries.md#app-de-escritorio-no-web).
+
+## Librerías
+
+- Usa **solo** las librerías de [docs/libraries.md](docs/libraries.md). Si añades una nueva, actualiza el catálogo en el mismo PR y explica el motivo.
+- Antes de usar la API de una librería, consulta su documentación actual con **Context7** (`resolve-library-id` y después `query-docs`).
+
 ## Idioma
 
 - Código, identificadores, nombres de ramas y mensajes de commit: **inglés**.
