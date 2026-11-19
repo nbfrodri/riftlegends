@@ -79,7 +79,15 @@ Nada entra en `main` sin PR: el ruleset `protect-main` exige PR, solo admite squ
 
 ## Verificación
 
-`pnpm verify` (lint + typecheck + tests) debe estar en verde antes de abrir un PR.
+Sigue el [inicio rápido del README](README.md#inicio-rápido) para instalar Node.js, pnpm y las dependencias. Ejecuta los comandos desde la raíz del monorepo.
+
+```sh
+mise exec -- pnpm verify
+mise exec -- pnpm test
+mise exec -- pnpm e2e
+```
+
+`verify` comprueba lint, tipos y tests, y debe estar en verde antes de abrir un PR. `test` ejecuta solo los tests de Vitest. `e2e` compila la app y la prueba con Playwright (`_electron`); en CI corre bajo Xvfb. El CI exige `verify` en cada PR (check obligatorio en `protect-main`).
 
 ## Legal
 

@@ -16,7 +16,7 @@ Diriges un equipo profesional: preparas el draft, gestionas la plantilla y compi
 </div>
 
 > [!NOTE]
-> Fan project gratuito y no oficial, sin afiliación con Riot Games ([aviso legal](NOTICE.md)). El stack y el estilo visual están decididos, pero la Fase 0 aún no ha empezado: todavía no hay código ejecutable.
+> Fan project gratuito y no oficial, sin afiliación con Riot Games ([aviso legal](NOTICE.md)). El proyecto está en la Fase 0, dedicada a los cimientos del monorepo y la app de escritorio.
 
 ## El juego
 
@@ -91,14 +91,33 @@ Rojo → verde → refactor en todo el código de producción. Commits Conventio
 
 ## Inicio rápido
 
-Pendiente de la Fase 0. Aquí se documentarán `pnpm install`, `pnpm dev` y `pnpm verify`.
+Necesitas Git y [mise](https://mise.jdx.dev/getting-started.html). Desde la raíz del repositorio clonado, instala las versiones de Node.js y pnpm fijadas en `mise.toml`, instala las dependencias y comprueba el monorepo.
+
+```sh
+mise install
+mise exec -- pnpm install --frozen-lockfile
+mise exec -- pnpm verify
+```
+
+`pnpm verify` ejecuta el lint, la comprobación de tipos y los tests. Para ejecutar solo los tests:
+
+```sh
+mise exec -- pnpm test
+```
+
+Para arrancar la app de escritorio en modo desarrollo y para ejecutar los tests de extremo a extremo (compila la app y la prueba con Playwright):
+
+```sh
+mise exec -- pnpm dev
+mise exec -- pnpm e2e
+```
 
 ## Documentación
 
 | Documento | Para qué |
 | --- | --- |
 | [IDEA.md](IDEA.md) | Visión del juego, pilares, bucles y sistemas |
-| [docs/](docs/README.md) | Decisiones, planes, librerías e investigación |
+| [docs/](docs/README.md) | Decisiones, planes, glosario, librerías e investigación |
 | [design/](design/README.md) | Estilo visual (Caja), app con barra lateral e icono |
 | [AGENTS.md](AGENTS.md) | Reglas y flujo de trabajo para agentes y personas |
 
