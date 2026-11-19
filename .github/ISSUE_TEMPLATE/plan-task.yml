@@ -1,0 +1,19 @@
+name: Tarea de plan
+description: Ticket derivado de un plan específico de docs/plans/
+labels: ["type:task"]
+body:
+  - type: input
+    id: plan
+    attributes: {label: Plan, placeholder: "docs/plans/06-reglas-de-draft.md"}
+    validations: {required: true}
+  - type: textarea
+    id: goal
+    attributes: {label: Objetivo}
+    validations: {required: true}
+  - type: textarea
+    id: tests
+    attributes: {label: Test que la cierra, description: "Test(s) que deben fallar primero y pasar al terminar"}
+    validations: {required: true}
+  - type: textarea
+    id: notes
+    attributes: {label: Notas y dependencias}
