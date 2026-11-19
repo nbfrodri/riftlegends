@@ -1,4 +1,8 @@
 {
 	"extends": "./tsconfig.base.json",
-	"files": []
+	"compilerOptions": {
+		"types": ["node"]
+	},
+	"include": ["apps/**/*.ts", "packages/**/*.ts"],
+	"exclude": ["**/node_modules", "packages/core/test/fixtures"]
 }
