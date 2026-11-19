@@ -1,6 +1,6 @@
 # Plan 01 — Cimientos del monorepo, tooling y CI
 
-- **Estado:** borrador (pendiente de aprobación)
+- **Estado:** aprobado (19-11-2026)
 - **Fase:** 0 · Cimientos ([plan general](00-plan-general.md))
 - **Objetivo:** un monorepo donde `pnpm verify` compruebe lint, tipos y tests, una app Electron vacía y segura que arranque en Windows y en Arch Wayland, y un CI que bloquee los PR rotos. Sin lógica de juego.
 
