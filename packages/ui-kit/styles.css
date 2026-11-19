@@ -1,0 +1,19 @@
+@import "tailwindcss" source(none);
+@import "@fontsource-variable/archivo/wght.css";
+@import "@fontsource-variable/unbounded/wght.css";
+@import "./tokens.css";
+
+@layer base {
+	:root {
+		color-scheme: dark;
+		background: var(--color-canvas);
+		color: var(--color-text);
+		font-family: var(--font-sans);
+		font-variant-numeric: lining-nums tabular-nums;
+	}
+
+	:focus-visible {
+		outline: 3px solid var(--color-action);
+		outline-offset: -3px;
+	}
+}

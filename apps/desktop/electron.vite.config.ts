@@ -1,5 +1,11 @@
+import tailwindcss from "@tailwindcss/vite";
+
 export default {
 	main: {},
 	preload: {},
-	renderer: { server: { host: "127.0.0.1" } },
+	renderer: {
+		plugins: [tailwindcss()],
+		build: { assetsInlineLimit: 0 },
+		server: { host: "127.0.0.1" },
+	},
 };

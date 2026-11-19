@@ -1,0 +1,14 @@
+{
+	"name": "@rift-legends/ui-kit",
+	"private": true,
+	"type": "module",
+	"exports": {
+		"./styles.css": "./styles.css",
+		"./tokens.css": "./tokens.css"
+	},
+	"dependencies": {
+		"@fontsource-variable/archivo": "5.3.0",
+		"@fontsource-variable/unbounded": "5.3.0",
+		"tailwindcss": "4.3.5"
+	}
+}
