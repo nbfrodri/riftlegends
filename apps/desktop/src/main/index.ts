@@ -2,10 +2,12 @@ import { join } from "node:path";
 import { app, BrowserWindow, ipcMain, shell } from "electron";
 import { pingChannel } from "../shared/bridge";
 import { createMainWindowOptions, secureNavigation } from "./window";
+import { registerWindowControls } from "./window-controls";
 
 app.whenReady().then(async () => {
 	const window = new BrowserWindow(createMainWindowOptions());
 	secureNavigation(window.webContents, shell.openExternal);
+	registerWindowControls(window, ipcMain);
 	ipcMain.handle(pingChannel, (): "pong" => "pong");
 
 	if (import.meta.env.DEV && process.env.ELECTRON_RENDERER_URL) {

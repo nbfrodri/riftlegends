@@ -1,6 +1,10 @@
 import { expect, test, vi } from "vitest";
 import { createMainWindowOptions, secureNavigation } from "../src/main/window";
 
+test("creates a frameless window", () => {
+	expect(createMainWindowOptions().frame).toBe(false);
+});
+
 test("isolates and sandboxes the renderer without Node integration", () => {
 	expect(createMainWindowOptions().webPreferences).toMatchObject({
 		contextIsolation: true,

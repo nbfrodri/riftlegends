@@ -29,10 +29,23 @@ test("keeps Node globals out of the renderer", async ({ appWindow }) => {
 	).toEqual(["undefined", "undefined", "undefined"]);
 });
 
-test("exposes only ping and receives pong from main", async ({ appWindow }) => {
+test("exposes only ping and the five window controls", async ({
+	appWindow,
+}) => {
 	expect(
-		await appWindow.evaluate(() => Object.keys(window.riftlegends)),
-	).toEqual(["ping"]);
+		await appWindow.evaluate(() => Object.keys(window.riftlegends).sort()),
+	).toEqual(["ping", "window"]);
+	expect(
+		await appWindow.evaluate(() =>
+			Object.keys(window.riftlegends.window).sort(),
+		),
+	).toEqual([
+		"close",
+		"isMaximized",
+		"minimize",
+		"onMaximizedChange",
+		"toggleMaximize",
+	]);
 	expect(await appWindow.evaluate(() => window.riftlegends.ping())).toBe(
 		"pong",
 	);
@@ -63,4 +76,74 @@ test("T3: loads both bundled Caja fonts while offline", async ({
 	});
 	expect(loaded).toEqual([true, true]);
 	expect(requests.filter((url) => !/^(file:|rl-asset:)/.test(url))).toEqual([]);
+});
+
+test("shows the title bar with the bundled game icon before the title", async ({
+	appWindow,
+}) => {
+	const bar = appWindow.getByRole("banner");
+	const icon = bar.locator("img");
+	await expect(bar).toBeVisible();
+	await expect(bar).toHaveCSS("height", "32px");
+	await expect(bar).toHaveCSS("app-region", "drag");
+	await expect(bar.getByText("Rift Legends")).toBeVisible();
+	await expect(icon).toBeVisible();
+	expect(
+		await icon.evaluate((img: HTMLImageElement) => img.naturalWidth),
+	).toBeGreaterThan(0);
+	const [iconBox, titleBox] = await Promise.all([
+		icon.boundingBox(),
+		bar.getByText("Rift Legends").boundingBox(),
+	]);
+	expect(iconBox?.height).toBeCloseTo(16, 0);
+	expect(iconBox?.x).toBeLessThan(titleBox?.x ?? 0);
+	for (const name of [/^minimize$/i, /^(maximize|restore)$/i, /^close$/i]) {
+		await expect(bar.getByRole("button", { name })).toHaveCSS(
+			"app-region",
+			"no-drag",
+		);
+	}
+});
+
+test("maximizes and restores the native window from the title bar", async ({
+	appWindow,
+}) => {
+	const toggle = appWindow.getByRole("button", {
+		name: /^(maximize|restore)$/i,
+	});
+	const isMaximized = () =>
+		appWindow.evaluate(() => window.riftlegends.window.isMaximized());
+	// Tiling window managers may maximize the window right after it opens, so
+	// start from whatever state it settles into instead of assuming "restored".
+	let initial = await isMaximized();
+	await expect
+		.poll(async () => {
+			await appWindow.waitForTimeout(700);
+			const current = await isMaximized();
+			const stable = current === initial;
+			initial = current;
+			return stable;
+		})
+		.toBe(true);
+	const label = (maximized: boolean) => (maximized ? "Restore" : "Maximize");
+
+	await expect(toggle).toHaveAccessibleName(label(initial));
+	await toggle.click();
+	const followed = await expect
+		.poll(isMaximized)
+		.toBe(!initial)
+		.then(
+			() => true,
+			() => false,
+		);
+	// A tiling window manager can refuse to restore a window it keeps maximized.
+	test.skip(
+		initial && !followed,
+		"the window manager keeps the window maximized",
+	);
+	expect(followed).toBe(true);
+	await expect(toggle).toHaveAccessibleName(label(!initial));
+	await toggle.click();
+	await expect.poll(isMaximized).toBe(initial);
+	await expect(toggle).toHaveAccessibleName(label(initial));
 });

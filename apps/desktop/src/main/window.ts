@@ -4,6 +4,7 @@ import type { BrowserWindowConstructorOptions, WebContents } from "electron";
 export function createMainWindowOptions(): BrowserWindowConstructorOptions {
 	return {
 		title: "Rift Legends",
+		frame: false,
 		width: 1366,
 		height: 768,
 		webPreferences: {
