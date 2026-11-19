@@ -13,9 +13,23 @@ Juego de gestión de esports de LoL para Windows y Linux. Antes de trabajar, lee
 1. **Plan específico.** Cada sistema o función tiene su plan en `docs/plans/NN-nombre.md` (índice en el plan general). Empieza por la **lista de tests** (comportamientos y casos límite) y después el diseño.
 2. **Troceado en issues.** Al aprobar un plan, se trocea en issues con la plantilla **"Tarea de plan"**: un issue por entregable pequeño y verificable, con su label `area:*`, el milestone de su fase y el test que lo cierra. Todos van al tablero:
    ```sh
-   gh issue create --template plan-task.yml --label "type:task,area:draft" \
-     --milestone "Fase 2 — Draft rápido completo" --project "Rift Legends"
+   gh issue create --title "draft: validate fearless pick legality" \
+     --label "type:task,area:draft" --milestone "Fase 2 — Draft rápido completo" \
+     --project "Rift Legends" --body-file - <<'MD'
+   ### Plan
+   docs/plans/06-reglas-de-draft.md
+
+   ### Objetivo
+   ...
+
+   ### Test que la cierra
+   ...
+
+   ### Notas y dependencias
+   ...
+   MD
    ```
+   Siempre con `--title` y `--body-file` (o `--body`), porque `--template` solo funciona en modo interactivo y el comando se queda esperando. El cuerpo repite las secciones de la plantilla web "Tarea de plan". Con `--project` el issue entra en el tablero y el workflow del tablero le pone el estado *Todo*.
 3. **Coger un issue.** El agente (Claude o Codex) se lo asigna, lo mueve a *In Progress* y crea su rama desde `main` (`feat/<nn>-slug`, `fix/<nn>-slug`, `docs/...`, `chore/...`):
    ```sh
    gh issue edit NN --add-assignee @me
