@@ -1,0 +1,67 @@
+import type { Page } from "@playwright/test";
+import { expect, test } from "./fixtures";
+
+const openMarket = async (page: Page) => {
+	await page
+		.getByRole("navigation", { name: "Club sections" })
+		.getByRole("button", { name: "Market" })
+		.click();
+	await expect(page.getByRole("heading", { level: 1 })).toHaveText("Market");
+};
+
+const firstRow = (page: Page) =>
+	page
+		.getByRole("table", { name: "Available players" })
+		.locator("tbody tr")
+		.first();
+
+test("T10: Market sorts players by monthly salary", async ({ appWindow }) => {
+	await openMarket(appWindow);
+	const table = appWindow.getByRole("table", { name: "Available players" });
+	await expect(table.locator("tbody tr")).toHaveCount(36);
+	const salary = table.getByRole("columnheader", { name: "Monthly salary" });
+	await expect(salary).toHaveAttribute("aria-sort", "none");
+
+	await salary.getByRole("button").click();
+	await expect(salary).toHaveAttribute("aria-sort", "ascending");
+	await expect(firstRow(appWindow)).toContainText("Faro");
+	await expect(firstRow(appWindow)).toContainText("€2,600");
+
+	await salary.getByRole("button").click();
+	await expect(salary).toHaveAttribute("aria-sort", "descending");
+	await expect(firstRow(appWindow)).toContainText("Cobalto");
+	await expect(firstRow(appWindow)).toContainText("€18,400");
+});
+
+test("Market keeps its header in view while the rows scroll", async ({
+	appWindow,
+}) => {
+	await openMarket(appWindow);
+	const region = appWindow.getByRole("region", { name: "Available players" });
+	const header = appWindow
+		.getByRole("columnheader", { name: "Player" })
+		.getByRole("button");
+	await expect
+		.poll(() => region.evaluate((el) => el.scrollHeight > el.clientHeight))
+		.toBe(true);
+	await region.evaluate((el) => el.scrollTo(0, el.scrollHeight));
+	const [regionBox, headerBox] = await Promise.all([
+		region.boundingBox(),
+		header.boundingBox(),
+	]);
+	expect(headerBox?.y).toBeGreaterThanOrEqual(regionBox?.y ?? Number.NaN);
+	expect(headerBox?.y).toBeLessThan((regionBox?.y ?? 0) + 40);
+});
+
+test("Market moves between rows with the arrow keys", async ({ appWindow }) => {
+	await openMarket(appWindow);
+	const rows = appWindow
+		.getByRole("table", { name: "Available players" })
+		.locator("tbody tr");
+	await rows.first().focus();
+	await appWindow.keyboard.press("ArrowDown");
+	await expect(rows.nth(1)).toBeFocused();
+	await appWindow.keyboard.press("End");
+	await expect(rows.last()).toBeFocused();
+	await expect(rows.last()).toHaveCSS("outline-style", "solid");
+});
