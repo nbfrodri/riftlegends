@@ -1,6 +1,7 @@
 import { join } from "node:path";
 import { app, BrowserWindow, ipcMain, shell } from "electron";
 import { pingChannel } from "../shared/bridge";
+import { registerSystemLocale } from "./system-locale";
 import { createMainWindowOptions, secureNavigation } from "./window";
 import { registerWindowControls, supportsMinimize } from "./window-controls";
 
@@ -10,6 +11,7 @@ app.whenReady().then(async () => {
 	registerWindowControls(window, ipcMain, {
 		canMinimize: supportsMinimize(process.platform, process.env),
 	});
+	registerSystemLocale(window, ipcMain, app.getLocale());
 	ipcMain.handle(pingChannel, (): "pong" => "pong");
 
 	if (import.meta.env.DEV && process.env.ELECTRON_RENDERER_URL) {

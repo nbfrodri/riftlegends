@@ -1,28 +1,4 @@
-import {
-	test as base,
-	type ElectronApplication,
-	expect,
-	type Page,
-} from "@playwright/test";
-
-const test = base.extend<{ electronApp: ElectronApplication; appWindow: Page }>(
-	{
-		electronApp: async ({ playwright }, use, testInfo) => {
-			const app = await playwright._electron.launch({
-				args: [".", `--user-data-dir=${testInfo.outputPath("profile")}`],
-				chromiumSandbox: true,
-			});
-			try {
-				await use(app);
-			} finally {
-				await app.close();
-			}
-		},
-		appWindow: async ({ electronApp }, use) => {
-			await use(await electronApp.firstWindow());
-		},
-	},
-);
+import { expect, test } from "./fixtures";
 
 test("opens the Rift Legends window", async ({ appWindow }) => {
 	await expect(appWindow).toHaveTitle("Rift Legends");
@@ -39,10 +15,15 @@ test("keeps Node globals out of the renderer", async ({ appWindow }) => {
 	).toEqual(["undefined", "undefined", "undefined"]);
 });
 
-test("exposes only ping and the window controls", async ({ appWindow }) => {
+test("exposes only ping, the system locale and the window controls", async ({
+	appWindow,
+}) => {
 	expect(
 		await appWindow.evaluate(() => Object.keys(window.riftlegends).sort()),
-	).toEqual(["ping", "window"]);
+	).toEqual(["ping", "systemLocale", "window"]);
+	expect(
+		await appWindow.evaluate(() => window.riftlegends.systemLocale()),
+	).toBe("en-US");
 	expect(
 		await appWindow.evaluate(() =>
 			Object.keys(window.riftlegends.window).sort(),

@@ -1,13 +1,8 @@
-import {
-	act,
-	cleanup,
-	fireEvent,
-	render,
-	screen,
-} from "@testing-library/react";
+import { act, cleanup, fireEvent, screen } from "@testing-library/react";
 import { afterEach, expect, test, vi } from "vitest";
 import { TitleBar } from "../src/renderer/title-bar";
 import type { WindowControls } from "../src/shared/bridge";
+import { renderInLocale } from "./render-in-locale";
 
 afterEach(cleanup);
 
@@ -28,8 +23,8 @@ function fakeControls(maximized = false, canMinimize = true) {
 	return { controls, unsubscribe, emit: (state: boolean) => notify(state) };
 }
 
-test("shows the game icon to the left of the title, decorative and bundled", () => {
-	render(<TitleBar controls={fakeControls().controls} />);
+test("shows the game icon to the left of the title, decorative and bundled", async () => {
+	await renderInLocale(<TitleBar controls={fakeControls().controls} />);
 	const title = screen.getByText("Rift Legends");
 	const icon = title.parentElement?.querySelector("img");
 	expect(icon?.getAttribute("alt")).toBe("");
@@ -44,7 +39,7 @@ test("shows the game icon to the left of the title, decorative and bundled", () 
 
 test("routes minimize and close to the window controls", async () => {
 	const { controls } = fakeControls();
-	render(<TitleBar controls={controls} />);
+	await renderInLocale(<TitleBar controls={controls} />);
 	fireEvent.click(await screen.findByRole("button", { name: "Minimize" }));
 	fireEvent.click(screen.getByRole("button", { name: "Close" }));
 	expect(controls.minimize).toHaveBeenCalledOnce();
@@ -52,14 +47,14 @@ test("routes minimize and close to the window controls", async () => {
 });
 
 test("labels the toggle button after the initial native state", async () => {
-	render(<TitleBar controls={fakeControls(true).controls} />);
+	await renderInLocale(<TitleBar controls={fakeControls(true).controls} />);
 	fireEvent.click(await screen.findByRole("button", { name: "Restore" }));
 	expect(screen.queryByRole("button", { name: "Maximize" })).toBeNull();
 });
 
 test("follows maximize changes and unsubscribes on unmount", async () => {
 	const { controls, unsubscribe, emit } = fakeControls();
-	const view = render(<TitleBar controls={controls} />);
+	const view = await renderInLocale(<TitleBar controls={controls} />);
 	fireEvent.click(await screen.findByRole("button", { name: "Maximize" }));
 	expect(controls.toggleMaximize).toHaveBeenCalledOnce();
 	act(() => emit(true));
@@ -78,7 +73,7 @@ test("a change event wins over a slower initial query", async () => {
 			resolveInitial = resolve;
 		}),
 	);
-	render(<TitleBar controls={controls} />);
+	await renderInLocale(<TitleBar controls={controls} />);
 	act(() => emit(true));
 	await act(async () => resolveInitial(false));
 	expect(screen.getByRole("button", { name: "Restore" })).toBeTruthy();
@@ -86,9 +81,26 @@ test("a change event wins over a slower initial query", async () => {
 
 test("hides minimize where the window manager cannot minimize", async () => {
 	const { controls } = fakeControls(false, false);
-	render(<TitleBar controls={controls} />);
+	await renderInLocale(<TitleBar controls={controls} />);
 	await screen.findByRole("button", { name: "Maximize" });
 	await act(async () => {});
 	expect(screen.queryByRole("button", { name: "Minimize" })).toBeNull();
 	expect(screen.getByRole("button", { name: "Close" })).toBeTruthy();
+});
+
+test("labels the window controls in the system language", async () => {
+	await renderInLocale(
+		<TitleBar controls={fakeControls(true).controls} />,
+		"es-ES",
+	);
+	expect(screen.getByText("Rift Legends")).toBeTruthy();
+	expect(await screen.findByRole("button", { name: "Minimizar" })).toBeTruthy();
+	expect(screen.getByRole("button", { name: "Restaurar" })).toBeTruthy();
+	expect(screen.getByRole("button", { name: "Cerrar" })).toBeTruthy();
+	expect(screen.queryByRole("button", { name: "Close" })).toBeNull();
+});
+
+test("labels maximize in Spanish while the window is restored", async () => {
+	await renderInLocale(<TitleBar controls={fakeControls().controls} />, "es");
+	expect(await screen.findByRole("button", { name: "Maximizar" })).toBeTruthy();
 });

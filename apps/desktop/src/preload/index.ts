@@ -2,11 +2,13 @@ import { contextBridge, type IpcRendererEvent, ipcRenderer } from "electron";
 import {
 	pingChannel,
 	type RiftLegendsAPI,
+	systemLocaleChannel,
 	windowChannels,
 } from "../shared/bridge";
 
 contextBridge.exposeInMainWorld("riftlegends", {
 	ping: () => ipcRenderer.invoke(pingChannel),
+	systemLocale: () => ipcRenderer.invoke(systemLocaleChannel),
 	window: {
 		minimize: () => ipcRenderer.invoke(windowChannels.minimize),
 		toggleMaximize: () => ipcRenderer.invoke(windowChannels.toggleMaximize),

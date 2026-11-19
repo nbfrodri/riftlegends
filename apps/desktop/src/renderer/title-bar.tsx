@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import type { WindowControls } from "../shared/bridge";
 
 function Glyph({ path }: { path: string }) {
@@ -19,7 +20,11 @@ function Glyph({ path }: { path: string }) {
 	);
 }
 
+const controlButton =
+	"grid h-full w-11 cursor-default place-items-center text-muted [app-region:no-drag] hover:bg-surface hover:text-text";
+
 export function TitleBar({ controls }: { controls: WindowControls }) {
+	const { t } = useTranslation();
 	const [maximized, setMaximized] = useState(false);
 	const [canMinimize, setCanMinimize] = useState(false);
 	useEffect(() => {
@@ -46,19 +51,32 @@ export function TitleBar({ controls }: { controls: WindowControls }) {
 		};
 	}, [controls]);
 
-	const toggleLabel = maximized ? "Restore" : "Maximize";
+	const toggleLabel = t(
+		maximized ? "shell.window.restore" : "shell.window.maximize",
+	);
+	const minimizeLabel = t("shell.window.minimize");
+	const closeLabel = t("shell.window.close");
+	// app-region: Electron turns the bar into the native caption (move and
+	// double-click) and swallows its pointer events; the buttons opt out.
 	return (
-		<header className="title-bar">
-			<div className="title-bar-brand">
-				<img src="./icon-small.svg" alt="" width="16" height="16" />
-				<span>Rift Legends</span>
+		<header className="sticky top-0 z-10 flex h-8 items-center justify-between border-line border-b bg-canvas font-bold font-display text-[12px] text-text leading-none tracking-[-0.02em] select-none [app-region:drag]">
+			<div className="ms-4 flex items-center gap-2">
+				<img
+					className="block"
+					src="./icon-small.svg"
+					alt=""
+					width="16"
+					height="16"
+				/>
+				<span>{t("shell.title")}</span>
 			</div>
-			<div className="title-bar-controls">
+			<div className="flex h-full [app-region:no-drag]">
 				{canMinimize && (
 					<button
 						type="button"
-						aria-label="Minimize"
-						title="Minimize"
+						className={controlButton}
+						aria-label={minimizeLabel}
+						title={minimizeLabel}
 						onClick={() => void controls.minimize()}
 					>
 						<Glyph path="M5 12h14" />
@@ -66,6 +84,7 @@ export function TitleBar({ controls }: { controls: WindowControls }) {
 				)}
 				<button
 					type="button"
+					className={controlButton}
 					aria-label={toggleLabel}
 					title={toggleLabel}
 					onClick={() => void controls.toggleMaximize()}
@@ -76,8 +95,9 @@ export function TitleBar({ controls }: { controls: WindowControls }) {
 				</button>
 				<button
 					type="button"
-					aria-label="Close"
-					title="Close"
+					className={controlButton}
+					aria-label={closeLabel}
+					title={closeLabel}
 					onClick={() => void controls.close()}
 				>
 					<Glyph path="M5 5l14 14 M19 5 5 19" />

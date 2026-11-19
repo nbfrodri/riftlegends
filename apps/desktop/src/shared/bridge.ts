@@ -1,4 +1,5 @@
 export const pingChannel = "riftlegends:ping";
+export const systemLocaleChannel = "app:system-locale";
 
 export const windowChannels = {
 	minimize: "window:minimize",
@@ -21,6 +22,8 @@ export interface WindowControls {
 
 export interface RiftLegendsAPI {
 	ping(): Promise<"pong">;
+	/** The system locale reported by Electron (`app.getLocale()`), e.g. "es-ES". */
+	systemLocale(): Promise<string>;
 	window: WindowControls;
 }
 
