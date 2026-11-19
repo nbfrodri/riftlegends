@@ -79,7 +79,14 @@ Nada entra en `main` sin PR: el ruleset `protect-main` exige PR, solo admite squ
 
 ## Verificación
 
-`pnpm verify` (lint + typecheck + tests) debe estar en verde antes de abrir un PR.
+Sigue el [inicio rápido del README](README.md#inicio-rápido) para instalar Node.js, pnpm y las dependencias. Ejecuta los comandos desde la raíz del monorepo.
+
+```sh
+mise exec -- pnpm verify
+mise exec -- pnpm test
+```
+
+`verify` comprueba lint, tipos y tests, y debe estar en verde antes de abrir un PR. `test` ejecuta solo los tests de Vitest.
 
 ## Legal
 
