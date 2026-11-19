@@ -4,7 +4,7 @@ import { windowChannels } from "../src/shared/bridge";
 
 type Handler = (event: { senderFrame: unknown }) => unknown;
 
-function setup(maximized = false) {
+function setup(maximized = false, canMinimize = true) {
 	const mainFrame = { id: "main" };
 	const listeners = new Map<string, () => void>();
 	const state = { maximized };
@@ -31,16 +31,17 @@ function setup(maximized = false) {
 			handlers.delete(channel);
 		}),
 	};
-	registerWindowControls(window as never, ipc as never);
+	registerWindowControls(window as never, ipc as never, { canMinimize });
 	const invoke = (channel: string, senderFrame: unknown = mainFrame) =>
 		handlers.get(channel)?.({ senderFrame });
 	return { window, ipc, handlers, listeners, invoke, mainFrame, state };
 }
 
-test("exposes the four window channels", () => {
+test("exposes the window channels", () => {
 	const { handlers } = setup();
 	expect([...handlers.keys()].sort()).toEqual(
 		[
+			windowChannels.canMinimize,
 			windowChannels.close,
 			windowChannels.isMaximized,
 			windowChannels.minimize,
@@ -96,4 +97,9 @@ test("removes its handlers when the window closes", () => {
 	const { handlers, listeners } = setup();
 	listeners.get("closed")?.();
 	expect(handlers.size).toBe(0);
+});
+
+test("reports whether the desktop supports minimizing", () => {
+	expect(setup(false, false).invoke(windowChannels.canMinimize)).toBe(false);
+	expect(setup(false, true).invoke(windowChannels.canMinimize)).toBe(true);
 });

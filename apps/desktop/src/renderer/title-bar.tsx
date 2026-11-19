@@ -21,6 +21,16 @@ function Glyph({ path }: { path: string }) {
 
 export function TitleBar({ controls }: { controls: WindowControls }) {
 	const [maximized, setMaximized] = useState(false);
+	const [canMinimize, setCanMinimize] = useState(false);
+	useEffect(() => {
+		let active = true;
+		void controls.canMinimize().then((supported) => {
+			if (active) setCanMinimize(supported);
+		});
+		return () => {
+			active = false;
+		};
+	}, [controls]);
 	useEffect(() => {
 		let acceptInitialState = true;
 		const unsubscribe = controls.onMaximizedChange((state) => {
@@ -44,14 +54,16 @@ export function TitleBar({ controls }: { controls: WindowControls }) {
 				<span>Rift Legends</span>
 			</div>
 			<div className="title-bar-controls">
-				<button
-					type="button"
-					aria-label="Minimize"
-					title="Minimize"
-					onClick={() => void controls.minimize()}
-				>
-					<Glyph path="M5 12h14" />
-				</button>
+				{canMinimize && (
+					<button
+						type="button"
+						aria-label="Minimize"
+						title="Minimize"
+						onClick={() => void controls.minimize()}
+					>
+						<Glyph path="M5 12h14" />
+					</button>
+				)}
 				<button
 					type="button"
 					aria-label={toggleLabel}
