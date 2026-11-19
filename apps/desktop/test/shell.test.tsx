@@ -36,7 +36,7 @@ const section = (name: string) =>
 	within(sections()).getByRole("button", { name });
 const heading = () => screen.getByRole("heading", { level: 1 });
 const toggle = () =>
-	screen.getByRole("button", { name: /(contraer|expandir) barra lateral/i });
+	screen.getByRole("button", { name: /^(contraer|expandir)$/i });
 
 describe("T5: sidebar sections", () => {
 	test("lists the eleven sections in order, with Ajustes last", async () => {
@@ -121,9 +121,7 @@ describe("T5: sidebar sections", () => {
 			}),
 		).toBeTruthy();
 		expect(heading().textContent).toBe("Market");
-		expect(
-			screen.getByRole("button", { name: "Collapse sidebar" }),
-		).toBeTruthy();
+		expect(screen.getByRole("button", { name: "Collapse" })).toBeTruthy();
 	});
 
 	test("shows the placeholder club and its season date", async () => {
@@ -152,14 +150,14 @@ describe("T6: collapsing and keyboard", () => {
 		expect(within(sections()).getByText("Plantilla")).toBeTruthy();
 
 		await user.click(toggle());
-		expect(toggle().getAttribute("aria-label")).toBe("Expandir barra lateral");
+		expect(toggle().getAttribute("aria-label")).toBe("Expandir");
 		expect(toggle().getAttribute("aria-expanded")).toBe("false");
 		expect(within(sections()).queryByText("Plantilla")).toBeNull();
 		// Collapsed items keep their accessible names.
 		expect(section("Plantilla")).toBeTruthy();
 
 		await user.click(toggle());
-		expect(toggle().getAttribute("aria-label")).toBe("Contraer barra lateral");
+		expect(toggle().getAttribute("aria-label")).toBe("Contraer");
 		expect(within(sections()).getByText("Plantilla")).toBeTruthy();
 	});
 
