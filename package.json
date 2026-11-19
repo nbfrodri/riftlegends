@@ -4,6 +4,8 @@
 	"type": "module",
 	"packageManager": "pnpm@12.21.0",
 	"scripts": {
+		"dev": "pnpm --filter @rift-legends/desktop dev",
+		"e2e": "pnpm --filter @rift-legends/desktop build && pnpm --filter @rift-legends/desktop e2e",
 		"lint": "biome check .",
 		"typecheck": "tsc -b",
 		"test": "vitest run",

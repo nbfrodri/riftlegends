@@ -3,3 +3,5 @@ packages:
   - "packages/*"
 allowBuilds:
   lefthook: true
+minimumReleaseAgeExclude:
+  - electron@45.4.1

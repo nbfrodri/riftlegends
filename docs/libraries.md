@@ -19,6 +19,7 @@ Rift Legends es una **app de escritorio instalable** (Electron), no una web: tie
 | --- | --- | --- | --- | --- |
 | Envoltorio | `electron` | 45.4 | MIT | Chromium empaquetado (ADR 0001) |
 | Build y dev server | `electron-vite` | 6.0 | MIT | main, preload y renderer con Vite |
+| Motor de compilación | `vite` | 8.3 | MIT | Dependencia par de electron-vite, compartida con Vitest |
 | Empaquetado | `electron-builder` | 26.18 | MIT | NSIS, AppImage, tar.gz |
 | Actualizaciones dentro de la app | `electron-updater` | 6.8 | MIT | Lee las releases del repo público; descargas diferenciales en NSIS y AppImage; canal beta opcional |
 | Lenguaje | `typescript` | 7.0 | Apache-2.0 | `strict` |
@@ -28,6 +29,7 @@ Rift Legends es una **app de escritorio instalable** (Electron), no una web: tie
 | Necesidad | Librería | Versión | Licencia | Notas |
 | --- | --- | --- | --- | --- |
 | UI | `react` | 19.3 | MIT | |
+| Montaje del renderer y tipos JSX | `react-dom`, `@types/react` y `@types/react-dom` | 19.3 | MIT | Montan y tipan la interfaz React en la ventana de Electron |
 | Componentes | **shadcn/ui** (CLI `shadcn` 4.23) sobre `@base-ui/react` | 1.9 | MIT | El código se copia a `packages/ui-kit` y es nuestro: se re-estila con los tokens del estilo elegido (ADR 0002). Base UI es la base por defecto de shadcn desde julio de 2026 |
 | Estilos | `tailwindcss` | 4.3 | MIT | Tokens como variables CSS (`@theme`) |
 | Utilidades de clases | `clsx` + `tailwind-merge`, `class-variance-authority` | 2.1 / 3.7 / 0.7 | MIT / MIT / Apache-2.0 | cva para variantes de componentes |
