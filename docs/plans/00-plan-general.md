@@ -21,7 +21,14 @@ Decisiones del desarrollador que lo condicionan: LoL real con el riesgo asumido;
 - **Explicabilidad (pilar 2).** Cada decisión de la IA y cada resultado simulado devuelve un desglose de factores que la UI puede mostrar.
 - **Teclado primero en las pantallas densas**, con estados de foco visibles y escalado al 150 %.
 - **Módulos pequeños** (lección de DraftSim): un fichero por concepto y nada por encima de ~300 líneas sin motivo.
-- **Red/green** en el núcleo; golden tests de log de hechos; propiedades con fast-check.
+- **TDD obligatorio (red → green → refactor).** No se escribe código de producción sin un test que falle antes por la razón esperada. Por capa:
+  - *Núcleo, contratos, contenido y persistencia:* tests unitarios y de propiedades (fast-check) primero; golden tests de log de hechos por semilla; tests de integración con SQLite real (fichero temporal), sin mocks de la base de datos.
+  - *UI:* tests de comportamiento de componentes (Vitest + Testing Library, por rol y texto, nunca por detalles de implementación) antes de implementar; E2E con Playwright `_electron` para cada flujo de hito escrito antes de cerrarlo. Lo visual puro (ritmo de animación, estilo) se valida manualmente o con capturas, no con TDD.
+  - *Spikes (Fase 1):* exentos, porque son código desechable; lo que sobreviva se reescribe con TDD.
+  - *Bugs:* primero un test de regresión que lo reproduzca y después el arreglo.
+- **Cada plan específico empieza por su lista de tests** (comportamientos y casos límite) antes del diseño de implementación, y cada ticket define el test que lo cierra.
+- **Calidad de los tests:** mutation testing con Stryker sobre `packages/core` al cerrar cada fase (umbral a fijar en el plan 05); la cobertura se informa, pero no es el objetivo.
+- **Definición de hecho:** test rojo visto, verde, refactor, `pnpm verify` en verde y commit Conventional (preferiblemente `test:` + `feat:` o un único `feat:` con sus tests).
 
 ## Estructura del repositorio (monorepo pnpm)
 
