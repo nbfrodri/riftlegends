@@ -4,8 +4,8 @@
 	"type": "module",
 	"exports": "./src/index.ts",
 	"dependencies": {
-		"i18next": "27.2.2",
-		"react-i18next": "18.0.3"
+		"i18next": "27.2.1",
+		"react-i18next": "18.0.2"
 	},
 	"peerDependencies": {
 		"react": "19.3.1"

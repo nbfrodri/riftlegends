@@ -5,5 +5,3 @@ allowBuilds:
   lefthook: true
 minimumReleaseAgeExclude:
   - electron@45.4.1
-  - i18next@27.2.2
-  - react-i18next@18.0.3
