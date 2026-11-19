@@ -1,0 +1,29 @@
+# Cuatro direcciones para Rift Legends
+
+**Recomiendo Frecuencia.** Al llegar al cuarto pick azul, basta recorrer una línea de izquierda a derecha para ver qué tiene Bruma, qué está a punto de elegir y qué ha enseñado Ascua. La lectura de la IA queda justo debajo del campeón. Esa composición da protagonismo al draft y sigue funcionando cuando el entrenador desactiva los efectos. Para un juego que vaya a dedicar más tiempo a la carrera, las crónicas y el mercado, elegiría Pliego.
+
+| Decisión | [Frecuencia](frecuencia/index.html) | [Pliego](pliego/index.html) | [Atlas](atlas/index.html) | [Grada](grada/index.html) |
+| --- | --- | --- | --- | --- |
+| Sensación | Cabina de retransmisión. Se ve quién decide incluso de un vistazo lateral. | Revista de deporte. La elección del campeón ocupa la portada. | Mesa de preparación. El entrenador estudia terreno, composición y riesgo. | Cartel de estadio. El pick encaja en un marcador colectivo. |
+| Referencia y rasgo que se toma | La relación entre torre de posiciones y cronómetro del [cronometraje de F1](https://www.formula1.com/en/timing/f1-live). | La convivencia entre una imagen dominante y una cabecera reconocible en el [archivo de Rouleur](https://www.rouleur.cc/magazine). | El relieve descrito mediante curvas de nivel en la [guía topográfica del USGS](https://www.usgs.gov/faqs/what-a-topographic-map). | La síntesis de un deporte en masas de color en el [cartel de Múnich de Otl Aicher](https://www.moma.org/collection/works/8865). |
+| Paleta | Pizarra nocturna, azul hielo y coral | Papel marfil, tinta negra y granate | Verde bosque, hueso y latón mate | Lila, ciruela, albaricoque y amarillo de grada |
+| Tipografía | Barlow Condensed en rótulos, Barlow en datos | Newsreader en titulares, Source Sans 3 en datos | Cormorant Garamond en títulos, IBM Plex Sans en datos | Archivo Black en carteles, Space Grotesk en datos |
+| Confirmación | Un barrido diagonal atraviesa la placa en 320 ms. | El titular asciende a la línea de composición en 260 ms. | Un anillo converge sobre las curvas en 420 ms. | La ficha B4 cae en tres pasos en 240 ms. |
+| Densidad del draft | Dos torres verticales, selección central, diez campeones en una banda | Imagen y comentario a la izquierda, dos columnas de alineaciones, índice inferior | Dos bandejas de cinco elecciones, relieve central y columna de análisis | Dos quintetos horizontales, cartel abajo a la izquierda, mosaico de cinco por dos a la derecha |
+| Densidad del mercado | Ocho columnas, perfil a la derecha, nivel y forma alineados | Ficha a la izquierda y tabla de resultados a la derecha | Inventario a la izquierda, expediente a la derecha | Dorsal a la izquierda y filas con bandas alternas a la derecha |
+| Coste relativo para una persona con agentes | **Medio.** Un efecto reutilizable por turno. El trabajo de ajuste está en encuadrar imágenes dispares entre las dos torres. | **Bajo.** Filetes, tipografía y cajas de imagen reutilizables. La revisión editorial de nombres largos exige atención. | **Medio-alto.** El relieve se genera con una sola regla, pero cada diagrama de sinergia necesita datos y validación propios. | **Medio.** Las piezas geométricas se reutilizan. Cada ilustración nueva necesita una prueba de recorte y contraste con los bloques. |
+| Riesgo principal | Una ilustración muy luminosa puede competir con el reloj. La cartela del nombre tiene fondo opaco. | Un titular largo puede desplazar la acción. Conviene probar el nombre más ancho al incorporar el catálogo completo. | Confundir el relieve decorativo con una representación de alcance real. El esquema de la jugada tiene su propio recuadro. | El impacto repetido puede cansar en sesiones largas. La animación se limita a la confirmación y el mercado reserva el amarillo para la ficha. |
+| Especificación | [Tokens de Frecuencia](frecuencia/tokens.md) | [Tokens de Pliego](pliego/tokens.md) | [Tokens de Atlas](atlas/tokens.md) | [Tokens de Grada](grada/tokens.md) |
+
+## Cómo probar la decisión
+
+1. Abre cualquiera de los cuatro HTML desde el explorador de archivos. La final ficticia está empatada a uno y Bruma tiene 28 segundos para elegir B4. El reloj empieza en pausa para que puedas comparar las propuestas en el mismo instante.
+2. Lee por qué la IA sugiere a Orianna, prueba otra candidata o candidato y pulsa **Confirmar elección**. **Repetir turno** permite volver a comparar. Si inicias el reloj, al llegar a cero se confirma el campeón preseleccionado.
+3. Abre **Mercado**, ordena por sueldo y filtra por posición o contrato. Hay 36 jugadores ficticios. Con el foco en un jugador, las flechas verticales cambian su ficha. Inicio y Fin saltan a los extremos de los resultados.
+4. Prueba la ventana a 1366 × 768 y a 1920 × 1080. En el draft, comprueba si localizas el turno antes de leer el comentario técnico. En el mercado, sigue el sueldo hasta el nombre de su fila y cambia de jugador sin perder la columna.
+
+## Paso a producción
+
+Los prototipos llevan CSS, JavaScript y geometría SVG dentro de cada HTML. La única petición externa opcional carga las familias OFL de Google Fonts. El juego de escritorio empaquetará las fuentes y sus licencias para Windows y Linux. Los clubes, salarios, notas de encaje e informes sirven para comparar las decisiones de diseño.
+
+En Electron, React 19 y TypeScript mantendrán el turno, las alineaciones, las etiquetas y el reloj en el DOM. TanStack Table se ocupará del orden y los filtros. Motion (MIT) podrá reproducir la confirmación elegida. La capa PixiJS sobre WebGL2 se limitará a los efectos de retransmisión del draft. Las ilustraciones e iconos que se descarguen de Data Dragon en tiempo de ejecución ocuparán los huecos geométricos actuales. El estado confirmado también se comunica mediante texto, foco y anuncio accesible con movimiento reducido.
