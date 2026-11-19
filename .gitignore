@@ -42,3 +42,6 @@ Thumbs.db
 
 # Local agent settings (personal, not shared)
 .claude/settings.local.json
+
+# Isolated worktrees created by Claude Code subagents
+.claude/worktrees/
