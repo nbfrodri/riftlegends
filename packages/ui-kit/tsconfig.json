@@ -1,0 +1,7 @@
+{
+	"extends": "../../tsconfig.json",
+	"compilerOptions": {
+		"paths": { "@rift-legends/ui-kit/*": ["./*"] }
+	},
+	"include": ["**/*.ts", "**/*.tsx"]
+}

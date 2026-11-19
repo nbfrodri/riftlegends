@@ -1,0 +1,20 @@
+{
+	"$schema": "https://ui.shadcn.com/schema.json",
+	"style": "base-nova",
+	"rsc": false,
+	"tsx": true,
+	"tailwind": {
+		"config": "",
+		"css": "styles.css",
+		"baseColor": "neutral",
+		"cssVariables": true
+	},
+	"iconLibrary": "lucide",
+	"aliases": {
+		"components": "@rift-legends/ui-kit/components",
+		"ui": "@rift-legends/ui-kit/components",
+		"utils": "@rift-legends/ui-kit/lib/utils",
+		"lib": "@rift-legends/ui-kit/lib",
+		"hooks": "@rift-legends/ui-kit/hooks"
+	}
+}
