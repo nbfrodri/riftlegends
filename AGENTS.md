@@ -49,6 +49,13 @@ Es una **app de escritorio instalable** (Electron) que funciona sin conexión, n
 4. **Trabajar con TDD** (ver más abajo) y hacer commits Conventional en la rama.
 5. **PR.** Se abre contra `main` con la plantilla de PR y `Closes #NN` en la descripción. Al fusionar con squash, el issue se cierra y la tarjeta pasa sola a *Done*. Los PR de un mismo plan se pueden encadenar, pero cada uno cierra su issue.
 
+### Ramas y versiones
+
+- **Trunk-based:** solo existe `main`, más ramas cortas por issue. No hay ramas `develop` ni de entorno, porque es una app de escritorio sin servidores.
+- **Preproducción:** pre-releases `vX.Y.Z-beta.N`, publicadas como *pre-release* en el repo público de releases (canal beta).
+- **Producción:** releases `vX.Y.Z`. Los tags son anotados, siguen el formato que exige el hook de tack y no se mueven una vez publicados.
+- Una rama `release/X.Y` solo se crea si hay que parchear una versión antigua.
+
 Nada entra en `main` sin PR: el ruleset `protect-main` exige PR, solo admite squash, obliga a un historial lineal y prohíbe el force-push.
 
 ## TDD obligatorio

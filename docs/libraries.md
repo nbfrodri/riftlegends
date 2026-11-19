@@ -20,6 +20,7 @@ Rift Legends es una **app de escritorio instalable** (Electron), no una web: tie
 | Envoltorio | `electron` | 45.4 | MIT | Chromium empaquetado (ADR 0001) |
 | Build y dev server | `electron-vite` | 6.0 | MIT | main, preload y renderer con Vite |
 | Empaquetado | `electron-builder` | 26.18 | MIT | NSIS, AppImage, tar.gz |
+| Actualizaciones dentro de la app | `electron-updater` | 6.8 | MIT | Lee las releases del repo público; descargas diferenciales en NSIS y AppImage; canal beta opcional |
 | Lenguaje | `typescript` | 7.0 | Apache-2.0 | `strict` |
 
 ## Interfaz

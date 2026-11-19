@@ -118,6 +118,7 @@ Cada fase termina con un hito verificable y un commit o PR fusionado en `main`. 
 
 ### Fase 11 — Distribución
 - electron-builder (NSIS, AppImage, tar.gz) y un workflow que publica en el repo público `riftlegends-releases` con notas en inglés, guía de SmartScreen y aviso de Riot.
+- **Actualizador dentro de la app** (`electron-updater` sobre el repo de releases): botón «Buscar actualizaciones» en Ajustes, comprobación opcional al arrancar, descarga diferencial en segundo plano, «Reiniciar para actualizar», canal estable o beta, y migración de las carreras guardadas al arrancar la versión nueva.
 - **Salida:** release etiquetada instalable desde cero en Windows y Linux, con migración de una carrera de la versión anterior.
 
 ## Índice de planes específicos (`docs/plans/NN-*.md`)
