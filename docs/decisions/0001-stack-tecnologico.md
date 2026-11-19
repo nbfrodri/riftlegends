@@ -2,7 +2,7 @@
 
 - **Estado:** aceptada (pendiente de validar con los spikes S1+S2, S3 y S7+S8)
 - **Fecha:** 2026-11-19
-- **Entradas:** [IDEA.md](../../IDEA.md), [informe de stack](../../reports/Stack%20tecnológico%20Rift%20Legends.md), revisión crítica de Codex (gpt-6.2-astra, effort high, dos rondas) y debate con Claude, respuestas del desarrollador.
+- **Entradas:** [IDEA.md](../../IDEA.md), [informe de stack](../research/stack-2026-11/reports/Stack%20tecnológico%20Rift%20Legends.md), revisión crítica de Codex (gpt-6.2-astra, effort high, dos rondas) y debate con Claude, respuestas del desarrollador.
 
 ## Decisión
 
