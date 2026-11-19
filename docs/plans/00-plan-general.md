@@ -87,6 +87,7 @@ Cada fase termina con un hito verificable y un commit o PR fusionado en `main`. 
 
 ### Fase 5 — Carrera v1
 - Elección de equipo, avance de calendario, bucle diario (IDEA §4), objetivos de directiva (sin despido), guardado y carga con migraciones y versionado de carreras.
+- **Gestor de carreras:** carreras ilimitadas (un SQLite por carrera, cada una con su propio equipo), pantalla de cargar y crear carrera, autoguardado, modo ironman opcional, backups rotativos con restauración, y exportar e importar el fichero de una carrera.
 - Proyecciones: clasificación, estadísticas, palmarés y head-to-head.
 - Pantallas densas: plantilla, calendario, clasificación y perfil de jugador o equipo.
 - **Salida:** jugar un split completo y playoffs; cerrar y reabrir la carrera con un resultado idéntico al de continuar sin cerrar.
@@ -103,7 +104,8 @@ Cada fase termina con un hito verificable y un commit o PR fusionado en `main`. 
 - **Salida:** cada sistema influye en resultados de forma explicable (visible en el desglose) y probada con tests de propiedades.
 
 ### Fase 8 — Narrativa e historial
-- Noticias, titulares, prensa (ink si hace falta), rivalidades, premios (MVP, All-Pro), Hall of Fame y récords.
+- Noticias, titulares, prensa (ink si hace falta), rivalidades y premios (MVP, All-Pro).
+- **Historial completo:** palmarés por año y competición, historial de partidos de cualquier equipo, head-to-head, Hall of Fame y récords, Title Playground, y perfiles de jugadores y equipos con sus movimientos.
 - **Salida:** las historias se generan solo a partir de hechos; golden tests de narrativa por semilla.
 
 ### Fase 9 — Presentación avanzada
@@ -120,7 +122,7 @@ Cada fase termina con un hito verificable y un commit o PR fusionado en `main`. 
 
 ## Índice de planes específicos (`docs/plans/NN-*.md`)
 
-Cada plan se crea al empezar su fase con `to-spec` o `dev-workflow`, y se trocea en tickets con `to-tickets`.
+Cada plan se crea al empezar su fase con `to-spec` o `dev-workflow`, y se trocea en tickets con `to-tickets`. La referencia de funcionalidades heredadas de DraftSim está en el [inventario de DraftSim](../research/draftsim-inventario.md).
 
 | Nº | Plan | Fase |
 |---|---|---|
@@ -150,6 +152,8 @@ Cada plan se crea al empezar su fase con `to-spec` o `dev-workflow`, y se trocea
 | 24 | Ligas menores y Sandbox | 10 |
 | 25 | Empaquetado y repo de releases | 11 |
 | 26 | i18n ES/EN y accesibilidad (transversal) | 0–11 |
+| 27 | Historial: palmarés, partidos, Hall of Fame, récords y perfiles | 8 |
+| 28 | Gestor de carreras: múltiples partidas, autoguardado, ironman, backups y export/import | 5 |
 
 ## Riesgos y dependencias clave
 

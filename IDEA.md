@@ -101,6 +101,9 @@ Inventario basado en DraftSim, que ya validó que estos sistemas funcionan y apo
 - Hall of Fame, récords, palmarés, perfiles de jugadores y equipos, head-to-head.
 - Toda la historia se construye a partir de lo que ha ocurrido de verdad en la partida guardada.
 
+### Partidas guardadas
+- Carreras ilimitadas, cada una con su propio equipo; autoguardado, modo ironman opcional, copias de seguridad y exportar o importar una carrera.
+
 ## 8. Novedades respecto a DraftSim
 
 - **Scouting e información imperfecta**: los pools y tendencias rivales se revelan investigando o viendo partidos.
