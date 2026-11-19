@@ -19,7 +19,14 @@ export default defineConfig({
 			{
 				test: {
 					name: "desktop",
-					include: ["apps/desktop/**/*.test.{ts,tsx}"],
+					include: ["apps/desktop/**/*.test.ts"],
+				},
+			},
+			{
+				test: {
+					name: "desktop-dom",
+					include: ["apps/desktop/**/*.test.tsx"],
+					environment: "happy-dom",
 				},
 			},
 			{
