@@ -84,9 +84,10 @@ Sigue el [inicio rápido del README](README.md#inicio-rápido) para instalar Nod
 ```sh
 mise exec -- pnpm verify
 mise exec -- pnpm test
+mise exec -- pnpm e2e
 ```
 
-`verify` comprueba lint, tipos y tests, y debe estar en verde antes de abrir un PR. `test` ejecuta solo los tests de Vitest.
+`verify` comprueba lint, tipos y tests, y debe estar en verde antes de abrir un PR. `test` ejecuta solo los tests de Vitest. `e2e` compila la app y la prueba con Playwright (`_electron`); en CI corre bajo Xvfb. El CI exige `verify` en cada PR (check obligatorio en `protect-main`).
 
 ## Legal
 

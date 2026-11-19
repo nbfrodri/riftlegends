@@ -105,7 +105,12 @@ mise exec -- pnpm verify
 mise exec -- pnpm test
 ```
 
-`pnpm dev` para arrancar la app de escritorio y `pnpm e2e` para probarla de extremo a extremo llegan con el issue #15.
+Para arrancar la app de escritorio en modo desarrollo y para ejecutar los tests de extremo a extremo (compila la app y la prueba con Playwright):
+
+```sh
+mise exec -- pnpm dev
+mise exec -- pnpm e2e
+```
 
 ## Documentación
 
