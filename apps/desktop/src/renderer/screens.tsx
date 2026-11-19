@@ -1,7 +1,16 @@
+import { LOCALES } from "@rift-legends/i18n";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@rift-legends/ui-kit/components/select";
 import { useTranslation } from "react-i18next";
+import { isLocale, storeLanguage } from "./language";
 
 // Placeholder screens: each one only names itself until its real content lands
-// (Draft in the draft plans, Mercado's table in #44, Ajustes' language in #43).
+// (Draft in the draft plans, Mercado's table in #44).
 
 function Screen({ title }: { title: string }) {
 	return (
@@ -24,6 +33,37 @@ export function MarketScreen() {
 }
 
 export function SettingsScreen() {
-	const { t } = useTranslation();
-	return <Screen title={t("shell.nav.settings")} />;
+	const { t, i18n } = useTranslation();
+	const items = LOCALES.map((value) => ({
+		value,
+		label: t(`language.${value}`),
+	}));
+
+	function change(value: string | null) {
+		if (!isLocale(value)) return;
+		void i18n.changeLanguage(value);
+		document.documentElement.lang = value;
+		storeLanguage(value);
+	}
+
+	return (
+		<>
+			<Screen title={t("shell.nav.settings")} />
+			<div className="flex items-center gap-3 px-[clamp(14px,1.35vw,28px)]">
+				<span className="text-muted">{t("settings.language")}</span>
+				<Select items={items} value={i18n.language} onValueChange={change}>
+					<SelectTrigger aria-label={t("settings.language")}>
+						<SelectValue />
+					</SelectTrigger>
+					<SelectContent>
+						{items.map(({ value, label }) => (
+							<SelectItem key={value} value={value}>
+								{label}
+							</SelectItem>
+						))}
+					</SelectContent>
+				</Select>
+			</div>
+		</>
+	);
 }
