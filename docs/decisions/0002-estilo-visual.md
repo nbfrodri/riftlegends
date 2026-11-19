@@ -2,7 +2,7 @@
 
 - **Estado:** aceptada
 - **Fecha:** 2026-11-19
-- **Entradas:** cuatro rondas de propuestas de Codex en la rama `design/visual-style` (v1: cuatro direcciones; v2: cuatro variantes de Frecuencia; v3: tres ajustes ligeros) y la elección del usuario.
+- **Entradas:** cuatro rondas de propuestas de Codex en la rama `archive/design-exploration-2026-11` (v1: cuatro direcciones; v2: cuatro variantes de Frecuencia; v3: tres ajustes ligeros) y la elección del usuario.
 
 ## Decisión
 
@@ -37,4 +37,4 @@ Los tokens completos están en [`design/visual-style/caja/tokens.md`](../../desi
 
 - **Paleta:** durante la exploración el usuario pidió colores de lado más intensos, y Caja conserva los tonos originales de Frecuencia. Se puede revisar en el spike S1 sin cambiar el resto del estilo.
 - ~~Icono del juego~~ Elegido: **Corte · Puntera** ([`design/brand/icon/`](../../design/brand/icon/README.md)).
-- Las variantes descartadas se quedan en la rama `design/visual-style` como referencia; en `main` solo está lo elegido.
+- Las variantes descartadas se quedan en la rama `archive/design-exploration-2026-11` como referencia; en `main` solo está lo elegido.

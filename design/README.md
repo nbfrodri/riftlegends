@@ -1,6 +1,6 @@
 # Diseño
 
-Referencias visuales aprobadas. La decisión y sus tokens están en el [ADR 0002](../docs/decisions/0002-estilo-visual.md). La exploración completa (las cuatro direcciones, las variantes de Frecuencia y los demás iconos) se conserva en la rama `design/visual-style`.
+Referencias visuales aprobadas. La decisión y sus tokens están en el [ADR 0002](../docs/decisions/0002-estilo-visual.md). La exploración completa (las cuatro direcciones, las variantes de Frecuencia y los demás iconos) se conserva en la rama `archive/design-exploration-2026-11`.
 
 | Ruta | Contenido |
 | --- | --- |

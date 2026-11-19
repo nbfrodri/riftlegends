@@ -161,5 +161,5 @@ Otras decisiones:
 
 Abiertas:
 
-- Estilo visual (cuatro direcciones propuestas en `design/visual-style`).
+- ~~Estilo visual~~ Resuelto: Caja ([ADR 0002](docs/decisions/0002-estilo-visual.md)).
 - Detalle de cada sistema: se define en los planes específicos de `docs/plans/`.

@@ -1,6 +1,6 @@
 # Caja
 
-El ancho de «Orianna» identifica al protagonista. El reloj, los alias y las cifras de mercado se leen en Archivo. El punto de comparación es el B4 de Frecuencia (rama `design/visual-style`, `design/visual-style/frecuencia/`).
+El ancho de «Orianna» identifica al protagonista. El reloj, los alias y las cifras de mercado se leen en Archivo. El punto de comparación es el B4 de Frecuencia (rama `archive/design-exploration-2026-11`, `design/visual-style/frecuencia/`).
 
 ## Letras y ritmo
 
