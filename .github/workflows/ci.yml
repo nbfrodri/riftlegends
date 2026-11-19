@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    if: github.ref_type != 'tag'
+    runs-on: ubuntu-latest
+    steps:
+      - &checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - &mise
+        uses: jdx/mise-action@90f833d396d0cc3674b631d2d225e306476c303a # v5.2.10
+      - &store
+        name: Locate pnpm store
+        id: store
+        shell: bash
+        run: |
+          store_path=$(pnpm store path)
+          echo "path=$store_path" >> "$GITHUB_OUTPUT"
+      - &cache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ steps.store.outputs.path }}
+          key: pnpm-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('mise.toml', 'pnpm-lock.yaml') }}
+      - &install
+        run: pnpm install --frozen-lockfile
+      - &verify
+        run: pnpm verify
+      - name: Enable Electron's Chromium sandbox helper
+        run: |
+          pnpm --filter @rift-legends/desktop exec install-electron
+          sandbox="$(pnpm --filter @rift-legends/desktop exec node -p "require('node:path').join(require('node:path').dirname(require('electron')), 'chrome-sandbox')")"
+          sudo chown root:root "$sandbox"
+          sudo chmod 4755 "$sandbox"
+      - run: xvfb-run -a pnpm e2e
+
+  verify-windows:
+    if: github.event_name == 'push'
+    runs-on: windows-latest
+    steps:
+      - *checkout
+      - *mise
+      - *store
+      - *cache
+      - *install
+      - *verify
+      - run: pnpm e2e
