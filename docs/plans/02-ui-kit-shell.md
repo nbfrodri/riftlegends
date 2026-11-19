@@ -1,6 +1,6 @@
 # Plan 02 — `ui-kit`, estructura de la app e i18n
 
-- **Estado:** borrador (pendiente de aprobación)
+- **Estado:** aprobado (19-11-2026)
 - **Fase:** 0 · Cimientos ([plan general](00-plan-general.md))
 - **Objetivo:** la app de escritorio con el aspecto de **Caja** ([ADR 0002](../decisions/0002-estilo-visual.md)): tokens y fuentes empaquetadas, componentes base de shadcn/ui re-estilados, ventana sin marco con barra de título propia, barra lateral con navegación, i18n ES/EN con selector de idioma y una tabla densa base. Sin lógica de juego.
 
