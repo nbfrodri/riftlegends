@@ -58,7 +58,7 @@ Cada fase termina con un hito verificable y un commit o PR fusionado en `main`. 
 ### Fase 0 — Cimientos
 - Monorepo, tooling, `verify`, CI en GitHub Actions (Linux en cada push; matriz con Windows solo en `main` y en tags), AGENTS.md, glosario de dominio (draft, pick, ban, fearless, split, serie…), plantilla de ADR, LICENSE MIT/Apache y aviso de Riot.
 - GitHub (pendiente al existir `package.json` y el CI): `.github/dependabot.yml` (npm y github-actions, semanal y agrupado), un workflow de auto-merge para los PRs patch/minor de Dependabot con el CI en verde, y añadir el check `verify` como obligatorio en el ruleset `protect-main`. Ya configurado: solo squash, borrado de ramas al fusionar, alertas y security updates de Dependabot, ruleset (sin borrado, sin force-push, historial lineal), labels, milestones por fase y plantillas.
-- Elegir el estilo visual entre las cuatro direcciones de Codex → ADR 0002 → tokens en `packages/ui-kit`.
+- Estilo visual elegido: **Caja** ([ADR 0002](../decisions/0002-estilo-visual.md)), con barra lateral izquierda de navegación → tokens en `packages/ui-kit`.
 - **Salida:** `pnpm verify` en verde en CI; app Electron vacía que arranca en Windows y en Arch Wayland; ADR 0002 aceptado.
 
 ### Fase 1 — Spikes de validación (go/no-go del stack)

@@ -41,7 +41,7 @@ Rift Legends es una **app de escritorio instalable** (Electron), no una web: tie
 | Arrastrar y soltar | `@atlaskit/pragmatic-drag-and-drop` | 4.0 | Apache-2.0 | Orden de alineaciones; `@dnd-kit` lleva sin releases desde 2024-12 |
 | Gráficas | `recharts` | 3.11 | MIT | Por defecto; `@visx/visx` 4.0 (MIT) para gráficas a medida, como la de oro de la partida |
 | Cifras animadas | `@number-flow/react` | 0.6 | MIT | Marcadores, sueldos, estadísticas |
-| Fuentes | `@fontsource-variable/<familia>` | 5.3 | OFL-1.1 | Las familias que fije el ADR 0002 |
+| Fuentes | `@fontsource-variable/unbounded` + `@fontsource-variable/archivo` | 5.3 | OFL-1.1 | Rótulos y datos, según el [ADR 0002](decisions/0002-estilo-visual.md) |
 
 ## Animación y presentación
 
