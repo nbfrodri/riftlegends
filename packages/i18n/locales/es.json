@@ -1,6 +1,7 @@
 {
 	"shell.title": "Rift Legends",
 	"shell.comingSoon": "Próximamente",
+	"shell.nav.label": "Secciones del club",
 	"shell.nav.home": "Inicio",
 	"shell.nav.calendar": "Calendario",
 	"shell.nav.draft": "Draft",
@@ -14,11 +15,14 @@
 	"shell.nav.settings": "Ajustes",
 	"shell.sidebar.collapse": "Contraer barra lateral",
 	"shell.sidebar.expand": "Expandir barra lateral",
+	"shell.sidebar.label": "Barra lateral",
 	"shell.window.minimize": "Minimizar",
 	"shell.window.maximize": "Maximizar",
 	"shell.window.restore": "Restaurar",
 	"shell.window.close": "Cerrar",
 	"language.es": "Español",
 	"language.en": "English",
-	"settings.language": "Idioma"
+	"settings.language": "Idioma",
+	"placeholder.club.name": "Bruma",
+	"placeholder.club.seasonDate": "18 jun 2027"
 }
