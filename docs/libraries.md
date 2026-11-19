@@ -85,6 +85,7 @@ Todas las animaciones respetan `prefers-reduced-motion` y se pueden saltar sin a
 | Necesidad | Librería | Versión | Licencia |
 | --- | --- | --- | --- |
 | Tests | `vitest` | 5.1 | MIT |
+| Tipos para el tooling de Node.js | `@types/node` | 26.6 | MIT |
 | Propiedades | `fast-check` | 4.10 | MIT |
 | Componentes | `@testing-library/react` | 16.3 | MIT |
 | E2E (Electron) | `@playwright/test` | 1.65 | Apache-2.0 |

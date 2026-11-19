@@ -6,6 +6,7 @@
 			"!**/*.md",
 			"!.github/ISSUE_TEMPLATE",
 			"!design",
+			"!packages/core/test/fixtures",
 			"!pnpm-lock.yaml"
 		]
 	},
@@ -22,5 +23,42 @@
 		"rules": {
 			"preset": "recommended"
 		}
-	}
+	},
+	"overrides": [
+		{
+			"includes": ["packages/core/**", "!packages/core/test/**"],
+			"linter": {
+				"rules": {
+					"style": {
+						"noRestrictedGlobals": {
+							"level": "error",
+							"options": {
+								"deniedGlobals": {
+									"Math": "Use deterministic arithmetic and a seeded PRNG in core.",
+									"Date": "Pass in the game day instead of reading the wall clock.",
+									"window": "Keep DOM access outside core.",
+									"document": "Keep DOM access outside core."
+								}
+							}
+						},
+						"noRestrictedImports": {
+							"level": "error",
+							"options": {
+								"paths": {
+									"electron": "Keep Electron APIs outside core.",
+									"react": "Keep UI dependencies outside core."
+								},
+								"patterns": [
+									{
+										"group": ["node:*", "node:*/**", "fs", "fs/**"],
+										"message": "Keep Node.js APIs outside core."
+									}
+								]
+							}
+						}
+					}
+				}
+			}
+		}
+	]
 }

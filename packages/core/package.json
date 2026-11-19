@@ -1,0 +1,6 @@
+{
+	"name": "@rift-legends/core",
+	"private": true,
+	"type": "module",
+	"exports": "./index.ts"
+}
