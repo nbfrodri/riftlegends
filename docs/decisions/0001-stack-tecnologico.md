@@ -77,5 +77,5 @@ S4 y S5 se omiten porque G y B están descartadas. S6 (tamaño del log) se aplaz
 ## Puntos abiertos
 
 - **Repo privado frente a distribución (confirmado el 19-11-2026):** el repo principal es **privado**, con la documentación en español y el código en inglés. Un **repo público solo de releases** (por ejemplo `riftlegends-releases`), con un README, notas de versión, LICENSE y aviso de Riot en inglés, recibe los binarios desde un workflow del repo privado. Si algún día el repo principal se hace público, se traducirán los documentos, y solo entonces se solicitará SignPath. Hay que vigilar los minutos de Actions en el repo privado: la matriz de Windows se ejecutará solo en `main` y en las releases.
-- **Estilo visual:** delegado a Codex (rama `design/visual-style`). Se elegirá entre cuatro direcciones.
+- ~~Estilo visual~~ Resuelto en el [ADR 0002](0002-estilo-visual.md): Caja, con barra lateral e icono Corte · Puntera.
 - Detalle del draft *broadcast*, de la IA de draft y de cada sistema: se definirán en planes específicos derivados del plan general.

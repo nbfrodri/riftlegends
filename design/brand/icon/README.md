@@ -9,4 +9,4 @@
 | `icon-{16…1024}.png` | Lanzadores de Linux, AppImage y tienda |
 | `icon.ico` | Windows (16, 32, 48, 64, 128 y 256 px) |
 
-Comprobado píxel a píxel por Codex: el coral solapa la R sin huecos en los ocho tamaños. Las demás variantes y el muestrario comparativo están en la rama `design/visual-style` (`design/brand/icon/`).
+Comprobado píxel a píxel por Codex: el coral solapa la R sin huecos en los ocho tamaños. Las demás variantes y el muestrario comparativo están en la rama `archive/design-exploration-2026-11` (`design/brand/icon/`).

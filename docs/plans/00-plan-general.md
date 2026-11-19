@@ -2,7 +2,7 @@
 
 ## Contexto
 
-La decisión de stack está cerrada en `docs/decisions/0001-stack-tecnologico.md` (rama `docs/stack-decision`): **Electron + núcleo TypeScript + React**, con Godot + C# como plan B si el draft broadcast resulta demasiado caro de producir. El estilo visual lo está proponiendo Codex en la rama `design/visual-style`, con cuatro direcciones. Este plan es el **mapa maestro**: fija la estructura, la arquitectura, las fases, sus criterios de salida y el índice de los **planes específicos** que se escribirán después, uno por sistema o función. No detalla la implementación de cada sistema; eso corresponde a cada plan específico.
+La decisión de stack está en el [ADR 0001](../decisions/0001-stack-tecnologico.md): **Electron + núcleo TypeScript + React**, con Godot + C# como plan B si el draft broadcast resulta demasiado caro de producir. El estilo visual es **Caja**, con barra lateral e icono Corte · Puntera ([ADR 0002](../decisions/0002-estilo-visual.md)). Este plan es el **mapa maestro**: fija la estructura, la arquitectura, las fases, sus criterios de salida y el índice de los **planes específicos** que se escribirán después, uno por sistema o función. No detalla la implementación de cada sistema; eso corresponde a cada plan específico.
 
 Al aprobarse, este plan se copia a `docs/plans/00-plan-general.md` en la rama `docs/stack-decision` y se hace commit (`docs(plan): add general roadmap`).
 

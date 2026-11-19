@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="design/brand/icon/icon-256.png" alt="Icono de Rift Legends" width="128" height="128">
+
 # Rift Legends
 
 **Gestión de esports de League of Legends para escritorio**
@@ -14,7 +16,7 @@ Diriges un equipo profesional: preparas el draft, gestionas la plantilla y compi
 </div>
 
 > [!NOTE]
-> Fan project gratuito y no oficial, sin afiliación con Riot Games ([aviso legal](NOTICE.md)). El stack está decidido, pero la Fase 0 aún no ha empezado: todavía no hay código ejecutable.
+> Fan project gratuito y no oficial, sin afiliación con Riot Games ([aviso legal](NOTICE.md)). El stack y el estilo visual están decididos, pero la Fase 0 aún no ha empezado: todavía no hay código ejecutable.
 
 ## El juego
 
@@ -97,6 +99,7 @@ Pendiente de la Fase 0. Aquí se documentarán `pnpm install`, `pnpm dev` y `pnp
 | --- | --- |
 | [IDEA.md](IDEA.md) | Visión del juego, pilares, bucles y sistemas |
 | [docs/](docs/README.md) | Decisiones, planes, librerías e investigación |
+| [design/](design/README.md) | Estilo visual (Caja), app con barra lateral e icono |
 | [AGENTS.md](AGENTS.md) | Reglas y flujo de trabajo para agentes y personas |
 
 ## Licencia
