@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16" role="img" aria-label="Corte · Puntera">
+	<title>Corte · Puntera</title>
+	<!-- Rejilla de 16 unidades. Las exportaciones pequeñas son múltiplos enteros. -->
+	<defs>
+		<clipPath id="letter">
+			<path d="M3 4H11V5H12V6H13V8H12V9H10V10H11V11H12V12H13V13H10V12H9V11H8V10H6V13H3ZM6 6V8H10V6Z" clip-rule="evenodd"/>
+		</clipPath>
+	</defs>
+	<path fill="#101420" d="M2 1H12V2H13V3H14V4H15V14H14V15H4V14H3V13H2V12H1V2H2Z"/>
+	<path fill="#b6c0d2" fill-opacity=".48" d="M2 1H11V2H2ZM1 2H2V12H1ZM2 12H3V13H2ZM3 13H4V14H3ZM4 14H14V15H4ZM14 5H15V14H14Z"/>
+	<path fill="#88d6ff" d="M11 1H12V2H13V3H14V4H15V5H14V4H13V3H12V2H11Z"/>
+	<!-- La silueta se aplica una sola vez sobre las dos capas de tinta. -->
+	<g clip-path="url(#letter)">
+		<rect width="16" height="16" fill="#f4f6ff"/>
+		<path id="accent" fill="#ff9eab" d="M8 11H14V13H8Z"/>
+	</g>
+</svg>

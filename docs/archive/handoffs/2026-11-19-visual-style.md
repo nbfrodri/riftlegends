@@ -27,3 +27,8 @@
 - Hecho, sin commit y sin verificar del todo: `design/visual-style/shell/caja/index.html` y `shell/umbral/index.html`, con la barra lateral. Claude hizo una captura de Caja a 1366×768: la barra de título y la barra lateral plegada en el draft se ven bien. El mercado con la barra desplegada no se ha comprobado.
 - Pendiente: README de `shell/`, verificación con Playwright, commit de la parte 1 y la parte 2 entera (icono, `design/brand/icon/`).
 - El usuario eligió Caja (ADR 0002), así que `shell/umbral` ya no es necesario.
+
+## Cierre
+
+- **Estado: hecho.** Las rondas 4 y 5 las completó Codex `gpt-6.2-sol` (sesión `01a1f563-0294-7073-b504-b0a05751d8da`): shell `64f63e9`, iconos `fff7c25`, refinado de Corte `f2deed2`.
+- El usuario eligió Caja (ADR 0002) y el icono Corte · Puntera. Ambos se copiaron a `main` en `design/`; la exploración sigue en la rama `design/visual-style`.
