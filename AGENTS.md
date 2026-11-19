@@ -79,7 +79,7 @@ Nada entra en `main` sin PR: el ruleset `protect-main` exige PR, solo admite squ
 
 ## Verificación
 
-`pnpm verify` (lint + typecheck + tests) debe estar en verde antes de abrir un PR. Este comando se crea en la Fase 0; hasta entonces, el trabajo es solo de documentación.
+`pnpm verify` (lint + typecheck + tests) debe estar en verde antes de abrir un PR.
 
 ## Legal
 
