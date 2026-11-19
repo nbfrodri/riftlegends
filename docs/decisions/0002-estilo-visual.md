@@ -6,7 +6,7 @@
 
 ## Decisión
 
-El estilo del juego es **Caja**, prototipo de referencia en `design/visual-style/frecuencia-v3/caja/` (rama `design/visual-style`). Es la dirección **Frecuencia** ("cabina de retransmisión": dos torres de equipo, placa central y mercado con columnas fijas), corregida en tipografía y ritmo para que no parezca generada.
+El estilo del juego es **Caja**, prototipo de referencia en [`design/visual-style/caja/`](../../design/visual-style/caja/index.html). Es la dirección **Frecuencia** ("cabina de retransmisión": dos torres de equipo, placa central y mercado con columnas fijas), corregida en tipografía y ritmo para que no parezca generada.
 
 | Aspecto | Regla |
 | --- | --- |
@@ -21,12 +21,12 @@ El estilo del juego es **Caja**, prototipo de referencia en `design/visual-style
 | Lock-in | Barrido de 320 ms con `cubic-bezier(.23,1,.32,1)`; con movimiento reducido, el cierre se anuncia de inmediato |
 | Densidad del mercado | 29 filas completas a 1366×768 |
 
-Los tokens completos están en `design/visual-style/frecuencia-v3/caja/tokens.md`. Las fuentes se empaquetan con `@fontsource-variable/unbounded` y `@fontsource-variable/archivo` (OFL-1.1), sin cargarlas de la red.
+Los tokens completos están en [`design/visual-style/caja/tokens.md`](../../design/visual-style/caja/tokens.md). Las fuentes se empaquetan con `@fontsource-variable/unbounded` y `@fontsource-variable/archivo` (OFL-1.1), sin cargarlas de la red.
 
 ## Estructura de la app
 
 - **Barra lateral izquierda fija**, estilo dashboard: la barra no cambia y el contenido de la derecha sí. Secciones: Inicio, Calendario, Draft, Plantilla, Mercado, Scouting, Entrenamiento, Competición, Noticias, Historial y Ajustes. Se puede plegar a solo iconos.
-- La maqueta de la barra sobre Caja está en curso (`design/visual-style/shell/caja/`). Su comportamiento en el draft broadcast (por ejemplo, plegarse al entrar) se fijará al revisarla.
+- Maqueta en [`design/visual-style/shell/`](../../design/visual-style/shell/README.md): barra de título propia de 32 px; barra lateral de 196 px desplegada y 58 px plegada; **Alt+B** la pliega y despliega; se pliega sola al entrar en el draft. El mercado muestra 30 filas a 1366×768 y 31 a 1920×1080 en ambos estados.
 
 ## Consecuencias
 
@@ -36,5 +36,5 @@ Los tokens completos están en `design/visual-style/frecuencia-v3/caja/tokens.md
 ## Pendiente
 
 - **Paleta:** durante la exploración el usuario pidió colores de lado más intensos, y Caja conserva los tonos originales de Frecuencia. Se puede revisar en el spike S1 sin cambiar el resto del estilo.
-- **Icono del juego:** cuatro conceptos en curso (`design/brand/icon/`).
-- Las variantes descartadas se quedan en la rama `design/visual-style` como referencia; solo se llevará a `main` lo que se use.
+- ~~Icono del juego~~ Elegido: **Corte · Puntera** ([`design/brand/icon/`](../../design/brand/icon/README.md)).
+- Las variantes descartadas se quedan en la rama `design/visual-style` como referencia; en `main` solo está lo elegido.
