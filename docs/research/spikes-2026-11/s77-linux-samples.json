@@ -1,0 +1,1376 @@
+{
+	"S1-reset": {
+		"1-cut": {
+			"ok": false,
+			"error": "ECONNRESET aborted",
+			"draft": {
+				"from": 0,
+				"to": 5,
+				"facts": 7
+			},
+			"cacheBefore": {
+				"valid": false,
+				"reason": "no pointer"
+			},
+			"cacheAfter": {
+				"valid": false,
+				"reason": "no pointer"
+			},
+			"interfaces": ["lo:2", "wlp0s20f3:2", "tailscale0:1"],
+			"tree": [
+				{
+					"path": "staging-16.23.1/data/en_US/championFull.json.part",
+					"bytes": 1500000
+				},
+				{
+					"path": "staging-16.23.1/data/en_US/championFull.json.part.json",
+					"bytes": 47
+				},
+				{
+					"path": "staging-16.23.1/data/es_ES/champion.json",
+					"bytes": 160010
+				},
+				{
+					"path": "staging-16.23.1/img/champion/Aatrox.png",
+					"bytes": 25644
+				},
+				{
+					"path": "staging-16.23.1/img/champion/Ahri.png",
+					"bytes": 28511
+				},
+				{
+					"path": "staging-16.23.1/img/champion/Akali.png",
+					"bytes": 27191
+				}
+			]
+		},
+		"2-offline": {
+			"ok": false,
+			"error": "ENETUNREACH connect ENETUNREACH 3.174.177.40:443 - Local (0.0.0.0:0)",
+			"draft": {
+				"from": 5,
+				"to": 10,
+				"facts": 12
+			},
+			"cacheBefore": {
+				"valid": false,
+				"reason": "no pointer"
+			},
+			"cacheAfter": {
+				"valid": false,
+				"reason": "no pointer"
+			},
+			"interfaces": [],
+			"tree": [
+				{
+					"path": "staging-16.23.1/data/en_US/championFull.json.part",
+					"bytes": 1500000
+				},
+				{
+					"path": "staging-16.23.1/data/en_US/championFull.json.part.json",
+					"bytes": 47
+				},
+				{
+					"path": "staging-16.23.1/data/es_ES/champion.json",
+					"bytes": 160010
+				},
+				{
+					"path": "staging-16.23.1/img/champion/Aatrox.png",
+					"bytes": 25644
+				},
+				{
+					"path": "staging-16.23.1/img/champion/Ahri.png",
+					"bytes": 28511
+				},
+				{
+					"path": "staging-16.23.1/img/champion/Akali.png",
+					"bytes": 27191
+				}
+			]
+		},
+		"3-resume": {
+			"ok": true,
+			"draft": {
+				"from": 10,
+				"to": 15,
+				"facts": 17
+			},
+			"cacheBefore": {
+				"valid": false,
+				"reason": "no pointer"
+			},
+			"cacheAfter": {
+				"valid": true,
+				"version": "16.23.1",
+				"files": 8
+			},
+			"interfaces": ["lo:2", "wlp0s20f3:2", "tailscale0:1"],
+			"tree": [
+				{
+					"path": "16.23.1/data/en_US/champion.json",
+					"bytes": 159013
+				},
+				{
+					"path": "16.23.1/data/en_US/championFull.json",
+					"bytes": 2240929
+				},
+				{
+					"path": "16.23.1/data/es_ES/champion.json",
+					"bytes": 160010
+				},
+				{
+					"path": "16.23.1/img/champion/Aatrox.png",
+					"bytes": 25644
+				},
+				{
+					"path": "16.23.1/img/champion/Ahri.png",
+					"bytes": 28511
+				},
+				{
+					"path": "16.23.1/img/champion/Akali.png",
+					"bytes": 27191
+				},
+				{
+					"path": "16.23.1/img/champion/Zed.png",
+					"bytes": 28879
+				},
+				{
+					"path": "16.23.1/img/champion/Zyra.png",
+					"bytes": 26347
+				},
+				{
+					"path": "current.json",
+					"bytes": 31
+				}
+			],
+			"stats": {
+				"kept": [
+					"data/es_ES/champion.json",
+					"img/champion/Aatrox.png",
+					"img/champion/Ahri.png",
+					"img/champion/Akali.png"
+				],
+				"resumed": ["data/en_US/championFull.json"],
+				"restarted": [],
+				"discarded": [],
+				"fetchedBytes": 955168
+			},
+			"requests": [
+				{
+					"file": "data/es_ES/champion.json",
+					"outcome": "kept-verified"
+				},
+				{
+					"file": "img/champion/Aatrox.png",
+					"outcome": "kept-verified"
+				},
+				{
+					"file": "img/champion/Ahri.png",
+					"outcome": "kept-verified"
+				},
+				{
+					"file": "img/champion/Akali.png",
+					"outcome": "kept-verified"
+				},
+				{
+					"file": "data/en_US/championFull.json",
+					"attempt": 1,
+					"resumeFrom": 1500000,
+					"requestHeaders": {
+						"range": "bytes=1500000-",
+						"ifRange": "\"f82fdbaf0b78c420c17bb735cb92e3fe\""
+					},
+					"status": 206,
+					"acceptRanges": "bytes",
+					"contentRange": "bytes 1500000-2240928/2240929",
+					"etag": "\"f82fdbaf0b78c420c17bb735cb92e3fe\"",
+					"contentLength": "740929",
+					"servedFrom": 1500000,
+					"received": 740929,
+					"outcome": "body-complete",
+					"verified": true
+				},
+				{
+					"file": "data/en_US/champion.json",
+					"attempt": 1,
+					"resumeFrom": 0,
+					"requestHeaders": {},
+					"status": 200,
+					"acceptRanges": "bytes",
+					"etag": "\"09e3b3f045458a7edd2db0e622987991\"",
+					"contentLength": "159013",
+					"servedFrom": 0,
+					"received": 159013,
+					"outcome": "body-complete",
+					"verified": true
+				},
+				{
+					"file": "img/champion/Zed.png",
+					"attempt": 1,
+					"resumeFrom": 0,
+					"requestHeaders": {},
+					"status": 200,
+					"acceptRanges": "bytes",
+					"etag": "\"18f3aad5b935f3f2e82d5ab67f230062\"",
+					"contentLength": "28879",
+					"servedFrom": 0,
+					"received": 28879,
+					"outcome": "body-complete",
+					"verified": true
+				},
+				{
+					"file": "img/champion/Zyra.png",
+					"attempt": 1,
+					"resumeFrom": 0,
+					"requestHeaders": {},
+					"status": 200,
+					"acceptRanges": "bytes",
+					"etag": "\"45e03a11fa3cb9a12661184afec3654f\"",
+					"contentLength": "26347",
+					"servedFrom": 0,
+					"received": 26347,
+					"outcome": "body-complete",
+					"verified": true
+				}
+			]
+		},
+		"4-verify-offline": {
+			"draft": {
+				"from": 15,
+				"to": 20,
+				"facts": 24
+			},
+			"cacheBefore": {
+				"valid": true,
+				"version": "16.23.1",
+				"files": 8
+			},
+			"cacheAfter": {
+				"valid": true,
+				"version": "16.23.1",
+				"files": 8
+			},
+			"interfaces": [],
+			"tree": [
+				{
+					"path": "16.23.1/data/en_US/champion.json",
+					"bytes": 159013
+				},
+				{
+					"path": "16.23.1/data/en_US/championFull.json",
+					"bytes": 2240929
+				},
+				{
+					"path": "16.23.1/data/es_ES/champion.json",
+					"bytes": 160010
+				},
+				{
+					"path": "16.23.1/img/champion/Aatrox.png",
+					"bytes": 25644
+				},
+				{
+					"path": "16.23.1/img/champion/Ahri.png",
+					"bytes": 28511
+				},
+				{
+					"path": "16.23.1/img/champion/Akali.png",
+					"bytes": 27191
+				},
+				{
+					"path": "16.23.1/img/champion/Zed.png",
+					"bytes": 28879
+				},
+				{
+					"path": "16.23.1/img/champion/Zyra.png",
+					"bytes": 26347
+				},
+				{
+					"path": "current.json",
+					"bytes": 31
+				}
+			]
+		},
+		"ref.sha": [
+			"680733b290a789847dfe623d1beb9fdac1fffa70f0c4b90d100a2d60b26c2b25  data/en_US/championFull.json",
+			"917f9b1701a148997ef2e6ed67e4a54dd10a1da1e1baed30ba166da6fd86a01a  data/en_US/champion.json",
+			"4b735f0fb87a886f2004eb9fe538ad1223602a96643ea4362f5981a61ce906bc  data/es_ES/champion.json",
+			"852d739fb696684549064266851df91ecd03729e06b1a192dc14af01549b7f3f  img/champion/Aatrox.png",
+			"8e93368d97e3d302463c4e83ac5980d1f0a3a0aaf92ac44435730fecbd55b565  img/champion/Ahri.png",
+			"a62acc32c454b5cc39cebd0769f940b34f3d39ddaf157b95acb176027f81e17a  img/champion/Akali.png",
+			"3ad3e956e9ad5ca3127d8f685faf69d4251fb726e9b4f0be989764f0027e9c5f  img/champion/Zed.png",
+			"9993a6caf52f955ad41077e56b56f2472c07c1a589fb4d1c66097ddf775feda4  img/champion/Zyra.png"
+		],
+		"cache.sha": [
+			"680733b290a789847dfe623d1beb9fdac1fffa70f0c4b90d100a2d60b26c2b25  data/en_US/championFull.json",
+			"917f9b1701a148997ef2e6ed67e4a54dd10a1da1e1baed30ba166da6fd86a01a  data/en_US/champion.json",
+			"4b735f0fb87a886f2004eb9fe538ad1223602a96643ea4362f5981a61ce906bc  data/es_ES/champion.json",
+			"852d739fb696684549064266851df91ecd03729e06b1a192dc14af01549b7f3f  img/champion/Aatrox.png",
+			"8e93368d97e3d302463c4e83ac5980d1f0a3a0aaf92ac44435730fecbd55b565  img/champion/Ahri.png",
+			"a62acc32c454b5cc39cebd0769f940b34f3d39ddaf157b95acb176027f81e17a  img/champion/Akali.png",
+			"3ad3e956e9ad5ca3127d8f685faf69d4251fb726e9b4f0be989764f0027e9c5f  img/champion/Zed.png",
+			"9993a6caf52f955ad41077e56b56f2472c07c1a589fb4d1c66097ddf775feda4  img/champion/Zyra.png"
+		],
+		"identicalToReference": true,
+		"proxy-cut.log": [
+			"{\"t\":1795203532736,\"url\":\"/cdn/16.23.1/data/es_ES/champion.json\",\"status\":200,\"target\":false}",
+			"{\"t\":1795203533252,\"url\":\"/cdn/16.23.1/img/champion/Aatrox.png\",\"status\":200,\"target\":false}",
+			"{\"t\":1795203533265,\"url\":\"/cdn/16.23.1/img/champion/Ahri.png\",\"status\":200,\"target\":false}",
+			"{\"t\":1795203533288,\"url\":\"/cdn/16.23.1/img/champion/Akali.png\",\"status\":200,\"target\":false}",
+			"{\"t\":1795203533313,\"url\":\"/cdn/16.23.1/data/en_US/championFull.json\",\"status\":200,\"target\":true}",
+			"{\"t\":1795203533506,\"url\":\"/cdn/16.23.1/data/en_US/championFull.json\",\"event\":\"cut\",\"sent\":1500000}"
+		],
+		"snapshot-1-cut.tsv": [
+			"./staging-16.23.1/data/en_US/championFull.json.part\t1500000\taebccc3edd13e079e3189d68687df6c1321ba187fa539b7d52a461686f0ba65d",
+			"./staging-16.23.1/data/en_US/championFull.json.part.json\t47\t47913cd5b930f3e0fa732e760d954196cffa668ed623f96668fa971b605d46c5",
+			"./staging-16.23.1/data/es_ES/champion.json\t160010\t4b735f0fb87a886f2004eb9fe538ad1223602a96643ea4362f5981a61ce906bc",
+			"./staging-16.23.1/img/champion/Aatrox.png\t25644\t852d739fb696684549064266851df91ecd03729e06b1a192dc14af01549b7f3f",
+			"./staging-16.23.1/img/champion/Ahri.png\t28511\t8e93368d97e3d302463c4e83ac5980d1f0a3a0aaf92ac44435730fecbd55b565",
+			"./staging-16.23.1/img/champion/Akali.png\t27191\ta62acc32c454b5cc39cebd0769f940b34f3d39ddaf157b95acb176027f81e17a"
+		],
+		"snapshot-2-offline.tsv": [
+			"./staging-16.23.1/data/en_US/championFull.json.part\t1500000\taebccc3edd13e079e3189d68687df6c1321ba187fa539b7d52a461686f0ba65d",
+			"./staging-16.23.1/data/en_US/championFull.json.part.json\t47\t47913cd5b930f3e0fa732e760d954196cffa668ed623f96668fa971b605d46c5",
+			"./staging-16.23.1/data/es_ES/champion.json\t160010\t4b735f0fb87a886f2004eb9fe538ad1223602a96643ea4362f5981a61ce906bc",
+			"./staging-16.23.1/img/champion/Aatrox.png\t25644\t852d739fb696684549064266851df91ecd03729e06b1a192dc14af01549b7f3f",
+			"./staging-16.23.1/img/champion/Ahri.png\t28511\t8e93368d97e3d302463c4e83ac5980d1f0a3a0aaf92ac44435730fecbd55b565",
+			"./staging-16.23.1/img/champion/Akali.png\t27191\ta62acc32c454b5cc39cebd0769f940b34f3d39ddaf157b95acb176027f81e17a"
+		],
+		"snapshot-3-resume.tsv": [
+			"./16.23.1/data/en_US/championFull.json\t2240929\t680733b290a789847dfe623d1beb9fdac1fffa70f0c4b90d100a2d60b26c2b25",
+			"./16.23.1/data/en_US/champion.json\t159013\t917f9b1701a148997ef2e6ed67e4a54dd10a1da1e1baed30ba166da6fd86a01a",
+			"./16.23.1/data/es_ES/champion.json\t160010\t4b735f0fb87a886f2004eb9fe538ad1223602a96643ea4362f5981a61ce906bc",
+			"./16.23.1/img/champion/Aatrox.png\t25644\t852d739fb696684549064266851df91ecd03729e06b1a192dc14af01549b7f3f",
+			"./16.23.1/img/champion/Ahri.png\t28511\t8e93368d97e3d302463c4e83ac5980d1f0a3a0aaf92ac44435730fecbd55b565",
+			"./16.23.1/img/champion/Akali.png\t27191\ta62acc32c454b5cc39cebd0769f940b34f3d39ddaf157b95acb176027f81e17a",
+			"./16.23.1/img/champion/Zed.png\t28879\t3ad3e956e9ad5ca3127d8f685faf69d4251fb726e9b4f0be989764f0027e9c5f",
+			"./16.23.1/img/champion/Zyra.png\t26347\t9993a6caf52f955ad41077e56b56f2472c07c1a589fb4d1c66097ddf775feda4",
+			"./current.json\t31\t2f754b72a26d61bd75580dccc731327ce03a26afdf63d9d3b669a06f190c5af2"
+		]
+	},
+	"S2-sigkill": {
+		"1-cut": {
+			"killed": "SIGKILL tras 5 marcas de progreso"
+		},
+		"2-offline": {
+			"ok": false,
+			"error": "ENETUNREACH connect ENETUNREACH 3.174.177.40:443 - Local (0.0.0.0:0)",
+			"draft": {
+				"from": 5,
+				"to": 10,
+				"facts": 12
+			},
+			"cacheBefore": {
+				"valid": false,
+				"reason": "no pointer"
+			},
+			"cacheAfter": {
+				"valid": false,
+				"reason": "no pointer"
+			},
+			"interfaces": [],
+			"tree": [
+				{
+					"path": "staging-16.23.1/data/en_US/championFull.json.part",
+					"bytes": 1500000
+				},
+				{
+					"path": "staging-16.23.1/data/en_US/championFull.json.part.json",
+					"bytes": 47
+				},
+				{
+					"path": "staging-16.23.1/data/es_ES/champion.json",
+					"bytes": 160010
+				},
+				{
+					"path": "staging-16.23.1/img/champion/Aatrox.png",
+					"bytes": 25644
+				},
+				{
+					"path": "staging-16.23.1/img/champion/Ahri.png",
+					"bytes": 28511
+				},
+				{
+					"path": "staging-16.23.1/img/champion/Akali.png",
+					"bytes": 27191
+				}
+			]
+		},
+		"3-resume": {
+			"ok": true,
+			"draft": {
+				"from": 10,
+				"to": 15,
+				"facts": 17
+			},
+			"cacheBefore": {
+				"valid": false,
+				"reason": "no pointer"
+			},
+			"cacheAfter": {
+				"valid": true,
+				"version": "16.23.1",
+				"files": 8
+			},
+			"interfaces": ["lo:2", "wlp0s20f3:2", "tailscale0:1"],
+			"tree": [
+				{
+					"path": "16.23.1/data/en_US/champion.json",
+					"bytes": 159013
+				},
+				{
+					"path": "16.23.1/data/en_US/championFull.json",
+					"bytes": 2240929
+				},
+				{
+					"path": "16.23.1/data/es_ES/champion.json",
+					"bytes": 160010
+				},
+				{
+					"path": "16.23.1/img/champion/Aatrox.png",
+					"bytes": 25644
+				},
+				{
+					"path": "16.23.1/img/champion/Ahri.png",
+					"bytes": 28511
+				},
+				{
+					"path": "16.23.1/img/champion/Akali.png",
+					"bytes": 27191
+				},
+				{
+					"path": "16.23.1/img/champion/Zed.png",
+					"bytes": 28879
+				},
+				{
+					"path": "16.23.1/img/champion/Zyra.png",
+					"bytes": 26347
+				},
+				{
+					"path": "current.json",
+					"bytes": 31
+				}
+			],
+			"stats": {
+				"kept": [
+					"data/es_ES/champion.json",
+					"img/champion/Aatrox.png",
+					"img/champion/Ahri.png",
+					"img/champion/Akali.png"
+				],
+				"resumed": ["data/en_US/championFull.json"],
+				"restarted": [],
+				"discarded": [],
+				"fetchedBytes": 955168
+			},
+			"requests": [
+				{
+					"file": "data/es_ES/champion.json",
+					"outcome": "kept-verified"
+				},
+				{
+					"file": "img/champion/Aatrox.png",
+					"outcome": "kept-verified"
+				},
+				{
+					"file": "img/champion/Ahri.png",
+					"outcome": "kept-verified"
+				},
+				{
+					"file": "img/champion/Akali.png",
+					"outcome": "kept-verified"
+				},
+				{
+					"file": "data/en_US/championFull.json",
+					"attempt": 1,
+					"resumeFrom": 1500000,
+					"requestHeaders": {
+						"range": "bytes=1500000-",
+						"ifRange": "\"f82fdbaf0b78c420c17bb735cb92e3fe\""
+					},
+					"status": 206,
+					"acceptRanges": "bytes",
+					"contentRange": "bytes 1500000-2240928/2240929",
+					"etag": "\"f82fdbaf0b78c420c17bb735cb92e3fe\"",
+					"contentLength": "740929",
+					"servedFrom": 1500000,
+					"received": 740929,
+					"outcome": "body-complete",
+					"verified": true
+				},
+				{
+					"file": "data/en_US/champion.json",
+					"attempt": 1,
+					"resumeFrom": 0,
+					"requestHeaders": {},
+					"status": 200,
+					"acceptRanges": "bytes",
+					"etag": "\"09e3b3f045458a7edd2db0e622987991\"",
+					"contentLength": "159013",
+					"servedFrom": 0,
+					"received": 159013,
+					"outcome": "body-complete",
+					"verified": true
+				},
+				{
+					"file": "img/champion/Zed.png",
+					"attempt": 1,
+					"resumeFrom": 0,
+					"requestHeaders": {},
+					"status": 200,
+					"acceptRanges": "bytes",
+					"etag": "\"18f3aad5b935f3f2e82d5ab67f230062\"",
+					"contentLength": "28879",
+					"servedFrom": 0,
+					"received": 28879,
+					"outcome": "body-complete",
+					"verified": true
+				},
+				{
+					"file": "img/champion/Zyra.png",
+					"attempt": 1,
+					"resumeFrom": 0,
+					"requestHeaders": {},
+					"status": 200,
+					"acceptRanges": "bytes",
+					"etag": "\"45e03a11fa3cb9a12661184afec3654f\"",
+					"contentLength": "26347",
+					"servedFrom": 0,
+					"received": 26347,
+					"outcome": "body-complete",
+					"verified": true
+				}
+			]
+		},
+		"4-verify-offline": {
+			"draft": {
+				"from": 15,
+				"to": 20,
+				"facts": 24
+			},
+			"cacheBefore": {
+				"valid": true,
+				"version": "16.23.1",
+				"files": 8
+			},
+			"cacheAfter": {
+				"valid": true,
+				"version": "16.23.1",
+				"files": 8
+			},
+			"interfaces": [],
+			"tree": [
+				{
+					"path": "16.23.1/data/en_US/champion.json",
+					"bytes": 159013
+				},
+				{
+					"path": "16.23.1/data/en_US/championFull.json",
+					"bytes": 2240929
+				},
+				{
+					"path": "16.23.1/data/es_ES/champion.json",
+					"bytes": 160010
+				},
+				{
+					"path": "16.23.1/img/champion/Aatrox.png",
+					"bytes": 25644
+				},
+				{
+					"path": "16.23.1/img/champion/Ahri.png",
+					"bytes": 28511
+				},
+				{
+					"path": "16.23.1/img/champion/Akali.png",
+					"bytes": 27191
+				},
+				{
+					"path": "16.23.1/img/champion/Zed.png",
+					"bytes": 28879
+				},
+				{
+					"path": "16.23.1/img/champion/Zyra.png",
+					"bytes": 26347
+				},
+				{
+					"path": "current.json",
+					"bytes": 31
+				}
+			]
+		},
+		"ref.sha": [
+			"680733b290a789847dfe623d1beb9fdac1fffa70f0c4b90d100a2d60b26c2b25  data/en_US/championFull.json",
+			"917f9b1701a148997ef2e6ed67e4a54dd10a1da1e1baed30ba166da6fd86a01a  data/en_US/champion.json",
+			"4b735f0fb87a886f2004eb9fe538ad1223602a96643ea4362f5981a61ce906bc  data/es_ES/champion.json",
+			"852d739fb696684549064266851df91ecd03729e06b1a192dc14af01549b7f3f  img/champion/Aatrox.png",
+			"8e93368d97e3d302463c4e83ac5980d1f0a3a0aaf92ac44435730fecbd55b565  img/champion/Ahri.png",
+			"a62acc32c454b5cc39cebd0769f940b34f3d39ddaf157b95acb176027f81e17a  img/champion/Akali.png",
+			"3ad3e956e9ad5ca3127d8f685faf69d4251fb726e9b4f0be989764f0027e9c5f  img/champion/Zed.png",
+			"9993a6caf52f955ad41077e56b56f2472c07c1a589fb4d1c66097ddf775feda4  img/champion/Zyra.png"
+		],
+		"cache.sha": [
+			"680733b290a789847dfe623d1beb9fdac1fffa70f0c4b90d100a2d60b26c2b25  data/en_US/championFull.json",
+			"917f9b1701a148997ef2e6ed67e4a54dd10a1da1e1baed30ba166da6fd86a01a  data/en_US/champion.json",
+			"4b735f0fb87a886f2004eb9fe538ad1223602a96643ea4362f5981a61ce906bc  data/es_ES/champion.json",
+			"852d739fb696684549064266851df91ecd03729e06b1a192dc14af01549b7f3f  img/champion/Aatrox.png",
+			"8e93368d97e3d302463c4e83ac5980d1f0a3a0aaf92ac44435730fecbd55b565  img/champion/Ahri.png",
+			"a62acc32c454b5cc39cebd0769f940b34f3d39ddaf157b95acb176027f81e17a  img/champion/Akali.png",
+			"3ad3e956e9ad5ca3127d8f685faf69d4251fb726e9b4f0be989764f0027e9c5f  img/champion/Zed.png",
+			"9993a6caf52f955ad41077e56b56f2472c07c1a589fb4d1c66097ddf775feda4  img/champion/Zyra.png"
+		],
+		"identicalToReference": true,
+		"proxy-cut.log": [
+			"{\"t\":1795203540723,\"url\":\"/cdn/16.23.1/data/es_ES/champion.json\",\"status\":200,\"target\":false}",
+			"{\"t\":1795203540765,\"url\":\"/cdn/16.23.1/img/champion/Aatrox.png\",\"status\":200,\"target\":false}",
+			"{\"t\":1795203540785,\"url\":\"/cdn/16.23.1/img/champion/Ahri.png\",\"status\":200,\"target\":false}",
+			"{\"t\":1795203540796,\"url\":\"/cdn/16.23.1/img/champion/Akali.png\",\"status\":200,\"target\":false}",
+			"{\"t\":1795203540811,\"url\":\"/cdn/16.23.1/data/en_US/championFull.json\",\"status\":200,\"target\":true}",
+			"{\"t\":1795203540861,\"url\":\"/cdn/16.23.1/data/en_US/championFull.json\",\"event\":\"stall\",\"sent\":1500000}"
+		],
+		"snapshot-1-cut.tsv": [
+			"./staging-16.23.1/data/en_US/championFull.json.part\t1500000\taebccc3edd13e079e3189d68687df6c1321ba187fa539b7d52a461686f0ba65d",
+			"./staging-16.23.1/data/en_US/championFull.json.part.json\t47\t47913cd5b930f3e0fa732e760d954196cffa668ed623f96668fa971b605d46c5",
+			"./staging-16.23.1/data/es_ES/champion.json\t160010\t4b735f0fb87a886f2004eb9fe538ad1223602a96643ea4362f5981a61ce906bc",
+			"./staging-16.23.1/img/champion/Aatrox.png\t25644\t852d739fb696684549064266851df91ecd03729e06b1a192dc14af01549b7f3f",
+			"./staging-16.23.1/img/champion/Ahri.png\t28511\t8e93368d97e3d302463c4e83ac5980d1f0a3a0aaf92ac44435730fecbd55b565",
+			"./staging-16.23.1/img/champion/Akali.png\t27191\ta62acc32c454b5cc39cebd0769f940b34f3d39ddaf157b95acb176027f81e17a"
+		],
+		"snapshot-2-offline.tsv": [
+			"./staging-16.23.1/data/en_US/championFull.json.part\t1500000\taebccc3edd13e079e3189d68687df6c1321ba187fa539b7d52a461686f0ba65d",
+			"./staging-16.23.1/data/en_US/championFull.json.part.json\t47\t47913cd5b930f3e0fa732e760d954196cffa668ed623f96668fa971b605d46c5",
+			"./staging-16.23.1/data/es_ES/champion.json\t160010\t4b735f0fb87a886f2004eb9fe538ad1223602a96643ea4362f5981a61ce906bc",
+			"./staging-16.23.1/img/champion/Aatrox.png\t25644\t852d739fb696684549064266851df91ecd03729e06b1a192dc14af01549b7f3f",
+			"./staging-16.23.1/img/champion/Ahri.png\t28511\t8e93368d97e3d302463c4e83ac5980d1f0a3a0aaf92ac44435730fecbd55b565",
+			"./staging-16.23.1/img/champion/Akali.png\t27191\ta62acc32c454b5cc39cebd0769f940b34f3d39ddaf157b95acb176027f81e17a"
+		],
+		"snapshot-3-resume.tsv": [
+			"./16.23.1/data/en_US/championFull.json\t2240929\t680733b290a789847dfe623d1beb9fdac1fffa70f0c4b90d100a2d60b26c2b25",
+			"./16.23.1/data/en_US/champion.json\t159013\t917f9b1701a148997ef2e6ed67e4a54dd10a1da1e1baed30ba166da6fd86a01a",
+			"./16.23.1/data/es_ES/champion.json\t160010\t4b735f0fb87a886f2004eb9fe538ad1223602a96643ea4362f5981a61ce906bc",
+			"./16.23.1/img/champion/Aatrox.png\t25644\t852d739fb696684549064266851df91ecd03729e06b1a192dc14af01549b7f3f",
+			"./16.23.1/img/champion/Ahri.png\t28511\t8e93368d97e3d302463c4e83ac5980d1f0a3a0aaf92ac44435730fecbd55b565",
+			"./16.23.1/img/champion/Akali.png\t27191\ta62acc32c454b5cc39cebd0769f940b34f3d39ddaf157b95acb176027f81e17a",
+			"./16.23.1/img/champion/Zed.png\t28879\t3ad3e956e9ad5ca3127d8f685faf69d4251fb726e9b4f0be989764f0027e9c5f",
+			"./16.23.1/img/champion/Zyra.png\t26347\t9993a6caf52f955ad41077e56b56f2472c07c1a589fb4d1c66097ddf775feda4",
+			"./current.json\t31\t2f754b72a26d61bd75580dccc731327ce03a26afdf63d9d3b669a06f190c5af2"
+		]
+	},
+	"S3-tampered-part": {
+		"1-cut": {
+			"ok": false,
+			"error": "ECONNRESET aborted",
+			"draft": {
+				"from": 0,
+				"to": 5,
+				"facts": 7
+			},
+			"cacheBefore": {
+				"valid": false,
+				"reason": "no pointer"
+			},
+			"cacheAfter": {
+				"valid": false,
+				"reason": "no pointer"
+			},
+			"interfaces": ["lo:2", "wlp0s20f3:2", "tailscale0:1"],
+			"tree": [
+				{
+					"path": "staging-16.23.1/data/en_US/championFull.json.part",
+					"bytes": 1500000
+				},
+				{
+					"path": "staging-16.23.1/data/en_US/championFull.json.part.json",
+					"bytes": 47
+				},
+				{
+					"path": "staging-16.23.1/data/es_ES/champion.json",
+					"bytes": 160010
+				},
+				{
+					"path": "staging-16.23.1/img/champion/Aatrox.png",
+					"bytes": 25644
+				},
+				{
+					"path": "staging-16.23.1/img/champion/Ahri.png",
+					"bytes": 28511
+				},
+				{
+					"path": "staging-16.23.1/img/champion/Akali.png",
+					"bytes": 27191
+				}
+			]
+		},
+		"2-offline": {
+			"ok": false,
+			"error": "ENETUNREACH connect ENETUNREACH 3.174.177.40:443 - Local (0.0.0.0:0)",
+			"draft": {
+				"from": 5,
+				"to": 10,
+				"facts": 12
+			},
+			"cacheBefore": {
+				"valid": false,
+				"reason": "no pointer"
+			},
+			"cacheAfter": {
+				"valid": false,
+				"reason": "no pointer"
+			},
+			"interfaces": [],
+			"tree": [
+				{
+					"path": "staging-16.23.1/data/en_US/championFull.json.part",
+					"bytes": 1500000
+				},
+				{
+					"path": "staging-16.23.1/data/en_US/championFull.json.part.json",
+					"bytes": 47
+				},
+				{
+					"path": "staging-16.23.1/data/es_ES/champion.json",
+					"bytes": 160010
+				},
+				{
+					"path": "staging-16.23.1/img/champion/Aatrox.png",
+					"bytes": 25644
+				},
+				{
+					"path": "staging-16.23.1/img/champion/Ahri.png",
+					"bytes": 28511
+				},
+				{
+					"path": "staging-16.23.1/img/champion/Akali.png",
+					"bytes": 27191
+				}
+			]
+		},
+		"3-resume": {
+			"ok": true,
+			"draft": {
+				"from": 10,
+				"to": 15,
+				"facts": 17
+			},
+			"cacheBefore": {
+				"valid": false,
+				"reason": "no pointer"
+			},
+			"cacheAfter": {
+				"valid": true,
+				"version": "16.23.1",
+				"files": 8
+			},
+			"interfaces": ["lo:2", "wlp0s20f3:2", "tailscale0:1"],
+			"tree": [
+				{
+					"path": "16.23.1/data/en_US/champion.json",
+					"bytes": 159013
+				},
+				{
+					"path": "16.23.1/data/en_US/championFull.json",
+					"bytes": 2240929
+				},
+				{
+					"path": "16.23.1/data/es_ES/champion.json",
+					"bytes": 160010
+				},
+				{
+					"path": "16.23.1/img/champion/Aatrox.png",
+					"bytes": 25644
+				},
+				{
+					"path": "16.23.1/img/champion/Ahri.png",
+					"bytes": 28511
+				},
+				{
+					"path": "16.23.1/img/champion/Akali.png",
+					"bytes": 27191
+				},
+				{
+					"path": "16.23.1/img/champion/Zed.png",
+					"bytes": 28879
+				},
+				{
+					"path": "16.23.1/img/champion/Zyra.png",
+					"bytes": 26347
+				},
+				{
+					"path": "current.json",
+					"bytes": 31
+				}
+			],
+			"stats": {
+				"kept": [
+					"data/es_ES/champion.json",
+					"img/champion/Aatrox.png",
+					"img/champion/Ahri.png",
+					"img/champion/Akali.png"
+				],
+				"resumed": ["data/en_US/championFull.json"],
+				"restarted": [],
+				"discarded": ["data/en_US/championFull.json"],
+				"fetchedBytes": 2455168
+			},
+			"requests": [
+				{
+					"file": "data/es_ES/champion.json",
+					"outcome": "kept-verified"
+				},
+				{
+					"file": "img/champion/Aatrox.png",
+					"outcome": "kept-verified"
+				},
+				{
+					"file": "img/champion/Ahri.png",
+					"outcome": "kept-verified"
+				},
+				{
+					"file": "img/champion/Akali.png",
+					"outcome": "kept-verified"
+				},
+				{
+					"file": "data/en_US/championFull.json",
+					"attempt": 1,
+					"resumeFrom": 1500000,
+					"requestHeaders": {
+						"range": "bytes=1500000-",
+						"ifRange": "\"f82fdbaf0b78c420c17bb735cb92e3fe\""
+					},
+					"status": 206,
+					"acceptRanges": "bytes",
+					"contentRange": "bytes 1500000-2240928/2240929",
+					"etag": "\"f82fdbaf0b78c420c17bb735cb92e3fe\"",
+					"contentLength": "740929",
+					"servedFrom": 1500000,
+					"received": 740929,
+					"outcome": "body-complete + hash/size mismatch",
+					"verified": false
+				},
+				{
+					"file": "data/en_US/championFull.json",
+					"attempt": 2,
+					"resumeFrom": 0,
+					"requestHeaders": {},
+					"status": 200,
+					"acceptRanges": "bytes",
+					"etag": "\"f82fdbaf0b78c420c17bb735cb92e3fe\"",
+					"contentLength": "2240929",
+					"servedFrom": 0,
+					"received": 2240929,
+					"outcome": "body-complete",
+					"verified": true
+				},
+				{
+					"file": "data/en_US/champion.json",
+					"attempt": 1,
+					"resumeFrom": 0,
+					"requestHeaders": {},
+					"status": 200,
+					"acceptRanges": "bytes",
+					"etag": "\"09e3b3f045458a7edd2db0e622987991\"",
+					"contentLength": "159013",
+					"servedFrom": 0,
+					"received": 159013,
+					"outcome": "body-complete",
+					"verified": true
+				},
+				{
+					"file": "img/champion/Zed.png",
+					"attempt": 1,
+					"resumeFrom": 0,
+					"requestHeaders": {},
+					"status": 200,
+					"acceptRanges": "bytes",
+					"etag": "\"18f3aad5b935f3f2e82d5ab67f230062\"",
+					"contentLength": "28879",
+					"servedFrom": 0,
+					"received": 28879,
+					"outcome": "body-complete",
+					"verified": true
+				},
+				{
+					"file": "img/champion/Zyra.png",
+					"attempt": 1,
+					"resumeFrom": 0,
+					"requestHeaders": {},
+					"status": 200,
+					"acceptRanges": "bytes",
+					"etag": "\"45e03a11fa3cb9a12661184afec3654f\"",
+					"contentLength": "26347",
+					"servedFrom": 0,
+					"received": 26347,
+					"outcome": "body-complete",
+					"verified": true
+				}
+			]
+		},
+		"4-verify-offline": {
+			"draft": {
+				"from": 15,
+				"to": 20,
+				"facts": 24
+			},
+			"cacheBefore": {
+				"valid": true,
+				"version": "16.23.1",
+				"files": 8
+			},
+			"cacheAfter": {
+				"valid": true,
+				"version": "16.23.1",
+				"files": 8
+			},
+			"interfaces": [],
+			"tree": [
+				{
+					"path": "16.23.1/data/en_US/champion.json",
+					"bytes": 159013
+				},
+				{
+					"path": "16.23.1/data/en_US/championFull.json",
+					"bytes": 2240929
+				},
+				{
+					"path": "16.23.1/data/es_ES/champion.json",
+					"bytes": 160010
+				},
+				{
+					"path": "16.23.1/img/champion/Aatrox.png",
+					"bytes": 25644
+				},
+				{
+					"path": "16.23.1/img/champion/Ahri.png",
+					"bytes": 28511
+				},
+				{
+					"path": "16.23.1/img/champion/Akali.png",
+					"bytes": 27191
+				},
+				{
+					"path": "16.23.1/img/champion/Zed.png",
+					"bytes": 28879
+				},
+				{
+					"path": "16.23.1/img/champion/Zyra.png",
+					"bytes": 26347
+				},
+				{
+					"path": "current.json",
+					"bytes": 31
+				}
+			]
+		},
+		"ref.sha": [
+			"680733b290a789847dfe623d1beb9fdac1fffa70f0c4b90d100a2d60b26c2b25  data/en_US/championFull.json",
+			"917f9b1701a148997ef2e6ed67e4a54dd10a1da1e1baed30ba166da6fd86a01a  data/en_US/champion.json",
+			"4b735f0fb87a886f2004eb9fe538ad1223602a96643ea4362f5981a61ce906bc  data/es_ES/champion.json",
+			"852d739fb696684549064266851df91ecd03729e06b1a192dc14af01549b7f3f  img/champion/Aatrox.png",
+			"8e93368d97e3d302463c4e83ac5980d1f0a3a0aaf92ac44435730fecbd55b565  img/champion/Ahri.png",
+			"a62acc32c454b5cc39cebd0769f940b34f3d39ddaf157b95acb176027f81e17a  img/champion/Akali.png",
+			"3ad3e956e9ad5ca3127d8f685faf69d4251fb726e9b4f0be989764f0027e9c5f  img/champion/Zed.png",
+			"9993a6caf52f955ad41077e56b56f2472c07c1a589fb4d1c66097ddf775feda4  img/champion/Zyra.png"
+		],
+		"cache.sha": [
+			"680733b290a789847dfe623d1beb9fdac1fffa70f0c4b90d100a2d60b26c2b25  data/en_US/championFull.json",
+			"917f9b1701a148997ef2e6ed67e4a54dd10a1da1e1baed30ba166da6fd86a01a  data/en_US/champion.json",
+			"4b735f0fb87a886f2004eb9fe538ad1223602a96643ea4362f5981a61ce906bc  data/es_ES/champion.json",
+			"852d739fb696684549064266851df91ecd03729e06b1a192dc14af01549b7f3f  img/champion/Aatrox.png",
+			"8e93368d97e3d302463c4e83ac5980d1f0a3a0aaf92ac44435730fecbd55b565  img/champion/Ahri.png",
+			"a62acc32c454b5cc39cebd0769f940b34f3d39ddaf157b95acb176027f81e17a  img/champion/Akali.png",
+			"3ad3e956e9ad5ca3127d8f685faf69d4251fb726e9b4f0be989764f0027e9c5f  img/champion/Zed.png",
+			"9993a6caf52f955ad41077e56b56f2472c07c1a589fb4d1c66097ddf775feda4  img/champion/Zyra.png"
+		],
+		"identicalToReference": true,
+		"proxy-cut.log": [
+			"{\"t\":1795203548997,\"url\":\"/cdn/16.23.1/data/es_ES/champion.json\",\"status\":200,\"target\":false}",
+			"{\"t\":1795203549041,\"url\":\"/cdn/16.23.1/img/champion/Aatrox.png\",\"status\":200,\"target\":false}",
+			"{\"t\":1795203549052,\"url\":\"/cdn/16.23.1/img/champion/Ahri.png\",\"status\":200,\"target\":false}",
+			"{\"t\":1795203549064,\"url\":\"/cdn/16.23.1/img/champion/Akali.png\",\"status\":200,\"target\":false}",
+			"{\"t\":1795203549079,\"url\":\"/cdn/16.23.1/data/en_US/championFull.json\",\"status\":200,\"target\":true}",
+			"{\"t\":1795203549138,\"url\":\"/cdn/16.23.1/data/en_US/championFull.json\",\"event\":\"cut\",\"sent\":1500000}"
+		],
+		"snapshot-1-cut.tsv": [
+			"./staging-16.23.1/data/en_US/championFull.json.part\t1500000\taebccc3edd13e079e3189d68687df6c1321ba187fa539b7d52a461686f0ba65d",
+			"./staging-16.23.1/data/en_US/championFull.json.part.json\t47\t47913cd5b930f3e0fa732e760d954196cffa668ed623f96668fa971b605d46c5",
+			"./staging-16.23.1/data/es_ES/champion.json\t160010\t4b735f0fb87a886f2004eb9fe538ad1223602a96643ea4362f5981a61ce906bc",
+			"./staging-16.23.1/img/champion/Aatrox.png\t25644\t852d739fb696684549064266851df91ecd03729e06b1a192dc14af01549b7f3f",
+			"./staging-16.23.1/img/champion/Ahri.png\t28511\t8e93368d97e3d302463c4e83ac5980d1f0a3a0aaf92ac44435730fecbd55b565",
+			"./staging-16.23.1/img/champion/Akali.png\t27191\ta62acc32c454b5cc39cebd0769f940b34f3d39ddaf157b95acb176027f81e17a"
+		],
+		"snapshot-2-offline.tsv": [
+			"./staging-16.23.1/data/en_US/championFull.json.part\t1500000\taebccc3edd13e079e3189d68687df6c1321ba187fa539b7d52a461686f0ba65d",
+			"./staging-16.23.1/data/en_US/championFull.json.part.json\t47\t47913cd5b930f3e0fa732e760d954196cffa668ed623f96668fa971b605d46c5",
+			"./staging-16.23.1/data/es_ES/champion.json\t160010\t4b735f0fb87a886f2004eb9fe538ad1223602a96643ea4362f5981a61ce906bc",
+			"./staging-16.23.1/img/champion/Aatrox.png\t25644\t852d739fb696684549064266851df91ecd03729e06b1a192dc14af01549b7f3f",
+			"./staging-16.23.1/img/champion/Ahri.png\t28511\t8e93368d97e3d302463c4e83ac5980d1f0a3a0aaf92ac44435730fecbd55b565",
+			"./staging-16.23.1/img/champion/Akali.png\t27191\ta62acc32c454b5cc39cebd0769f940b34f3d39ddaf157b95acb176027f81e17a"
+		],
+		"snapshot-2b-tampered.tsv": [
+			"./staging-16.23.1/data/en_US/championFull.json.part\t1500000\t45d261b8c73643e74e5759d05a7118a153fb82fef247785c3da03ba7b91fa02b",
+			"./staging-16.23.1/data/en_US/championFull.json.part.json\t47\t47913cd5b930f3e0fa732e760d954196cffa668ed623f96668fa971b605d46c5",
+			"./staging-16.23.1/data/es_ES/champion.json\t160010\t4b735f0fb87a886f2004eb9fe538ad1223602a96643ea4362f5981a61ce906bc",
+			"./staging-16.23.1/img/champion/Aatrox.png\t25644\t852d739fb696684549064266851df91ecd03729e06b1a192dc14af01549b7f3f",
+			"./staging-16.23.1/img/champion/Ahri.png\t28511\t8e93368d97e3d302463c4e83ac5980d1f0a3a0aaf92ac44435730fecbd55b565",
+			"./staging-16.23.1/img/champion/Akali.png\t27191\ta62acc32c454b5cc39cebd0769f940b34f3d39ddaf157b95acb176027f81e17a"
+		],
+		"snapshot-3-resume.tsv": [
+			"./16.23.1/data/en_US/championFull.json\t2240929\t680733b290a789847dfe623d1beb9fdac1fffa70f0c4b90d100a2d60b26c2b25",
+			"./16.23.1/data/en_US/champion.json\t159013\t917f9b1701a148997ef2e6ed67e4a54dd10a1da1e1baed30ba166da6fd86a01a",
+			"./16.23.1/data/es_ES/champion.json\t160010\t4b735f0fb87a886f2004eb9fe538ad1223602a96643ea4362f5981a61ce906bc",
+			"./16.23.1/img/champion/Aatrox.png\t25644\t852d739fb696684549064266851df91ecd03729e06b1a192dc14af01549b7f3f",
+			"./16.23.1/img/champion/Ahri.png\t28511\t8e93368d97e3d302463c4e83ac5980d1f0a3a0aaf92ac44435730fecbd55b565",
+			"./16.23.1/img/champion/Akali.png\t27191\ta62acc32c454b5cc39cebd0769f940b34f3d39ddaf157b95acb176027f81e17a",
+			"./16.23.1/img/champion/Zed.png\t28879\t3ad3e956e9ad5ca3127d8f685faf69d4251fb726e9b4f0be989764f0027e9c5f",
+			"./16.23.1/img/champion/Zyra.png\t26347\t9993a6caf52f955ad41077e56b56f2472c07c1a589fb4d1c66097ddf775feda4",
+			"./current.json\t31\t2f754b72a26d61bd75580dccc731327ce03a26afdf63d9d3b669a06f190c5af2"
+		]
+	},
+	"S4-no-range": {
+		"1-cut": {
+			"ok": false,
+			"error": "ECONNRESET aborted",
+			"draft": {
+				"from": 0,
+				"to": 5,
+				"facts": 7
+			},
+			"cacheBefore": {
+				"valid": false,
+				"reason": "no pointer"
+			},
+			"cacheAfter": {
+				"valid": false,
+				"reason": "no pointer"
+			},
+			"interfaces": ["lo:2", "wlp0s20f3:2", "tailscale0:1"],
+			"tree": [
+				{
+					"path": "staging-16.23.1/data/en_US/championFull.json.part",
+					"bytes": 1500000
+				},
+				{
+					"path": "staging-16.23.1/data/en_US/championFull.json.part.json",
+					"bytes": 47
+				},
+				{
+					"path": "staging-16.23.1/data/es_ES/champion.json",
+					"bytes": 160010
+				},
+				{
+					"path": "staging-16.23.1/img/champion/Aatrox.png",
+					"bytes": 25644
+				},
+				{
+					"path": "staging-16.23.1/img/champion/Ahri.png",
+					"bytes": 28511
+				},
+				{
+					"path": "staging-16.23.1/img/champion/Akali.png",
+					"bytes": 27191
+				}
+			]
+		},
+		"2-offline": {
+			"ok": false,
+			"error": "ENETUNREACH connect ENETUNREACH 3.174.177.40:443 - Local (0.0.0.0:0)",
+			"draft": {
+				"from": 5,
+				"to": 10,
+				"facts": 12
+			},
+			"cacheBefore": {
+				"valid": false,
+				"reason": "no pointer"
+			},
+			"cacheAfter": {
+				"valid": false,
+				"reason": "no pointer"
+			},
+			"interfaces": [],
+			"tree": [
+				{
+					"path": "staging-16.23.1/data/en_US/championFull.json.part",
+					"bytes": 1500000
+				},
+				{
+					"path": "staging-16.23.1/data/en_US/championFull.json.part.json",
+					"bytes": 47
+				},
+				{
+					"path": "staging-16.23.1/data/es_ES/champion.json",
+					"bytes": 160010
+				},
+				{
+					"path": "staging-16.23.1/img/champion/Aatrox.png",
+					"bytes": 25644
+				},
+				{
+					"path": "staging-16.23.1/img/champion/Ahri.png",
+					"bytes": 28511
+				},
+				{
+					"path": "staging-16.23.1/img/champion/Akali.png",
+					"bytes": 27191
+				}
+			]
+		},
+		"3-resume": {
+			"ok": true,
+			"draft": {
+				"from": 10,
+				"to": 15,
+				"facts": 17
+			},
+			"cacheBefore": {
+				"valid": false,
+				"reason": "no pointer"
+			},
+			"cacheAfter": {
+				"valid": true,
+				"version": "16.23.1",
+				"files": 8
+			},
+			"interfaces": ["lo:2", "wlp0s20f3:2", "tailscale0:1"],
+			"tree": [
+				{
+					"path": "16.23.1/data/en_US/champion.json",
+					"bytes": 159013
+				},
+				{
+					"path": "16.23.1/data/en_US/championFull.json",
+					"bytes": 2240929
+				},
+				{
+					"path": "16.23.1/data/es_ES/champion.json",
+					"bytes": 160010
+				},
+				{
+					"path": "16.23.1/img/champion/Aatrox.png",
+					"bytes": 25644
+				},
+				{
+					"path": "16.23.1/img/champion/Ahri.png",
+					"bytes": 28511
+				},
+				{
+					"path": "16.23.1/img/champion/Akali.png",
+					"bytes": 27191
+				},
+				{
+					"path": "16.23.1/img/champion/Zed.png",
+					"bytes": 28879
+				},
+				{
+					"path": "16.23.1/img/champion/Zyra.png",
+					"bytes": 26347
+				},
+				{
+					"path": "current.json",
+					"bytes": 31
+				}
+			],
+			"stats": {
+				"kept": [
+					"data/es_ES/champion.json",
+					"img/champion/Aatrox.png",
+					"img/champion/Ahri.png",
+					"img/champion/Akali.png"
+				],
+				"resumed": [],
+				"restarted": ["data/en_US/championFull.json"],
+				"discarded": [],
+				"fetchedBytes": 2455168
+			},
+			"requests": [
+				{
+					"file": "data/es_ES/champion.json",
+					"outcome": "kept-verified"
+				},
+				{
+					"file": "img/champion/Aatrox.png",
+					"outcome": "kept-verified"
+				},
+				{
+					"file": "img/champion/Ahri.png",
+					"outcome": "kept-verified"
+				},
+				{
+					"file": "img/champion/Akali.png",
+					"outcome": "kept-verified"
+				},
+				{
+					"file": "data/en_US/championFull.json",
+					"attempt": 1,
+					"resumeFrom": 1500000,
+					"requestHeaders": {
+						"range": "bytes=1500000-",
+						"ifRange": "\"f82fdbaf0b78c420c17bb735cb92e3fe\""
+					},
+					"status": 200,
+					"etag": "\"f82fdbaf0b78c420c17bb735cb92e3fe\"",
+					"contentLength": "2240929",
+					"servedFrom": 0,
+					"received": 2240929,
+					"outcome": "body-complete",
+					"verified": true
+				},
+				{
+					"file": "data/en_US/champion.json",
+					"attempt": 1,
+					"resumeFrom": 0,
+					"requestHeaders": {},
+					"status": 200,
+					"etag": "\"09e3b3f045458a7edd2db0e622987991\"",
+					"contentLength": "159013",
+					"servedFrom": 0,
+					"received": 159013,
+					"outcome": "body-complete",
+					"verified": true
+				},
+				{
+					"file": "img/champion/Zed.png",
+					"attempt": 1,
+					"resumeFrom": 0,
+					"requestHeaders": {},
+					"status": 200,
+					"etag": "\"18f3aad5b935f3f2e82d5ab67f230062\"",
+					"contentLength": "28879",
+					"servedFrom": 0,
+					"received": 28879,
+					"outcome": "body-complete",
+					"verified": true
+				},
+				{
+					"file": "img/champion/Zyra.png",
+					"attempt": 1,
+					"resumeFrom": 0,
+					"requestHeaders": {},
+					"status": 200,
+					"etag": "\"45e03a11fa3cb9a12661184afec3654f\"",
+					"contentLength": "26347",
+					"servedFrom": 0,
+					"received": 26347,
+					"outcome": "body-complete",
+					"verified": true
+				}
+			]
+		},
+		"4-verify-offline": {
+			"draft": {
+				"from": 15,
+				"to": 20,
+				"facts": 24
+			},
+			"cacheBefore": {
+				"valid": true,
+				"version": "16.23.1",
+				"files": 8
+			},
+			"cacheAfter": {
+				"valid": true,
+				"version": "16.23.1",
+				"files": 8
+			},
+			"interfaces": [],
+			"tree": [
+				{
+					"path": "16.23.1/data/en_US/champion.json",
+					"bytes": 159013
+				},
+				{
+					"path": "16.23.1/data/en_US/championFull.json",
+					"bytes": 2240929
+				},
+				{
+					"path": "16.23.1/data/es_ES/champion.json",
+					"bytes": 160010
+				},
+				{
+					"path": "16.23.1/img/champion/Aatrox.png",
+					"bytes": 25644
+				},
+				{
+					"path": "16.23.1/img/champion/Ahri.png",
+					"bytes": 28511
+				},
+				{
+					"path": "16.23.1/img/champion/Akali.png",
+					"bytes": 27191
+				},
+				{
+					"path": "16.23.1/img/champion/Zed.png",
+					"bytes": 28879
+				},
+				{
+					"path": "16.23.1/img/champion/Zyra.png",
+					"bytes": 26347
+				},
+				{
+					"path": "current.json",
+					"bytes": 31
+				}
+			]
+		},
+		"ref.sha": [
+			"680733b290a789847dfe623d1beb9fdac1fffa70f0c4b90d100a2d60b26c2b25  data/en_US/championFull.json",
+			"917f9b1701a148997ef2e6ed67e4a54dd10a1da1e1baed30ba166da6fd86a01a  data/en_US/champion.json",
+			"4b735f0fb87a886f2004eb9fe538ad1223602a96643ea4362f5981a61ce906bc  data/es_ES/champion.json",
+			"852d739fb696684549064266851df91ecd03729e06b1a192dc14af01549b7f3f  img/champion/Aatrox.png",
+			"8e93368d97e3d302463c4e83ac5980d1f0a3a0aaf92ac44435730fecbd55b565  img/champion/Ahri.png",
+			"a62acc32c454b5cc39cebd0769f940b34f3d39ddaf157b95acb176027f81e17a  img/champion/Akali.png",
+			"3ad3e956e9ad5ca3127d8f685faf69d4251fb726e9b4f0be989764f0027e9c5f  img/champion/Zed.png",
+			"9993a6caf52f955ad41077e56b56f2472c07c1a589fb4d1c66097ddf775feda4  img/champion/Zyra.png"
+		],
+		"cache.sha": [
+			"680733b290a789847dfe623d1beb9fdac1fffa70f0c4b90d100a2d60b26c2b25  data/en_US/championFull.json",
+			"917f9b1701a148997ef2e6ed67e4a54dd10a1da1e1baed30ba166da6fd86a01a  data/en_US/champion.json",
+			"4b735f0fb87a886f2004eb9fe538ad1223602a96643ea4362f5981a61ce906bc  data/es_ES/champion.json",
+			"852d739fb696684549064266851df91ecd03729e06b1a192dc14af01549b7f3f  img/champion/Aatrox.png",
+			"8e93368d97e3d302463c4e83ac5980d1f0a3a0aaf92ac44435730fecbd55b565  img/champion/Ahri.png",
+			"a62acc32c454b5cc39cebd0769f940b34f3d39ddaf157b95acb176027f81e17a  img/champion/Akali.png",
+			"3ad3e956e9ad5ca3127d8f685faf69d4251fb726e9b4f0be989764f0027e9c5f  img/champion/Zed.png",
+			"9993a6caf52f955ad41077e56b56f2472c07c1a589fb4d1c66097ddf775feda4  img/champion/Zyra.png"
+		],
+		"identicalToReference": true,
+		"proxy-cut.log": [
+			"{\"t\":1795203556025,\"url\":\"/cdn/16.23.1/data/es_ES/champion.json\",\"status\":200,\"target\":false}",
+			"{\"t\":1795203556108,\"url\":\"/cdn/16.23.1/img/champion/Aatrox.png\",\"status\":200,\"target\":false}",
+			"{\"t\":1795203556124,\"url\":\"/cdn/16.23.1/img/champion/Ahri.png\",\"status\":200,\"target\":false}",
+			"{\"t\":1795203556136,\"url\":\"/cdn/16.23.1/img/champion/Akali.png\",\"status\":200,\"target\":false}",
+			"{\"t\":1795203556151,\"url\":\"/cdn/16.23.1/data/en_US/championFull.json\",\"status\":200,\"target\":true}",
+			"{\"t\":1795203556202,\"url\":\"/cdn/16.23.1/data/en_US/championFull.json\",\"event\":\"cut\",\"sent\":1500000}"
+		],
+		"proxy-resume.log": [
+			"{\"t\":1795203559805,\"url\":\"/cdn/16.23.1/data/en_US/championFull.json\",\"range\":\"bytes=1500000-\",\"status\":200,\"target\":false}",
+			"{\"t\":1795203559944,\"url\":\"/cdn/16.23.1/data/en_US/champion.json\",\"status\":200,\"target\":false}",
+			"{\"t\":1795203559958,\"url\":\"/cdn/16.23.1/img/champion/Zed.png\",\"status\":200,\"target\":false}",
+			"{\"t\":1795203559969,\"url\":\"/cdn/16.23.1/img/champion/Zyra.png\",\"status\":200,\"target\":false}"
+		],
+		"snapshot-1-cut.tsv": [
+			"./staging-16.23.1/data/en_US/championFull.json.part\t1500000\taebccc3edd13e079e3189d68687df6c1321ba187fa539b7d52a461686f0ba65d",
+			"./staging-16.23.1/data/en_US/championFull.json.part.json\t47\t47913cd5b930f3e0fa732e760d954196cffa668ed623f96668fa971b605d46c5",
+			"./staging-16.23.1/data/es_ES/champion.json\t160010\t4b735f0fb87a886f2004eb9fe538ad1223602a96643ea4362f5981a61ce906bc",
+			"./staging-16.23.1/img/champion/Aatrox.png\t25644\t852d739fb696684549064266851df91ecd03729e06b1a192dc14af01549b7f3f",
+			"./staging-16.23.1/img/champion/Ahri.png\t28511\t8e93368d97e3d302463c4e83ac5980d1f0a3a0aaf92ac44435730fecbd55b565",
+			"./staging-16.23.1/img/champion/Akali.png\t27191\ta62acc32c454b5cc39cebd0769f940b34f3d39ddaf157b95acb176027f81e17a"
+		],
+		"snapshot-2-offline.tsv": [
+			"./staging-16.23.1/data/en_US/championFull.json.part\t1500000\taebccc3edd13e079e3189d68687df6c1321ba187fa539b7d52a461686f0ba65d",
+			"./staging-16.23.1/data/en_US/championFull.json.part.json\t47\t47913cd5b930f3e0fa732e760d954196cffa668ed623f96668fa971b605d46c5",
+			"./staging-16.23.1/data/es_ES/champion.json\t160010\t4b735f0fb87a886f2004eb9fe538ad1223602a96643ea4362f5981a61ce906bc",
+			"./staging-16.23.1/img/champion/Aatrox.png\t25644\t852d739fb696684549064266851df91ecd03729e06b1a192dc14af01549b7f3f",
+			"./staging-16.23.1/img/champion/Ahri.png\t28511\t8e93368d97e3d302463c4e83ac5980d1f0a3a0aaf92ac44435730fecbd55b565",
+			"./staging-16.23.1/img/champion/Akali.png\t27191\ta62acc32c454b5cc39cebd0769f940b34f3d39ddaf157b95acb176027f81e17a"
+		],
+		"snapshot-3-resume.tsv": [
+			"./16.23.1/data/en_US/championFull.json\t2240929\t680733b290a789847dfe623d1beb9fdac1fffa70f0c4b90d100a2d60b26c2b25",
+			"./16.23.1/data/en_US/champion.json\t159013\t917f9b1701a148997ef2e6ed67e4a54dd10a1da1e1baed30ba166da6fd86a01a",
+			"./16.23.1/data/es_ES/champion.json\t160010\t4b735f0fb87a886f2004eb9fe538ad1223602a96643ea4362f5981a61ce906bc",
+			"./16.23.1/img/champion/Aatrox.png\t25644\t852d739fb696684549064266851df91ecd03729e06b1a192dc14af01549b7f3f",
+			"./16.23.1/img/champion/Ahri.png\t28511\t8e93368d97e3d302463c4e83ac5980d1f0a3a0aaf92ac44435730fecbd55b565",
+			"./16.23.1/img/champion/Akali.png\t27191\ta62acc32c454b5cc39cebd0769f940b34f3d39ddaf157b95acb176027f81e17a",
+			"./16.23.1/img/champion/Zed.png\t28879\t3ad3e956e9ad5ca3127d8f685faf69d4251fb726e9b4f0be989764f0027e9c5f",
+			"./16.23.1/img/champion/Zyra.png\t26347\t9993a6caf52f955ad41077e56b56f2472c07c1a589fb4d1c66097ddf775feda4",
+			"./current.json\t31\t2f754b72a26d61bd75580dccc731327ce03a26afdf63d9d3b669a06f190c5af2"
+		]
+	}
+}
