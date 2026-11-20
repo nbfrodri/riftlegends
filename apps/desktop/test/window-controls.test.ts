@@ -103,3 +103,9 @@ test("reports whether the desktop supports minimizing", () => {
 	expect(setup(false, false).invoke(windowChannels.canMinimize)).toBe(false);
 	expect(setup(false, true).invoke(windowChannels.canMinimize)).toBe(true);
 });
+
+test("rejects minimize without a native call when the desktop cannot minimize", () => {
+	const { window, invoke } = setup(false, false);
+	expect(() => invoke(windowChannels.minimize)).toThrow(/minimiz/i);
+	expect(window.minimize).not.toHaveBeenCalled();
+});
