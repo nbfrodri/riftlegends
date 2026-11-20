@@ -77,7 +77,7 @@ Todas las animaciones respetan `prefers-reduced-motion` y se pueden saltar sin a
 
 | Necesidad | Librería | Versión | Licencia | Notas |
 | --- | --- | --- | --- | --- |
-| Esquemas y validación | `zod` | 4.6 | MIT | Contenido, contratos de IPC y comandos |
+| Esquemas y validación | `zod` | 4.6 | MIT | Contenido, contratos de IPC y comandos. Ya en `packages/contracts` (4.6.7) |
 | PRNG | `pure-rand` | 8.4 | MIT | Algoritmo fijado; **nunca** `Math.random` ni `seedrandom` |
 | SQLite | `node:sqlite` (incluido en Electron; validado en el AppImage y el NSIS, [ADR 0003](decisions/0003-go-no-go-fase1.md)) | — | — | Solo el `utilityProcess` del núcleo escribe; sin módulos nativos |
 | Nombres para regens | `@faker-js/faker` | 10.6 | MIT | Siempre con semilla derivada del PRNG del núcleo; verificar que la salida es determinista |

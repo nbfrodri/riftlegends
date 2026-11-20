@@ -42,5 +42,11 @@
 	"market.role.jungle": "Jungle",
 	"market.role.mid": "Mid",
 	"market.role.bot": "Marksman",
-	"market.role.support": "Support"
+	"market.role.support": "Support",
+	"errors.contract-mismatch": "The interface and the core are different versions ({{received}} vs {{expected}}). Restart the game.",
+	"errors.invalid-command": "The core rejected a malformed order.",
+	"errors.unknown-session": "The match no longer exists in the core.",
+	"errors.stale-position": "The state changed while the order was being sent. Try again.",
+	"errors.core-restarted": "The core restarted and the order was not applied.",
+	"errors.core-timeout": "The core did not answer in time."
 }
