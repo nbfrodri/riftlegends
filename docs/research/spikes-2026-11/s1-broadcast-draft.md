@@ -1,14 +1,14 @@
 # S1 · Draft broadcast Caja
 
-**T1 aprobado en la pasada completa con `power-saver`.** Con 60 confirmaciones, la latencia p95 fue de 27,3 ms, la media de 56,13 FPS y el intervalo p95 de 21,3 ms. La tanda más ajustada alcanzó 55,06 FPS. Una tanda preliminar cayó a 54,93 FPS, por lo que el margen de fluidez en batería es pequeño. La comparación con `balanced` sigue pendiente.
+**T1 aprobado en `power-saver` e inconcluso en el primer intento con `balanced`.** La tanda válida de `balanced` alcanzó 59,60 FPS con un intervalo p95 de 16,8 ms, frente a 56,13 FPS y 21,3 ms en las tres tandas completas de `power-saver`. La latencia p95 fue similar (28,2 y 27,3 ms). El cambio de perfil durante la segunda tanda y el cambio de alimentación limitan la comparación.
 
-Ensayo del 20 de noviembre de 2026 para el issue #73. Escena desechable en `spike/73-broadcast-draft`, commit `19db294`. Build y medidor de la pasada por perfil en `54705d44d86255f758c4bb78b321099b111c866b`. La decisión conjunta sobre el stack corresponde al ADR 0003 tras T1–T7. [Plan 03](../../plans/03-spikes.md)
+Ensayo del 20 de noviembre de 2026 para el issue #73. Escena desechable en `spike/73-broadcast-draft`, commit `19db294`. Se midió `power-saver` en `54705d44d86255f758c4bb78b321099b111c866b` y `balanced` en `331536ea2787c989b4fbc4d1b51767c9f6c1b232`. Entre ambos commits se simplificó el observador de fotogramas. La escena era idéntica y ambos observadores dieron los mismos resultados al reproducir 108 secuencias de prueba. La decisión conjunta sobre el stack corresponde al ADR 0003 tras T1–T7. [Plan 03](../../plans/03-spikes.md)
 
 ## Equipo y versiones
 
 | Componente | Configuración observada |
 | --- | --- |
-| Equipo | HP EliteBook 840 G8, Intel Core i7-1185G7, 15,3 GiB de RAM utilizable. Batería en descarga durante la pasada. |
+| Equipo | HP EliteBook 840 G8, Intel Core i7-1185G7, 15,3 GiB de RAM utilizable. En `power-saver` la batería estaba en descarga. Antes de lanzar `balanced`, `BAT0/status` indicaba `Discharging`. A las 19:55:09 CET, durante el ensayo, indicaba `Charging` y `AC/online` valía 1. |
 | Sistema | Omarchy 4.5.0 (Arch), kernel 7.2.15-1-omarchy, Hyprland 0.56.2. |
 | GPU y controlador | Intel Iris Xe Tiger Lake GT2, PCI `8086:9a49`, controlador `i915`, Mesa 26.2.5-1. El propio lienzo devolvió WebGL 2.0 con ANGLE sobre Intel y OpenGL ES 3.2. |
 | Pantalla | Panel interno eDP-1, 1920×1080 físicos, 60,01 Hz, escala 1,25. El cliente Wayland era nativo (`xwayland: false`). Las resoluciones de ensayo son píxeles lógicos del contenido de la ventana. |
@@ -29,15 +29,15 @@ Ascua veta a Nimbo. El reloj de ocho segundos inicia el turno de Bruma. Al confi
 
 ## Resultados por perfil
 
-| Criterio T1 | Umbral o condición | `power-saver` · pasada completa | `balanced` |
+| Criterio T1 | Umbral o condición | `power-saver` · pasada completa | `balanced` · 1 de 3 tandas válidas |
 | --- | --- | --- | --- |
-| Respuesta visible estimada | p95 ≤100 ms | **Pasa** · p95 27,3 ms, máximo 29,0 ms | Pendiente |
-| Fluidez durante el movimiento | Media ≥55 FPS | **Pasa** · 56,13 FPS | Pendiente |
-| Intervalo entre fotogramas | p95 ≤25 ms | **Pasa** · p95 21,3 ms, máximo 24,3 ms | Pendiente |
+| Respuesta visible estimada | p95 ≤100 ms | **Pasa** · p95 27,3 ms, máximo 29,0 ms | Parcial · p95 28,2 ms, máximo 29,6 ms |
+| Fluidez durante el movimiento | Media ≥55 FPS | **Pasa** · 56,13 FPS | Parcial · 59,60 FPS |
+| Intervalo entre fotogramas | p95 ≤25 ms | **Pasa** · p95 21,3 ms, máximo 24,3 ms | Parcial · p95 16,8 ms, máximo 24,5 ms |
 | Pantallas en blanco | Cero reproducibles | **Pasa** · ninguna observada en las capturas de las tres tandas ni en la secuencia grabada | Pendiente |
 | Movimiento reducido | Cierre inmediato | **Pasa** · «B4 confirmado · Veyra» en el primer callback, opacidad 1, cero animaciones de rótulo, barrido oculto y foco en el botón | Pendiente |
 | Legibilidad a 1280×720 | Comparación visual con Caja | **Pasa** · reloj, B4, nombres y acción legibles. Columnas de 286,3 / 572,6 / 286,3 px y cero elementos examinados fuera de la ventana | Pendiente |
-| **Veredicto T1** | Todos los criterios | **Aprobado en las tres tandas de la pasada completa** | **Pendiente** |
+| **Veredicto T1** | Todos los criterios | **Aprobado en las tres tandas de la pasada completa** | **Inconcluso** · el sistema cambió de perfil durante el ensayo |
 
 | Tanda en `power-saver` | Confirmaciones | Latencia p95 | Latencia máx. | FPS medios | Intervalo p95 |
 | --- | ---: | ---: | ---: | ---: | ---: |
@@ -52,9 +52,13 @@ Los CSV contienen 1580 intervalos. En la confirmación adicional trazada, Chromi
 
 ## Evidencias
 
-Las marcas de tiempo de los CSV están en milisegundos desde el origen temporal de cada proceso. Los pares `run,confirmation` enlazan ambas tablas. [60 confirmaciones](s1-t1-power-saver.csv) · [Intervalos crudos](s1-t1-power-saver-frames.csv) · [Resultados, equipo y lecturas de energía](s1-t1-power-saver.json)
+Las marcas de tiempo de los CSV están en milisegundos desde el origen temporal de cada proceso. Los pares `run,confirmation` enlazan cada confirmación con sus intervalos. La traza comprimida contiene eventos de entrada y composición de Chromium y la marca `s1-confirm`.
 
-La traza comprimida contiene eventos de entrada y composición de Chromium y la marca `s1-confirm`. Las capturas y el vídeo recogen únicamente la ventana de Rift Legends. [Traza](s1-t1-power-saver-chromium.json.gz) · [Captura a 1366×768](s1-t1-power-saver-1366x768.png) · [Captura a 1280×720](s1-t1-power-saver-1280x720.png) · [Vídeo antes de T3](s1-t1-power-saver-before.webm)
+| Perfil | Muestras crudas | Resultados y lecturas de energía | Evidencias visuales |
+| --- | --- | --- | --- |
+| `power-saver` | [Confirmaciones](s1-t1-power-saver.csv) · [Intervalos](s1-t1-power-saver-frames.csv) | [JSON](s1-t1-power-saver.json) · [Traza](s1-t1-power-saver-chromium.json.gz) | [1366×768](s1-t1-power-saver-1366x768.png) · [1280×720](s1-t1-power-saver-1280x720.png) · [Vídeo anterior a T3](s1-t1-power-saver-before.webm) |
+
+**Primer intento en `balanced`.** La consulta inicial y las de ambos extremos de la primera tanda confirmaron `balanced`. Tras cinco calentamientos, las primeras 20 confirmaciones dieron 28,2 ms de latencia p95, 29,6 ms de máxima, 59,60 FPS medios y 16,8 ms de intervalo p95. Al finalizar la segunda tanda, `powerprofilesctl get` devolvió `power-saver` y el medidor interrumpió la ejecución antes de incorporar esas muestras. El intento quedó fuera de la comparación de pasadas completas. [20 confirmaciones válidas](s1-t1-balanced-interrumpida.csv) · [560 intervalos](s1-t1-balanced-interrumpida-frames.csv)
 
 **Ensayo preliminar.** El primer intento con `power-saver` completó las 60 mediciones y se interrumpió al abrir el vídeo por faltar FFmpeg 1013 en la caché de Playwright. Los FPS medios por tanda fueron 57,94, 54,93 y 55,03. Se conserva el resultado bajo el umbral. Se instaló el codificador de Playwright y se repitió desde el calentamiento con el mismo commit. La tabla principal usa exclusivamente la pasada completa. [Confirmaciones preliminares](s1-t1-power-saver-preliminar.csv) · [Intervalos preliminares](s1-t1-power-saver-preliminar-frames.csv)
 
@@ -64,4 +68,4 @@ La traza comprimida contiene eventos de entrada y composición de Chromium y la 
 
 T3 queda pendiente del ejercicio cronometrado con otro agente. Registrar modelo, esfuerzo, hora de encargo, hora de aceptación, revisiones y ambos vídeos. Para la construcción de S1, `tack codex-used` registró `gpt-6.2-astra` con esfuerzo `high`. La escena y el primer medidor quedaron en el commit de las 12:45 CET, unos 12 minutos desde la preparación del worktree. El tiempo de T3 empieza al entregar el encargo. [Parámetros de la escena](../../../apps/desktop/src/renderer/draft/pacing.ts)
 
-Desde la raíz, una vez seleccionado el perfil correspondiente, ejecutar `mise exec -- pnpm spike:t1 balanced` para obtener la segunda columna del ensayo base. Después del retoque, `mise exec -- pnpm spike:t1 power-saver-t3` repite T1 y escribe nuevas evidencias junto al informe. El primer componente de la etiqueta identifica el perfil activo y el sufijo distingue la revisión.
+Después del retoque, ejecutar desde la raíz `mise exec -- pnpm spike:t1 power-saver-t3` o `mise exec -- pnpm spike:t1 balanced-t3` según el perfil activo. Cada comando repite el ensayo completo y guarda los CSV, la traza, el vídeo y las capturas con el sufijo `-t3` junto al informe.
