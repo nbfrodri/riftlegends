@@ -6,6 +6,7 @@ const { app, BrowserWindow, ipcMain } = require("electron");
 const { openWriter } = require("./client.cjs");
 const { recovery, crossOS, expectedLog } = require("./checks.cjs");
 const { canonicalLog } = require("./core.cjs");
+const dl = require("./download.cjs");
 
 const mode = process.env.RIFT76_TEST;
 const results = process.env.RIFT76_RESULTS;
@@ -92,6 +93,58 @@ async function smoke() {
 	return { before, after };
 }
 
+// Spike 77: play a few draft turns, then (try to) download Data Dragon.
+async function downloadMode() {
+	const turns = Number(process.env.RIFT77_TURNS ?? 5);
+	const manifest = JSON.parse(
+		fs.readFileSync(join(__dirname, "manifest.json")),
+	);
+	const root = join(app.getPath("userData"), "ddragon");
+	const win = await openDraft();
+	const web = win.webContents;
+	await web.executeJavaScript("window.ready");
+	const from = snap.command;
+	for (let ordinal = from + 1; ordinal <= from + turns; ordinal++) {
+		const rendered = await web.executeJavaScript(`new Promise(resolve => {
+			document.addEventListener("saved", () => resolve(document.body.dataset.ordinal), {once:true});
+			document.querySelector("button").click();
+		})`);
+		assert.equal(Number(rendered), ordinal);
+	}
+	const draft = { from, to: snap.command, facts: snap.facts.length };
+	await writer.close();
+	win.destroy();
+	const before = { cache: dl.cacheState(root, manifest), tree: dl.tree(root) };
+	const out = { draft, before, userData: app.getPath("userData") };
+	if (process.env.RIFT77_ACTION === "verify") {
+		return {
+			...out,
+			after: { cache: dl.cacheState(root, manifest), tree: dl.tree(root) },
+		};
+	}
+	let last = 0;
+	try {
+		out.download = await dl.download({
+			base: process.env.RIFT77_BASE ?? "https://ddragon.leagueoflegends.com",
+			manifest,
+			root,
+			timeoutMs: 10000,
+			progress: (file, bytes) => {
+				if (bytes - last >= 250000) {
+					last = bytes;
+					console.error(`DL_PROGRESS ${file} ${bytes}`);
+				}
+			},
+		});
+		out.ok = true;
+	} catch (error) {
+		out.ok = false;
+		out.error = `${error.code ?? ""} ${error.message}`.trim();
+	}
+	out.after = { cache: dl.cacheState(root, manifest), tree: dl.tree(root) };
+	return out;
+}
+
 app
 	.whenReady()
 	.then(async () => {
@@ -108,6 +161,9 @@ app
 		switch (mode) {
 			case "recovery":
 				sample = await recovery(results);
+				break;
+			case "dl":
+				sample = await downloadMode();
 				break;
 			case "cross":
 				sample = await crossOS(join(results, "cross.sqlite"));

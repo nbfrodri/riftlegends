@@ -34,6 +34,9 @@ for (const name of [
 ]) {
 	copyFileSync(join(here, name), join(stage, name));
 }
+for (const name of ["download.cjs", "manifest.json"]) {
+	copyFileSync(join(here, "../spike77", name), join(stage, name));
+}
 for (const locale of ["es", "en"]) {
 	copyFileSync(
 		join(root, "packages/i18n/locales", `${locale}.json`),

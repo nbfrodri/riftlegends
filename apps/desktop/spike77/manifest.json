@@ -1,0 +1,45 @@
+{
+	"version": "16.23.1",
+	"files": [
+		{
+			"path": "data/es_ES/champion.json",
+			"size": 160010,
+			"sha256": "4b735f0fb87a886f2004eb9fe538ad1223602a96643ea4362f5981a61ce906bc"
+		},
+		{
+			"path": "img/champion/Aatrox.png",
+			"size": 25644,
+			"sha256": "852d739fb696684549064266851df91ecd03729e06b1a192dc14af01549b7f3f"
+		},
+		{
+			"path": "img/champion/Ahri.png",
+			"size": 28511,
+			"sha256": "8e93368d97e3d302463c4e83ac5980d1f0a3a0aaf92ac44435730fecbd55b565"
+		},
+		{
+			"path": "img/champion/Akali.png",
+			"size": 27191,
+			"sha256": "a62acc32c454b5cc39cebd0769f940b34f3d39ddaf157b95acb176027f81e17a"
+		},
+		{
+			"path": "data/en_US/championFull.json",
+			"size": 2240929,
+			"sha256": "680733b290a789847dfe623d1beb9fdac1fffa70f0c4b90d100a2d60b26c2b25"
+		},
+		{
+			"path": "data/en_US/champion.json",
+			"size": 159013,
+			"sha256": "917f9b1701a148997ef2e6ed67e4a54dd10a1da1e1baed30ba166da6fd86a01a"
+		},
+		{
+			"path": "img/champion/Zed.png",
+			"size": 28879,
+			"sha256": "3ad3e956e9ad5ca3127d8f685faf69d4251fb726e9b4f0be989764f0027e9c5f"
+		},
+		{
+			"path": "img/champion/Zyra.png",
+			"size": 26347,
+			"sha256": "9993a6caf52f955ad41077e56b56f2472c07c1a589fb4d1c66097ddf775feda4"
+		}
+	]
+}
