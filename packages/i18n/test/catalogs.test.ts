@@ -14,4 +14,12 @@ describe("catalogs", () => {
 			}
 		}
 	});
+
+	it("name the positions with competitive jargon in both languages", () => {
+		const roles = ["top", "jungle", "mid", "bot", "support"] as const;
+		const labels = (catalog: Record<string, string>) =>
+			roles.map((role) => catalog[`market.role.${role}`]);
+		expect(labels(es)).toEqual(["Top", "Jungla", "Mid", "ADC", "Support"]);
+		expect(labels(en)).toEqual(["Top", "Jungle", "Mid", "ADC", "Support"]);
+	});
 });
