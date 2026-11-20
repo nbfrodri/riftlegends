@@ -75,7 +75,7 @@ export function SelectItem({
 		<Primitive.Item
 			data-slot="select-item"
 			className={withState(
-				"flex cursor-default items-center justify-between gap-3 px-2 py-[5px] outline-none select-none data-highlighted:bg-surface data-selected:font-semibold data-disabled:text-muted",
+				"flex cursor-default items-center justify-between gap-3 px-2 py-[5px] outline-none select-none data-highlighted:bg-surface data-highlighted:outline-2 data-highlighted:-outline-offset-2 data-highlighted:outline-solid data-highlighted:outline-action data-selected:font-semibold data-disabled:text-muted",
 				className,
 			)}
 			{...props}
