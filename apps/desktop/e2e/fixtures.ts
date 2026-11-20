@@ -48,9 +48,16 @@ export const test = base.extend<{
 			{ playwright },
 			{ profileDir: testInfo.outputPath("profile"), systemLocale },
 		);
+		// Keep a trace (screenshots and DOM snapshots) only when a test fails,
+		// to diagnose flaky failures in CI (#116).
+		await app.context().tracing.start({ screenshots: true, snapshots: true });
 		try {
 			await use(app);
 		} finally {
+			const failed = testInfo.status !== testInfo.expectedStatus;
+			await app
+				.context()
+				.tracing.stop(failed ? { path: testInfo.outputPath("trace.zip") } : {});
 			await app.close();
 		}
 	},
