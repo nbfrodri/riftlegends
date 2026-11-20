@@ -41,6 +41,11 @@ Resumen de las decisiones **vigentes**, para empezar cualquier sesión sin volve
 | 2026-11-20 | Comandos **idempotentes por `expectedPosition`** (posición del siguiente hecho), en lugar de IDs aleatorios | [plan 04](../plans/04-contratos-ipc.md) |
 | 2026-11-20 | Hechos con **claves con nombre** y forma canónica ordenada (no tuplas) | [plan 04](../plans/04-contratos-ipc.md) |
 | 2026-11-20 | En la Fase 2 la sesión vive **en memoria**; SQLite llega con el plan 13 (Fase 5) | [plan 04](../plans/04-contratos-ipc.md) |
+| 2026-11-20 | RNG: `xoroshiro128plus` de `pure-rand` 8.4.2, semillas por FNV-1a de 32 bits (vectores de S3) y **un flujo por ámbito** con registro de números fijos | [plan 05](../plans/05-rng-determinismo.md) |
+| 2026-11-20 | **Punto fijo con escala 10.000** y redondeo mitad hacia par en las rutas que deciden resultados | [plan 05](../plans/05-rng-determinismo.md) |
+| 2026-11-20 | Goldens con cabecera `sim_version`/`content_version`; cambiar bytes obliga a subir `sim_version` | [plan 05](../plans/05-rng-determinismo.md) |
+| 2026-11-20 | Job **`core-windows`** (tests del núcleo) en cada PR, obligatorio en `protect-main` | [plan 05](../plans/05-rng-determinismo.md) |
+| 2026-11-20 | **Stryker** sobre `packages/core` al cerrar cada fase: `break` 70 %, objetivo 80 % | [plan 05](../plans/05-rng-determinismo.md) |
 
 ## Estilo visual
 

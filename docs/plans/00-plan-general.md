@@ -27,7 +27,7 @@ Decisiones del desarrollador que lo condicionan: LoL real con el riesgo asumido;
   - *Spikes (Fase 1):* exentos, porque son código desechable; lo que sobreviva se reescribe con TDD.
   - *Bugs:* primero un test de regresión que lo reproduzca y después el arreglo.
 - **Cada plan específico empieza por su lista de tests** (comportamientos y casos límite) antes del diseño de implementación, y cada ticket define el test que lo cierra.
-- **Calidad de los tests:** mutation testing con Stryker sobre `packages/core` al cerrar cada fase (umbral a fijar en el plan 05); la cobertura se informa, pero no es el objetivo.
+- **Calidad de los tests:** mutation testing con Stryker sobre `packages/core` al cerrar cada fase (umbral en el [plan 05](05-rng-determinismo.md#mutación): 70 % mínimo, 80 % objetivo); la cobertura se informa, pero no es el objetivo.
 - **Definición de hecho:** test rojo visto, verde, refactor, `pnpm verify` en verde y commit Conventional (preferiblemente `test:` + `feat:` o un único `feat:` con sus tests).
 
 ## Estructura del repositorio (monorepo pnpm)
@@ -131,7 +131,7 @@ Cada plan se crea al empezar su fase con `to-spec` o `dev-workflow`, y se trocea
 | 02 | Estilo visual y `ui-kit` (ADR 0002) | 0 |
 | 03 | Spikes S1+S2, S3 y S7+S8 | 1 |
 | 04 | [Contratos de IPC, comandos y hechos](04-contratos-ipc.md) | 2 |
-| 05 | RNG, determinismo y golden tests | 2 |
+| 05 | [RNG, determinismo y golden tests](05-rng-determinismo.md) | 2 |
 | 06 | Reglas de draft y series (fearless) | 2 |
 | 07 | IA de draft explicable y personalidades | 2 |
 | 08 | Simulación de partida v1 y timeline | 2 |
