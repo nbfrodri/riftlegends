@@ -61,7 +61,7 @@ Cada fase termina con un hito verificable y un commit o PR fusionado en `main`. 
 - Estilo visual elegido: **Caja** ([ADR 0002](../decisions/0002-estilo-visual.md)), con barra lateral izquierda de navegación → tokens en `packages/ui-kit`.
 - **Salida:** `pnpm verify` en verde en CI; app Electron vacía que arranca en Windows y en Arch Wayland; ADR 0002 aceptado.
 
-### Fase 1 — Spikes de validación (go/no-go del stack)
+### Fase 1 — Spikes de validación (go/no-go del stack) ✅ (terminada el 20-11-2026: plan 03, issues #73–#78; **go**, [ADR 0003](../decisions/0003-go-no-go-fase1.md))
 - **S1+S2:** secuencia *ban → cuenta atrás → lock-in* con el estilo elegido (DOM + Motion + PixiJS) y una tabla de 500 jugadores navegable con teclado; pedir al agente un retoque de ritmo.
 - **S3:** mini-núcleo (draft legal + serie simulada) con guardado interrumpido y reapertura; golden test idéntico en Windows y Linux en CI.
 - **S7+S8 reducido:** NSIS y AppImage en máquinas limpias; draft ficticio sin red; descarga de Data Dragon interrumpida y reanudada.

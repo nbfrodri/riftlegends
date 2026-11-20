@@ -28,6 +28,10 @@ Resumen de las decisiones **vigentes**, para empezar cualquier sesión sin volve
 | --- | --- | --- |
 | 2026-11-20 | Umbrales del draft broadcast: ≤ 100 ms p95 al confirmar, ≥ 55 FPS de media, p95 entre fotogramas ≤ 25 ms; retoque con un agente ≤ 30 min. Medición de GPU en el Arch del usuario; Windows solo funcional en CI (T1 se repite a mano en Windows antes de la primera release) | [plan 03](../plans/03-spikes.md) |
 | 2026-11-20 | Endurecimiento previo a los spikes: #64 (Electron) y #66 (reloj del núcleo); el resto de la revisión, en paralelo | [plan 03](../plans/03-spikes.md) |
+| 2026-11-20 | **Go: se confirma Electron** y no se activa el plan B (Godot). T1–T7 en verde; quedan como requisito de la primera release pública la instalación en máquinas limpias con SmartScreen y T1 en un Windows con GPU | [ADR 0003](0003-go-no-go-fase1.md) |
+| 2026-11-20 | Driver de SQLite: **`node:sqlite`** dentro del `utilityProcess`, sin módulos nativos; AppImage con el runtime estático | [ADR 0003](0003-go-no-go-fase1.md) |
+| 2026-11-20 | La **`DataTable` se virtualiza** con TanStack Virtual (#91): sin virtualizar, 500 filas no cumplen el presupuesto | [S2](../research/spikes-2026-11/s2-dense-table.md) |
+| 2026-11-20 | El ritmo de cada escena animada se centraliza en un módulo de parámetros compartido con su medidor (T3 costó ≈90 s) | [ADR 0003](0003-go-no-go-fase1.md) |
 
 ## Estilo visual
 

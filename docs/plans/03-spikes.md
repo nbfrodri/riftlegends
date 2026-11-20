@@ -1,6 +1,6 @@
 # Plan 03 — Spikes de validación del stack
 
-- **Estado:** aprobado (20-11-2026). Borrador de Codex (`gpt-6.2-astra`, high), revisado por Claude y aprobado por el usuario con los umbrales tal cual.
+- **Estado:** ejecutado (20-11-2026); resultado: **go** ([ADR 0003](../decisions/0003-go-no-go-fase1.md)). Aprobado el 20-11-2026. Borrador de Codex (`gpt-6.2-astra`, high), revisado por Claude y aprobado por el usuario con los umbrales tal cual.
 - **Fase:** 1 · Spikes de validación ([plan general](00-plan-general.md)).
 - **Objetivo:** decidir si Electron + TypeScript + React permite producir y retocar el draft *broadcast*, mantener una carrera determinista y distribuir una app jugable sin conexión en Windows y Linux. El ADR 0003 recogerá la decisión antes del primer hito jugable.
 
