@@ -55,7 +55,7 @@ Renderer (React) → `window.api.send(Command)` → main → utilityProcess (cor
 
 Cada fase termina con un hito verificable y un commit o PR fusionado en `main`. Las fases 0 y 1 son bloqueantes; desde la 4, algunas pueden avanzar en paralelo según dependencias.
 
-### Fase 0 — Cimientos ✅ (terminada el 19-11-2026: issues #12–#18)
+### Fase 0 — Cimientos ✅ (terminada el 20-11-2026: planes 01 y 02, issues #12–#18 y #38–#45)
 - Monorepo, tooling, `verify`, CI en GitHub Actions (Linux en cada push; matriz con Windows solo en `main` y en tags), AGENTS.md, glosario de dominio (draft, pick, ban, fearless, split, serie…), plantilla de ADR, LICENSE MIT/Apache y aviso de Riot.
 - GitHub (pendiente al existir `package.json` y el CI): `.github/dependabot.yml` (npm y github-actions, semanal y agrupado), un workflow de auto-merge para los PRs patch/minor de Dependabot con el CI en verde, y añadir el check `verify` como obligatorio en el ruleset `protect-main`. Ya configurado: solo squash, borrado de ramas al fusionar, alertas y security updates de Dependabot, ruleset (sin borrado, sin force-push, historial lineal), labels, milestones por fase y plantillas.
 - Estilo visual elegido: **Caja** ([ADR 0002](../decisions/0002-estilo-visual.md)), con barra lateral izquierda de navegación → tokens en `packages/ui-kit`.
