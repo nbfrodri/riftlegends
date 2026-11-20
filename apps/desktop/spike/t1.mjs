@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { mkdtempSync, writeFileSync } from "node:fs";
+import { copyFileSync, mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { setTimeout as wait } from "node:timers/promises";
@@ -8,7 +8,27 @@ import { pacing } from "../src/renderer/draft/pacing.ts";
 import { session } from "./session.mjs";
 import { traceConfirmation } from "./trace.mjs";
 
-const output = mkdtempSync(join(tmpdir(), "rift-s1-t1-"));
+const label = process.argv[2];
+const match = /^(power-saver|balanced)(?:-[a-z0-9]+)*$/.exec(label ?? "");
+assert.ok(
+	match,
+	"Usage: pnpm spike:t1 power-saver|balanced (optional suffix, e.g. balanced-t3)",
+);
+const profile = match[1];
+const profileLog = [];
+function checkProfile(checkpoint) {
+	const observed = execFileSync("powerprofilesctl", ["get"], {
+		encoding: "utf8",
+	}).trim();
+	profileLog.push({ checkpoint, observed, time: new Date().toISOString() });
+	assert.equal(observed, profile, `Unexpected energy profile at ${checkpoint}`);
+}
+checkProfile("start");
+const output = mkdtempSync(join(tmpdir(), `rift-s1-t1-${label}-`));
+const evidence = new URL(
+	"../../../docs/research/spikes-2026-11/",
+	import.meta.url,
+);
 console.log("T1:", output);
 const runs = [];
 const rows = [
@@ -195,6 +215,7 @@ async function visuals(page, hardware) {
 }
 
 for (let run = 1; run <= 3; run++) {
+	checkProfile(`start-run-${run}`);
 	const samples = await session(output, 1366, 768, async (page, hardware) => {
 		await page.emulateMedia({ reducedMotion: "no-preference" });
 		for (let i = 0; i < 5; i++) await sample(page);
@@ -232,12 +253,16 @@ for (let run = 1; run <= 3; run++) {
 		return samples;
 	});
 	runs.push(samples);
+	checkProfile(`end-run-${run}`);
 	console.log("run", run, metrics(samples));
 	writeFileSync(join(output, "s1-confirmations.csv"), `${rows.join("\n")}\n`);
 	writeFileSync(join(output, "s1-frames.csv"), `${frames.join("\n")}\n`);
 }
 const checks = await session(output, 1280, 720, visuals);
+checkProfile("end-visuals");
 const summary = {
+	label,
+	profileLog,
 	commit: execFileSync("git", ["rev-parse", "HEAD"], {
 		encoding: "utf8",
 	}).trim(),
@@ -250,5 +275,19 @@ writeFileSync(
 	`${JSON.stringify(summary, null, 2)}\n`,
 );
 console.log(JSON.stringify(summary, null, 2));
+mkdirSync(evidence, { recursive: true });
+for (const [source, suffix] of [
+	["s1-confirmations.csv", ".csv"],
+	["s1-frames.csv", "-frames.csv"],
+	["s1-results.json", ".json"],
+	["s1-before.webm", "-before.webm"],
+	["s1-chromium.json.gz", "-chromium.json.gz"],
+	["s1-1280x720.png", "-1280x720.png"],
+	["s1-run-1.png", "-1366x768.png"],
+])
+	copyFileSync(
+		join(output, source),
+		new URL(`s1-t1-${label}${suffix}`, evidence),
+	);
 const pass = (m) => m.latencyP95 <= 100 && m.fps >= 55 && m.intervalP95 <= 25;
 if (!summary.runs.every(pass) || !pass(summary.total)) process.exitCode = 1;
