@@ -78,26 +78,28 @@ describe("T9: language selector", () => {
 });
 
 describe("initialLocale", () => {
-	test("falls back to the system locale without a stored choice", () => {
-		expect(initialLocale("es-ES")).toBe("es-ES");
+	const systemLocale = async () => "es-ES";
+
+	test("falls back to the system locale without a stored choice", async () => {
+		expect(await initialLocale(systemLocale)).toBe("es-ES");
 	});
 
-	test("the stored choice wins over the system locale", () => {
+	test("the stored choice wins over the system locale", async () => {
 		localStorage.setItem(LANGUAGE_STORAGE_KEY, "en");
-		expect(initialLocale("es-ES")).toBe("en");
+		expect(await initialLocale(systemLocale)).toBe("en");
 		localStorage.setItem(LANGUAGE_STORAGE_KEY, "es");
-		expect(initialLocale("en-US")).toBe("es");
+		expect(await initialLocale(async () => "en-US")).toBe("es");
 	});
 
-	test("ignores a corrupt stored value", () => {
+	test("ignores a corrupt stored value", async () => {
 		localStorage.setItem(LANGUAGE_STORAGE_KEY, "klingon");
-		expect(initialLocale("es-ES")).toBe("es-ES");
+		expect(await initialLocale(systemLocale)).toBe("es-ES");
 	});
 
-	test("ignores unavailable storage", () => {
+	test("ignores unavailable storage", async () => {
 		vi.spyOn(Storage.prototype, "getItem").mockImplementation(() => {
 			throw new Error("denied");
 		});
-		expect(initialLocale("es-ES")).toBe("es-ES");
+		expect(await initialLocale(systemLocale)).toBe("es-ES");
 	});
 });

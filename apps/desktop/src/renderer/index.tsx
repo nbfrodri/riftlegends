@@ -7,9 +7,8 @@ import { createAppRouter } from "./router";
 import { TitleBar } from "./title-bar";
 
 async function start(root: HTMLElement) {
-	const i18n = await createI18n(
-		initialLocale(await window.riftlegends.systemLocale()),
-	);
+	const locale = await initialLocale(() => window.riftlegends.systemLocale());
+	const i18n = await createI18n(locale);
 	document.documentElement.lang = i18n.language;
 	createRoot(root).render(
 		<I18nextProvider i18n={i18n}>

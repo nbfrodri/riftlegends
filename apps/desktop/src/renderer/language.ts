@@ -16,8 +16,17 @@ function storedLanguage(): Locale | null {
 }
 
 /** The stored language choice wins over the system locale. */
-export function initialLocale(systemLocale: string): string {
-	return storedLanguage() ?? systemLocale;
+export async function initialLocale(
+	systemLocale: () => Promise<string>,
+): Promise<string> {
+	const stored = storedLanguage();
+	if (stored) return stored;
+
+	try {
+		return await systemLocale();
+	} catch {
+		return "en";
+	}
 }
 
 export function storeLanguage(language: Locale): void {
