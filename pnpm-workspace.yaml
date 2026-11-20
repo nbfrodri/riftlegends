@@ -3,5 +3,8 @@ packages:
   - "packages/*"
 allowBuilds:
   lefthook: true
+patchedDependencies:
+  framer-motion@14.13.0: apps/desktop/spike/framer-motion-types.patch
+  pixi.js@8.23.0: apps/desktop/spike/pixi-types.patch
 minimumReleaseAgeExclude:
   - electron@45.4.1

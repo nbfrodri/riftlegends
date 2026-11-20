@@ -1,0 +1,6 @@
+diff --git a/dist/index.d.ts b/dist/index.d.ts
+--- a/dist/index.d.ts
++++ b/dist/index.d.ts
+@@ -156,1 +156,1 @@
+-type MotionCSS = MakeMotion<Omit<CSSProperties, "rotate" | "scale" | "perspective" | "x" | "y" | "z">>;
++type MotionCSS = MakeMotion<Omit<CSSProperties, keyof SVGPathProperties | "rotate" | "scale" | "perspective" | "x" | "y" | "z">>;

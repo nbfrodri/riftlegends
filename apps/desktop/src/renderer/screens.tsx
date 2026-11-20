@@ -9,9 +9,7 @@ import {
 import { useTranslation } from "react-i18next";
 import { isLocale, storeLanguage } from "./language";
 
-// Placeholder screens: each one only names itself until its real content lands
-// (the draft screen lands with the draft plans). Mercado has its own file.
-
+export { DraftScreen } from "./draft/draft-screen";
 export { MarketScreen } from "./market-screen";
 
 function Screen({ title }: { title: string }) {
@@ -22,11 +20,6 @@ function Screen({ title }: { title: string }) {
 			</h1>
 		</section>
 	);
-}
-
-export function DraftScreen() {
-	const { t } = useTranslation();
-	return <Screen title={t("shell.nav.draft")} />;
 }
 
 export function SettingsScreen() {
