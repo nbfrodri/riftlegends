@@ -262,7 +262,11 @@ importers:
         specifier: 4.10.3
         version: 4.10.3
 
-  packages/core: {}
+  packages/core:
+    devDependencies:
+      fast-check:
+        specifier: 4.10.3
+        version: 4.10.3
 
   packages/i18n:
     dependencies:
