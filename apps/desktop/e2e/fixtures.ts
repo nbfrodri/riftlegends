@@ -11,7 +11,11 @@ export { expect } from "@playwright/test";
 // language does not depend on the machine running the tests.
 export function launchApp(
 	{ playwright }: Pick<PlaywrightWorkerArgs, "playwright">,
-	options: { profileDir: string; systemLocale: string },
+	options: {
+		profileDir: string;
+		systemLocale: string;
+		env?: Record<string, string>;
+	},
 ): Promise<ElectronApplication> {
 	return playwright._electron.launch({
 		args: [
@@ -20,6 +24,16 @@ export function launchApp(
 			`--lang=${options.systemLocale}`,
 		],
 		chromiumSandbox: true,
+		...(options.env && {
+			env: {
+				...(Object.fromEntries(
+					Object.entries(process.env).filter(
+						([, value]) => value !== undefined,
+					),
+				) as Record<string, string>),
+				...options.env,
+			},
+		}),
 	});
 }
 

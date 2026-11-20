@@ -1,6 +1,9 @@
 import { join } from "node:path";
-import { app, BrowserWindow, ipcMain, shell } from "electron";
+import { app, BrowserWindow, ipcMain, shell, utilityProcess } from "electron";
+import coreHostPath from "../core-host/index?modulePath";
 import { pingChannel } from "../shared/bridge";
+import { type CoreProcess, createCoreBridge } from "./core-bridge";
+import { registerCoreIpc } from "./core-ipc";
 import { registerSystemLocale } from "./system-locale";
 import { createMainWindowOptions, secureNavigation } from "./window";
 import { registerWindowControls, supportsMinimize } from "./window-controls";
@@ -24,6 +27,20 @@ app.whenReady().then(async () => {
 		return "pong";
 	});
 	window.once("closed", () => ipcMain.removeHandler(pingChannel));
+
+	const core = createCoreBridge({
+		spawn: () =>
+			utilityProcess.fork(coreHostPath, [], {
+				serviceName: "Rift Legends core",
+			}) as unknown as CoreProcess,
+		timeoutMs: 10_000,
+	});
+	registerCoreIpc(window, ipcMain, core);
+	app.once("before-quit", () => core.dispose());
+	// End-to-end tests drive the core from the main process.
+	if (process.env.RIFT_E2E_CORE === "1") {
+		Object.assign(globalThis, { riftCore: core });
+	}
 
 	if (import.meta.env.DEV && process.env.ELECTRON_RENDERER_URL) {
 		await window.loadURL(process.env.ELECTRON_RENDERER_URL);
