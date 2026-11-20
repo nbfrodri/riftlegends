@@ -155,11 +155,12 @@ const instrument = () => {
 				p.value
 		)
 			return;
-		const rows = document.querySelectorAll<HTMLElement>(
-			"tbody tr[data-row-id]",
+		const status = document.querySelector("[role=status]")?.textContent ?? "";
+		if (p.rows !== undefined && Number.parseInt(status, 10) !== p.rows) return;
+		const first = document.querySelector<HTMLElement>(
+			'tbody tr[data-index="0"]',
 		);
-		if (p.rows !== undefined && rows.length !== p.rows) return;
-		if (p.firstRow && rows[0]?.dataset.rowId !== p.firstRow) return;
+		if (p.firstRow && first?.dataset.rowId !== p.firstRow) return;
 		if (p.sort) {
 			const th = [...document.querySelectorAll("thead th")].find((h) =>
 				h.textContent?.includes(p.sort?.col ?? ""),
@@ -234,10 +235,15 @@ const instrument = () => {
 			S.queue = [];
 		},
 		snapshot: () => ({ keys: S.keys, frames: S.frames, et: S.eventTiming }),
-		order: () =>
-			[...document.querySelectorAll<HTMLElement>("tbody tr[data-row-id]")].map(
-				(r) => r.dataset.rowId ?? "",
+		order: () => ({
+			total: Number.parseInt(
+				document.querySelector("[role=status]")?.textContent ?? "",
+				10,
 			),
+			pairs: [
+				...document.querySelectorAll<HTMLElement>("tbody tr[data-row-id]"),
+			].map((r) => [Number(r.dataset.index), r.dataset.rowId ?? ""]),
+		}),
 		active: () => visibility(document.activeElement),
 	});
 };
@@ -391,9 +397,15 @@ test("S2 dense table, keyboard only", async ({ playwright }) => {
 		checks.push({ name, ok, detail });
 		if (!ok) console.log(`CHECK FAILED: ${name} ${detail ?? ""}`);
 	};
-	const domOrder = () => s<string[]>(page, "order");
-	const sameOrder = (a: string[], b: string[]) =>
-		a.length === b.length && a.every((v, i) => v === b[i]);
+	type Order = { total: number; pairs: [number, string][] };
+	const domOrder = () => s<Order>(page, "order");
+	// Every mounted row must sit at its expected index; without virtualization
+	// all of them must be mounted, with it only a window.
+	const sameOrder = (o: Order, expected: string[]) =>
+		o.total === expected.length &&
+		o.pairs.length > 0 &&
+		o.pairs.every(([i, id]) => expected[i] === id) &&
+		(variant === "virtual" || o.pairs.length === expected.length);
 	const activeInfo = () =>
 		s<{ id: string | null; inView: boolean; outline: boolean }>(page, "active");
 
@@ -424,9 +436,11 @@ test("S2 dense table, keyboard only", async ({ playwright }) => {
 		);
 		check(
 			`${label}: 500 rows rendered`,
-			order.length === 500,
-			String(order.length),
+			order.total === 500 && (variant === "virtual" || order.pairs.length === 500),
+			`${order.total} total, ${order.pairs.length} mounted`,
 		);
+
+		(info as Record<string, unknown>).mountedRows = order.pairs.length;
 
 		const mark = async (name: string, fn: () => Promise<void>) => {
 			await phase(name);
@@ -490,7 +504,7 @@ test("S2 dense table, keyboard only", async ({ playwright }) => {
 		check(
 			`${label}: filter result == expected (name asc)`,
 			sameOrder(order, expectedOrder(filtered, "name", "asc")),
-			`${order.length} vs ${filtered.length}`,
+			`${order.total} vs ${filtered.length}`,
 		);
 
 		// Arrow through the filtered rows, End, Home --------------------------
