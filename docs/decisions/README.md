@@ -22,6 +22,13 @@ Resumen de las decisiones **vigentes**, para empezar cualquier sesión sin volve
 | 2026-11-19 | Catálogo obligatorio de librerías: shadcn/ui sobre Base UI con Tailwind v4, TanStack, Motion + PixiJS (sin GSAP), Lucide + game-icons e i18next. Context7 para consultar su documentación | [libraries.md](../libraries.md) |
 | 2026-11-19 | Actualización desde la app con `electron-updater` (botón, canal estable o beta) | [ADR 0001](0001-stack-tecnologico.md) |
 
+## Fase 1 · Spikes
+
+| Fecha | Decisión | Fuente |
+| --- | --- | --- |
+| 2026-11-20 | Umbrales del draft broadcast: ≤ 100 ms p95 al confirmar, ≥ 55 FPS de media, p95 entre fotogramas ≤ 25 ms; retoque con un agente ≤ 30 min. Medición de GPU en el Arch del usuario; Windows solo funcional en CI (T1 se repite a mano en Windows antes de la primera release) | [plan 03](../plans/03-spikes.md) |
+| 2026-11-20 | Endurecimiento previo a los spikes: #64 (Electron) y #66 (reloj del núcleo); el resto de la revisión, en paralelo | [plan 03](../plans/03-spikes.md) |
+
 ## Estilo visual
 
 | Fecha | Decisión | Fuente |
