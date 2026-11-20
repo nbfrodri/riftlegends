@@ -1,6 +1,6 @@
 # S8 · Descarga reanudable de Data Dragon
 
-**T7 pasa en el AppImage de Arch.** En cuatro escenarios de corte (reinicio de conexión, `SIGKILL` de la app, parte manipulada y servidor sin `Range`) no hubo ninguna caché incompleta marcada como válida, el draft ficticio siguió jugable sin red y, tras reconectar, los 8 archivos finales coincidieron byte a byte con una descarga íntegra hecha aparte con `curl`. **En NSIS (Windows) queda pendiente de CI.** El paso está añadido al workflow, pero no se ha ejecutado.
+**T7 pasa en el AppImage de Arch.** En cuatro escenarios de corte (reinicio de conexión, `SIGKILL` de la app, parte manipulada y servidor sin `Range`) no hubo ninguna caché incompleta marcada como válida, el draft ficticio siguió jugable sin red y, tras reconectar, los 8 archivos finales coincidieron byte a byte con una descarga íntegra hecha aparte con `curl`. **En el NSIS de Windows también pasa** en el escenario de conexión cortada (run [44809729205](https://github.com/nbfrodri/riftlegends/actions/runs/44809729205)).
 
 Issue #77 · 20-11-2026 · Rama desechable `spike/77-resumable-download`, sobre `spike/76-packaging-save`. Código medido en `e11d24efb661fcf99046eb1fc485d4d100a37fc8`; el único cambio posterior es la comparación del manifiesto en el script de medida. [Plan y criterios](../../plans/03-spikes.md) · [S7 · Empaquetado y guardado](s76-packaging-save.md)
 
@@ -15,7 +15,7 @@ Issue #77 · 20-11-2026 · Rama desechable `spike/77-resumable-download`, sobre 
 | Comparar con descarga íntegra | Mismo resultado | Los 8 archivos de la caché activa de los 4 escenarios tienen el mismo SHA-256 que la descarga de referencia con `curl` (`identicalToReference: true` x4). Esa referencia coincide con el manifiesto fijado. | Pasa |
 | Caché reabre válida en otro arranque offline | La caché sobrevive al reinicio | Paso `4-verify-offline`: `cacheState` revalida tamaño y SHA-256 de los 8 archivos desde disco, sin red: válida 4/4. | Pasa |
 | Servidor sin `Range` | Reiniciar solo el archivo incompleto | S4 (proxy que oculta `Accept-Ranges` y descarta `Range`): respuesta 200, reinició solo `championFull.json` (restarted=1) y mantuvo los 4 completos. | Pasa |
-| T7 · NSIS en Windows | Misma prueba en el instalador | `windows-download.ps1` ejecuta el escenario S1 (proxy de corte en el runner, regla de firewall para el paso offline, comparación con el manifiesto). No se ha ejecutado. | Pendiente de CI |
+| T7 · NSIS en Windows | Misma prueba en el instalador | Escenario S1 en el NSIS instalado: corte a 1.500.000 bytes (`ECONNRESET`), arranque con salida bloqueada por el firewall (`EACCES`), sin puntero y solo con parciales en *staging*. Al reanudar se conservaron 4 archivos, se reanudó `championFull.json` y se bajaron 955.168 bytes. La caché quedó válida con 8 archivos, siguió válida en el arranque sin red y coincide con el manifiesto. El draft ficticio avanzó de 0 a 20 a lo largo de los cuatro arranques. [Muestras](s77-windows-samples.json) | Pasa |
 
 ## Entorno y protocolo
 
@@ -77,7 +77,7 @@ mise exec -- pnpm verify
 
 ## Límites y pendiente
 
-- **Windows (NSIS).** [windows-download.ps1](https://github.com/nbfrodri/riftlegends/blob/spike/77-resumable-download/apps/desktop/spike77/windows-download.ps1) corre tras `windows-smoke.ps1` en el job `nsis` de `spike-packaging.yml` y deja `release/windows-evidence-77` (JSON por paso, `proxy-cut.log` y `cache-vs-manifest.csv`). Solo cubre el escenario S1. Se desconoce si la regla de firewall de salida afecta al proxy en loopback (lo normal es que no); si fallara, habría que tratarlo como incidencia del arnés y no como fallo de T7. Veredicto: **pendiente de CI**.
+- **Windows (NSIS).** [windows-download.ps1](https://github.com/nbfrodri/riftlegends/blob/spike/77-resumable-download/apps/desktop/spike77/windows-download.ps1) corre tras `windows-smoke.ps1` en el job `nsis` de `spike-packaging.yml` y deja `release/windows-evidence-77` (JSON por paso, `proxy-cut.log` y `cache-vs-manifest.csv`). Solo cubre el escenario S1. Se desconoce si la regla de firewall de salida afecta al proxy en loopback (lo normal es que no); si fallara, habría que tratarlo como incidencia del arnés y no como fallo de T7. Veredicto: **pasa** (ver tabla). Sin red, en Windows el firewall bloquea la salida del ejecutable, pero las interfaces siguen activas; el error observado es `EACCES`.
 - **Caché ya activada y dañada después.** `cacheState` revalida tamaño y hash, pero no se probó un daño posterior a la activación (disco corrupto). No forma parte del umbral de T7.
 - **Cortes de energía.** Se hizo `fsync` del puntero y del directorio, pero el `SIGKILL` no emula pérdida de caché de página del sistema operativo. El hash final protege frente a un parcial incompleto, no se midió con un corte eléctrico.
 - **Manifiesto.** Los hashes se fijan desde una descarga de la misma versión (Data Dragon es inmutable por versión). En el juego real, el manifiesto debe generarse en el empaquetado o publicarse junto a la release; el spike no resuelve cómo se firma ni cómo se actualiza.

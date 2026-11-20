@@ -1,0 +1,508 @@
+{
+ "1-cut": {
+  "platform": "win32",
+  "arch": "x64",
+  "release": "10.0.26100",
+  "cpu": "AMD EPYC 7763 64-Core Processor                ",
+  "appVersion": "0.76.1",
+  "draft": {
+   "from": 0,
+   "to": 5,
+   "facts": 7
+  },
+  "before": {
+   "cache": {
+    "valid": false,
+    "reason": "no pointer"
+   },
+   "tree": []
+  },
+  "ok": false,
+  "error": "ECONNRESET aborted",
+  "after": {
+   "cache": {
+    "valid": false,
+    "reason": "no pointer"
+   },
+   "tree": [
+    {
+     "path": "staging-16.23.1/data/en_US/championFull.json.part",
+     "bytes": 1500000
+    },
+    {
+     "path": "staging-16.23.1/data/en_US/championFull.json.part.json",
+     "bytes": 47
+    },
+    {
+     "path": "staging-16.23.1/data/es_ES/champion.json",
+     "bytes": 160010
+    },
+    {
+     "path": "staging-16.23.1/img/champion/Aatrox.png",
+     "bytes": 25644
+    },
+    {
+     "path": "staging-16.23.1/img/champion/Ahri.png",
+     "bytes": 28511
+    },
+    {
+     "path": "staging-16.23.1/img/champion/Akali.png",
+     "bytes": 27191
+    }
+   ]
+  }
+ },
+ "2-offline": {
+  "platform": "win32",
+  "arch": "x64",
+  "release": "10.0.26100",
+  "cpu": "AMD EPYC 7763 64-Core Processor                ",
+  "appVersion": "0.76.1",
+  "draft": {
+   "from": 5,
+   "to": 10,
+   "facts": 12
+  },
+  "before": {
+   "cache": {
+    "valid": false,
+    "reason": "no pointer"
+   },
+   "tree": [
+    {
+     "path": "staging-16.23.1/data/en_US/championFull.json.part",
+     "bytes": 1500000
+    },
+    {
+     "path": "staging-16.23.1/data/en_US/championFull.json.part.json",
+     "bytes": 47
+    },
+    {
+     "path": "staging-16.23.1/data/es_ES/champion.json",
+     "bytes": 160010
+    },
+    {
+     "path": "staging-16.23.1/img/champion/Aatrox.png",
+     "bytes": 25644
+    },
+    {
+     "path": "staging-16.23.1/img/champion/Ahri.png",
+     "bytes": 28511
+    },
+    {
+     "path": "staging-16.23.1/img/champion/Akali.png",
+     "bytes": 27191
+    }
+   ]
+  },
+  "ok": false,
+  "error": "EACCES connect EACCES 65.8.49.41:443",
+  "after": {
+   "cache": {
+    "valid": false,
+    "reason": "no pointer"
+   },
+   "tree": [
+    {
+     "path": "staging-16.23.1/data/en_US/championFull.json.part",
+     "bytes": 1500000
+    },
+    {
+     "path": "staging-16.23.1/data/en_US/championFull.json.part.json",
+     "bytes": 47
+    },
+    {
+     "path": "staging-16.23.1/data/es_ES/champion.json",
+     "bytes": 160010
+    },
+    {
+     "path": "staging-16.23.1/img/champion/Aatrox.png",
+     "bytes": 25644
+    },
+    {
+     "path": "staging-16.23.1/img/champion/Ahri.png",
+     "bytes": 28511
+    },
+    {
+     "path": "staging-16.23.1/img/champion/Akali.png",
+     "bytes": 27191
+    }
+   ]
+  }
+ },
+ "3-resume": {
+  "platform": "win32",
+  "arch": "x64",
+  "release": "10.0.26100",
+  "cpu": "AMD EPYC 7763 64-Core Processor                ",
+  "appVersion": "0.76.1",
+  "draft": {
+   "from": 10,
+   "to": 15,
+   "facts": 17
+  },
+  "before": {
+   "cache": {
+    "valid": false,
+    "reason": "no pointer"
+   },
+   "tree": [
+    {
+     "path": "staging-16.23.1/data/en_US/championFull.json.part",
+     "bytes": 1500000
+    },
+    {
+     "path": "staging-16.23.1/data/en_US/championFull.json.part.json",
+     "bytes": 47
+    },
+    {
+     "path": "staging-16.23.1/data/es_ES/champion.json",
+     "bytes": 160010
+    },
+    {
+     "path": "staging-16.23.1/img/champion/Aatrox.png",
+     "bytes": 25644
+    },
+    {
+     "path": "staging-16.23.1/img/champion/Ahri.png",
+     "bytes": 28511
+    },
+    {
+     "path": "staging-16.23.1/img/champion/Akali.png",
+     "bytes": 27191
+    }
+   ]
+  },
+  "download": {
+   "stats": {
+    "kept": [
+     "data/es_ES/champion.json",
+     "img/champion/Aatrox.png",
+     "img/champion/Ahri.png",
+     "img/champion/Akali.png"
+    ],
+    "resumed": [
+     "data/en_US/championFull.json"
+    ],
+    "restarted": [],
+    "discarded": [],
+    "fetchedBytes": 955168
+   },
+   "log": [
+    {
+     "file": "data/es_ES/champion.json",
+     "outcome": "kept-verified"
+    },
+    {
+     "file": "img/champion/Aatrox.png",
+     "outcome": "kept-verified"
+    },
+    {
+     "file": "img/champion/Ahri.png",
+     "outcome": "kept-verified"
+    },
+    {
+     "file": "img/champion/Akali.png",
+     "outcome": "kept-verified"
+    },
+    {
+     "file": "data/en_US/championFull.json",
+     "attempt": 1,
+     "resumeFrom": 1500000,
+     "requestHeaders": {
+      "range": "bytes=1500000-",
+      "ifRange": "\"f82fdbaf0b78c420c17bb735cb92e3fe\""
+     },
+     "status": 206,
+     "acceptRanges": "bytes",
+     "contentRange": "bytes 1500000-2240928/2240929",
+     "etag": "\"f82fdbaf0b78c420c17bb735cb92e3fe\"",
+     "contentLength": "740929",
+     "servedFrom": 1500000,
+     "received": 740929,
+     "outcome": "body-complete",
+     "verified": true
+    },
+    {
+     "file": "data/en_US/champion.json",
+     "attempt": 1,
+     "resumeFrom": 0,
+     "requestHeaders": {},
+     "status": 200,
+     "acceptRanges": "bytes",
+     "etag": "\"09e3b3f045458a7edd2db0e622987991\"",
+     "contentLength": "159013",
+     "servedFrom": 0,
+     "received": 159013,
+     "outcome": "body-complete",
+     "verified": true
+    },
+    {
+     "file": "img/champion/Zed.png",
+     "attempt": 1,
+     "resumeFrom": 0,
+     "requestHeaders": {},
+     "status": 200,
+     "acceptRanges": "bytes",
+     "etag": "\"18f3aad5b935f3f2e82d5ab67f230062\"",
+     "contentLength": "28879",
+     "servedFrom": 0,
+     "received": 28879,
+     "outcome": "body-complete",
+     "verified": true
+    },
+    {
+     "file": "img/champion/Zyra.png",
+     "attempt": 1,
+     "resumeFrom": 0,
+     "requestHeaders": {},
+     "status": 200,
+     "acceptRanges": "bytes",
+     "etag": "\"45e03a11fa3cb9a12661184afec3654f\"",
+     "contentLength": "26347",
+     "servedFrom": 0,
+     "received": 26347,
+     "outcome": "body-complete",
+     "verified": true
+    }
+   ]
+  },
+  "ok": true,
+  "after": {
+   "cache": {
+    "valid": true,
+    "version": "16.23.1",
+    "files": 8
+   },
+   "tree": [
+    {
+     "path": "16.23.1/data/en_US/champion.json",
+     "bytes": 159013
+    },
+    {
+     "path": "16.23.1/data/en_US/championFull.json",
+     "bytes": 2240929
+    },
+    {
+     "path": "16.23.1/data/es_ES/champion.json",
+     "bytes": 160010
+    },
+    {
+     "path": "16.23.1/img/champion/Aatrox.png",
+     "bytes": 25644
+    },
+    {
+     "path": "16.23.1/img/champion/Ahri.png",
+     "bytes": 28511
+    },
+    {
+     "path": "16.23.1/img/champion/Akali.png",
+     "bytes": 27191
+    },
+    {
+     "path": "16.23.1/img/champion/Zed.png",
+     "bytes": 28879
+    },
+    {
+     "path": "16.23.1/img/champion/Zyra.png",
+     "bytes": 26347
+    },
+    {
+     "path": "current.json",
+     "bytes": 31
+    }
+   ]
+  }
+ },
+ "4-verify-offline": {
+  "platform": "win32",
+  "arch": "x64",
+  "release": "10.0.26100",
+  "cpu": "AMD EPYC 7763 64-Core Processor                ",
+  "appVersion": "0.76.1",
+  "draft": {
+   "from": 15,
+   "to": 20,
+   "facts": 24
+  },
+  "before": {
+   "cache": {
+    "valid": true,
+    "version": "16.23.1",
+    "files": 8
+   },
+   "tree": [
+    {
+     "path": "16.23.1/data/en_US/champion.json",
+     "bytes": 159013
+    },
+    {
+     "path": "16.23.1/data/en_US/championFull.json",
+     "bytes": 2240929
+    },
+    {
+     "path": "16.23.1/data/es_ES/champion.json",
+     "bytes": 160010
+    },
+    {
+     "path": "16.23.1/img/champion/Aatrox.png",
+     "bytes": 25644
+    },
+    {
+     "path": "16.23.1/img/champion/Ahri.png",
+     "bytes": 28511
+    },
+    {
+     "path": "16.23.1/img/champion/Akali.png",
+     "bytes": 27191
+    },
+    {
+     "path": "16.23.1/img/champion/Zed.png",
+     "bytes": 28879
+    },
+    {
+     "path": "16.23.1/img/champion/Zyra.png",
+     "bytes": 26347
+    },
+    {
+     "path": "current.json",
+     "bytes": 31
+    }
+   ]
+  },
+  "after": {
+   "cache": {
+    "valid": true,
+    "version": "16.23.1",
+    "files": 8
+   },
+   "tree": [
+    {
+     "path": "16.23.1/data/en_US/champion.json",
+     "bytes": 159013
+    },
+    {
+     "path": "16.23.1/data/en_US/championFull.json",
+     "bytes": 2240929
+    },
+    {
+     "path": "16.23.1/data/es_ES/champion.json",
+     "bytes": 160010
+    },
+    {
+     "path": "16.23.1/img/champion/Aatrox.png",
+     "bytes": 25644
+    },
+    {
+     "path": "16.23.1/img/champion/Ahri.png",
+     "bytes": 28511
+    },
+    {
+     "path": "16.23.1/img/champion/Akali.png",
+     "bytes": 27191
+    },
+    {
+     "path": "16.23.1/img/champion/Zed.png",
+     "bytes": 28879
+    },
+    {
+     "path": "16.23.1/img/champion/Zyra.png",
+     "bytes": 26347
+    },
+    {
+     "path": "current.json",
+     "bytes": 31
+    }
+   ]
+  }
+ },
+ "cacheVsManifest": [
+  {
+   "Path": "data/es_ES/champion.json",
+   "ExpectedBytes": "160010",
+   "Bytes": "160010",
+   "Match": "True"
+  },
+  {
+   "Path": "img/champion/Aatrox.png",
+   "ExpectedBytes": "25644",
+   "Bytes": "25644",
+   "Match": "True"
+  },
+  {
+   "Path": "img/champion/Ahri.png",
+   "ExpectedBytes": "28511",
+   "Bytes": "28511",
+   "Match": "True"
+  },
+  {
+   "Path": "img/champion/Akali.png",
+   "ExpectedBytes": "27191",
+   "Bytes": "27191",
+   "Match": "True"
+  },
+  {
+   "Path": "data/en_US/championFull.json",
+   "ExpectedBytes": "2240929",
+   "Bytes": "2240929",
+   "Match": "True"
+  },
+  {
+   "Path": "data/en_US/champion.json",
+   "ExpectedBytes": "159013",
+   "Bytes": "159013",
+   "Match": "True"
+  },
+  {
+   "Path": "img/champion/Zed.png",
+   "ExpectedBytes": "28879",
+   "Bytes": "28879",
+   "Match": "True"
+  },
+  {
+   "Path": "img/champion/Zyra.png",
+   "ExpectedBytes": "26347",
+   "Bytes": "26347",
+   "Match": "True"
+  }
+ ],
+ "proxyLog": [
+  {
+   "t": 1795206056344,
+   "url": "/cdn/16.23.1/data/es_ES/champion.json",
+   "status": 200,
+   "target": false
+  },
+  {
+   "t": 1795206056468,
+   "url": "/cdn/16.23.1/img/champion/Aatrox.png",
+   "status": 200,
+   "target": false
+  },
+  {
+   "t": 1795206056577,
+   "url": "/cdn/16.23.1/img/champion/Ahri.png",
+   "status": 200,
+   "target": false
+  },
+  {
+   "t": 1795206056686,
+   "url": "/cdn/16.23.1/img/champion/Akali.png",
+   "status": 200,
+   "target": false
+  },
+  {
+   "t": 1795206056695,
+   "url": "/cdn/16.23.1/data/en_US/championFull.json",
+   "status": 200,
+   "target": true
+  },
+  {
+   "t": 1795206056709,
+   "url": "/cdn/16.23.1/data/en_US/championFull.json",
+   "event": "cut",
+   "sent": 1500000
+  }
+ ],
+ "run": "https://github.com/nbfrodri/riftlegends/actions/runs/44809729205"
+}
