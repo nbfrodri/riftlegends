@@ -6,6 +6,7 @@
 			"!**/*.md",
 			"!.github/ISSUE_TEMPLATE",
 			"!design",
+			"!docs/research",
 			"!packages/core/test/fixtures",
 			"!pnpm-lock.yaml",
 			"!.claude/settings.local.json",

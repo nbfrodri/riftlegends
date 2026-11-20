@@ -8,7 +8,7 @@
 | --- | --- | --- | --- | --- | --- |
 | S1 draft broadcast (T1) | #73 | `spike/73-broadcast-draft` (subida) | `/home/phobos/Projects/riftlegends-s1` | Codex `gpt-6.2-astra`, high | ⚠️ cortado por límite de Codex (vuelve a las 16:59): escena y medidor en el commit `19db294`; **faltan las medidas y el informe**. Retomar con `cd /home/phobos/Projects/riftlegends-s1 && codex exec resume 01a1f8bc-8f54-7b23-be73-1543fc2b58a7 -m gpt-6.2-astra -c model_reasoning_effort='"high"' "Continúa S1: ejecuta las medidas de T1 y escribe el informe" </dev/null` |
 | T3 retoque cronometrado | #73 | sobre la rama de S1 | — | Subagente `sonnet`, medium | tras S1 |
-| S2 tabla de 500 (T2) | #74 | `spike/74-dense-table` | `.claude/worktrees/` (subagente) | Subagente `sonnet`, high | en curso |
+| S2 tabla de 500 (T2) | #74 | `spike/74-dense-table` (subida) | — | Subagente `sonnet`, high | ✅ hecho: sin virtualizar NO cumple (36–45 FPS); virtualizada cumple (60 FPS). Decisión: virtualizar (#91). Informe en main |
 | S3 núcleo determinista (T4) | #75 | `spike/75-deterministic-core` | `/home/phobos/Projects/riftlegends-s3` | Codex `gpt-6.2-astra`, high | ✅ T4 en verde en Ubuntu y Windows (run 44730369177); informe en main |
 | S3/S7 empaquetado y guardado (T5, T6) | #76 | — | — | (preguntar) | tras S3 |
 | S8 descarga reanudable (T7) | #77 | — | — | (preguntar) | tras #76 |
