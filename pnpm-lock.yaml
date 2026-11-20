@@ -264,6 +264,9 @@ importers:
 
   packages/core:
     dependencies:
+      '@rift-legends/contracts':
+        specifier: workspace:*
+        version: link:../contracts
       pure-rand:
         specifier: 8.4.2
         version: 8.4.2
