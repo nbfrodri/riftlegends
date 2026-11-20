@@ -19,7 +19,7 @@ export run socket
 
 # Independent reference download (curl) and manifest cross-check.
 "$spike/make-manifest.sh" "$version" "$run/ref" >"$run/manifest.check.json"
-cmp "$run/manifest.check.json" "$spike/manifest.json" && echo "manifest == descarga de referencia"
+node -e 'const fs=require("node:fs");const [a,b]=process.argv.slice(1).map(f=>JSON.stringify(JSON.parse(fs.readFileSync(f))));if(a!==b)process.exit(1)' "$run/manifest.check.json" "$spike/manifest.json" && echo "manifest == descarga de referencia"
 
 appenv() { # scenario-dir step-dir mode
 	env -i HOME="$1/home" XDG_CONFIG_HOME="$1/config" XDG_CACHE_HOME="$1/cache" \
