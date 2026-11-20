@@ -14,7 +14,7 @@ Decisiones del desarrollador que lo condicionan: LoL real con el riesgo asumido;
 
 ## Principios transversales
 
-- **Núcleo puro y determinista.** `packages/core` no importa DOM, Electron, Node `fs` ni el reloj. Se rige por `(estado, comando, rng) → hechos`, usa un PRNG con nombre, semillas derivadas por hash `H(seed, ámbito, ids)` y enteros o punto fijo en las rutas que deciden resultados. Un lint lo vigila (`no-restricted-imports` y `no-restricted-globals` para `Math.random` y `Date`).
+- **Núcleo puro y determinista.** `packages/core` no importa DOM, Electron, Node `fs` ni el reloj. Se rige por `(estado, comando, rng) → hechos`, usa un PRNG con nombre, semillas derivadas por hash `H(seed, ámbito, ids)` y enteros o punto fijo en las rutas que deciden resultados. Biome rechaza el azar del sistema, los relojes y los temporizadores en el código del núcleo, tanto por sus nombres globales (como `crypto` y `performance`) como por las importaciones de Node que los exponen.
 - **Hechos como fuente de verdad.** Una tabla append-only `facts` guarda los hechos y las proyecciones (estadísticas, historial, Hall of Fame) se derivan de ella. El estado actual se persiste en la misma transacción. Sin event sourcing integral.
 - **Contenido como datos.** Esquemas Zod en `packages/content`; todo el contenido se valida al cargar y cada carrera registra el `content_version` con que se jugó.
 - **Una sola autoridad.** El `utilityProcess` del núcleo es el único que escribe en SQLite. El renderer envía comandos y recibe hechos y vistas por IPC tipado.

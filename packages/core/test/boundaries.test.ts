@@ -1,5 +1,11 @@
 import { spawnSync } from "node:child_process";
-import { copyFileSync, mkdirSync, mkdtempSync, rmSync } from "node:fs";
+import {
+	copyFileSync,
+	mkdirSync,
+	mkdtempSync,
+	readFileSync,
+	rmSync,
+} from "node:fs";
 import { createRequire } from "node:module";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -24,10 +30,8 @@ test("rejects nondeterminism and platform dependencies in core", () => {
 			new URL("../../../biome.json", import.meta.url),
 			join(workspace, "biome.json"),
 		);
-		copyFileSync(
-			new URL("fixtures/forbidden.ts", import.meta.url),
-			join(core, "forbidden.ts"),
-		);
+		const fixture = new URL("fixtures/forbidden.ts", import.meta.url);
+		copyFileSync(fixture, join(core, "forbidden.ts"));
 
 		const result = spawnSync(
 			execPath,
@@ -36,6 +40,7 @@ test("rejects nondeterminism and platform dependencies in core", () => {
 				"lint",
 				"--vcs-enabled=false",
 				"--reporter=json",
+				"--max-diagnostics=none",
 				"packages/core/forbidden.ts",
 			],
 			{ cwd: workspace, encoding: "utf8", timeout: 5_000 },
@@ -46,22 +51,15 @@ test("rejects nondeterminism and platform dependencies in core", () => {
 		);
 		const errors = report.diagnostics
 			.filter(({ severity }) => severity === "error")
+			.sort((a, b) => a.location.start.line - b.location.start.line)
 			.map(({ category, location }) => [location.start.line, category]);
-
-		expect(errors).toHaveLength(9);
-		expect(errors).toEqual(
-			expect.arrayContaining([
-				[1, "lint/style/noRestrictedImports"],
-				[2, "lint/style/noRestrictedImports"],
-				[3, "lint/style/noRestrictedImports"],
-				[5, "lint/style/noRestrictedGlobals"],
-				[6, "lint/style/noRestrictedGlobals"],
-				[7, "lint/style/noRestrictedGlobals"],
-				[8, "lint/style/noRestrictedGlobals"],
-				[11, "lint/style/noRestrictedImports"],
-				[12, "lint/style/noRestrictedImports"],
-			]),
-		);
+		const expected = readFileSync(fixture, "utf8")
+			.split(/\r?\n/)
+			.flatMap((line, index) => {
+				const rule = line.match(/\/\/ (noRestricted\w+)$/)?.[1];
+				return rule ? [[index + 1, `lint/style/${rule}`]] : [];
+			});
+		expect(errors).toEqual(expected);
 		expect(result.status).toBe(1);
 	} finally {
 		rmSync(workspace, { recursive: true, force: true });
