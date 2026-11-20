@@ -14,6 +14,7 @@ export default defineConfig({
 					name: "ui-kit-dom",
 					include: ["packages/ui-kit/**/*.test.tsx"],
 					environment: "happy-dom",
+					setupFiles: ["packages/ui-kit/test/layout.ts"],
 				},
 			},
 			{
@@ -27,6 +28,7 @@ export default defineConfig({
 					name: "desktop-dom",
 					include: ["apps/desktop/**/*.test.tsx"],
 					environment: "happy-dom",
+					setupFiles: ["packages/ui-kit/test/layout.ts"],
 				},
 			},
 			{

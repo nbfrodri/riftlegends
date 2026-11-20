@@ -9,16 +9,19 @@ const openMarket = async (page: Page) => {
 	await expect(page.getByRole("heading", { level: 1 })).toHaveText("Market");
 };
 
-const firstRow = (page: Page) =>
+// Only the rows near the viewport are mounted; spacer rows are aria-hidden.
+const dataRows = (page: Page) =>
 	page
 		.getByRole("table", { name: "Available players" })
-		.locator("tbody tr")
-		.first();
+		.locator("tbody tr[data-row-id]");
+
+const firstRow = (page: Page) => dataRows(page).first();
 
 test("T10: Market sorts players by monthly salary", async ({ appWindow }) => {
 	await openMarket(appWindow);
 	const table = appWindow.getByRole("table", { name: "Available players" });
-	await expect(table.locator("tbody tr")).toHaveCount(36);
+	// 36 players plus the header row.
+	await expect(table).toHaveAttribute("aria-rowcount", "37");
 	const salary = table.getByRole("columnheader", { name: "Monthly salary" });
 	await expect(salary).not.toHaveAttribute("aria-sort");
 
@@ -55,13 +58,12 @@ test("Market keeps its header in view while the rows scroll", async ({
 
 test("Market moves between rows with the arrow keys", async ({ appWindow }) => {
 	await openMarket(appWindow);
-	const rows = appWindow
-		.getByRole("table", { name: "Available players" })
-		.locator("tbody tr");
+	const rows = dataRows(appWindow);
 	await rows.first().focus();
 	await appWindow.keyboard.press("ArrowDown");
 	await expect(rows.nth(1)).toBeFocused();
 	await appWindow.keyboard.press("End");
 	await expect(rows.last()).toBeFocused();
+	await expect(rows.last()).toHaveAttribute("aria-rowindex", "37");
 	await expect(rows.last()).toHaveCSS("outline-style", "solid");
 });
