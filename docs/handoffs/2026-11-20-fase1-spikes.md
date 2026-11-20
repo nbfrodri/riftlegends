@@ -1,0 +1,20 @@
+# Handoff: Fase 1, spikes (plan 03)
+
+- Estado: en curso
+- Fecha: 2026-11-20
+- El código de cada spike es **desechable**: queda en su rama `spike/*` como referencia y no se fusiona. A `main` solo pasan las evidencias, en `docs/research/spikes-2026-11/`.
+
+| Spike | Issue | Rama | Dónde | Quién (elegido por el usuario) | Estado |
+| --- | --- | --- | --- | --- | --- |
+| S1 draft broadcast (T1) | #73 | `spike/73-broadcast-draft` | `/home/phobos/Projects/riftlegends-s1` | Codex `gpt-6.2-astra`, high | en curso |
+| T3 retoque cronometrado | #73 | sobre la rama de S1 | — | Subagente `sonnet`, medium | tras S1 |
+| S2 tabla de 500 (T2) | #74 | `spike/74-dense-table` | `.claude/worktrees/` (subagente) | Subagente `sonnet`, high | en curso |
+| S3 núcleo determinista (T4) | #75 | `spike/75-deterministic-core` | `/home/phobos/Projects/riftlegends-s3` | Codex `gpt-6.2-astra`, high | en curso |
+| S3/S7 empaquetado y guardado (T5, T6) | #76 | — | — | (preguntar) | tras S3 |
+| S8 descarga reanudable (T7) | #77 | — | — | (preguntar) | tras #76 |
+| ADR 0003 go/no-go | #78 | — | — | Claude | al final |
+
+- Encargos y eventos de Codex: `/tmp/claude-1000/-home-phobos-Projects-riftlegends/b906b42a-82c2-495f-9773-221333b9b365/scratchpad/s{1,3}_prompt.md`, `s{1,3}_events.jsonl` y `s{1,3}_report.json`.
+- S3 añade un workflow temporal `spike-goldens.yml` (pushes a `spike/**`, Ubuntu + Windows): Claude hace push de la rama para ejecutarlo.
+- Al integrar cada spike: revisar el informe, hacer push de la rama `spike/*` (como referencia) y llevar a `main` **solo** el informe (y sus CSV) en un PR `docs(research): …`.
+- Si se corta: `git -C <worktree> log --oneline -5` y `status`; retomar con `codex exec resume <thread_id>` desde el worktree.
