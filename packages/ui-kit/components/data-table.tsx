@@ -220,6 +220,7 @@ export function DataTable<Row extends RowData>({
 										if (element) rowElements.current.set(row.id, element);
 										else rowElements.current.delete(row.id);
 									}}
+									data-row-id={row.id}
 									tabIndex={isTabStop ? 0 : -1}
 									data-active={isTabStop}
 									onFocus={() => setActiveId(row.id)}

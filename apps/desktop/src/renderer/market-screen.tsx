@@ -4,10 +4,8 @@ import {
 } from "@rift-legends/ui-kit/components/data-table";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import {
-	type PlaceholderPlayer,
-	placeholderPlayers,
-} from "./placeholder-players";
+import type { PlaceholderPlayer } from "./placeholder-players";
+import { spikePlayers } from "./spike-players";
 
 export function MarketScreen() {
 	const { t, i18n } = useTranslation();
@@ -92,7 +90,7 @@ export function MarketScreen() {
 			<DataTable
 				className="flex-1"
 				label={t("market.table.label")}
-				data={placeholderPlayers}
+				data={spikePlayers}
 				columns={columns}
 				getRowId={(player) => player.id}
 				filterLabel={t("market.filter.label")}
