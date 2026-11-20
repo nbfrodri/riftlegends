@@ -41,7 +41,7 @@
 	"market.role.top": "Top",
 	"market.role.jungle": "Jungle",
 	"market.role.mid": "Mid",
-	"market.role.bot": "Marksman",
+	"market.role.bot": "ADC",
 	"market.role.support": "Support",
 	"errors.contract-mismatch": "The interface and the core are different versions ({{received}} vs {{expected}}). Restart the game.",
 	"errors.invalid-command": "The core rejected a malformed order.",

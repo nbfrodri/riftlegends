@@ -69,7 +69,7 @@ describe("Mercado screen", () => {
 	test("formats salary, form and contract end with Intl for the language", async () => {
 		await renderInLocale(<MarketScreen />, "es-ES");
 		const nadir = screen.getByRole("row", { name: /^Nadir\b/ });
-		expect(cellText(nadir, 1)).toBe("Medio");
+		expect(cellText(nadir, 1)).toBe("Mid");
 		expect(cellText(nadir, 5)).toBe("+4");
 		expect(cellText(nadir, 6)).toBe("jun 2027");
 		// Spanish skips the thousands separator on four digits unless forced.
@@ -108,7 +108,7 @@ describe("Mercado screen", () => {
 		const user = userEvent.setup();
 		await renderInLocale(<MarketScreen />, "es-ES");
 		const filter = screen.getByRole("searchbox", { name: "Buscar" });
-		await user.type(filter, "apoyo");
+		await user.type(filter, "support");
 		const supports = placeholderPlayers.filter((p) => p.role === "support");
 		expect(rowsOf()).toHaveLength(supports.length);
 		await user.clear(filter);
