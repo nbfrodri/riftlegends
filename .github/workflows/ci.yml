@@ -71,3 +71,16 @@ jobs:
       - *install
       - *verify
       - run: pnpm e2e
+
+  # Determinism across platforms (plan 05, D4): the core and its contracts must
+  # give the same bytes on Windows before a change reaches main.
+  core-windows:
+    if: github.event_name == 'pull_request'
+    runs-on: windows-latest
+    steps:
+      - *checkout
+      - *mise
+      - *store
+      - *cache
+      - *install
+      - run: pnpm exec vitest run --project core --project contracts
