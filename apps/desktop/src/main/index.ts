@@ -7,12 +7,23 @@ import { registerWindowControls, supportsMinimize } from "./window-controls";
 
 app.whenReady().then(async () => {
 	const window = new BrowserWindow(createMainWindowOptions());
+	const { session } = window.webContents;
+	session.setPermissionCheckHandler(() => false);
+	session.setPermissionRequestHandler((_contents, _permission, reply) =>
+		reply(false),
+	);
 	secureNavigation(window.webContents, shell.openExternal);
 	registerWindowControls(window, ipcMain, {
 		canMinimize: supportsMinimize(process.platform, process.env),
 	});
 	registerSystemLocale(window, ipcMain, app.getLocale());
-	ipcMain.handle(pingChannel, (): "pong" => "pong");
+	ipcMain.handle(pingChannel, (event): "pong" => {
+		if (event.senderFrame !== window.webContents.mainFrame) {
+			throw new Error("Ping requires the main frame");
+		}
+		return "pong";
+	});
+	window.once("closed", () => ipcMain.removeHandler(pingChannel));
 
 	if (import.meta.env.DEV && process.env.ELECTRON_RENDERER_URL) {
 		await window.loadURL(process.env.ELECTRON_RENDERER_URL);

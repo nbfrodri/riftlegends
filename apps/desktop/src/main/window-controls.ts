@@ -22,7 +22,10 @@ export function registerWindowControls(
 	{ canMinimize }: { canMinimize: boolean },
 ) {
 	const actions = {
-		[windowChannels.minimize]: () => window.minimize(),
+		[windowChannels.minimize]: () => {
+			if (!canMinimize) throw new Error("This desktop cannot minimize windows");
+			window.minimize();
+		},
 		[windowChannels.toggleMaximize]: () => {
 			if (window.isMaximized()) window.unmaximize();
 			else window.maximize();
