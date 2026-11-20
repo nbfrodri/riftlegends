@@ -40,6 +40,9 @@
 			"includes": ["packages/core/**", "!packages/core/test/**"],
 			"linter": {
 				"rules": {
+					"complexity": {
+						"useMathMinMax": "off"
+					},
 					"style": {
 						"noRestrictedGlobals": {
 							"level": "error",
