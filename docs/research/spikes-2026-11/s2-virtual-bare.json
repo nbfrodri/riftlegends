@@ -1,0 +1,46 @@
+[
+  {
+    "variant": "virtual",
+    "rep": 0,
+    "keys": 300,
+    "frames": 596,
+    "fps": 60.01250680814154,
+    "interval_p95": 16.700000000000728,
+    "interval_max": 16.80000000000109,
+    "drain_ms_after_last_key": 6,
+    "final_id": "p-0301"
+  },
+  {
+    "variant": "virtual",
+    "rep": 1,
+    "keys": 300,
+    "frames": 596,
+    "fps": 60.00827004730064,
+    "interval_p95": 16.700000000000728,
+    "interval_max": 17.5,
+    "drain_ms_after_last_key": 4,
+    "final_id": "p-0301"
+  },
+  {
+    "variant": "virtual",
+    "rep": 2,
+    "keys": 300,
+    "frames": 594,
+    "fps": 59.906856455898264,
+    "interval_p95": 16.700000000004366,
+    "interval_max": 33.29999999999927,
+    "drain_ms_after_last_key": 4,
+    "final_id": "p-0301"
+  },
+  {
+    "variant": "virtual",
+    "rep": 3,
+    "keys": 300,
+    "frames": 596,
+    "fps": 60.00827004730062,
+    "interval_p95": 16.700000000004366,
+    "interval_max": 17.400000000001455,
+    "drain_ms_after_last_key": 4,
+    "final_id": "p-0301"
+  }
+]
