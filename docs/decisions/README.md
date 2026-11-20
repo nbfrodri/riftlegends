@@ -33,6 +33,15 @@ Resumen de las decisiones **vigentes**, para empezar cualquier sesión sin volve
 | 2026-11-20 | La **`DataTable` se virtualiza** con TanStack Virtual (#91): sin virtualizar, 500 filas no cumplen el presupuesto | [S2](../research/spikes-2026-11/s2-dense-table.md) |
 | 2026-11-20 | El ritmo de cada escena animada se centraliza en un módulo de parámetros compartido con su medidor (T3 costó ≈90 s) | [ADR 0003](0003-go-no-go-fase1.md) |
 
+## Fase 2 · Draft rápido
+
+| Fecha | Decisión | Fuente |
+| --- | --- | --- |
+| 2026-11-20 | IPC: main solo hace de **relevo** (comprueba el marco emisor); el `utilityProcess` valida con Zod y decide. Sin `MessagePort` directo | [plan 04](../plans/04-contratos-ipc.md) |
+| 2026-11-20 | Comandos **idempotentes por `expectedPosition`** (posición del siguiente hecho), en lugar de IDs aleatorios | [plan 04](../plans/04-contratos-ipc.md) |
+| 2026-11-20 | Hechos con **claves con nombre** y forma canónica ordenada (no tuplas) | [plan 04](../plans/04-contratos-ipc.md) |
+| 2026-11-20 | En la Fase 2 la sesión vive **en memoria**; SQLite llega con el plan 13 (Fase 5) | [plan 04](../plans/04-contratos-ipc.md) |
+
 ## Estilo visual
 
 | Fecha | Decisión | Fuente |
