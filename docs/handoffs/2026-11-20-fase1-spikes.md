@@ -18,3 +18,10 @@
 - S3 añade un workflow temporal `spike-goldens.yml` (pushes a `spike/**`, Ubuntu + Windows): Claude hace push de la rama para ejecutarlo.
 - Al integrar cada spike: revisar el informe, hacer push de la rama `spike/*` (como referencia) y llevar a `main` **solo** el informe (y sus CSV) en un PR `docs(research): …`.
 - Si se corta: `git -C <worktree> log --oneline -5` y `status`; retomar con `codex exec resume <thread_id>` desde el worktree.
+
+## Estado (20-11, tarde)
+
+- **Session ids de Codex** (para `codex exec resume`, ejecutado desde su worktree): S1 `01a1f8bc-8f54-7b23-be73-1543fc2b58a7`, S3 `01a1f8bc-8f1c-7613-bdce-6737f161027f`. Codex estaba cerca de su límite de uso.
+- **S3:** dos commits en `spike/75-deterministic-core` (núcleo + informe de T4). Falta hacer push de la rama para que `spike-goldens.yml` compare los goldens en Ubuntu y Windows.
+- **S1:** escena montada (Motion 14.13.0, PixiJS 8.23.0), midiendo; los cambios están en el worktree sin commit todavía.
+- **Dato a tener en cuenta en el ADR 0003:** el equipo de medición tiene una **GPU integrada Intel Iris Xe (i915)** y un panel a 60 Hz, por debajo del «PC gaming medio» objetivo. Si T1 o T2 fallan por FPS, interpretar el resultado con eso antes de activar el plan B (por ejemplo, repetir en una GPU dedicada).
