@@ -8,7 +8,7 @@
 
 **Go.** Se confirma el stack del [ADR 0001](0001-stack-tecnologico.md): Electron, núcleo TypeScript y React. **El plan B (Godot + C#) no se activa.** Ningún criterio de descarte del plan 03 se cumplió. El draft *broadcast* respeta el presupuesto, no hubo pantallas en blanco en Wayland y el retoque costó muy por debajo de lo previsto. Tampoco hubo divergencias ni guardados parciales, y la carrera anterior se pudo leer. La Fase 2 puede empezar.
 
-**Driver de SQLite: `node:sqlite`** (SQLite 3.54.1 en Arch, {{SQLITE_WIN}} en Windows), cargado dentro del `utilityProcess` del paquete. No hace falta `better-sqlite3` ni ningún módulo nativo: el escritor se ejecuta directamente desde `app.asar`, sin `asarUnpack` ni recompilar para la ABI de Electron.
+**Driver de SQLite: `node:sqlite`** (SQLite 3.54.1 en Arch, también 3.54.1 en Windows), cargado dentro del `utilityProcess` del paquete. No hace falta `better-sqlite3` ni ningún módulo nativo: el escritor se ejecuta directamente desde `app.asar`, sin `asarUnpack` ni recompilar para la ABI de Electron.
 
 ## Resultados por prueba
 
