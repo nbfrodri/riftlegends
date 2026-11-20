@@ -40,6 +40,12 @@ export default defineConfig({
 			},
 			{
 				test: {
+					name: "contracts",
+					include: ["packages/contracts/**/*.test.ts"],
+				},
+			},
+			{
+				test: {
 					name: "core",
 					include: ["packages/core/**/*.test.ts"],
 				},

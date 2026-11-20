@@ -1,0 +1,12 @@
+{
+	"name": "@rift-legends/contracts",
+	"private": true,
+	"type": "module",
+	"exports": "./index.ts",
+	"dependencies": {
+		"zod": "4.6.7"
+	},
+	"devDependencies": {
+		"@rift-legends/i18n": "workspace:*"
+	}
+}

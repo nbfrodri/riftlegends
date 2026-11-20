@@ -42,5 +42,11 @@
 	"market.role.jungle": "Jungla",
 	"market.role.mid": "Medio",
 	"market.role.bot": "Tirador",
-	"market.role.support": "Apoyo"
+	"market.role.support": "Apoyo",
+	"errors.contract-mismatch": "La interfaz y el núcleo son de versiones distintas ({{received}} frente a {{expected}}). Reinicia el juego.",
+	"errors.invalid-command": "El núcleo rechazó una orden mal formada.",
+	"errors.unknown-session": "La partida ya no existe en el núcleo.",
+	"errors.stale-position": "El estado cambió mientras enviabas la orden. Vuelve a intentarlo.",
+	"errors.core-restarted": "El núcleo se ha reiniciado y la orden no se aplicó.",
+	"errors.core-timeout": "El núcleo no respondió a tiempo."
 }
