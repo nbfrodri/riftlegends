@@ -95,6 +95,7 @@ Todas las animaciones respetan `prefers-reduced-motion` y se pueden saltar sin a
 | Teclado y puntero en tests de componentes | `@testing-library/user-event` | 14.6 | MIT |
 | E2E (Electron) | `@playwright/test` | 1.65 | Apache-2.0 |
 | Mutación | `@stryker-mutator/core` | 10.1 | Apache-2.0 |
+| Runner de Stryker para Vitest | `@stryker-mutator/vitest-runner` | 10.1 | Apache-2.0 |
 | Lint y formato | `@biomejs/biome` | 2.6 | MIT o Apache-2.0 |
 | Hooks de Git | `lefthook` | 2.2 | MIT |
 

@@ -105,6 +105,12 @@ mise exec -- pnpm verify
 mise exec -- pnpm test
 ```
 
+La mutación de `packages/core` (Stryker, unos 3 minutos; se ejecuta al cerrar cada fase, no en cada PR) tiene su propio script y un workflow manual (`Mutation`):
+
+```sh
+mise exec -- pnpm mutation
+```
+
 Para arrancar la app de escritorio en modo desarrollo y para ejecutar los tests de extremo a extremo (compila la app y la prueba con Playwright):
 
 ```sh

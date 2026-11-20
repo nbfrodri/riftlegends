@@ -10,7 +10,8 @@ release/
 
 # Tests and coverage
 coverage/
-reports/mutation/
+reports/
+.stryker-tmp/
 test-results/
 playwright-report/
 .vitest/
