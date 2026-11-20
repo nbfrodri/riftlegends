@@ -5,5 +5,8 @@
 	"exports": "./index.ts",
 	"devDependencies": {
 		"fast-check": "4.10.3"
+	},
+	"dependencies": {
+		"pure-rand": "8.4.2"
 	}
 }
