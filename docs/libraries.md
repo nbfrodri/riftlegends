@@ -33,8 +33,8 @@ Rift Legends es una **app de escritorio instalable** (Electron), no una web: tie
 | Componentes | **shadcn/ui** (CLI `shadcn` 4.23) sobre `@base-ui/react` | 1.9 | MIT | El código se copia a `packages/ui-kit` y es nuestro: se re-estila con los tokens del estilo elegido (ADR 0002). Base UI es la base por defecto de shadcn desde julio de 2026 |
 | Estilos | `tailwindcss` + `@tailwindcss/vite` | 4.3 | MIT | Tokens como variables CSS (`@theme`) en `packages/ui-kit/tokens.css`; plugin de Vite en el renderer |
 | Utilidades de clases | `clsx` + `tailwind-merge`, `class-variance-authority` | 2.1 / 3.7 / 0.7 | MIT / MIT / Apache-2.0 | cva para variantes de componentes |
-| Tablas densas | `@tanstack/react-table` | 9.3 | MIT | Mercado, plantilla, estadísticas. Ya en `packages/ui-kit` (9.3.1) como base de `DataTable`; sin virtualización hasta el spike S2 |
-| Listas largas | `@tanstack/react-virtual` | 3.14 | MIT | Cuando una tabla supere unas cien filas visibles |
+| Tablas densas | `@tanstack/react-table` | 9.3 | MIT | Mercado, plantilla, estadísticas. Ya en `packages/ui-kit` (9.3.1) como base de `DataTable` |
+| Listas largas | `@tanstack/react-virtual` | 3.14 (fijada 3.14.26) | MIT | Ya en `packages/ui-kit` (3.14.26, la versión medida en el spike S2): `DataTable` monta solo las filas cercanas a la ventana de visión. Para otras listas, cuando superen unas cien filas visibles |
 | Navegación entre pantallas | `@tanstack/react-router` | 1.170 | MIT | `createMemoryHistory`, rutas tipadas |
 | Datos del núcleo en la UI | `@tanstack/react-query` | 5.108 | MIT | Caché e invalidación de las consultas IPC al núcleo |
 | Estado de UI compartido | `zustand` | 5.1 | MIT | **Aplazado** hasta que dos pantallas compartan estado transitorio |
