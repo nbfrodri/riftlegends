@@ -41,74 +41,71 @@ const ban = (page) => action(page, "Vetar a Nimbo").click();
 const confirm = (page) => action(page, "Confirmar elección").click();
 const reset = (page) => action(page, "Repetir turno").click();
 
+// Playwright serializes this function into the renderer. Keep its state local.
+function observeConfirmation(pacing) {
+	const button = document.querySelector(".hero-caption button");
+	const pick = document.querySelector(".current-pick strong");
+	const caption = document.querySelector(".hero-caption small");
+	let input = null;
+	let first = null;
+	let following = null;
+	let previous = null;
+	const frames = [];
+	const labelEnd = pacing.labelDelayMs + pacing.labelEnterMs;
+	const endOfMotion = Math.max(pacing.sweepMs, labelEnd);
+	const { promise, resolve, reject } = Promise.withResolvers();
+	window.t1Result = promise;
+	const timeout = setTimeout(
+		() => reject(new Error("Missing visible confirmation")),
+		3500,
+	);
+	button.addEventListener(
+		"pointerdown",
+		(event) => {
+			input = event.timeStamp;
+		},
+		{ once: true },
+	);
+
+	function recordInterval(stamp) {
+		if (previous === null || stamp <= input) return;
+		const start = previous - input;
+		const inSweep = start < pacing.sweepMs;
+		const inLabel = stamp - input >= pacing.labelDelayMs && start < labelEnd;
+		if (inSweep || inLabel)
+			frames.push([
+				previous,
+				stamp,
+				stamp - previous,
+				inSweep ? "sweep" : "label",
+			]);
+	}
+
+	function frame(stamp) {
+		if (input !== null) {
+			if (first !== null && following === null) following = performance.now();
+			if (
+				first === null &&
+				pick.textContent === "Veyra" &&
+				caption.textContent === "Elección confirmada"
+			)
+				first = performance.now();
+			recordInterval(stamp);
+			if (following !== null && stamp - input >= endOfMotion) {
+				clearTimeout(timeout);
+				resolve({ input, first, following, frames });
+				return;
+			}
+		}
+		previous = stamp;
+		requestAnimationFrame(frame);
+	}
+	requestAnimationFrame(frame);
+}
+
 async function sample(page) {
 	await ban(page);
-	await page.evaluate((pacing) => {
-		const button = document.querySelector(".hero-caption button");
-		const pick = document.querySelector(".current-pick strong");
-		const caption = document.querySelector(".hero-caption small");
-		let input = null;
-		let first = null;
-		let following = null;
-		let previous = null;
-		const frames = [];
-		button.addEventListener(
-			"pointerdown",
-			(e) => {
-				input = e.timeStamp;
-			},
-			{ once: true },
-		);
-		window.t1Result = new Promise((resolve, reject) => {
-			const timeout = setTimeout(
-				() => reject(new Error("Missing visible confirmation")),
-				3500,
-			);
-			function frame(stamp) {
-				if (input !== null) {
-					if (first !== null && following === null)
-						following = performance.now();
-					if (
-						first === null &&
-						pick.textContent === "Veyra" &&
-						caption.textContent === "Elección confirmada"
-					)
-						first = performance.now();
-					if (previous !== null && stamp > input) {
-						const start = previous - input;
-						const end = stamp - input;
-						if (
-							start < pacing.sweepMs ||
-							(end >= pacing.labelDelayMs &&
-								start < pacing.labelDelayMs + pacing.labelEnterMs)
-						) {
-							frames.push([
-								previous,
-								stamp,
-								stamp - previous,
-								start < pacing.sweepMs ? "sweep" : "label",
-							]);
-						}
-					}
-					if (
-						following !== null &&
-						stamp - input >=
-							Math.max(
-								pacing.sweepMs,
-								pacing.labelDelayMs + pacing.labelEnterMs,
-							)
-					) {
-						clearTimeout(timeout);
-						resolve({ input, first, following, frames });
-						return;
-					}
-				}
-				previous = stamp;
-				requestAnimationFrame(frame);
-			}
-			requestAnimationFrame(frame);
-		});
-	}, pacing);
+	await page.evaluate(observeConfirmation, pacing);
 	await confirm(page);
 	const result = await page.evaluate(() => window.t1Result);
 	assert.ok(result.frames.length > 0);
