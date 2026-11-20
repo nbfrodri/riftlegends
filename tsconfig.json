@@ -9,7 +9,8 @@
 		"apps/**/*.tsx",
 		"packages/**/*.ts",
 		"packages/**/*.tsx",
-		"vitest.config.ts"
+		"vitest.config.ts",
+		"vitest.goldens.config.ts"
 	],
 	"exclude": ["**/node_modules", "packages/core/test/fixtures"]
 }
