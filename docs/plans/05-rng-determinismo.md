@@ -61,6 +61,7 @@
 
 - Ubicación: `packages/core/test/goldens/<módulo>/<semilla>.golden`. Cabecera de una línea con `sim_version` y `content_version`, y después una línea canónica por hecho (plan 04).
 - Semillas: 0, 2 y 2³²−1, las de S3, más las que cada plan añada para sus casos límite.
+- Coherencia (D3): `goldens/manifest.json` guarda el `sim_version` y el hash del cuerpo de cada golden. El test de coherencia falla si un golden cambia (o falta, o sobra) respecto al manifiesto, y `goldens:update` se niega a cambiar bytes de un golden existente mientras `SIM_VERSION` siga igual que en el manifiesto. Las constantes están en `packages/core/version.ts` (`CONTENT_VERSION` es provisional). Los goldens de `rng/` son un ejemplo del arnés; los del draft llegan con el plan 06.
 - Regenerar: `pnpm goldens:update`. Si cambian bytes, el PR sube `sim_version` y explica el motivo en la plantilla de PR, que ya tiene la casilla de goldens.
 
 ### CI

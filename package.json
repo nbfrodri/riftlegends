@@ -11,6 +11,7 @@
 		"lint": "biome check .",
 		"typecheck": "tsc -b",
 		"test": "vitest run",
+		"goldens:update": "vitest run --config vitest.goldens.config.ts",
 		"verify": "biome ci && tsc -b && vitest run"
 	},
 	"devDependencies": {
