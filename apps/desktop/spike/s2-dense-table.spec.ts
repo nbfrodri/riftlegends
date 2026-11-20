@@ -27,7 +27,7 @@ function expectedOrder(
 	if (column) {
 		indexed.sort((a, b) => {
 			const [x, y] = [raw(a.p, column), raw(b.p, column)];
-			let r =
+			const r =
 				typeof x === "number" && typeof y === "number"
 					? x - y
 					: collator.compare(String(x), String(y));
@@ -210,7 +210,11 @@ const instrument = () => {
 				name: t.name,
 			});
 		}
-	}).observe({ type: "event", durationThreshold: 16, buffered: true });
+	}).observe({
+		type: "event",
+		durationThreshold: 16,
+		buffered: true,
+	} as PerformanceObserverInit);
 
 	// Continuous frame sampler.
 	const loop = (t: number) => {
@@ -392,7 +396,8 @@ test("S2 dense table, keyboard only", async ({ playwright }) => {
 		page.evaluate((n) => {
 			(window as unknown as { __s: { phase: string } }).__s.phase = n;
 		}, name);
-	const checks: { name: string; ok: boolean; detail?: string }[] = [];
+	const checks: { name: string; ok: boolean; detail?: string | undefined }[] =
+		[];
 	const check = (name: string, ok: boolean, detail?: string) => {
 		checks.push({ name, ok, detail });
 		if (!ok) console.log(`CHECK FAILED: ${name} ${detail ?? ""}`);
@@ -436,7 +441,8 @@ test("S2 dense table, keyboard only", async ({ playwright }) => {
 		);
 		check(
 			`${label}: 500 rows rendered`,
-			order.total === 500 && (variant === "virtual" || order.pairs.length === 500),
+			order.total === 500 &&
+				(variant === "virtual" || order.pairs.length === 500),
 			`${order.total} total, ${order.pairs.length} mounted`,
 		);
 
@@ -494,9 +500,7 @@ test("S2 dense table, keyboard only", async ({ playwright }) => {
 				const typed = "bruma".slice(0, "bruma".indexOf(ch) + 1);
 				await act(
 					ch,
-					ch === "a"
-						? { value: "bruma", rows: want.length }
-						: { value: typed },
+					ch === "a" ? { value: "bruma", rows: want.length } : { value: typed },
 				);
 			}
 		});
@@ -571,7 +575,11 @@ test("S2 dense table, keyboard only", async ({ playwright }) => {
 			await key("Home");
 			await s(page, "whenIdle");
 			a = await activeInfo();
-			check(`${label}: Home reaches first row`, a.id === want[0] && a.inView && a.outline, JSON.stringify(a));
+			check(
+				`${label}: Home reaches first row`,
+				a.id === want[0] && a.inView && a.outline,
+				JSON.stringify(a),
+			);
 			for (let i = 1; i < 500; i++) {
 				await key("ArrowDown");
 				await sleep(12);

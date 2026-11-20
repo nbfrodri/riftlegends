@@ -141,7 +141,7 @@ export function DataTable<Row extends RowData>({
 	const pinnedIndex = rows.findIndex((row) => row.id === tabStopId);
 	const pinnedRef = useRef(pinnedIndex);
 	pinnedRef.current = pinnedIndex;
-	const pendingFocus = useRef<string>();
+	const pendingFocus = useRef<string | undefined>(undefined);
 	const virtualizer = useVirtualizer({
 		count: virtualize ? rows.length : 0,
 		getScrollElement: () => viewport,
