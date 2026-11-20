@@ -5,6 +5,17 @@ test("opens the Rift Legends window", async ({ appWindow }) => {
 	await expect(appWindow.getByRole("main")).toBeAttached();
 });
 
+test("preserves the exact CSP in the distributed renderer", async ({
+	appWindow,
+}) => {
+	await expect(
+		appWindow.locator('meta[http-equiv="Content-Security-Policy"]'),
+	).toHaveAttribute(
+		"content",
+		"default-src 'none'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' rl-asset:; base-uri 'none'; form-action 'none'",
+	);
+});
+
 test("keeps Node globals out of the renderer", async ({ appWindow }) => {
 	expect(
 		await appWindow.evaluate(() => [
