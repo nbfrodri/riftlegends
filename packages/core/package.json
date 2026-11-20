@@ -2,5 +2,8 @@
 	"name": "@rift-legends/core",
 	"private": true,
 	"type": "module",
-	"exports": "./index.ts"
+	"exports": "./index.ts",
+	"dependencies": {
+		"pure-rand": "8.4.2"
+	}
 }

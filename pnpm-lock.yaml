@@ -249,7 +249,11 @@ importers:
         specifier: 8.3.8
         version: 8.3.8(@types/node@26.6.6)(jiti@2.7.0)
 
-  packages/core: {}
+  packages/core:
+    dependencies:
+      pure-rand:
+        specifier: 8.4.2
+        version: 8.4.2
 
   packages/i18n:
     dependencies:
@@ -1374,6 +1378,9 @@ packages:
     resolution: {integrity: sha512-7PiHtLll5LdnKIMw100I+8xJXR5gW2QwWYkT6iJva0bXitZKa/XMrSbdmg3r2Xnaidz9Qumd0VPaMrZlF9V9sA==}
     engines: {node: '>=0.4.0'}
 
+  pure-rand@8.4.2:
+    resolution: {integrity: sha512-vvuOGgcuPJAirlHvuQw1TrOiw7ptaIXXmIbNuiNOY6lNGJJH49PQ1Kj4nd783nPdQhQdicgOjVI2yI/9BD6/Ng==}
+
   react-dom@19.3.1:
     resolution: {integrity: sha512-Y0bARz53lhEC1NMCASs0/j+faB/zqt3R8hpvg1e8+61ZVJ4UL0UdC4cBbXfZMcIuhrfgeILTLe+ZeBCavQPtKQ==}
     peerDependencies:
@@ -2428,6 +2435,8 @@ snapshots:
       react-is: 17.0.2
 
   progress@2.0.3: {}
+
+  pure-rand@8.4.2: {}
 
   react-dom@19.3.1(react@19.3.1):
     dependencies:
