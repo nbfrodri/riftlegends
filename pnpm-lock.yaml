@@ -263,6 +263,10 @@ importers:
         version: 4.10.3
 
   packages/core:
+    dependencies:
+      pure-rand:
+        specifier: 8.4.2
+        version: 8.4.2
     devDependencies:
       fast-check:
         specifier: 4.10.3
