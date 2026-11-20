@@ -1,6 +1,14 @@
 export const pingChannel = "riftlegends:ping";
 export const systemLocaleChannel = "app:system-locale";
 
+/** IPC channels between the renderer and the core (plan 04). */
+export const coreChannels = {
+	open: "core:open",
+	send: "core:send",
+	query: "core:query",
+	facts: "core:facts",
+} as const;
+
 export const windowChannels = {
 	minimize: "window:minimize",
 	toggleMaximize: "window:toggle-maximize",

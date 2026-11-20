@@ -9,6 +9,7 @@
 		"e2e:visual": "playwright test -c playwright.visual.config.ts"
 	},
 	"dependencies": {
+		"@rift-legends/core": "workspace:*",
 		"@rift-legends/i18n": "workspace:*",
 		"@rift-legends/ui-kit": "workspace:*",
 		"@tanstack/react-router": "1.170.46",
@@ -19,6 +20,7 @@
 	},
 	"devDependencies": {
 		"@playwright/test": "1.65.1",
+		"@rift-legends/contracts": "workspace:*",
 		"@tailwindcss/vite": "4.3.5",
 		"@testing-library/dom": "10.4.2",
 		"@testing-library/react": "16.3.3",

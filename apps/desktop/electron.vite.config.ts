@@ -25,7 +25,14 @@ const devHmrCsp: Plugin = {
 };
 
 export default {
-	main: {},
+	main: {
+		build: {
+			// Workspace packages ship TypeScript sources: bundle them.
+			externalizeDeps: {
+				exclude: ["@rift-legends/contracts", "@rift-legends/core"],
+			},
+		},
+	},
 	preload: {},
 	renderer: {
 		plugins: [tailwindcss(), devHmrCsp],

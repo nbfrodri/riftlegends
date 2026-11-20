@@ -20,7 +20,11 @@ beforeEach(async () => {
 		app: {
 			whenReady: () => Promise.resolve(),
 			on: vi.fn(),
+			once: vi.fn(),
 			getLocale: () => "en-US",
+		},
+		utilityProcess: {
+			fork: () => ({ on: vi.fn(), postMessage: vi.fn(), kill: vi.fn() }),
 		},
 		BrowserWindow: class {
 			webContents = {
@@ -36,6 +40,10 @@ beforeEach(async () => {
 		},
 		ipcMain: { handle: handlers.set.bind(handlers) },
 		shell: { openExternal: vi.fn() },
+	}));
+	// electron-vite turns this import into a path; Vitest would run the module.
+	vi.doMock("../src/core-host/index?modulePath", () => ({
+		default: "core.js",
 	}));
 	await import("../src/main/index");
 });
