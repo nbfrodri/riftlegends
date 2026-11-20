@@ -10,11 +10,13 @@ import {
 	tableFeatures,
 	useTable,
 } from "@tanstack/react-table";
+import { defaultRangeExtractor, useVirtualizer } from "@tanstack/react-virtual";
 import { ArrowDown, ArrowUp } from "lucide-react";
 import {
 	type KeyboardEvent,
 	type ReactNode,
 	useId,
+	useLayoutEffect,
 	useMemo,
 	useRef,
 	useState,
@@ -25,7 +27,9 @@ import { ScrollArea } from "./scroll-area";
 // Dense Caja table: click or Enter/Space on a header sorts, the filter box
 // narrows rows by text, and Arrow Up/Down, Home and End move between rows with
 // a roving tabindex (one tab stop for the whole body). Every visible string is
-// a prop, so the app owns the translations. Not virtualised: spike S2 decides.
+// a prop, so the app owns the translations. Only the rows near the viewport are
+// mounted (spike S2: 500 rows plain miss the frame budget); the active row is
+// always mounted and hidden spacer rows keep every row at its real offset.
 
 export type DataTableColumn<Row extends RowData> = {
 	id: string;
@@ -69,6 +73,10 @@ const fold = (text: string) =>
 		.replace(/\p{Diacritic}/gu, "")
 		.toLowerCase();
 
+const DEFAULT_ROW_HEIGHT = 24;
+const DEFAULT_HEAD_HEIGHT = 32;
+const OVERSCAN = 8;
+
 const ariaSort = {
 	asc: "ascending",
 	desc: "descending",
@@ -89,6 +97,7 @@ export function DataTable<Row extends RowData>({
 	const filterId = useId();
 	const [activeId, setActiveId] = useState<string>();
 	const rowElements = useRef(new Map<string, HTMLTableRowElement>());
+	const pendingFocus = useRef<string | undefined>(undefined);
 
 	const columnDefs = useMemo(() => {
 		const collator = new Intl.Collator(locale);
@@ -127,6 +136,57 @@ export function DataTable<Row extends RowData>({
 		? activeId
 		: rows[0]?.id;
 
+	const [viewport, setViewport] = useState<HTMLElement | null>(null);
+	const [head, setHead] = useState<HTMLElement | null>(null);
+	// Rows start below the sticky header, which is part of the scrolled content.
+	const headHeight = head?.offsetHeight ?? DEFAULT_HEAD_HEIGHT;
+	const pinnedIndex = rows.findIndex((row) => row.id === tabStopId);
+	const pinnedRef = useRef(pinnedIndex);
+	pinnedRef.current = pinnedIndex;
+	const virtualizer = useVirtualizer({
+		count: rows.length,
+		getScrollElement: () => viewport,
+		estimateSize: () => DEFAULT_ROW_HEIGHT,
+		overscan: OVERSCAN,
+		scrollMargin: headHeight,
+		getItemKey: (index) => rows[index]?.id ?? index,
+		// The active row is the tab stop: without it mounted, Tab could not
+		// enter the table once it scrolled out of the window.
+		rangeExtractor: (range) => {
+			const indexes = new Set(defaultRangeExtractor(range));
+			if (pinnedRef.current >= 0) indexes.add(pinnedRef.current);
+			return [...indexes].sort((a, b) => a - b);
+		},
+	});
+	const windowed = virtualizer.getVirtualItems().flatMap((item) => {
+		const row = rows[item.index];
+		return row
+			? [{ row, index: item.index, start: item.start, size: item.size }]
+			: [];
+	});
+
+	// A row that was not mounted when asked to take focus gets it as soon as the
+	// window mounts it.
+	useLayoutEffect(() => {
+		const id = pendingFocus.current;
+		if (id === undefined) return;
+		const element = rowElements.current.get(id);
+		if (!element) return;
+		pendingFocus.current = undefined;
+		element.focus();
+	});
+
+	const focusRow = (id: string) => {
+		const element = rowElements.current.get(id);
+		if (element) {
+			element.focus();
+			return;
+		}
+		// Make it the active row so the window mounts it, then focus it.
+		pendingFocus.current = id;
+		setActiveId(id);
+	};
+
 	const onRowKeyDown = (event: KeyboardEvent, index: number) => {
 		const target = {
 			ArrowDown: Math.min(index + 1, rows.length - 1),
@@ -137,8 +197,13 @@ export function DataTable<Row extends RowData>({
 		if (target === undefined) return;
 		event.preventDefault();
 		const id = rows[target]?.id;
-		if (id !== undefined) rowElements.current.get(id)?.focus();
+		if (id !== undefined) focusRow(id);
 	};
+
+	const last = windowed[windowed.length - 1];
+	const endGap = last
+		? virtualizer.getTotalSize() + headHeight - (last.start + last.size)
+		: 0;
 
 	const cellAlign = (id: string) =>
 		numeric.has(id) ? "text-right tabular-nums" : "text-left";
@@ -164,6 +229,7 @@ export function DataTable<Row extends RowData>({
 			<ScrollArea
 				className="flex-1"
 				viewportProps={{
+					ref: setViewport,
 					role: "region",
 					"aria-label": label,
 					className: "scroll-pt-8",
@@ -171,9 +237,10 @@ export function DataTable<Row extends RowData>({
 			>
 				<table
 					aria-label={label}
+					aria-rowcount={rows.length + 1}
 					className="w-full border-separate border-spacing-0 whitespace-nowrap text-table"
 				>
-					<thead>
+					<thead ref={setHead}>
 						{table.getHeaderGroups().map((group) => (
 							<tr key={group.id}>
 								{group.headers.map(({ column }) => {
@@ -211,20 +278,37 @@ export function DataTable<Row extends RowData>({
 						))}
 					</thead>
 					<tbody>
-						{rows.map((row, index) => {
+						{windowed.flatMap(({ row, index, start }, position) => {
 							const isTabStop = row.id === tabStopId;
-							return (
+							// Row offsets are measured from the scroll origin, so the gap
+							// before a row is its start minus where the previous one ended.
+							const previous = windowed[position - 1];
+							const gap =
+								start -
+								(previous ? previous.start + previous.size : headHeight);
+							return [
+								gap > 0.5 && (
+									<tr key={`gap-${row.id}`} aria-hidden style={{ height: gap }}>
+										<td colSpan={columns.length} className="p-0" />
+									</tr>
+								),
 								<tr
 									key={row.id}
 									ref={(element) => {
-										if (element) rowElements.current.set(row.id, element);
-										else rowElements.current.delete(row.id);
+										if (element) {
+											rowElements.current.set(row.id, element);
+											virtualizer.measureElement(element);
+										} else rowElements.current.delete(row.id);
 									}}
+									data-index={index}
+									aria-rowindex={index + 2}
+									data-row-id={row.id}
 									tabIndex={isTabStop ? 0 : -1}
 									data-active={isTabStop}
+									data-fifth={(index + 1) % 5 === 0}
 									onFocus={() => setActiveId(row.id)}
 									onKeyDown={(event) => onRowKeyDown(event, index)}
-									className="h-[clamp(24px,3vh,30px)] hover:bg-surface focus-visible:outline-3 focus-visible:outline-action focus-visible:-outline-offset-3 data-[active=true]:bg-surface data-[active=true]:[&>td:first-child]:shadow-[inset_3px_0_var(--color-action)] [&:nth-child(5n)>td]:border-line [&:nth-child(5n)>td]:border-b"
+									className="h-[clamp(24px,3vh,30px)] hover:bg-surface focus-visible:outline-3 focus-visible:outline-action focus-visible:-outline-offset-3 data-[active=true]:bg-surface data-[active=true]:[&>td:first-child]:shadow-[inset_3px_0_var(--color-action)] data-[fifth=true]:[&>td]:border-line data-[fifth=true]:[&>td]:border-b"
 								>
 									{row.getAllCells().map((cell) => (
 										<td
@@ -240,9 +324,14 @@ export function DataTable<Row extends RowData>({
 											)}
 										</td>
 									))}
-								</tr>
-							);
+								</tr>,
+							];
 						})}
+						{windowed.length > 0 && (
+							<tr aria-hidden style={{ height: endGap }}>
+								<td colSpan={columns.length} className="p-0" />
+							</tr>
+						)}
 						{rows.length === 0 && (
 							<tr>
 								<td

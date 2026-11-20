@@ -1,7 +1,14 @@
-import { cleanup, render, screen, within } from "@testing-library/react";
+import {
+	cleanup,
+	fireEvent,
+	render,
+	screen,
+	within,
+} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { afterEach, expect, test } from "vitest";
+import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import { DataTable, type DataTableColumn } from "../components/data-table";
+import { setViewportHeight } from "./layout";
 
 afterEach(cleanup);
 
@@ -223,4 +230,91 @@ test("right-aligns numeric columns with tabular figures, left-aligns the rest", 
 	}
 	expect(name?.classList.contains("text-right")).toBe(false);
 	expect(header("Player").classList.contains("text-right")).toBe(false);
+});
+
+// Virtualised window: a 240px region shows 10 rows plus 8 of overscan, so the
+// 36-row table mounts fewer rows than it has.
+describe("with a short scrolling region", () => {
+	beforeEach(() => setViewportHeight(240));
+
+	const table = () => screen.getByRole("table", { name: "Players" });
+	const region = () => screen.getByRole("region", { name: "Players" });
+	const rowIndexes = () =>
+		rows().map((row) => Number(row.getAttribute("aria-rowindex")));
+	const scrollTo = (top: number) => {
+		region().scrollTop = top;
+		fireEvent.scroll(region());
+	};
+
+	test("mounts only a window of rows and reports the full count", () => {
+		render(<Table />);
+		expect(rows().length).toBeLessThan(36);
+		// 36 rows plus the header row.
+		expect(table().getAttribute("aria-rowcount")).toBe("37");
+		expect(rowIndexes()[0]).toBe(2);
+		expect(rowIndexes()).toEqual(
+			rowIndexes().map((_, offset) => (rowIndexes()[0] ?? 0) + offset),
+		);
+	});
+
+	test("keeps the scroll height of the whole table with hidden spacer rows", () => {
+		render(<Table />);
+		scrollTo(480);
+		const spacers = [...body().querySelectorAll("tr[aria-hidden=true]")];
+		expect(spacers.length).toBeGreaterThan(0);
+		const spacerHeight = spacers.reduce(
+			(sum, row) => sum + Number.parseFloat((row as HTMLElement).style.height),
+			0,
+		);
+		expect(spacerHeight + rows().length * 24).toBe(36 * 24);
+	});
+
+	test("Home and End focus rows that are not mounted yet", async () => {
+		const user = userEvent.setup();
+		render(<Table />);
+		(rows()[0] as HTMLElement).focus();
+		await user.keyboard("{End}");
+		expect(document.activeElement?.getAttribute("aria-rowindex")).toBe("37");
+		expect(document.activeElement?.textContent).toMatch(/Iris 3/);
+		await user.keyboard("{Home}");
+		expect(document.activeElement?.getAttribute("aria-rowindex")).toBe("2");
+		expect(document.activeElement?.textContent).toMatch(/Nadir 1/);
+	});
+
+	test("the arrow keys walk past the mounted window", async () => {
+		const user = userEvent.setup();
+		render(<Table />);
+		(rows()[0] as HTMLElement).focus();
+		const mounted = rows().length;
+		await user.keyboard("{ArrowDown}".repeat(mounted + 3));
+		expect(document.activeElement?.getAttribute("aria-rowindex")).toBe(
+			String(mounted + 5),
+		);
+		await user.keyboard("{ArrowUp}".repeat(mounted + 3));
+		expect(document.activeElement?.getAttribute("aria-rowindex")).toBe("2");
+	});
+
+	test("keeps the active row mounted and as the only tab stop after scrolling away", async () => {
+		const user = userEvent.setup();
+		render(<Table />);
+		(rows()[3] as HTMLElement).focus();
+		const active = document.activeElement as HTMLElement;
+		scrollTo(36 * 24);
+		expect(rowIndexes()).not.toContain(2);
+		expect(body().contains(active)).toBe(true);
+		expect(rows().filter((row) => row.tabIndex === 0)).toEqual([active]);
+		// Tab from the last header button enters the table at the active row.
+		sortButton("Age").focus();
+		await user.tab();
+		expect(document.activeElement).toBe(active);
+	});
+
+	test("draws the rule under every fifth row by index, not by position", () => {
+		render(<Table />);
+		scrollTo(7 * 24);
+		for (const row of rows()) {
+			const position = Number(row.getAttribute("aria-rowindex")) - 1;
+			expect(row.getAttribute("data-fifth")).toBe(String(position % 5 === 0));
+		}
+	});
 });
