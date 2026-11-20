@@ -14,8 +14,22 @@ test("T9: the language choice survives a relaunch and beats the system locale", 
 			.getByRole("navigation", { name: "Club sections" })
 			.getByRole("button", { name: "Settings" })
 			.click();
-		await page.getByRole("combobox", { name: "Language" }).click();
-		await page.getByRole("option", { name: "Español" }).click();
+		const language = page.getByRole("combobox", { name: "Language" });
+		await language.press("Enter");
+		await expect(page.getByRole("option", { name: "English" })).toBeFocused();
+		await page.keyboard.press("ArrowUp");
+		const spanish = page.getByRole("option", { name: "Español" });
+		await expect(spanish).toBeFocused();
+		await expect(spanish).toHaveCSS("outline-style", "solid");
+		await expect(spanish).toHaveCSS("outline-color", "rgb(168, 222, 255)");
+		await expect
+			.poll(() =>
+				spanish.evaluate((option) =>
+					Number.parseFloat(getComputedStyle(option).outlineWidth),
+				),
+			)
+			.toBeGreaterThanOrEqual(1);
+		await page.keyboard.press("Enter");
 		await expect(page.getByRole("heading", { level: 1 })).toHaveText("Ajustes");
 		await expect(page.locator("html")).toHaveAttribute("lang", "es");
 	} finally {

@@ -20,7 +20,7 @@ test("T10: Market sorts players by monthly salary", async ({ appWindow }) => {
 	const table = appWindow.getByRole("table", { name: "Available players" });
 	await expect(table.locator("tbody tr")).toHaveCount(36);
 	const salary = table.getByRole("columnheader", { name: "Monthly salary" });
-	await expect(salary).toHaveAttribute("aria-sort", "none");
+	await expect(salary).not.toHaveAttribute("aria-sort");
 
 	await salary.getByRole("button").click();
 	await expect(salary).toHaveAttribute("aria-sort", "ascending");

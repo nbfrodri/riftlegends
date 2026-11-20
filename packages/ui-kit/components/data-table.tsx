@@ -182,7 +182,7 @@ export function DataTable<Row extends RowData>({
 										<th
 											key={column.id}
 											scope="col"
-											aria-sort={sorted ? ariaSort[sorted] : "none"}
+											aria-sort={sorted ? ariaSort[sorted] : undefined}
 											className={cn(
 												"sticky top-0 z-10 h-8 border-line border-b bg-surface px-2.5 font-semibold last:pe-3.5",
 												cellAlign(column.id),

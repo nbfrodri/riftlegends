@@ -83,6 +83,27 @@ test("a disabled option stays discoverable but cannot be chosen", async () => {
 	expect(onValueChange).not.toHaveBeenCalled();
 });
 
+test("arrow navigation moves the visible outline to the highlighted option", async () => {
+	const user = userEvent.setup();
+	render(<LanguageSelect />);
+	await user.tab();
+	await user.keyboard("{Enter}");
+	await screen.findByRole("listbox");
+	await user.keyboard("{ArrowDown}{ArrowDown}");
+
+	const highlighted = screen.getByRole("option", { name: "English" });
+	expect(document.activeElement).toBe(highlighted);
+	expect(highlighted.hasAttribute("data-highlighted")).toBe(true);
+	expect(highlighted.classList).toContain("data-highlighted:outline-2");
+	expect(highlighted.classList).toContain("data-highlighted:outline-solid");
+	expect(highlighted.classList).toContain("data-highlighted:outline-action");
+	expect(
+		screen
+			.getByRole("option", { name: "Español" })
+			.hasAttribute("data-highlighted"),
+	).toBe(false);
+});
+
 test("commits a keyboard choice and returns focus to the trigger", async () => {
 	const user = userEvent.setup();
 	const onValueChange = vi.fn();

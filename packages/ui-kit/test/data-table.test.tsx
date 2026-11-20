@@ -61,6 +61,10 @@ function Table({ data = players }: { data?: Player[] }) {
 const body = () => screen.getAllByRole("rowgroup")[1] as HTMLElement;
 const rows = () => within(body()).getAllByRole("row");
 const header = (name: string) => screen.getByRole("columnheader", { name });
+const headersWithSort = () =>
+	screen
+		.getAllByRole("columnheader")
+		.filter((column) => column.hasAttribute("aria-sort"));
 const sortButton = (name: string) =>
 	within(header(name)).getByRole("button", { name });
 const ageColumn = () =>
@@ -80,7 +84,7 @@ test("sorts by a column on click: ascending, descending, then back to none", asy
 	const user = userEvent.setup();
 	render(<Table />);
 	const original = ageColumn();
-	expect(header("Age").getAttribute("aria-sort")).toBe("none");
+	expect(headersWithSort()).toEqual([]);
 
 	await user.click(sortButton("Age"));
 	expect(header("Age").getAttribute("aria-sort")).toBe("ascending");
@@ -91,7 +95,7 @@ test("sorts by a column on click: ascending, descending, then back to none", asy
 	expect(ageColumn()).toEqual([...original].sort((a, b) => b - a));
 
 	await user.click(sortButton("Age"));
-	expect(header("Age").getAttribute("aria-sort")).toBe("none");
+	expect(headersWithSort()).toEqual([]);
 	expect(ageColumn()).toEqual(original);
 });
 
@@ -100,7 +104,7 @@ test("sorts text columns and moves aria-sort to the last sorted header", async (
 	render(<Table />);
 	await user.click(sortButton("Team"));
 	expect(header("Team").getAttribute("aria-sort")).toBe("ascending");
-	expect(header("Player").getAttribute("aria-sort")).toBe("none");
+	expect(headersWithSort()).toEqual([header("Team")]);
 	const teamsShown = rows().map(
 		(row) => within(row).getAllByRole("cell")[1]?.textContent,
 	);
@@ -108,7 +112,7 @@ test("sorts text columns and moves aria-sort to the last sorted header", async (
 
 	await user.click(sortButton("Player"));
 	expect(header("Player").getAttribute("aria-sort")).toBe("ascending");
-	expect(header("Team").getAttribute("aria-sort")).toBe("none");
+	expect(headersWithSort()).toEqual([header("Player")]);
 });
 
 test("sorts from the keyboard with Enter and Space on the header button", async () => {
