@@ -87,7 +87,7 @@ mise exec -- pnpm test
 mise exec -- pnpm e2e
 ```
 
-`verify` comprueba lint, tipos y tests, y debe estar en verde antes de abrir un PR. `test` ejecuta solo los tests de Vitest. `e2e` compila la app y la prueba con Playwright (`_electron`); en CI corre bajo Xvfb. El CI exige `verify` en cada PR (check obligatorio en `protect-main`).
+`verify` comprueba lint, tipos y tests, y debe estar en verde antes de abrir un PR. `test` ejecuta solo los tests de Vitest. `e2e` compila la app y la prueba con Playwright (`_electron`); en CI corre bajo Xvfb. `e2e:visual` ejecuta las capturas de regresión visual (solo Linux, referencias generadas en el CI; ver [`e2e/visual/README.md`](apps/desktop/e2e/visual/README.md)) y no forma parte de `e2e`. El CI exige `verify` en cada PR (check obligatorio en `protect-main`).
 
 ## Legal
 

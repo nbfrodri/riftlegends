@@ -1,0 +1,25 @@
+# Tests visuales
+
+Capturas de pantalla (`toHaveScreenshot`) de tres pantallas del shell a 1366x768 y con el sistema en `es-ES`: Draft con la barra lateral plegada, Mercado con la barra expandida y Ajustes. Corren con `pnpm e2e:visual`, fuera del `pnpm e2e` normal, y solo en Linux (en otros sistemas el test se omite).
+
+## Por qué solo en el CI
+
+La tipografía se rasteriza distinto en cada distribución, así que las capturas de referencia solo valen en la imagen del CI (`ubuntu-latest` bajo Xvfb). **No se generan ni se commitean desde una máquina local.** Las referencias viven en `__screenshots__/screens.spec.ts/` (sin sufijo de plataforma, porque el test solo existe en Linux).
+
+## Umbral
+
+`maxDiffPixelRatio: 0.002` (0,2 % de los píxeles, unos 2.100 a 1366x768): absorbe el ruido de suavizado de bordes, pero no un elemento movido ni un color distinto. Las animaciones están desactivadas y el cursor de texto oculto. Se configura en `playwright.visual.config.ts`.
+
+## Puesta en marcha (referencias iniciales)
+
+Mientras no exista `__screenshots__/`, el paso visual del CI se omite (no hay nada con qué comparar). Para crearlas:
+
+1. Lanza el workflow **Visual baselines** (Actions > Visual baselines > Run workflow) sobre la rama del PR.
+2. Descarga el artefacto `visual-baselines` y revisa las tres imágenes a mano.
+3. Copia su contenido a `apps/desktop/e2e/visual/__screenshots__/` (conservando `screens.spec.ts/`) y commitéalo.
+
+A partir de ahí el paso `Visual regression` del job `verify` falla si una captura cambia, y sube el informe y los diffs como artefacto `visual-diffs`.
+
+## Cambio visual intencionado
+
+Repite los pasos de arriba con tu rama: el workflow regenera las imágenes, las revisas en el PR y las commiteas junto al cambio.
