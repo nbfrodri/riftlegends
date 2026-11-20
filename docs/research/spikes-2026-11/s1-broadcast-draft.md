@@ -2,6 +2,8 @@
 
 **T1 aprobado en ambos perfiles de energía.** En `balanced` (con el cargador conectado), las 60 confirmaciones dieron 60,01 FPS medios, intervalo p95 de 16,7 ms y latencia p95 de 30,4 ms. En `power-saver` (con batería) dieron 56,13 FPS, 21,3 ms y 27,3 ms. La latencia apenas cambia entre perfiles. La fluidez sí: en `power-saver` el margen sobre el umbral de 55 FPS es de apenas 1 FPS, y una tanda preliminar quedó en 54,93. Con `balanced`, la Iris Xe mantiene los 60 Hz del panel sin perder fotogramas.
 
+**T3 aprobado.** Un subagente `sonnet` con effort medium adelantó 150 ms la entrada del rótulo en unos 90 s, con una sola revisión. Después del retoque, T1 sigue en verde en ambos perfiles, ya con el cargador conectado: 60,01 FPS e intervalo p95 de 16,7 ms en los dos. Así, la caída a 56 FPS de la primera pasada se debe sobre todo a la batería, más que al perfil.
+
 Ensayo del 20 de noviembre de 2026 para el issue #73. Escena desechable en `spike/73-broadcast-draft`, commit `19db294`. Se midió `power-saver` en `54705d44d86255f758c4bb78b321099b111c866b` y `balanced` en `5b3b091e20a390b97822a86df975fca7c60fd503` (el primer intento interrumpido, en `331536e`). Entre ambos commits se simplificó el observador de fotogramas. La escena era idéntica y ambos observadores dieron los mismos resultados al reproducir 108 secuencias de prueba. La decisión conjunta sobre el stack corresponde al ADR 0003 tras T1–T7. [Plan 03](../../plans/03-spikes.md)
 
 ## Equipo y versiones
@@ -55,7 +57,7 @@ Ascua veta a Nimbo. El reloj de ocho segundos inicia el turno de Bruma. Al confi
 
 Los CSV contienen 1580 intervalos en `power-saver` y 1683 en `balanced`. En la confirmación adicional trazada, Chromium registró 14,85 ms entre el inicio y el fin de `EventLatency` de la pulsación. El vídeo muestra el veto, el reloj pasando de 00:08 a 00:07, el barrido y el rótulo. En cada uno de sus 191 fotogramas decodificados, la diferencia entre el píxel más claro y el más oscuro de la zona central fue de al menos 192 niveles sobre 255.
 
-**Alcance.** T3 queda pendiente del otro agente. T2 y T4–T7 corresponden a otros spikes. El presupuesto de GPU se evalúa en el Arch físico. El E2E de teclado queda disponible para la comprobación funcional en CI de Windows, pendiente de ejecución allí. En Linux pasaron `pnpm verify` (137 tests) y `pnpm e2e` (20 pasaron y se omitió la prueba exclusiva de Windows).
+**Alcance.** T2 y T4–T7 corresponden a otros spikes. El presupuesto de GPU se evalúa en el Arch físico. El E2E de teclado queda disponible para la comprobación funcional en CI de Windows, pendiente de ejecución allí. En Linux pasaron `pnpm verify` (137 tests) y `pnpm e2e` (20 pasaron y se omitió la prueba exclusiva de Windows).
 
 ## Evidencias
 
@@ -74,6 +76,24 @@ Las marcas de tiempo de los CSV están en milisegundos desde el origen temporal 
 
 > Adelantar 150 ms la entrada del rótulo posterior a la confirmación. Conservar el barrido de 320 ms, la respuesta inicial y el modo reducido. Vídeos antes/después aceptados y T1 en verde. Presupuesto propuesto de ≤30 min desde el encargo hasta la primera versión aceptable, incluidas las correcciones.
 
-T3 queda pendiente del ejercicio cronometrado con otro agente. Registrar modelo, esfuerzo, hora de encargo, hora de aceptación, revisiones y ambos vídeos. Para la construcción de S1, `tack codex-used` registró `gpt-6.2-astra` con esfuerzo `high`. La escena y el primer medidor quedaron en el commit de las 12:45 CET, unos 12 minutos desde la preparación del worktree. El tiempo de T3 empieza al entregar el encargo. [Parámetros de la escena](https://github.com/nbfrodri/riftlegends/blob/spike/73-broadcast-draft/apps/desktop/src/renderer/draft/pacing.ts)
+Para la construcción de S1, `tack codex-used` registró `gpt-6.2-astra` con esfuerzo `high`. La escena y el primer medidor quedaron en el commit de las 12:45 CET, unos 12 minutos desde la preparación del worktree. [Parámetros de la escena](https://github.com/nbfrodri/riftlegends/blob/spike/73-broadcast-draft/apps/desktop/src/renderer/draft/pacing.ts)
 
 Después del retoque, ejecutar desde la raíz `mise exec -- pnpm spike:t1 power-saver-t3` o `mise exec -- pnpm spike:t1 balanced-t3` según el perfil activo. Cada comando repite el ensayo completo y guarda los CSV, la traza, el vídeo y las capturas con el sufijo `-t3` junto al informe.
+
+## Resultado de T3
+
+| Dato | Valor |
+| --- | --- |
+| Agente | Subagente de Claude Code `sonnet`, effort medium, sin más contexto que el encargo y el informe |
+| Tiempo | Encargo a las 20:07:41 CET y commit `cdf22da` a las 20:09:11 CET: **≈90 s**, frente al presupuesto de ≤30 min |
+| Revisiones | 1 retoque y 0 correcciones. El agente formateó además un JSON de evidencias para que `pnpm verify` pasara (137 tests) |
+| Cambio | `labelDelayMs` pasa de 480 a 330 ms en `pacing.ts`. El barrido de 320 ms, la curva, `labelEnterMs` y el modo reducido no cambian |
+
+| T1 tras T3 (con el cargador conectado) | Latencia p95 | Latencia máx. | FPS medios | Intervalo p95 | Intervalo máx. | Movimiento reducido y 1280×720 |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| `balanced` | 27,4 ms | 31,3 ms | 60,01 | 16,7 ms | 16,8 ms | Pasa |
+| `power-saver` | 26,5 ms | 27,5 ms | 60,01 | 16,7 ms | 16,8 ms | Pasa |
+
+Vídeo antes: [`s1-t1-balanced-before.webm`](s1-t1-balanced-before.webm) · Vídeos después: [`balanced`](s1-t1-balanced-t3-after.webm) y [`power-saver`](s1-t1-power-saver-t3-after.webm) · Muestras: [balanced-t3](s1-t1-balanced-t3.csv) ([intervalos](s1-t1-balanced-t3-frames.csv), [JSON](s1-t1-balanced-t3.json)) y [power-saver-t3](s1-t1-power-saver-t3.csv) ([intervalos](s1-t1-power-saver-t3-frames.csv), [JSON](s1-t1-power-saver-t3.json)).
+
+**Lectura.** El tiempo es tan corto porque la escena centraliza el ritmo en un solo módulo (`pacing.ts`) que comparten la escena y el medidor. Conviene mantener esa convención en la escena real de draft. Con un retoque de dirección visual más amplio, el coste será mayor que este caso mínimo, pero el ensayo confirma que el flujo agente → build → medición es reproducible con un comando.
