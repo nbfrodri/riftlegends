@@ -2,6 +2,7 @@ packages:
   - "apps/*"
   - "packages/*"
 allowBuilds:
+  electron-winstaller: false
   lefthook: true
 minimumReleaseAgeExclude:
   - electron@45.4.1

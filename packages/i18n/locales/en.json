@@ -1,4 +1,9 @@
 {
+	"spike76.turn": "Turn",
+	"spike76.advance": "Confirm next turn",
+	"spike76.finished": "Series complete",
+	"spike76.ban": "Ban",
+	"spike76.pick": "Pick",
 	"shell.title": "Rift Legends",
 	"shell.comingSoon": "Coming soon",
 	"shell.nav.label": "Club sections",

@@ -1,3 +1,4 @@
 * text=auto eol=lf
+docs/research/spikes-2026-11/s76-linux.career binary
 *.{png,jpg,jpeg,gif,webp,ico,icns,woff,woff2,ttf,otf,ogg,mp3,wav,riv,sqlite} binary
 *.{cmd,bat,ps1} text eol=crlf
