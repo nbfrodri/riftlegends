@@ -65,4 +65,5 @@ Resumen de las decisiones **vigentes**, para empezar cualquier sesión sin volve
 | 2026-11-19 | **Trunk-based**: solo `main` y ramas cortas por issue; beta = `vX.Y.Z-beta.N`; estable = `vX.Y.Z` | [AGENTS.md](../../AGENTS.md) |
 | 2026-11-19 | Flujo **plan → issues "Tarea de plan" → tablero → rama → PR con `Closes #NN`**; solo squash; `main` protegida (PR obligatorio sin aprobaciones, historial lineal y sin force-push) | [AGENTS.md](../../AGENTS.md) |
 | 2026-11-19 | CI de GitHub Actions: `verify` (Ubuntu, en cada PR, **obligatorio** en `protect-main`) y `verify-windows` (en `main` y en tags). Dependabot semanal con auto-merge de patch y minor | [ci.yml](../../.github/workflows/ci.yml), [plan 01](../archive/plans/01-cimientos.md) |
+| 2026-11-20 | Todo lo escrito (documentación, planes, issues, PR y respuestas) debe ser **claro, entendible y breve** | [AGENTS.md](../../AGENTS.md) |
 | 2026-11-19 | El diseño visual y el trabajo mecánico se delegan en **Codex**; el usuario elige modelo y effort entre las opciones que se le presentan | [AGENTS.md](../../AGENTS.md) |

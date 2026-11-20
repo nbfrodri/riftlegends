@@ -21,6 +21,15 @@ Es una **app de escritorio instalable** (Electron) que funciona sin conexión, n
 - Documentación, ADR, planes, issues y PR: **español** (el repo es privado).
 - Textos de la UI: siempre en los catálogos i18n (ES y EN).
 
+## Estilo de escritura
+
+Documentación, planes, ADR, issues, PR y respuestas al usuario: **claros, entendibles y breves**.
+
+- Primero la conclusión; después solo el detalle necesario para actuar.
+- Frases cortas y palabras corrientes. Si usas un término técnico, que se entienda por el contexto.
+- Tablas y listas mejor que párrafos. Nada de relleno, repeticiones ni resúmenes de lo ya dicho.
+- Cada dato en un solo sitio; en los demás, un enlace.
+
 ## Flujo de trabajo: plan → issues → tablero → PR
 
 1. **Plan específico.** Cada sistema o función tiene su plan en `docs/plans/NN-nombre.md` (índice en el plan general). Empieza por la **lista de tests** (comportamientos y casos límite) y después el diseño.
