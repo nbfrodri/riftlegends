@@ -91,6 +91,10 @@ export function MarketScreen() {
 				className="flex-1"
 				label={t("market.table.label")}
 				data={spikePlayers}
+				virtualize={
+					(import.meta as unknown as { env: Record<string, string> }).env
+						.VITE_S2_VIRTUAL === "1"
+				}
 				columns={columns}
 				getRowId={(player) => player.id}
 				filterLabel={t("market.filter.label")}
