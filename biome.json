@@ -46,6 +46,24 @@
 								"deniedGlobals": {
 									"Math": "Use deterministic arithmetic and a seeded PRNG in core.",
 									"Date": "Pass in the game day instead of reading the wall clock.",
+									"performance": "Keep elapsed time outside core.",
+									"PerformanceMark": "Keep platform timestamps outside core.",
+									"PerformanceObserver": "Keep performance measurements outside core.",
+									"crypto": "Use the seeded PRNG in core.",
+									"Temporal": "Pass in game time instead of consulting Temporal.Now.",
+									"process": "Keep Node.js clocks and process state outside core.",
+									"require": "Use static imports so core dependencies can be checked.",
+									"globalThis": "Keep host globals outside core.",
+									"global": "Keep host globals outside core.",
+									"self": "Keep host globals outside core.",
+									"Intl": "Format dates and times outside core.",
+									"Event": "Keep platform events and their timestamps outside core.",
+									"setTimeout": "Drive simulation steps with game time.",
+									"setInterval": "Drive simulation steps with game time.",
+									"setImmediate": "Drive simulation steps with game time.",
+									"AbortSignal": "Keep platform timers outside core.",
+									"requestIdleCallback": "Keep idle timing outside core.",
+									"requestAnimationFrame": "Keep animation frame timing outside core.",
 									"window": "Keep DOM access outside core.",
 									"document": "Keep DOM access outside core."
 								}
@@ -60,7 +78,18 @@
 								},
 								"patterns": [
 									{
-										"group": ["node:*", "node:*/**", "fs", "fs/**"],
+										"group": [
+											"node:*",
+											"node:*/**",
+											"fs",
+											"fs/**",
+											"crypto",
+											"perf_hooks",
+											"process",
+											"os",
+											"timers",
+											"timers/**"
+										],
 										"message": "Keep Node.js APIs outside core."
 									}
 								]
