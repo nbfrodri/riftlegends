@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { defineCommands, defineQueries, position } from "../envelope";
 import { defineFacts } from "../facts";
-import { aiDecidedFact, aiPerTeam, PERSONALITIES } from "./ai";
+import { aiDecidedFact, aiPerTeam, PERSONALITIES, TIERS } from "./ai";
 import { matchEndedFact, matchEventFact, matchStartedFact } from "./match";
 
 export * from "./ai";
@@ -182,6 +182,11 @@ export const seriesOptions = z.strictObject({
 		}),
 	),
 	pool: z.array(championId),
+	/** Roles each champion plays, with their tier; for the roles screen's suggestion. */
+	positions: z.record(
+		championId,
+		z.array(z.strictObject({ role: z.enum(ROLES), tier: z.enum(TIERS) })),
+	),
 });
 
 export type SeriesOptions = z.infer<typeof seriesOptions>;
