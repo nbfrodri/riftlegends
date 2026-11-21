@@ -1,7 +1,7 @@
 import { int } from "../rng/helpers";
 import { createRng } from "../rng/streams";
 import type { GoldenCase } from "./golden";
-import { playSeries } from "./play-series";
+import { playAiSeries, playSeries } from "./play-series";
 
 /**
  * Example goldens: ten d100 rolls per seed, turned into facts. They prove
@@ -31,4 +31,15 @@ const draftCases: GoldenCase[] = [2026].map((seed) => ({
 		playSeries({ seed, format: "bo5", fearless: "hard", pool: DRAFT_POOL }),
 }));
 
-export const goldenCases: GoldenCase[] = [...rngCases, ...draftCases];
+/** Plan 07, C3: an AI vs AI Bo3 with hard fearless over the fictional content. */
+const aiCases: GoldenCase[] = [7].map((seed) => ({
+	module: "draft-ai",
+	seed,
+	facts: () => playAiSeries(seed),
+}));
+
+export const goldenCases: GoldenCase[] = [
+	...rngCases,
+	...draftCases,
+	...aiCases,
+];

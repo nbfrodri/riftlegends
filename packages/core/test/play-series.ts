@@ -1,5 +1,10 @@
 import { CONTRACT_VERSION, type DraftView } from "@rift-legends/contracts";
-import { draftDispatcher, initialDraftState } from "../draft/index";
+import { fictionalContent } from "../ai/fixtures/content";
+import {
+	draftDispatcher,
+	draftStateWith,
+	initialDraftState,
+} from "../draft/index";
 import type { SeriesState } from "../draft/series";
 import { pick } from "../rng/helpers";
 import { createRng } from "../rng/streams";
@@ -93,4 +98,43 @@ export const playSeries = (options: PlayOptions): Fact[] => {
 			}
 		}
 	}
+};
+
+/** An AI vs AI series over the fictional content; game winners alternate. */
+export const playAiSeries = (seed: number): Fact[] => {
+	let session = openSession<SeriesState>(1, draftStateWith(fictionalContent));
+	const facts: Fact[] = [];
+	const send = (kind: string, payload: object) => {
+		const result = draftDispatcher.handle(session, {
+			v: CONTRACT_VERSION,
+			kind,
+			sessionId: 1,
+			expectedPosition: session.position,
+			payload,
+		});
+		if (!result.response.ok) throw new Error(`${kind} rejected`);
+		session = result.session;
+		facts.push(...result.response.facts);
+	};
+	send("series.start", {
+		teams: ["forge", "shoal"],
+		seeds: [1, 2],
+		format: "bo3",
+		fearless: "hard",
+		timer: false,
+		pool: fictionalContent.champions.map((c) => c.id),
+		seed,
+		ai: [
+			{ personality: "architect", coachRating: 42 },
+			{ personality: "counterpick", coachRating: 30 },
+		],
+	});
+	while (session.state.phase !== "over") {
+		if (session.state.phase === "result") {
+			send("game.finish", {
+				winner: session.state.game % 2 === 1 ? "forge" : "shoal",
+			});
+		} else send("draft.ai", {});
+	}
+	return facts;
 };

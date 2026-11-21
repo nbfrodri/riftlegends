@@ -1,7 +1,7 @@
 # Plan 07 — IA de draft explicable y personalidades
 
-- **Estado:** aprobado (21-11-2026). Redactado por Claude con las decisiones del usuario (al final) y el [estudio de la IA de DraftSim](../research/draftsim-ia-draft.md).
-- **Fase:** 2 · Draft rápido completo ([plan general](00-plan-general.md)).
+- **Estado:** hecho (21-11-2026; PR #156–#162 y #164). El golden IA contra IA es una Bo3 hard: el fixture de 40 campeones no alcanza para una Bo5 hard (60); la Bo5 se cubre sin fearless en las propiedades. Redactado por Claude con las decisiones del usuario (al final) y el [estudio de la IA de DraftSim](../../research/draftsim-ia-draft.md).
+- **Fase:** 2 · Draft rápido completo ([plan general](../../plans/00-plan-general.md)).
 - **Objetivo:** que cada equipo de la IA haga picks y bans creíbles, distintos según su personalidad y su coach, y que cada decisión se pueda explicar con puntos. Es determinista: la misma semilla da el mismo draft.
 
 ## Contexto

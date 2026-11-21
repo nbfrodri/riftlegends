@@ -130,6 +130,7 @@ describe("committed goldens", () => {
 			"rng/2",
 			"rng/4294967295",
 			"draft/2026",
+			"draft-ai/7",
 		]);
 	});
 

@@ -1,6 +1,6 @@
 # IA de draft de DraftSim: qué reutilizar en el plan 07
 
-Estudio del 21-11-2026 sobre `~/Projects/draftsim` (solo ideas, no código). Las rutas `path:línea` son de ese repo. Fuente del [plan 07](../plans/07-ia-de-draft.md).
+Estudio del 21-11-2026 sobre `~/Projects/draftsim` (solo ideas, no código). Las rutas `path:línea` son de ese repo. Fuente del [plan 07](../archive/plans/07-ia-de-draft.md).
 
 ## 1. Cómo decide
 
