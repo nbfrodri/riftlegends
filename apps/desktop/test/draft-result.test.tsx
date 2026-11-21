@@ -29,8 +29,10 @@ function Driver({ stop }: { stop: "game1" | "over" }) {
 	const { view, options, send, setMine, present, presentation } =
 		useDraftSession();
 	const busy = useRef(false);
+	// Once the series is over the user drives: after "New series" the setup must stay.
+	const finished = useRef(false);
 	useEffect(() => {
-		if (busy.current) return;
+		if (busy.current || finished.current) return;
 		busy.current = true;
 		const step = async () => {
 			if (!view) {
@@ -47,6 +49,7 @@ function Driver({ stop }: { stop: "game1" | "over" }) {
 				});
 				if (ok) setMine(a as string);
 			} else if (view.phase === "over") {
+				finished.current = true;
 				if (presentation !== "result") present("result");
 			} else if (view.phase === "result") {
 				// The match screen shows itself over the core's phase, then the result.
