@@ -21,7 +21,7 @@
 | Q1 | El `core-host` abre sesiones del draft con el contenido cargado | Un comando inválido o de otra sesión se rechaza igual que hoy |
 | Q2 | La IA de cada equipo sale de su coach en el contenido; la configuración solo dice qué equipo controla el usuario | Un equipo sin coach usa una IA por defecto documentada |
 | Q3 | Una vista `match.view` devuelve los hechos de un game jugado | Tras reabrir la pantalla, el resultado se reconstruye sin volver a simular |
-| Q4 | `match.view` incluye el estado del mapa minuto a minuto: torres por línea y nivel, torres de nexo, inhibidores (y su reaparición), dragones y progreso del alma, heraldos, barones, elders y buffs activos | Cuadra con los eventos; la UI no reimplementa las reglas del mapa |
+| Q4 | `match.view` incluye el estado del mapa minuto a minuto: estructuras, objetivos, buffs y, por jugador, bajas, muertes, asistencias, oro y CS estimado | El mapa cuadra con los eventos y las estadísticas finales coinciden con `match.ended`. El CS es visual |
 | Q5 | Una vista `series.summary` da el MVP de la serie y los gaps por línea de cada game, con su explicación | Sin games jugados, vacía; un gap solo se marca por encima de un umbral documentado |
 
 ### Pantallas (tests de componentes)
