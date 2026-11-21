@@ -194,7 +194,6 @@ main {
 .role-validation,
 .pool-top,
 .selection,
-.pool-foot,
 .tower header {
 	display: flex;
 	align-items: center;
@@ -510,7 +509,6 @@ dialog footer {
 	min-width: 0;
 }
 .pool-top span,
-.pool-foot,
 .inspection summary span {
 	font:
 		13px Archivo,
@@ -575,57 +573,35 @@ dialog footer {
 	font-size: clamp(19px, 3.4vh, 31px);
 	line-height: 1;
 }
-.tile b,
-.tile small {
-	padding-inline: 6px;
-}
 .tile b {
+	padding: 4px 6px;
 	font-size: 14px;
-	margin-top: 2px;
-}
-.tile small {
-	color: var(--muted);
-	font-size: 11px;
-	margin-bottom: 2px;
 }
 .tile[aria-pressed="true"] {
 	outline: 2px solid var(--accent);
 	outline-offset: -1px;
 }
-.tile[aria-pressed="true"] small {
-	color: var(--accent);
-}
 .tile:disabled .face {
-	filter: saturate(0.3);
+	color: #b6beca;
+	background: #303744;
+	position: relative;
 }
-.tile:disabled::after {
+.tile:disabled .face::after {
+	content: "";
 	position: absolute;
-	top: 2px;
-	right: 2px;
-	padding: 0 4px;
-	background: var(--canvas);
-	font-weight: 700;
-	font-size: 14px;
+	inset: 0;
+	background: linear-gradient(
+		to bottom right,
+		transparent calc(50% - 1px),
+		#aab3c2 50%,
+		transparent calc(50% + 1px)
+	);
 }
-.tile.ban::after {
-	content: "×";
-	color: var(--red);
+.tile:disabled b {
+	color: var(--muted);
 }
-.tile.used::after {
-	content: "✓";
-	color: var(--blue);
-}
-.tile.locked::after {
-	content: "▧";
-}
-.tile.ban b {
-	text-decoration: line-through;
-}
-.tile.locked .face {
-	background-image: repeating-linear-gradient(135deg, transparent 0 5px, #10142080 5px 8px);
-}
-.pool-foot {
-	margin: 6px 0;
+.grid {
+	margin-bottom: 9px;
 }
 .selection {
 	background: var(--raised);
@@ -1056,7 +1032,7 @@ dialog footer {
 }
 .match-layout {
 	grid-template-columns: minmax(0, 1.38fr) minmax(0, 1fr);
-	grid-template-rows: 100px minmax(0, 1fr);
+	grid-template-rows: 88px minmax(0, 1fr);
 	gap: 12px;
 }
 .match .graph {
@@ -1133,7 +1109,8 @@ dialog footer {
 	text-align: center;
 	table-layout: fixed;
 }
-.forts :is(th, td), .neutrals :is(th, td) {
+.forts :is(th, td),
+.neutrals :is(th, td) {
 	padding-block: 3px;
 }
 .forts thead tr:first-child th {
@@ -1171,49 +1148,70 @@ dialog footer {
 	font-size: 12px;
 }
 .neutrals {
-	text-align: left;
+	text-align: center;
+	table-layout: fixed;
 }
-.neutrals th:not(:first-child) {
+.neutrals .label-col {
+	width: 30%;
+}
+.neutrals .blue,
+.neutrals .red {
+	background: var(--raised);
 	color: var(--side);
 }
-.neutrals td {
-	width: 28%;
-	font-weight: 650;
+.neutrals thead tr:nth-child(2) {
+	color: var(--muted);
+	font-size: 12px;
 }
-.no-buff,
-.buff,
-.soul-pips {
-	float: right;
+.neutrals tbody td:nth-child(even) {
+	font-weight: 700;
 }
-.no-buff {
+.neutrals tbody td:nth-child(odd) {
 	color: var(--muted);
 }
-.buff {
+.neutrals .buff {
 	color: var(--accent);
-	border: 1px solid var(--line);
-	padding: 0 5px;
-	background: var(--raised);
+	font-weight: 700;
 }
-.soul-pips {
-	display: inline-flex;
-	gap: 3px;
+.objective-name {
+	display: grid;
+	grid-template-columns: 18px 1fr;
 	align-items: center;
-	height: 18px;
+	gap: 7px;
+	width: 100%;
+	max-width: 166px;
+	margin-inline: auto;
+	text-align: left;
 }
-.soul-pips i {
-	display: inline-block;
-	width: 6px;
-	height: 10px;
-	border: 1px solid #77879b;
-	transform: skew(-14deg);
+.objective-icon {
+	width: 17px;
+	height: 17px;
+	fill: none;
+	stroke: currentColor;
+	stroke-width: 1.75;
+	stroke-linejoin: round;
+	stroke-linecap: round;
+	vertical-align: middle;
 }
-.soul-pips .taken {
-	background: var(--blue);
-	border-color: var(--blue);
+.icon-defs {
+	position: absolute;
 }
-.neutrals td:last-child .taken {
-	background: var(--red);
-	border-color: var(--red);
+.map-key,
+.map-key span {
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+}
+.map-key {
+	gap: 12px;
+}
+.forts .inhib {
+	font-size: 12px;
+	white-space: nowrap;
+}
+.forts td,
+.forts th {
+	vertical-align: middle;
 }
 .game-tabs {
 	display: flex;
@@ -1301,7 +1299,8 @@ dialog footer {
 	margin-top: 6px;
 	text-align: right;
 }
-.gaps th:first-child {
+.gaps td:nth-child(2),
+.gaps th:nth-child(-n + 2) {
 	text-align: left;
 }
 .gaps svg {
@@ -1329,7 +1328,11 @@ dialog footer {
 	text-align: right;
 }
 .map-link {
-	border: 0;
+	display: inline-grid;
+	place-items: center;
+	width: 32px;
+	height: 32px;
+	border: 1px solid var(--line);
 	background: transparent;
 	color: var(--accent);
 	padding: 5px;
@@ -1367,7 +1370,7 @@ dialog footer {
 }
 @media (max-height: 740px) {
 	.match-layout {
-		grid-template-rows: 86px minmax(0, 1fr);
+		grid-template-rows: 79px minmax(0, 1fr);
 	}
 	.map-panel,
 	.neutral-panel {
@@ -1386,4 +1389,88 @@ dialog footer {
 	overflow: hidden;
 	clip-path: inset(50%);
 	white-space: nowrap;
+}
+
+.ui-icon {
+	width: 1.15em;
+	height: 1.15em;
+	flex: none;
+	vertical-align: -0.2em;
+}
+.lead {
+	color: var(--side);
+}
+.gaps table {
+	font-size: 13px;
+}
+.gaps .section-line {
+	flex-wrap: wrap;
+	row-gap: 2px;
+}
+.match #pause,
+.swap {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
+}
+.page-list a > svg,
+.feature h2 > svg {
+	color: var(--accent);
+}
+select,
+select::picker(select) {
+	appearance: base-select;
+}
+select {
+	display: inline-flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	min-height: 36px;
+}
+select > button {
+	display: contents;
+}
+select .ui-icon {
+	color: var(--accent);
+}
+select:open .ui-icon {
+	transform: rotate(180deg);
+}
+select:open {
+	border-color: var(--accent);
+}
+select::picker-icon,
+option::checkmark {
+	display: none;
+}
+select::picker(select) {
+	color: var(--ink);
+	background: var(--panel);
+	border: 1px solid var(--accent);
+	border-radius: 2px;
+	padding: 3px;
+	margin-block: 3px;
+	box-shadow: 0 4px 12px #10142080;
+}
+select option {
+	background: var(--panel);
+	color: var(--ink);
+	font: inherit;
+	padding: 7px 10px;
+	border-left: 2px solid transparent;
+}
+select option:checked {
+	color: var(--accent);
+	border-left-color: var(--accent);
+}
+select option:hover,
+select option:focus-visible {
+	background: var(--raised);
+	outline: 1px solid var(--accent);
+	outline-offset: -1px;
+}
+.filters select {
+	min-width: 148px;
 }

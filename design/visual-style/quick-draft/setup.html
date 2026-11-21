@@ -251,6 +251,21 @@
 					<div class="team-choice">
 						<label for="home">Club</label
 						><select id="home">
+							<button type="button">
+								<selectedcontent></selectedcontent
+								><svg
+									class="ui-icon"
+									viewBox="0 0 24 24"
+									aria-hidden="true"
+									fill="none"
+									stroke="currentColor"
+									stroke-width="1.8"
+									stroke-linecap="round"
+									stroke-linejoin="round"
+								>
+									<path d="m6 9 6 6 6-6" />
+								</svg>
+							</button>
 							<option selected>Forge</option>
 							<option>Shoal</option>
 						</select>
@@ -274,6 +289,21 @@
 					<div class="team-choice">
 						<label for="away">Club</label
 						><select id="away">
+							<button type="button">
+								<selectedcontent></selectedcontent
+								><svg
+									class="ui-icon"
+									viewBox="0 0 24 24"
+									aria-hidden="true"
+									fill="none"
+									stroke="currentColor"
+									stroke-width="1.8"
+									stroke-linecap="round"
+									stroke-linejoin="round"
+								>
+									<path d="m6 9 6 6 6-6" />
+								</svg>
+							</button>
 							<option>Forge</option>
 							<option selected>Shoal</option>
 						</select>
@@ -336,7 +366,21 @@
 			</div>
 			<footer class="pagefoot">
 				<span>Mapa 1 · El sembrado decide quién elige lado.</span
-				><button class="primary" id="start">Empezar serie →</button>
+				><button class="primary" id="start">
+					Empezar serie
+					<svg
+						class="ui-icon"
+						viewBox="0 0 24 24"
+						aria-hidden="true"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="1.8"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+					>
+						<path d="M4 12h15m-6-6 6 6-6 6" />
+					</svg>
+				</button>
 			</footer>
 			<dialog id="side">
 				<form method="dialog">
@@ -348,50 +392,64 @@
 					</div>
 					<footer>
 						<button>Volver</button
-						><a class="primary" href="draft.html">Ir al draft <span aria-hidden="true">→</span></a>
+						><a class="primary" href="draft.html"
+							>Ir al draft
+							<svg
+								class="ui-icon"
+								viewBox="0 0 24 24"
+								aria-hidden="true"
+								fill="none"
+								stroke="currentColor"
+								stroke-width="1.8"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+							>
+								<path d="M4 12h15m-6-6 6 6-6 6" />
+							</svg></a
+						>
 					</footer>
 				</form>
 			</dialog>
 		</main>
 		<script>
-			const $ = (selector) => document.querySelector(selector);
-			const all = (selector) => Array.from(document.querySelectorAll(selector));
+		const $ = (selector) => document.querySelector(selector);
+		const all = (selector) => Array.from(document.querySelectorAll(selector));
 
-			const clubs = all("[data-team-name]");
-			const crests = all("[data-team-crest]");
-			const marks = { Forge: crests[0].innerHTML, Shoal: crests[1].innerHTML };
-			function updateClubs(changed, other) {
-				other.value = changed.value === "Forge" ? "Shoal" : "Forge";
-				for (const [i, field] of [$("#home"), $("#away")].entries()) {
-					clubs[i].textContent = field.value;
-					crests[i].innerHTML = marks[field.value];
-				}
-				const shoal = $("#away").value === "Shoal";
-				$("#coach-name").textContent = shoal ? "Iko Rhane" : "Marlen Voss";
-				$("#coach-club").textContent = shoal ? "Entrenador de Shoal" : "Entrenador de Forge";
-				$("#personality").textContent = shoal ? "Contraelección" : "Dominio del campeón";
-				$("#level").textContent = shoal ? "2,2" : "3,8";
-				$("#coach-note").textContent = shoal
-					? "Espera a conocer la elección rival para responder en línea."
-					: "Prioriza los campeones que mejor dominan sus jugadores.";
-				$("#side-info").textContent = shoal
-					? "Forge elige primero por sembrado."
-					: "Forge tiene mejor sembrado y elige el lado azul. Shoal jugará en rojo.";
-				$("#side .segments").hidden = !shoal;
+		const clubs = all("[data-team-name]");
+		const crests = all("[data-team-crest]");
+		const marks = { Forge: crests[0].innerHTML, Shoal: crests[1].innerHTML };
+		function updateClubs(changed, other) {
+			other.value = changed.value === "Forge" ? "Shoal" : "Forge";
+			for (const [i, field] of [$("#home"), $("#away")].entries()) {
+				clubs[i].textContent = field.value;
+				crests[i].innerHTML = marks[field.value];
 			}
-			$("#home").onchange = () => updateClubs($("#home"), $("#away"));
-			$("#away").onchange = () => updateClubs($("#away"), $("#home"));
-			const notes = {
-				Hard: "Un campeón jugado queda bloqueado para ambos equipos.",
-				Soft: "Cada equipo puede elegir un campeón una sola vez por serie.",
-				Sin: "Los campeones vuelven a estar disponibles en cada mapa.",
+			const shoal = $("#away").value === "Shoal";
+			$("#coach-name").textContent = shoal ? "Iko Rhane" : "Marlen Voss";
+			$("#coach-club").textContent = shoal ? "Entrenador de Shoal" : "Entrenador de Forge";
+			$("#personality").textContent = shoal ? "Contraelección" : "Dominio del campeón";
+			$("#level").textContent = shoal ? "2,2" : "3,8";
+			$("#coach-note").textContent = shoal
+				? "Espera a conocer la elección rival para responder en línea."
+				: "Prioriza los campeones que mejor dominan sus jugadores.";
+			$("#side-info").textContent = shoal
+				? "Forge elige primero por sembrado."
+				: "Forge tiene mejor sembrado y elige el lado azul. Shoal jugará en rojo.";
+			$("#side .segments").hidden = !shoal;
+		}
+		$("#home").onchange = () => updateClubs($("#home"), $("#away"));
+		$("#away").onchange = () => updateClubs($("#away"), $("#home"));
+		const notes = {
+			Hard: "Un campeón jugado queda bloqueado para ambos equipos.",
+			Soft: "Cada equipo puede elegir un campeón una sola vez por serie.",
+			Sin: "Los campeones vuelven a estar disponibles en cada mapa.",
+		};
+		for (const radio of all("[name=fearless]")) {
+			radio.onchange = () => {
+				$("#fearless-note").textContent = notes[radio.value];
 			};
-			for (const radio of all("[name=fearless]")) {
-				radio.onchange = () => {
-					$("#fearless-note").textContent = notes[radio.value];
-				};
-			}
-			$("#start").onclick = () => $("#side").showModal();
+		}
+		$("#start").onclick = () => $("#side").showModal();
 		</script>
 	</body>
 </html>
