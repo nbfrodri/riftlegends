@@ -69,9 +69,7 @@ export const draftCommands = defineCommands({
 	/** The AI of the team whose turn it is acts (plan 07). */
 	"draft.ai": z.strictObject({}),
 	"draft.roles": z.strictObject({ team: teamId, roles: roleAssignment }),
-	/** Provisional until the match simulation (plan 08) decides the winner. */
-	"game.finish": z.strictObject({ winner: teamId }),
-	/** Plays the game after the roles (plan 08). */
+	/** Plays the game after the roles; its winner comes out of play (plan 08). */
 	"match.play": z.strictObject({}),
 });
 

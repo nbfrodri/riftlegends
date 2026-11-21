@@ -1,3 +1,5 @@
+import { matchSetup } from "../match/fixtures/setup";
+import { playGame } from "../match/play";
 import { int } from "../rng/helpers";
 import { createRng } from "../rng/streams";
 import type { GoldenCase } from "./golden";
@@ -38,8 +40,20 @@ const aiCases: GoldenCase[] = [7].map((seed) => ({
 	facts: () => playAiSeries(seed),
 }));
 
+/** Plan 08, M1: one whole game of forge against shoal on the fictional content. */
+const matchCases: GoldenCase[] = [42].map((seed) => ({
+	module: "match",
+	seed,
+	facts: () =>
+		playGame(matchSetup({ seed })).facts.map((fact, position) => ({
+			...fact,
+			position,
+		})),
+}));
+
 export const goldenCases: GoldenCase[] = [
 	...rngCases,
 	...draftCases,
 	...aiCases,
+	...matchCases,
 ];

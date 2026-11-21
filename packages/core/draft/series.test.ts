@@ -1,7 +1,12 @@
 import { describe, expect, it } from "vitest";
 import type { CommandHandler, Outcome } from "../server/dispatcher";
 import { DRAFT_ORDER } from "./order";
-import { initialSeries, type SeriesState, seriesCommands } from "./series";
+import {
+	finishGame,
+	initialSeries,
+	type SeriesState,
+	seriesCommands,
+} from "./series";
 
 const T1 = "t1";
 const GENG = "geng";
@@ -76,7 +81,8 @@ const playGame = (state: SeriesState, winner: string) => {
 		).state;
 	}
 	current = draftGame(current);
-	return run(current, "game.finish", { winner });
+	// The winner is set by hand: these tests check the series, not the game.
+	return finishGame(current, winner);
 };
 
 describe("start", () => {
@@ -226,32 +232,13 @@ describe("champions", () => {
 	});
 });
 
-describe("results", () => {
-	it("need the draft to be over", () => {
-		expect(run(start(), "game.finish", { winner: T1 })).toMatchObject({
-			ok: false,
-			error: { code: "wrong-action" },
-		});
-	});
-
-	it("name a team of the series", () => {
-		const drafted = draftGame(
-			ok(run(start(), "side.choose", { team: T1, side: "blue" })).state,
-		);
-		expect(run(drafted, "game.finish", { winner: "fnc" })).toMatchObject({
-			ok: false,
-			error: { code: "invalid-command", params: { path: "winner" } },
-		});
-	});
-});
-
 describe("after the series (S4)", () => {
 	it("every command is rejected", () => {
 		const over = ok(playGame(start({ format: "bo1" }), T1)).state;
 		for (const [kind, payload] of [
 			["side.choose", { team: GENG, side: "blue" }],
 			["draft.ban", { team: T1, champion: null }],
-			["game.finish", { winner: T1 }],
+			["match.play", {}],
 		] as const) {
 			expect(run(over, kind, payload)).toEqual({
 				ok: false,

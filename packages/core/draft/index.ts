@@ -1,4 +1,4 @@
-import type { AiContent } from "@rift-legends/contracts";
+import type { AiContent, MatchContent } from "@rift-legends/contracts";
 import { createDispatcher } from "../server/dispatcher";
 import { aiTurn } from "./ai-turn";
 import { initialSeries, type SeriesState, seriesCommands } from "./series";
@@ -12,10 +12,15 @@ export const draftDispatcher = createDispatcher<SeriesState>({
 	queries: { "draft.view": viewDraft },
 });
 
-export const initialDraftState = initialSeries;
-
-/** A draft session whose AI teams read `content` (plan 07). */
-export const draftStateWith = (content: AiContent): SeriesState => ({
+/**
+ * A session whose AI teams read `content` (plan 07) and whose games are played
+ * with `match` (plan 08).
+ */
+export const draftStateWith = (
+	content: AiContent,
+	match: MatchContent | null = null,
+): SeriesState => ({
 	...initialSeries,
 	content,
+	match,
 });

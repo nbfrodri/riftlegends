@@ -1,6 +1,6 @@
 # Simulación de partida de DraftSim: qué reutilizar en el plan 08
 
-Estudio del 21-11-2026 sobre `~/Projects/draftsim`. Se reutilizan ideas, no código. Las rutas son de ese repo y las cifras salen de su código y sus tests, sin una ejecución propia. Es la fuente del [plan 08](../plans/08-simulacion-de-partida.md).
+Estudio del 21-11-2026 sobre `~/Projects/draftsim`. Se reutilizan ideas, no código. Las rutas son de ese repo y las cifras salen de su código y sus tests, sin una ejecución propia. Es la fuente del [plan 08](../archive/plans/08-simulacion-de-partida.md).
 
 ## Cómo simula
 

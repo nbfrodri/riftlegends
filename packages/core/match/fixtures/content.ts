@@ -161,6 +161,6 @@ export const fictionalMatchContent: MatchContent = {
 			{ minute: 25, weight: 7000 },
 			{ minute: 35, weight: 5500 },
 		],
-		blueSide: 30_000,
+		blueSide: 60_000,
 	},
 };

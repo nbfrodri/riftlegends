@@ -89,24 +89,32 @@ export function playerStats(
 	const paid = { blue: 0, red: 0 };
 	const teamKills = { blue: 0, red: 0 };
 
+	const sideOf = new Map<string, Side>();
+	for (const side of SIDES) {
+		for (const role of ROLES) sideOf.set(teams[side].players[role], side);
+	}
+
 	for (const event of events) {
 		const winner = event.side;
 		for (const side of SIDES) total[side] += event.gold[side];
-		// Never pays more than the event gave, so the shared rest stays >= 0.
-		let left = event.gold[winner];
-		const pay = (line: Line, amount: number) => {
-			const given = amount < left ? amount : left;
+		// Each side pays its own killers from what it earned in the event, and
+		// never more, so the shared rest stays >= 0.
+		const left = { blue: event.gold.blue, red: event.gold.red };
+		const pay = (side: Side, line: Line, amount: number) => {
+			const given = amount < left[side] ? amount : left[side];
 			line.gold += given;
-			left -= given;
-			paid[winner] += given;
+			left[side] -= given;
+			paid[side] += given;
 		};
 		for (const k of event.kills) {
-			teamKills[winner] += 1;
+			// In a fight both sides can score: a kill is its killer's side's.
+			const side = sideOf.get(k.killer) ?? winner;
+			teamKills[side] += 1;
 			const killer = lines.get(k.killer);
 			if (killer) {
 				killer.kills += 1;
 				killer.damage += DAMAGE.kill;
-				pay(killer, rules.economy.kill);
+				pay(side, killer, rules.economy.kill);
 			}
 			const victim = lines.get(k.victim);
 			if (victim) {
@@ -118,7 +126,7 @@ export function playerStats(
 				if (helper) {
 					helper.assists += 1;
 					helper.damage += DAMAGE.assist;
-					pay(helper, rules.economy.assist);
+					pay(side, helper, rules.economy.assist);
 				}
 			}
 		}

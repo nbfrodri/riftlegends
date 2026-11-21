@@ -20,7 +20,7 @@ const BUFF_POINTS: Record<
 	elder: { fight: 200_000, siege: 200_000, objective: 100_000 },
 };
 /** Calibrates the probability curve to game outcomes (K4). */
-const EDGE_SCALE = 2200 as Fixed;
+const EDGE_SCALE = 1600 as Fixed;
 const RISK_SCALE = { safe: 18_000, balanced: 10_000, risky: 2000 } as const;
 const AGGRESSION_SCALE = 28;
 const FIGHT_PUSH_POINTS = 500_000;
@@ -50,7 +50,11 @@ function strength(state: MatchState, side: Side, contest: Contest) {
 	for (const part of parts) {
 		for (const { key, points } of part.causes) add(key, points);
 	}
-	add("form", state.context[side].form);
+	const { form, mental } = state.context[side];
+	add("form", form);
+	for (const scored of [mental?.general, mental?.byContest[contest]]) {
+		for (const { key, points } of scored?.causes ?? []) add(key, points);
+	}
 	const own = state[side];
 	if (
 		contest === "siege" &&
