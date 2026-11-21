@@ -1,0 +1,115 @@
+import type { Role, SeriesOptions } from "@rift-legends/contracts";
+import { RoleIcon } from "@rift-legends/ui-kit/components/role-icon";
+import { useTranslation } from "react-i18next";
+import type { RoleGap } from "./result-data";
+import { teamName } from "./session";
+
+const numbers = (language: string) =>
+	new Intl.NumberFormat(language, { maximumFractionDigits: 1 });
+
+/**
+ * The differences by role, in words: who is ahead and by how much. The gap
+ * rows (over the core's threshold) are marked and named in the call-out.
+ */
+export function GapsTable(props: {
+	gaps: readonly RoleGap[];
+	options: SeriesOptions;
+	/** Colour of a team: a side in a game, the first or second team in a series. */
+	sideOf: (team: string) => "blue" | "red";
+	name: string;
+	note?: string;
+}) {
+	const { t, i18n } = useTranslation();
+	const format = numbers(i18n.language);
+	const roleLabel = (role: Role) => t(`draft.roles.role.${role}`);
+	const flagged = props.gaps.filter((gap) => gap.gap);
+	const roles = new Intl.ListFormat(i18n.language, {
+		style: "long",
+		type: "conjunction",
+	}).format(flagged.map((gap) => roleLabel(gap.role)));
+
+	return (
+		<section className="bg-panel p-4">
+			<div className="flex items-baseline justify-between gap-2">
+				<h2 className="font-bold font-display text-[19px] tracking-heading">
+					{t("draft.result.gaps.title")}
+				</h2>
+				<strong className={flagged.length > 0 ? "text-action" : "text-muted"}>
+					{flagged.length > 0
+						? t("draft.result.gaps.call", { roles })
+						: t("draft.result.gaps.none")}
+				</strong>
+			</div>
+			{props.note && (
+				<p className="mt-1 text-[12px] text-muted">{props.note}</p>
+			)}
+			<table aria-label={props.name} className="mt-2 w-full text-[14px]">
+				<thead className="text-left text-muted">
+					<tr>
+						<th scope="col" className="p-1.5 font-normal">
+							{t("draft.result.gaps.role")}
+						</th>
+						<th scope="col" className="p-1.5 font-normal">
+							{t("draft.result.gaps.leader")}
+						</th>
+						<th scope="col" className="p-1.5 font-normal">
+							{t("draft.result.gaps.rating")}
+						</th>
+						<th scope="col" className="p-1.5 font-normal">
+							{t("draft.result.gaps.gold")}
+						</th>
+					</tr>
+				</thead>
+				<tbody>
+					{props.gaps.map((gap) => (
+						<tr
+							key={gap.role}
+							data-gap={gap.gap}
+							className={`border-line border-t ${gap.gap ? "bg-surface" : ""}`}
+						>
+							<th scope="row" className="p-1.5 text-left font-semibold">
+								<span className="inline-flex items-center gap-1.5">
+									<RoleIcon role={gap.role} size={16} />
+									{roleLabel(gap.role)}
+								</span>
+							</th>
+							<td className="p-1.5">
+								{gap.team ? (
+									<strong
+										className={
+											props.sideOf(gap.team) === "blue"
+												? "text-side-blue"
+												: "text-side-red"
+										}
+									>
+										{teamName(props.options, gap.team)}
+									</strong>
+								) : (
+									t("draft.result.gaps.even")
+								)}
+							</td>
+							<td className={`p-1.5 ${gap.gap ? "font-bold text-action" : ""}`}>
+								{gap.team
+									? t("draft.result.gaps.pointsMore", {
+											count: gap.points,
+											points: format.format(gap.points),
+										})
+									: t("draft.result.gaps.even")}
+							</td>
+							<td className="p-1.5">
+								{gap.gold === 0
+									? t("draft.result.gaps.even")
+									: t(
+											gap.gold > 0
+												? "draft.result.gaps.goldMore"
+												: "draft.result.gaps.goldLess",
+											{ gold: format.format(Math.abs(gap.gold)) },
+										)}
+							</td>
+						</tr>
+					))}
+				</tbody>
+			</table>
+		</section>
+	);
+}

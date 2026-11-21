@@ -2,6 +2,7 @@ import type { DraftView } from "@rift-legends/contracts";
 import type { ComponentType } from "react";
 import { useTranslation } from "react-i18next";
 import { DraftBoard } from "./board/draft-board";
+import { ResultScreen } from "./result-screen";
 import { RolesScreen } from "./roles-screen";
 import type { Presentation } from "./session";
 import { SetupScreen } from "./setup-screen";
@@ -51,7 +52,6 @@ function Placeholder({ stage }: { stage: DraftStage }) {
 }
 
 const MatchPlaceholder = () => <Placeholder stage="match" />;
-const ResultPlaceholder = () => <Placeholder stage="result" />;
 
 /**
  * The body of each stage; `DraftScreen` draws the header around it. To build a
@@ -64,5 +64,5 @@ export const draftStages: Record<DraftStage, ComponentType> = {
 	draft: DraftBoard,
 	roles: RolesScreen,
 	match: MatchPlaceholder,
-	result: ResultPlaceholder,
+	result: ResultScreen,
 };

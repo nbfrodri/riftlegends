@@ -44,6 +44,8 @@ interface DraftSession {
 	presentation: Presentation | null;
 	/** Shows a presentation stage over the core's phase; `null` goes back to it. */
 	present(stage: Presentation | null): void;
+	/** Throws the series away and starts over at the setup, with a fresh session. */
+	restart(): void;
 }
 
 const Context = createContext<DraftSession | null>(null);
@@ -117,9 +119,10 @@ function LoadedSession(props: {
 						send,
 						presentation,
 						present,
+						restart: onLost,
 					}
 				: null,
-		[sessionId, options.data, view.data, mine, send, presentation],
+		[sessionId, options.data, view.data, mine, send, presentation, onLost],
 	);
 
 	const failure = options.error ?? view.error ?? error;

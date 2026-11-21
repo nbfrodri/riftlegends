@@ -1,5 +1,10 @@
 import type { CoreError } from "@rift-legends/contracts";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+	useMutation,
+	useQueries,
+	useQuery,
+	useQueryClient,
+} from "@tanstack/react-query";
 import {
 	createContext,
 	type ReactNode,
@@ -45,6 +50,32 @@ export function useFacts(listener: (facts: readonly CoreFact[]) => void) {
 	useEffect(() => core.subscribe((facts) => latest.current(facts)), [core]);
 }
 
+const queryKeyOf = (query: CoreQuery) => [
+	"core",
+	query.sessionId,
+	query.kind,
+	query.params,
+];
+
+/**
+ * Reads several views of the core at once, for a list whose length is not
+ * fixed (one query per game, say). Use it for immutable facts: it never
+ * fetches again on its own.
+ */
+export function useCoreQueries<View>(queries: readonly CoreQuery[]) {
+	const core = useCore();
+	return useQueries({
+		queries: queries.map((query) => ({
+			queryKey: queryKeyOf(query),
+			queryFn: async () => {
+				const result = await core.query(query);
+				if (!result.ok) throw new CoreRequestError(result.error);
+				return result.view as View;
+			},
+		})),
+	});
+}
+
 /**
  * Reads a view of the core. It is fetched again only when a fact for which
  * `affectedBy` is true arrives (plan 04, R2).
@@ -55,7 +86,7 @@ export function useCoreQuery<View>(
 ) {
 	const core = useCore();
 	const client = useQueryClient();
-	const queryKey = ["core", query.sessionId, query.kind, query.params];
+	const queryKey = queryKeyOf(query);
 	useFacts((facts) => {
 		if (facts.some(options.affectedBy)) {
 			void client.invalidateQueries({ queryKey, exact: true });
