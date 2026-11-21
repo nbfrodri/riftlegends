@@ -45,9 +45,19 @@ describe("series.options (plan 09, U1)", () => {
 		expect(view.pool).toEqual(fictionalContent.champions.map((c) => c.id));
 	});
 
+	it("gives the roles each champion can play, with their tier", () => {
+		const result = options(
+			draftStateWith(fictionalContent, fictionalMatchContent),
+		);
+		if (!result.ok) throw new Error(JSON.stringify(result));
+		const view = seriesOptions.parse(result.view);
+		for (const champion of fictionalContent.champions)
+			expect(view.positions[champion.id]).toEqual(champion.positions);
+	});
+
 	it("is empty in a session without content", () => {
 		const result = options(initialSeries);
 		if (!result.ok) throw new Error(JSON.stringify(result));
-		expect(result.view).toEqual({ teams: [], pool: [] });
+		expect(result.view).toEqual({ teams: [], pool: [], positions: {} });
 	});
 });
