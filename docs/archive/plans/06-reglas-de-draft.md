@@ -1,7 +1,7 @@
 # Plan 06 — Reglas de draft y series (fearless)
 
-- **Estado:** aprobado (21-11-2026). Redactado por Claude con las cuatro decisiones del usuario (al final).
-- **Fase:** 2 · Draft rápido completo ([plan general](00-plan-general.md)).
+- **Estado:** hecho (21-11-2026; PR #141–#145 y #146). Redactado por Claude con las cuatro decisiones del usuario (al final).
+- **Fase:** 2 · Draft rápido completo ([plan general](../../plans/00-plan-general.md)).
 - **Objetivo:** el núcleo aplica las reglas de un draft profesional y de una serie Bo1, Bo3 o Bo5 con fearless. Solo reglas: quién actúa, qué campeones quedan libres y cuándo termina cada game y la serie. La IA (plan 07), la simulación (plan 08) y la pantalla (plan 09) se apoyan en esto.
 
 ## Contexto

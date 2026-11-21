@@ -3,6 +3,7 @@
 	"goldens": {
 		"rng/0.golden": "cebebdf879cdd1aec32cd3ff4be8783db7872de4d4ffe06d09dc52bf0a205a99",
 		"rng/2.golden": "dbe9beb2ed95786aadc8ed25de8e11190ce97dc6f01c119063b794397ed6e103",
-		"rng/4294967295.golden": "6b491d8775754ac8686f0e8d47debe02e3adb75c0791ba234ae22953ef77a060"
+		"rng/4294967295.golden": "6b491d8775754ac8686f0e8d47debe02e3adb75c0791ba234ae22953ef77a060",
+		"draft/2026.golden": "fe24e7940adea71be6cc31aa3652dd2f2c7d3a8cd99c083118f0623bd25d3389"
 	}
 }
