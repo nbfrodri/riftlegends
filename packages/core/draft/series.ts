@@ -1,4 +1,9 @@
-import type { CoreError, Side } from "@rift-legends/contracts";
+import type {
+	AiContent,
+	AiSettings,
+	CoreError,
+	Side,
+} from "@rift-legends/contracts";
 import { pick } from "../rng/helpers";
 import { SCOPES } from "../rng/scopes";
 import { deriveSeed } from "../rng/seeds";
@@ -30,6 +35,8 @@ export interface SeriesConfig {
 	readonly timer: boolean;
 	readonly pool: readonly string[];
 	readonly seed: number;
+	/** Which teams the AI plays, in `teams` order (plan 07). */
+	readonly ai?: readonly [AiSettings | null, AiSettings | null];
 }
 
 export interface SeriesState {
@@ -44,6 +51,8 @@ export interface SeriesState {
 	readonly draft: GameDraft | null;
 	/** Picks of each finished game, by team. */
 	readonly previous: readonly Readonly<Record<string, readonly string[]>>[];
+	/** What the draft AI reads; loaded with the session, not sent in commands. */
+	readonly content: AiContent | null;
 }
 
 export const initialSeries: SeriesState = {
@@ -54,6 +63,7 @@ export const initialSeries: SeriesState = {
 	chooser: null,
 	draft: null,
 	previous: [],
+	content: null,
 };
 
 const WINS_NEEDED: Record<Format, number> = { bo1: 1, bo3: 2, bo5: 3 };
@@ -201,6 +211,9 @@ export const seriesCommands = {
 	"series.start": (state: SeriesState, config: SeriesConfig) => {
 		if (state.phase === "over") return fail("series-over");
 		if (state.config) return fail("wrong-action", { expected: "none" });
+		if (config.ai?.some(Boolean) && !state.content) {
+			return fail("invalid-command", { path: "ai" });
+		}
 		const needed = requiredPool(config.format, config.fearless);
 		if (config.pool.length < needed) {
 			return fail("pool-too-small", {
@@ -217,6 +230,7 @@ export const seriesCommands = {
 			timer: config.timer,
 			pool: config.pool,
 			seed: config.seed,
+			...(config.ai ? { ai: config.ai } : {}),
 		};
 		if (config.seeds) {
 			const [a, b] = config.seeds;
