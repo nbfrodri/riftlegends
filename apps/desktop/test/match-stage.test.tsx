@@ -12,7 +12,8 @@ afterEach(cleanup);
 
 // Drive both coaches through the unfinished draft screen using the same session as the UI.
 function Series() {
-	const { view, options, send, setMine, presentation } = useDraftSession();
+	const { view, options, send, setMine, presentation, present } =
+		useDraftSession();
 	const stage = stageOf(view, presentation);
 	useEffect(() => {
 		if (!view) {
@@ -27,10 +28,13 @@ function Series() {
 				seed: 7,
 				ai: ["coach", "coach"],
 			});
+		} else if (stage === "plan") {
+			// Both sides are coaches here, so there is no plan to choose.
+			present("match");
 		} else if (stage !== "match" && stage !== "result") {
 			void send("draft.ai", {});
 		}
-	}, [view, options, send, setMine, stage]);
+	}, [view, options, send, setMine, present, stage]);
 	if (stage !== "match" && stage !== "result") return null;
 	const Stage = draftStages[stage];
 	return (

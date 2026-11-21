@@ -1,30 +1,66 @@
+import type { DraftView } from "@rift-legends/contracts";
 import type { CoreBridge } from "../src/main/core-bridge";
 import { expect, launchApp, test } from "./fixtures";
 
 declare const riftCore: CoreBridge;
 
-// Until the entire draft is playable, let both coaches complete it on the real
-// bridge. The renderer receives the resulting position and handles match.play.
+// Until the entire draft is playable here, let the coach draft for both sides
+// on the real bridge and play the user's own turns with the first legal move.
+// The renderer then starts at the game plan screen.
 function prepareDraft() {
 	const { send, query } = riftCore;
 	const draft = async (body: string) => {
 		const start = JSON.parse(body);
-		start.payload.ai = ["coach", "coach"];
+		start.payload.ai = [null, "coach"];
 		start.payload.seed = 7;
+		const human = start.payload.teams[0];
 		let result = await send(JSON.stringify(start));
-		let assigned = 0;
 		while (result.ok && "facts" in result) {
-			assigned += result.facts.filter(
-				(f) => f.type === "draft.rolesAssigned",
-			).length;
-			if (assigned === 2) return result;
+			const read = (await query(
+				JSON.stringify({
+					v: start.v,
+					sessionId: start.sessionId,
+					kind: "draft.view",
+					params: {},
+				}),
+			)) as unknown as {
+				ok: boolean;
+				view: DraftView;
+			};
+			if (!read.ok) break;
+			const view = read.view;
+			if (view.phase === "result") return result;
+			const turn = view.turn;
+			let kind = "draft.ai";
+			let payload: object = {};
+			if (turn && turn.team === human) {
+				if (turn.action === "side") {
+					kind = "side.choose";
+					payload = { team: human, side: "blue" };
+				} else if (turn.action === "ban") {
+					kind = "draft.ban";
+					payload = { team: human, champion: null };
+				} else if (turn.action === "pick") {
+					kind = "draft.pick";
+					const free = view.availability.find((a) => a.status === "free");
+					payload = { team: human, champion: free?.champion };
+				} else {
+					const picks = (view.blue.team === human ? view.blue : view.red).picks;
+					const roles = ["top", "jungle", "mid", "bot", "support"];
+					kind = "draft.roles";
+					payload = {
+						team: human,
+						roles: Object.fromEntries(roles.map((r, i) => [r, picks[i]])),
+					};
+				}
+			}
 			result = await send(
 				JSON.stringify({
 					v: start.v,
 					sessionId: start.sessionId,
 					expectedPosition: result.position,
-					kind: "draft.ai",
-					payload: {},
+					kind,
+					payload,
 				}),
 			);
 		}
@@ -63,6 +99,7 @@ test("replays a drafted game and continues to its result", async ({
 		await page.setViewportSize({ width: 1280, height: 720 });
 		await app.evaluate(prepareDraft);
 		await page.getByRole("button", { name: "Empezar serie" }).click();
+		await page.getByRole("button", { name: "Jugar", exact: true }).click();
 		await expect(page.getByRole("timer")).toBeVisible();
 		await page.getByRole("button", { name: "Pausar" }).click();
 		await page.getByRole("radio", { name: "×16" }).check({ force: true });

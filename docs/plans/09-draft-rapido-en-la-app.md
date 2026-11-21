@@ -56,9 +56,9 @@
 
 ### Flujo
 
-Configuración → lado → draft → roles → partida → resultado del game → (siguiente game o) resultado de la serie.
+Configuración → lado → draft → roles → plan de partida → partida → resultado del game → (siguiente game o) resultado de la serie.
 
-Una sola ruta, `/draft`, con sub-pantallas según la fase de `draft.view` (`side`, `bans1`…`roles`, `result`, `over`) y un estado local de presentación (partida en reproducción, resultado visto).
+Una sola ruta, `/draft`, con sub-pantallas según la fase de `draft.view` (`side`, `bans1`…`roles`, `result`, `over`) y un estado local de presentación (plan elegido, partida en reproducción, resultado visto).
 
 ### Núcleo
 
