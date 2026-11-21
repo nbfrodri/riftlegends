@@ -1,8 +1,8 @@
 import type { AiSettings } from "@rift-legends/contracts";
-import { type Fixed, mul, SCALE } from "../math";
-import { abs } from "../math/int";
+import { abs, type Fixed, max, mul, SCALE } from "../math";
 import { int, weighted } from "../rng/helpers";
 import type { Rng } from "../rng/streams";
+import type { Profile } from "./profiles";
 
 export interface Component {
 	readonly key: string;
@@ -95,30 +95,34 @@ const share = (part: number, whole: number) =>
 export const choose = (
 	rng: Rng,
 	candidates: readonly Scored[],
-	weights: Weights,
+	profile: Profile,
 	difficulty: Difficulty,
 ): Decision => {
 	if (candidates.length === 0)
 		throw new RangeError("No candidates to choose from");
 	const ranked = candidates
-		.map((c) => weigh(c, weights))
+		.map((c) => weigh(c, profile.weights))
 		.sort((a, b) => b.total - a.total || (a.champion < b.champion ? -1 : 1));
 	const rules = DIFFICULTY[difficulty];
-	const pool = ranked.slice(0, rules.pool);
+	const poolSize = max(1, rules.pool + profile.pool);
+	const temperature = mul(
+		rules.temperature as Fixed,
+		profile.temperature as Fixed,
+	);
+	const wildcard = mul(rules.wildcard as Fixed, profile.wildcard as Fixed);
+	const pool = ranked.slice(0, poolSize);
 	const best = pool[0]?.total ?? 0;
 	const poolWeights = pool.map((c) => {
 		const quarters = Number(
-			(BigInt(best - c.total) * 4n) / BigInt(rules.temperature),
+			(BigInt(best - c.total) * 4n) / BigInt(temperature),
 		);
 		return DECAY[quarters] ?? 0;
 	});
 	const sum = poolWeights.reduce((a, b) => a + b, 0);
 
-	const outside = ranked.slice(rules.pool, WILDCARD_REACH);
+	const outside = ranked.slice(poolSize, WILDCARD_REACH);
 	const wild =
-		rules.wildcard > 0 &&
-		outside.length > 0 &&
-		int(rng, 0, 9_999) < rules.wildcard;
+		wildcard > 0 && outside.length > 0 && int(rng, 0, 9_999) < wildcard;
 	const chosen = wild
 		? (outside[int(rng, 0, outside.length - 1)] as (typeof ranked)[number])
 		: (pool[weighted(rng, poolWeights)] as (typeof ranked)[number]);
