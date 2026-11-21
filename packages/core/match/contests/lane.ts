@@ -1,19 +1,8 @@
-import type { MatchEvent, Role, Side } from "@rift-legends/contracts";
+import type { Role, Side } from "@rift-legends/contracts";
 import { int, pick } from "../../rng/helpers";
-import type { Rng } from "../../rng/streams";
 import { type MatchState, other } from "../state";
+import { type Contest, type ContestEvent, paid, roll } from "./contest";
 import { edge, outcome } from "./edge";
-
-/** An event as a contest makes it; the loop adds the game and minute. */
-type ContestEvent = Omit<MatchEvent, "game" | "minute">;
-
-/** A kind of contest the loop resolves when it is due, with its own RNG. */
-export interface Contest {
-	/** Fixed forever: it feeds the seed of the contest's stream. */
-	readonly id: number;
-	readonly due: (state: MatchState) => boolean;
-	readonly resolve: (state: MatchState, rng: Rng) => ContestEvent[];
-}
 
 type Lane = "top" | "mid" | "bot";
 
@@ -23,8 +12,6 @@ const GANK_MINUTES = new Set([4, 6, 8, 10, 12, 14]);
 const LANE_GOLD = 150;
 /** Chance, per 10,000, that a won lane contest ends in a kill. */
 const SOLO_KILL = 2500;
-
-const roll = (rng: Rng, chance: number) => int(rng, 0, 9999) < chance;
 
 function kill(
 	state: MatchState,
@@ -52,9 +39,7 @@ function gold(
 		(sum, k) => sum + economy.kill + economy.assist * k.assists.length,
 		extra,
 	);
-	return winner === "blue"
-		? { blue: earned, red: 0 }
-		: { blue: 0, red: earned };
+	return paid(winner, earned);
 }
 
 /** The two laners of `lane` trade for farm, pressure and sometimes a kill. */

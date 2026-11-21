@@ -59,10 +59,11 @@
 ### Cómo se juega un game
 
 1. **Perfil:** antes de empezar, cada equipo tiene una fuerza por fase (temprana, media y tardía) y por tipo de disputa (línea, jungla, pelea, objetivo y asedio). Sale del draft, los atributos, la maestría y los factores mentales. Todo en punto fijo, con su desglose.
-2. **Bucle por minuto.** En cada minuto se resuelven las disputas que tocan: líneas y jungla al principio; dragón, heraldo, barón y elder cuando aparecen; peleas y asedios en el juego medio y tardío.
-3. **Disputa:** la probabilidad de ganarla sale del perfil de la fase, el estado (oro, objetivos, buffs) y el estilo de riesgo. Se calcula con una tabla entera de tipo logística, sin `exp`. La tirada usa un flujo propio `deriveSeed(seed, match, game, minuto, disputa)`, así que añadir una disputa no desplaza las demás.
-4. **Estado:** cada resultado cambia oro, torres, objetivos, muertes y tiempos de reaparición. El oro pesa menos según avanza la partida (curva de contenido).
-5. **Final:** cuando un equipo destruye el nexo, termina la partida. Duración, kills y estadísticas son consecuencias.
+2. **Forma del día:** una tirada por equipo y partida, con su propio flujo (minuto 0), que suma a todas las disputas. Sin ella, decenas de tiradas independientes hacen que el favorito gane siempre; la constancia la ensancha o estrecha (F10).
+3. **Bucle por minuto.** En cada minuto se resuelven las disputas que tocan: líneas y jungla al principio; dragón, heraldo, barón y elder cuando aparecen; peleas y asedios en el juego medio y tardío.
+4. **Disputa:** la probabilidad de ganarla sale del perfil de la fase, el estado (oro, objetivos, buffs) y el estilo de riesgo. Se calcula con una tabla entera de tipo logística, sin `exp`. La tirada usa un flujo propio `deriveSeed(seed, match, game, minuto, disputa)`, así que añadir una disputa no desplaza las demás.
+5. **Estado:** cada resultado cambia oro, torres, objetivos, muertes y tiempos de reaparición. El oro pesa menos según avanza la partida (curva de contenido).
+6. **Final:** cuando un equipo destruye el nexo, termina la partida. Duración, kills y estadísticas son consecuencias.
 
 ### Hechos
 

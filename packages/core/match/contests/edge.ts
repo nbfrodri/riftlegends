@@ -1,13 +1,24 @@
 import type { Side } from "@rift-legends/contracts";
 import { type Fixed, mul } from "../../math";
 import type { CONTESTS, Scored } from "../profile";
-import type { MatchState } from "../state";
+import { type MatchState, SOUL } from "../state";
 import { chance } from "./chance";
 
 type Contest = (typeof CONTESTS)[number];
 
 /** Points of edge per gold of difference, before the weight of the minute. */
 const GOLD_POINTS = 40;
+/** Points of each buff in the contests it helps. Balance constants. */
+const DRAGON_POINTS = 20_000;
+const SOUL_POINTS = 60_000;
+const BUFF_POINTS: Record<
+	"herald" | "baron" | "elder",
+	Partial<Record<Contest, number>>
+> = {
+	herald: { siege: 80_000 },
+	baron: { siege: 150_000, fight: 80_000, objective: 50_000 },
+	elder: { fight: 200_000, siege: 200_000, objective: 100_000 },
+};
 const MID_GAME = 14;
 const LATE_GAME = 26;
 
@@ -29,10 +40,18 @@ function strength(state: MatchState, side: Side, contest: Contest) {
 		profile.phases[phaseOf(state.minute)],
 	];
 	const byKey = new Map<string, number>();
+	const add = (key: string, points: number) =>
+		byKey.set(key, (byKey.get(key) ?? 0) + points);
 	for (const part of parts) {
-		for (const { key, points } of part.causes) {
-			byKey.set(key, (byKey.get(key) ?? 0) + points);
-		}
+		for (const { key, points } of part.causes) add(key, points);
+	}
+	add("form", state.context[side].form);
+	const own = state[side];
+	add("dragons", own.dragons * DRAGON_POINTS);
+	if (own.dragons >= SOUL) add("soul", SOUL_POINTS);
+	for (const buff of ["herald", "baron", "elder"] as const) {
+		if (own.buffs[buff] > state.minute)
+			add(buff, BUFF_POINTS[buff][contest] ?? 0);
 	}
 	return byKey;
 }
@@ -45,9 +64,23 @@ export interface Edge {
 }
 
 /** Edge of blue over red in a contest, from the profiles and the state. */
-export function edge(state: MatchState, contest: Contest): Edge {
+export function edge(
+	state: MatchState,
+	contest: Contest,
+	/** Points a contest adds on top, by side. */
+	extra: Partial<
+		Record<Side, { key: string; points: number } | undefined>
+	> = {},
+): Edge {
 	const blue = strength(state, "blue", contest);
 	const red = strength(state, "red", contest);
+	for (const [side, map] of [
+		["blue", blue],
+		["red", red],
+	] as const) {
+		const bonus = extra[side];
+		if (bonus) map.set(bonus.key, (map.get(bonus.key) ?? 0) + bonus.points);
+	}
 	const causes: { key: string; points: number }[] = [];
 	for (const key of new Set([...blue.keys(), ...red.keys()])) {
 		const points = (blue.get(key) ?? 0) - (red.get(key) ?? 0);
