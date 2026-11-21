@@ -2,16 +2,33 @@
 	"$schema": "./node_modules/@stryker-mutator/core/schema/stryker-schema.json",
 	"testRunner": "vitest",
 	"plugins": ["@stryker-mutator/vitest-runner"],
-	"vitest": { "configFile": "vitest.stryker.config.ts" },
+	"vitest": {
+		"configFile": "vitest.stryker.config.ts"
+	},
 	"mutate": [
 		"packages/core/**/*.ts",
 		"!packages/core/**/*.test.ts",
-		"!packages/core/test/**"
+		"!packages/core/test/**",
+		"!packages/core/ai/fixtures/**"
 	],
 	"reporters": ["clear-text", "progress", "html"],
-	"htmlReporter": { "fileName": "reports/mutation/mutation.html" },
-	"thresholds": { "high": 80, "low": 70, "break": 70 },
+	"htmlReporter": {
+		"fileName": "reports/mutation/mutation.html"
+	},
+	"thresholds": {
+		"high": 80,
+		"low": 70,
+		"break": 70
+	},
 	"coverageAnalysis": "perTest",
 	"tsconfigFile": "tsconfig.stryker-unused.json",
-	"tempDirName": ".stryker-tmp"
+	"tempDirName": ".stryker-tmp",
+	"ignorePatterns": [
+		".claude",
+		".agents",
+		".codex",
+		"docs",
+		"design",
+		"reports"
+	]
 }
