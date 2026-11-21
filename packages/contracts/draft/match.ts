@@ -130,7 +130,7 @@ export const matchEndedFact = {
 			rating: z.int().min(0).max(100),
 		}),
 	),
-	/** Positions of the events that swung the chance the most. */
+	/** Events that swung the chance the most, by their index among this game's `match.event` facts. */
 	decisive: z.array(z.strictObject({ event: position, swing: points })).max(3),
 };
 

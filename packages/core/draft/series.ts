@@ -2,8 +2,10 @@ import type {
 	AiContent,
 	AiSettings,
 	CoreError,
+	MatchContent,
 	Side,
 } from "@rift-legends/contracts";
+import { playGame } from "../match/play";
 import { pick } from "../rng/helpers";
 import { SCOPES } from "../rng/scopes";
 import { deriveSeed } from "../rng/seeds";
@@ -53,6 +55,8 @@ export interface SeriesState {
 	readonly previous: readonly Readonly<Record<string, readonly string[]>>[];
 	/** What the draft AI reads; loaded with the session, not sent in commands. */
 	readonly content: AiContent | null;
+	/** What the match simulation reads (plan 08); loaded the same way. */
+	readonly match: MatchContent | null;
 }
 
 export const initialSeries: SeriesState = {
@@ -64,6 +68,7 @@ export const initialSeries: SeriesState = {
 	draft: null,
 	previous: [],
 	content: null,
+	match: null,
 };
 
 export const WINS_NEEDED: Record<Format, number> = { bo1: 1, bo3: 2, bo5: 3 };
@@ -207,6 +212,44 @@ const timeout = during<Record<string, never>>(
 	},
 );
 
+/** Records a finished game and either moves on or ends the series. */
+function finish(
+	state: SeriesState,
+	config: SeriesConfig,
+	winner: string,
+	played: readonly Emitted[] = [],
+): Outcome<SeriesState> {
+	const index = config.teams.indexOf(winner);
+	const draft = state.draft as GameDraft;
+	const wins: [number, number] = [state.wins[0], state.wins[1]];
+	wins[index] = (wins[index] as number) + 1;
+	const previous = [
+		...state.previous,
+		{ [draft.blue]: draft.picks.blue, [draft.red]: draft.picks.red },
+	];
+	const finished = { type: "game.finished", game: state.game, winner };
+	if (wins[index] === WINS_NEEDED[config.format]) {
+		return done(
+			{ ...state, wins, previous, phase: "over", chooser: null },
+			...played,
+			finished,
+			{ type: "series.finished", winner, wins },
+		);
+	}
+	return done(
+		{
+			...state,
+			wins,
+			previous,
+			game: state.game + 1,
+			phase: "side",
+			chooser: other(config, winner),
+		},
+		...played,
+		finished,
+	);
+}
+
 export const seriesCommands = {
 	"series.start": (state: SeriesState, config: SeriesConfig) => {
 		if (state.phase === "over") return fail("series-over");
@@ -284,34 +327,32 @@ export const seriesCommands = {
 		"result",
 		"result",
 		(state, config, { winner }) => {
-			const index = config.teams.indexOf(winner);
-			if (index < 0) return fail("invalid-command", { path: "winner" });
-			const draft = state.draft as GameDraft;
-			const wins: [number, number] = [state.wins[0], state.wins[1]];
-			wins[index] = (wins[index] as number) + 1;
-			const previous = [
-				...state.previous,
-				{ [draft.blue]: draft.picks.blue, [draft.red]: draft.picks.red },
-			];
-			const finished = { type: "game.finished", game: state.game, winner };
-			if (wins[index] === WINS_NEEDED[config.format]) {
-				return done(
-					{ ...state, wins, previous, phase: "over", chooser: null },
-					finished,
-					{ type: "series.finished", winner, wins },
-				);
+			if (!config.teams.includes(winner)) {
+				return fail("invalid-command", { path: "winner" });
 			}
-			return done(
-				{
-					...state,
-					wins,
-					previous,
-					game: state.game + 1,
-					phase: "side",
-					chooser: other(config, winner),
-				},
-				finished,
-			);
+			return finish(state, config, winner);
+		},
+	),
+
+	/** Plays the game from the draft (plan 08); its winner comes out of play. */
+	"match.play": during<Record<string, never>>(
+		"result",
+		"result",
+		(state, config) => {
+			if (!state.match || !state.content) {
+				return fail("invalid-command", { path: "match" });
+			}
+			const draft = state.draft as GameDraft;
+			const { blue, red } = draft.roles as Required<typeof draft.roles>;
+			const game = playGame({
+				seed: config.seed,
+				game: state.game,
+				draft: state.content,
+				match: state.match,
+				blue: { team: draft.blue, roles: blue },
+				red: { team: draft.red, roles: red },
+			});
+			return finish(state, config, game.winner, game.facts);
 		},
 	),
 } satisfies Record<string, CommandHandler<SeriesState>>;
