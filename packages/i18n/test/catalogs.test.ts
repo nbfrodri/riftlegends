@@ -23,3 +23,15 @@ describe("catalogs", () => {
 		expect(labels(en)).toEqual(["Top", "Jungle", "Mid", "ADC", "Support"]);
 	});
 });
+
+it("phrase every match cause in the game result too", () => {
+	// The live feed lists every cause the simulation gives; the result's
+	// decisive disputes must phrase the same ones instead of showing the id.
+	for (const catalog of [es, en]) {
+		const missing = Object.keys(catalog)
+			.filter((key) => key.startsWith("draft.match.cause."))
+			.map((key) => key.replace("draft.match.cause.", "draft.result.cause."))
+			.filter((key) => !Object.hasOwn(catalog, key));
+		expect(missing).toEqual([]);
+	}
+});
