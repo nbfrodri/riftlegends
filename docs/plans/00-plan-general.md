@@ -135,7 +135,7 @@ Cada plan se crea al empezar su fase con `to-spec` o `dev-workflow`, y se trocea
 | 06 | [Reglas de draft y series (fearless)](../archive/plans/06-reglas-de-draft.md) (hecho) | 2 |
 | 07 | [IA de draft explicable y personalidades](../archive/plans/07-ia-de-draft.md) (hecho) | 2 |
 | 08 | [Simulación de partida v1 y timeline](../archive/plans/08-simulacion-de-partida.md) (hecho) | 2 |
-| 09 | Pantalla de draft broadcast | 2 |
+| 09 | [Draft rápido en la app: draft broadcast, partida y resultados](09-draft-rapido-en-la-app.md) | 2 |
 | 10 | Esquemas de contenido, dataset ficticio y caché de Data Dragon | 2–3 |
 | 11 | Pipeline de datos de Leaguepedia y atributos de jugadores | 3 |
 | 12 | Formatos de competición y Swiss propio | 4 |
