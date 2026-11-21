@@ -22,6 +22,7 @@
 | Q2 | La IA de cada equipo sale de su coach en el contenido; la configuración solo dice qué equipo controla el usuario | Un equipo sin coach usa una IA por defecto documentada |
 | Q3 | Una vista `match.view` devuelve los hechos de un game jugado | Tras reabrir la pantalla, el resultado se reconstruye sin volver a simular |
 | Q4 | `match.view` incluye el estado del mapa minuto a minuto: estructuras, objetivos, buffs y, por jugador, bajas, muertes, asistencias, oro y CS estimado | El mapa cuadra con los eventos y las estadísticas finales coinciden con `match.ended`. El CS es visual |
+| Q7 | `match.play` acepta la estrategia del equipo del usuario (ritmo, objetivos y riesgo) y una vista sugiere una según su draft, con el porqué | Sin estrategia, la del contenido; la del rival sale de su coach; misma semilla y misma estrategia, misma partida |
 | Q5 | Una vista `series.summary` da el MVP de la serie y los gaps por línea de cada game, con su explicación | Sin games jugados, vacía; un gap solo se marca por encima de un umbral documentado |
 
 ### Pantallas (tests de componentes)
@@ -37,6 +38,7 @@
 | U7 | Roles | Propone un reparto por posiciones y deja intercambiar con teclado o ratón | No confirma un reparto con roles repetidos |
 | U8 | Partida | Timeline minuto a minuto: reloj, oro, kills, gráfica de ventaja de oro, feed de eventos y **objetivos detallados** (torres por línea, inhibidores, dragones y alma, heraldos, barones, elders y buffs con su tiempo) | Velocidad ×1, ×4 y ×16, pausa y saltar al final; con movimiento reducido va directo al final |
 | U9 | Resultado del game | Ganador, estadísticas por jugador y las 3 disputas decisivas con sus causas | Las causas se traducen; una clave desconocida se muestra tal cual, sin romper |
+| U12 | Plan de partida | Antes de cada game, elegir ritmo, objetivos y riesgo con la explicación de cada opción en palabras y la sugerencia según el draft | Confirmar sin cambiar nada usa la sugerencia; la elección se ve en la partida |
 | U10 | Serie | Marcador, **cada game de la serie consultable** (ganador, duración, estadísticas y disputas), **MVP de la serie** y **gaps por línea** | Al terminar la serie no se puede seguir jugando |
 
 ### E2E y rendimiento
@@ -94,6 +96,8 @@ Sin imágenes de Riot: en el modo ficticio, los campeones se muestran con inicia
 | 8 | Resultado del game y de la serie | U9, U10 |
 | 9 | E2E de la Bo5 fearless, capturas visuales e i18n completo | E1, E2, E4 |
 | 10 | Núcleo: estado del mapa por minuto en `match.view` y `series.summary` (MVP y gaps por línea) | Q4, Q5 |
+| 11 | Núcleo: estrategia del usuario en `match.play` y sugerencia según el draft | Q7 |
+| 12 | Pantalla «Plan de partida» entre roles y partida | U12 |
 
 1 primero; 2, 3, 6 y 10 en paralelo tras 1; 7 y 8 tras 10; 4 y 5 tras 3; 9 cierra el plan. Las maquetas aprobadas están en [design/visual-style/quick-draft/](../../design/visual-style/quick-draft/index.html).
 
@@ -111,4 +115,5 @@ Sin imágenes de Riot: en el modo ficticio, los campeones se muestran con inicia
 4. Se configuran equipos, formato y fearless, y temporizador. **La personalidad y la dificultad de la IA no las elige el jugador:** salen del coach y del staff de cada equipo.
 5. Reparto: **Codex `gpt-6.2-astra` (high)** para lo visual (issues 3, 4 y 7) y **subagentes de Claude** (Sonnet, medium) para el resto. Claude redacta, trocea, revisa e integra.
 6. El E2E de la Bo5 usa fearless soft hasta que el plan 10 traiga 60+ campeones.
+8. Tras la pregunta del usuario sobre cómo dirigir a sus jugadores: pantalla **«Plan de partida»** antes de cada game con las tres palancas que ya usa la simulación (ritmo, objetivos y riesgo) y una sugerencia según el draft.
 7. Tras ver las maquetas: objetivos detallados en la partida; en resultados, cada game de la serie, el **MVP de la serie** y los **gaps por línea**; rejilla de draft densa (~24 campeones) con ficha y panel de la IA plegables; jerga Top/Mid/Bot en el feed, y el icono del juego en la barra lateral (ADR 0002).
