@@ -1,5 +1,6 @@
 import type { MatchEvent, Side } from "@rift-legends/contracts";
 import { describe, expect, it } from "vitest";
+import { fictionalContent } from "../ai/fixtures/content";
 import { fictionalMatchContent } from "./fixtures/content";
 import { matchSetup } from "./fixtures/setup";
 import { MATCH_CONTESTS, playMatch } from "./loop";
@@ -148,5 +149,34 @@ describe("M3 · map rules", () => {
 				expect(e.gold[other(e.side)]).toBe(0);
 			}
 		}
+	});
+});
+
+describe("kills go to the killer's side", () => {
+	it("even in fights where both sides score", () => {
+		const roster = (team: string) =>
+			new Set(
+				fictionalContent.players
+					.filter((p) => p.team === team)
+					.map((p) => p.id),
+			);
+		const blue = roster("forge");
+		let mutual = 0;
+		for (const { state, events } of games) {
+			const kills = events.flatMap((e) => e.kills);
+			if (
+				events.some((e) =>
+					e.kills.some((k) => blue.has(k.killer) !== (e.side === "blue")),
+				)
+			)
+				mutual++;
+			expect(state.blue.kills).toBe(
+				kills.filter((k) => blue.has(k.killer)).length,
+			);
+			expect(state.red.kills).toBe(
+				kills.filter((k) => !blue.has(k.killer)).length,
+			);
+		}
+		expect(mutual).toBeGreaterThan(0);
 	});
 });

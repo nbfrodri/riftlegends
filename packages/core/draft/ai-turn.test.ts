@@ -2,6 +2,7 @@ import { CONTRACT_VERSION, PERSONALITIES } from "@rift-legends/contracts";
 import fc from "fast-check";
 import { describe, expect, it } from "vitest";
 import { fictionalContent } from "../ai/fixtures/content";
+import { fictionalMatchContent } from "../match/fixtures/content";
 import { type Fact, openSession, type Session } from "../server/dispatcher";
 import { draftDispatcher, draftStateWith } from "./index";
 import type { SeriesState } from "./series";
@@ -10,7 +11,10 @@ const POOL = fictionalContent.champions.map((c) => c.id);
 type Ai = { personality: string; coachRating?: number; difficulty?: string };
 
 const session = () =>
-	openSession<SeriesState>(1, draftStateWith(fictionalContent));
+	openSession<SeriesState>(
+		1,
+		draftStateWith(fictionalContent, fictionalMatchContent),
+	);
 
 const send = (s: Session<SeriesState>, kind: string, payload: object) =>
 	draftDispatcher.handle(s, {
@@ -40,17 +44,13 @@ const started = (
 	return result.session;
 };
 
-/** Lets the AI play every turn; the game winner alternates. */
+/** Lets the AI play every turn and simulates each game. */
 const playOut = (start: Session<SeriesState>) => {
 	let s = start;
 	const facts: Fact[] = [];
 	for (let guard = 0; guard < 400 && s.state.phase !== "over"; guard++) {
-		const kind = s.state.phase === "result" ? "game.finish" : "draft.ai";
-		const payload =
-			kind === "game.finish"
-				? { winner: s.state.game % 2 === 1 ? "forge" : "shoal" }
-				: {};
-		const result = send(s, kind, payload);
+		const kind = s.state.phase === "result" ? "match.play" : "draft.ai";
+		const result = send(s, kind, {});
 		if (!result.response.ok) {
 			throw new Error(
 				`${kind} rejected: ${JSON.stringify(result.response.error)}`,

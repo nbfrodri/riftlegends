@@ -63,7 +63,8 @@ describe("series (P1)", () => {
 			}),
 			{ numRuns: 60 },
 		);
-	});
+		// Sixty whole series, each game simulated (plan 08).
+	}, 20_000);
 });
 
 describe("rejections (P2)", () => {
@@ -92,7 +93,6 @@ describe("rejections (P2)", () => {
 									champion: taken?.champion ?? "zz",
 								},
 							},
-							{ kind: "game.finish", payload: { winner: "nobody" } },
 							{
 								kind: "series.start",
 								payload: {

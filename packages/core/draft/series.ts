@@ -1,18 +1,15 @@
 import type {
 	AiContent,
 	AiSettings,
-	CoreError,
 	MatchContent,
 	Side,
 } from "@rift-legends/contracts";
-import { mentalEdge, type SeriesContext } from "../match/mental";
-import { playGame } from "../match/play";
 import type { Contest } from "../match/profile";
 import { pick } from "../rng/helpers";
 import { SCOPES } from "../rng/scopes";
 import { deriveSeed } from "../rng/seeds";
 import { createRng } from "../rng/streams";
-import type { CommandHandler, Emitted, Outcome } from "../server/dispatcher";
+import type { CommandHandler, Outcome } from "../server/dispatcher";
 import {
 	type AvailabilityInput,
 	availability,
@@ -29,6 +26,8 @@ import {
 	type Roles,
 	turn,
 } from "./game";
+import { done, fail, other } from "./outcome";
+import { playResult } from "./result";
 
 export interface SeriesConfig {
 	readonly teams: readonly [string, string];
@@ -66,6 +65,9 @@ export interface SeriesState {
 	}[];
 }
 
+export { done, fail, WINS_NEEDED } from "./outcome";
+export { finishGame } from "./result";
+
 export const initialSeries: SeriesState = {
 	config: null,
 	phase: "idle",
@@ -78,21 +80,6 @@ export const initialSeries: SeriesState = {
 	match: null,
 	outcomes: [],
 };
-
-export const WINS_NEEDED: Record<Format, number> = { bo1: 1, bo3: 2, bo5: 3 };
-
-export const fail = (
-	code: CoreError["code"],
-	params: CoreError["params"] = {},
-): Outcome<SeriesState> => ({ ok: false, error: { code, params } });
-
-export const done = (
-	state: SeriesState,
-	...facts: Emitted[]
-): Outcome<SeriesState> => ({ ok: true, state, facts });
-
-const other = (config: SeriesConfig, team: string) =>
-	config.teams[0] === team ? config.teams[1] : config.teams[0];
 
 /** The sides of a game once `team` takes `side`. */
 const startGame = (
@@ -220,70 +207,6 @@ const timeout = during<Record<string, never>>(
 	},
 );
 
-/** What the mental layer reads about the series, seen from `team`. */
-function seriesContext(
-	state: SeriesState,
-	config: SeriesConfig,
-	team: string,
-): SeriesContext {
-	const results = state.outcomes.map((o) =>
-		o.winner === team ? ("win" as const) : ("loss" as const),
-	);
-	const last = state.outcomes.at(-1);
-	const needed = WINS_NEEDED[config.format];
-	return {
-		game: state.game,
-		// Someone wins the series with this game: the last one or an elimination.
-		decisive: state.wins.some((w) => w === needed - 1),
-		stage: "regular",
-		results,
-		...(last && last.winner !== team && last.edge
-			? { rivalEdge: last.edge }
-			: {}),
-	};
-}
-
-/** Records a finished game and either moves on or ends the series. */
-function finish(
-	state: SeriesState,
-	config: SeriesConfig,
-	winner: string,
-	played: readonly Emitted[] = [],
-	edge: Contest | null = null,
-): Outcome<SeriesState> {
-	const outcomes = [...state.outcomes, { winner, edge }];
-	const index = config.teams.indexOf(winner);
-	const draft = state.draft as GameDraft;
-	const wins: [number, number] = [state.wins[0], state.wins[1]];
-	wins[index] = (wins[index] as number) + 1;
-	const previous = [
-		...state.previous,
-		{ [draft.blue]: draft.picks.blue, [draft.red]: draft.picks.red },
-	];
-	const finished = { type: "game.finished", game: state.game, winner };
-	if (wins[index] === WINS_NEEDED[config.format]) {
-		return done(
-			{ ...state, wins, previous, outcomes, phase: "over", chooser: null },
-			...played,
-			finished,
-			{ type: "series.finished", winner, wins },
-		);
-	}
-	return done(
-		{
-			...state,
-			wins,
-			previous,
-			outcomes,
-			game: state.game + 1,
-			phase: "side",
-			chooser: other(config, winner),
-		},
-		...played,
-		finished,
-	);
-}
-
 export const seriesCommands = {
 	"series.start": (state: SeriesState, config: SeriesConfig) => {
 		if (state.phase === "over") return fail("series-over");
@@ -357,48 +280,6 @@ export const seriesCommands = {
 		},
 	),
 
-	"game.finish": during<{ winner: string }>(
-		"result",
-		"result",
-		(state, config, { winner }) => {
-			if (!config.teams.includes(winner)) {
-				return fail("invalid-command", { path: "winner" });
-			}
-			return finish(state, config, winner);
-		},
-	),
-
 	/** Plays the game from the draft (plan 08); its winner comes out of play. */
-	"match.play": during<Record<string, never>>(
-		"result",
-		"result",
-		(state, config) => {
-			if (!state.match || !state.content) {
-				return fail("invalid-command", { path: "match" });
-			}
-			const draft = state.draft as GameDraft;
-			const { blue, red } = draft.roles as Required<typeof draft.roles>;
-			const lineups = {
-				blue: { team: draft.blue, roles: blue },
-				red: { team: draft.red, roles: red },
-			};
-			const mental = (side: Side) =>
-				mentalEdge(
-					state.content as AiContent,
-					state.match as MatchContent,
-					lineups[side],
-					side,
-					seriesContext(state, config, lineups[side].team),
-				);
-			const game = playGame({
-				seed: config.seed,
-				game: state.game,
-				draft: state.content,
-				match: state.match,
-				...lineups,
-				mental: { blue: mental("blue"), red: mental("red") },
-			});
-			return finish(state, config, game.winner, game.facts, game.edge);
-		},
-	),
+	"match.play": during<Record<string, never>>("result", "result", playResult),
 } satisfies Record<string, CommandHandler<SeriesState>>;

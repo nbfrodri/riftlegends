@@ -48,7 +48,7 @@ describe("draft commands", () => {
 		["draft.pick", { team: "geng", champion: "azir" }],
 		["draft.timeout", {}],
 		["draft.roles", { team: "t1", roles }],
-		["game.finish", { winner: "geng" }],
+		["match.play", {}],
 	])("accepts %s", (kind, payload) => {
 		const parsed = parseCommand(draftCommands, command(kind, payload));
 		expect(parsed.ok).toBe(true);

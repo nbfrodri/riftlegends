@@ -1,14 +1,12 @@
 import { CONTRACT_VERSION, type DraftView } from "@rift-legends/contracts";
 import { fictionalContent } from "../ai/fixtures/content";
-import {
-	draftDispatcher,
-	draftStateWith,
-	initialDraftState,
-} from "../draft/index";
+import { draftDispatcher, draftStateWith } from "../draft/index";
 import type { SeriesState } from "../draft/series";
+import { fictionalMatchContent } from "../match/fixtures/content";
 import { pick } from "../rng/helpers";
 import { createRng } from "../rng/streams";
 import { type Fact, openSession, type Session } from "../server/dispatcher";
+import { syntheticContent } from "./synthetic-content";
 
 export interface PlayOptions {
 	readonly seed: number;
@@ -26,7 +24,12 @@ export interface PlayOptions {
 export const playSeries = (options: PlayOptions): Fact[] => {
 	const rng = createRng(options.seed);
 	const facts: Fact[] = [];
-	let session = openSession<SeriesState>(1, initialDraftState);
+	const teams = ["blue-team", "red-team"] as const;
+	const content = syntheticContent(options.pool, teams);
+	let session = openSession<SeriesState>(
+		1,
+		draftStateWith(content.draft, content.match),
+	);
 	const send = (kind: string, payload: object) => {
 		const result = draftDispatcher.handle(session, {
 			v: CONTRACT_VERSION,
@@ -52,7 +55,7 @@ export const playSeries = (options: PlayOptions): Fact[] => {
 		});
 
 	send("series.start", {
-		teams: ["blue-team", "red-team"],
+		teams,
 		seeds: [1, 2],
 		format: options.format,
 		fearless: options.fearless,
@@ -68,9 +71,7 @@ export const playSeries = (options: PlayOptions): Fact[] => {
 		options.probe?.(session, current);
 		const turn = current.turn;
 		if (current.phase === "result" || !turn) {
-			send("game.finish", {
-				winner: pick(rng, [current.blue.team, current.red.team]),
-			});
+			send("match.play", {});
 		} else if (turn.action === "side") {
 			send("side.choose", {
 				team: turn.team,
@@ -100,9 +101,12 @@ export const playSeries = (options: PlayOptions): Fact[] => {
 	}
 };
 
-/** An AI vs AI series over the fictional content; game winners alternate. */
+/** An AI vs AI series over the fictional content, with simulated games. */
 export const playAiSeries = (seed: number): Fact[] => {
-	let session = openSession<SeriesState>(1, draftStateWith(fictionalContent));
+	let session = openSession<SeriesState>(
+		1,
+		draftStateWith(fictionalContent, fictionalMatchContent),
+	);
 	const facts: Fact[] = [];
 	const send = (kind: string, payload: object) => {
 		const result = draftDispatcher.handle(session, {
@@ -130,11 +134,7 @@ export const playAiSeries = (seed: number): Fact[] => {
 		],
 	});
 	while (session.state.phase !== "over") {
-		if (session.state.phase === "result") {
-			send("game.finish", {
-				winner: session.state.game % 2 === 1 ? "forge" : "shoal",
-			});
-		} else send("draft.ai", {});
+		send(session.state.phase === "result" ? "match.play" : "draft.ai", {});
 	}
 	return facts;
 };

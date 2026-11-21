@@ -298,3 +298,42 @@ describe("match.ended schema", () => {
 		expect(decodeFact(draftFacts, encodeFact(fact))).toEqual(fact);
 	});
 });
+
+describe("fights where both sides score", () => {
+	const kill = (killer: string, victim: string, assists: string[] = []) => ({
+		killer,
+		victim,
+		assists,
+	});
+	const { kill: k, assist: a } = rules.economy;
+	const stats = playerStats(
+		[
+			event({
+				position: 1,
+				kind: "fight",
+				side: "blue",
+				kills: [
+					kill("b-mid", "r-mid", ["b-jungle"]),
+					kill("r-bot", "b-top", ["r-support"]),
+				],
+				gold: { blue: k + a, red: k + a },
+			}),
+		],
+		teams,
+		rules,
+		600,
+	);
+	const of = (player: string) => stats.find((p) => p.player === player);
+
+	it("credits each kill to the killer's team for participation", () => {
+		expect(of("r-bot")?.participation).toBe(10000);
+		expect(of("r-support")?.participation).toBe(10000);
+		expect(of("b-mid")?.participation).toBe(10000);
+	});
+
+	it("pays the losing side's killers from that side's gold", () => {
+		const share = (rules.economy.passive * 10) / 5;
+		expect(of("r-bot")?.gold).toBe(share + k);
+		expect(of("b-mid")?.gold).toBe(share + k);
+	});
+});
