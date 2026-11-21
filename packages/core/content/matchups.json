@@ -1,0 +1,44 @@
+[
+	{
+		"champion": "rimefoil",
+		"against": "cragbell",
+		"role": "top",
+		"value": 5
+	},
+	{
+		"champion": "glasswake",
+		"against": "rimefoil",
+		"role": "mid",
+		"value": 4
+	},
+	{
+		"champion": "glasswake",
+		"against": "waxblade",
+		"role": "mid",
+		"value": -3
+	},
+	{
+		"champion": "saltspire",
+		"against": "mosshelm",
+		"role": "top",
+		"value": 3
+	},
+	{
+		"champion": "coalstride",
+		"against": "duskroot",
+		"role": "jungle",
+		"value": 4
+	},
+	{
+		"champion": "briarshot",
+		"against": "suncord",
+		"role": "bot",
+		"value": 3
+	},
+	{
+		"champion": "bronzehook",
+		"against": "shellward",
+		"role": "support",
+		"value": 2
+	}
+]

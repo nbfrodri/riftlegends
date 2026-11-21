@@ -113,15 +113,19 @@ describe("ai.decided", () => {
 });
 
 describe("AiContent", () => {
+	const champion = {
+		id: "azir",
+		name: "Azir",
+		positions: [{ role: "mid", tier: "S" }],
+		damage: "magic",
+		archetypes: ["carry", "poke"],
+		power: "late",
+	};
 	const content = {
 		champions: [
-			{
-				id: "azir",
-				positions: [{ role: "mid", tier: "S" }],
-				damage: "magic",
-				archetypes: ["carry", "poke"],
-				power: "late",
-			},
+			champion,
+			{ ...champion, id: "syndra", name: "Syndra" },
+			{ ...champion, id: "rell", name: "Rell" },
 		],
 		matchups: [{ champion: "azir", against: "syndra", role: "mid", value: -3 }],
 		synergies: [{ a: "azir", b: "rell", value: 4 }],
@@ -151,7 +155,6 @@ describe("AiContent", () => {
 				champions: [
 					{
 						...content.champions[0],
-						tier: undefined,
 						positions: [{ role: "mid", tier: "Z" }],
 					},
 				],

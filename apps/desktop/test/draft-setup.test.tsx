@@ -1,3 +1,4 @@
+import { packagedMatchContent } from "@rift-legends/core";
 import { cleanup, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, test } from "vitest";
@@ -66,9 +67,15 @@ describe("series setup (U1)", () => {
 		).toBeTruthy();
 	});
 
-	test("starts the series with the chosen rules and the rival on its coach's AI", async () => {
+	test("starts the series with content seeds, the chosen rules and the rival on its coach's AI", async () => {
 		const user = userEvent.setup();
-		const core = await renderWithDraftCore(<DraftScreen />);
+		const core = await renderWithDraftCore(<DraftScreen />, "en-US", {
+			...packagedMatchContent,
+			teams: packagedMatchContent.teams.map((team) => ({
+				...team,
+				seed: team.id === "forge" ? 3 : 8,
+			})),
+		});
 		await screen.findByRole("heading", { level: 1, name: "Set up series" });
 		await user.click(screen.getByRole("radio", { name: "Bo1" }));
 		await user.click(screen.getByRole("radio", { name: "Soft" }));
@@ -85,6 +92,7 @@ describe("series setup (U1)", () => {
 			expectedPosition: 0,
 			payload: {
 				teams: ["forge", "shoal"],
+				seeds: [3, 8],
 				format: "bo1",
 				fearless: "soft",
 				timer: false,

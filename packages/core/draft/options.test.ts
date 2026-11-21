@@ -31,7 +31,7 @@ describe("series.options (plan 09, U1)", () => {
 		).toBe(true);
 	});
 
-	it("lists the teams with name and coach, and the champion pool", () => {
+	it("lists the teams with name, seed and coach, and the champion pool", () => {
 		const result = options(
 			draftStateWith(fictionalContent, fictionalMatchContent),
 		);
@@ -40,6 +40,7 @@ describe("series.options (plan 09, U1)", () => {
 		expect(view.teams.map((t) => t.id)).toEqual(["forge", "shoal"]);
 		expect(view.teams[0]).toMatchObject({
 			name: "Forge",
+			seed: 1,
 			coach: { name: "Marlen Voss", personality: "comfort", rating: 38 },
 		});
 		expect(view.pool).toEqual(fictionalContent.champions.map((c) => c.id));

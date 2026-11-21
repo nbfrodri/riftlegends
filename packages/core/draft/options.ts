@@ -16,10 +16,11 @@ export const viewOptions = (state: SeriesState): SeriesOptions => {
 			return of === team && attributes ? [{ id, role, attributes }] : [];
 		});
 	return {
-		teams: (state.match?.teams ?? []).map(({ id, name, coach }) => ({
+		teams: (state.match?.teams ?? []).map(({ id, name, seed, coach }) => ({
 			id,
-			name: name ?? id,
-			...(coach ? { coach } : {}),
+			name,
+			seed,
+			coach,
 			players: players(id),
 		})),
 		pool: champions.map((champion) => champion.id),

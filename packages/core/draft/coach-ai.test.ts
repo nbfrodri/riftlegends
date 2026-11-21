@@ -8,15 +8,14 @@ import type { SeriesState } from "./series";
 
 const POOL = fictionalContent.champions.map((c) => c.id);
 
-/** The match content with `coach` (or none) as the coach of `shoal`. */
+/** Match content with a different coach for `shoal`. */
 const withCoach = (
 	coach: MatchContent["teams"][number]["coach"],
 ): MatchContent => ({
 	...fictionalMatchContent,
-	teams: fictionalMatchContent.teams.map((team) => {
-		const { coach: _, ...rest } = team;
-		return team.id === "shoal" && coach ? { ...rest, coach } : rest;
-	}),
+	teams: fictionalMatchContent.teams.map((team) =>
+		team.id === "shoal" ? { ...team, coach } : team,
+	),
 });
 
 const send = (s: Session<SeriesState>, kind: string, payload: object) => {
@@ -58,7 +57,7 @@ const COACH = { name: "Iko Rhane", personality: "pocket", rating: 45 } as const;
 describe('"coach" in series.start (Q2)', () => {
 	it("takes personality and rating from the team's coach", () => {
 		const fromCoach = firstDecision(withCoach(COACH), "coach");
-		const explicit = firstDecision(withCoach(undefined), {
+		const explicit = firstDecision(fictionalMatchContent, {
 			personality: COACH.personality,
 			coachRating: COACH.rating,
 		});
@@ -72,9 +71,13 @@ describe('"coach" in series.start (Q2)', () => {
 		);
 	});
 
-	it("falls back to balanced and normal for a team without coach", () => {
-		const fallback = firstDecision(withCoach(undefined), "coach");
-		const explicit = firstDecision(withCoach(undefined), {
+	it("falls back to balanced and normal when the team has no match content", () => {
+		const withoutRival = {
+			...fictionalMatchContent,
+			teams: fictionalMatchContent.teams.filter((team) => team.id !== "shoal"),
+		};
+		const fallback = firstDecision(withoutRival, "coach");
+		const explicit = firstDecision(withoutRival, {
 			personality: "balanced",
 			difficulty: "normal",
 		});

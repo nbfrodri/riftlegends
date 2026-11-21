@@ -1,0 +1,27 @@
+[
+	{
+		"id": "siege",
+		"archetypes": ["poke"],
+		"threshold": 2
+	},
+	{
+		"id": "backline",
+		"archetypes": ["carry", "hypercarry", "peel"],
+		"threshold": 2
+	},
+	{
+		"id": "collapse",
+		"archetypes": ["engage", "dive"],
+		"threshold": 2
+	},
+	{
+		"id": "sidelanes",
+		"archetypes": ["splitpush", "skirmish"],
+		"threshold": 2
+	},
+	{
+		"id": "ambush",
+		"archetypes": ["pick", "utility"],
+		"threshold": 3
+	}
+]

@@ -1,0 +1,466 @@
+[
+	{
+		"id": "forge-top",
+		"team": "forge",
+		"role": "top",
+		"level": 90,
+		"mains": ["cragbell", "rimefoil"],
+		"secondary": ["saltspire"],
+		"weak": ["siltwing"],
+		"attributes": {
+			"lanes": 88,
+			"farming": 80,
+			"waves": 86,
+			"macro": 80,
+			"roaming": 80,
+			"vision": 80,
+			"anticipation": 80,
+			"objectiveControl": 80,
+			"teamfight": 80,
+			"mechanics": 90,
+			"positioning": 80,
+			"aggression": 80,
+			"composure": 80,
+			"resilience": 80,
+			"experience": 80,
+			"consistency": 80,
+			"focus": 80,
+			"shotcalling": 55,
+			"communication": 80,
+			"versatility": 80
+		},
+		"leader": false,
+		"mastery": [
+			{
+				"champion": "cragbell",
+				"value": 90
+			},
+			{
+				"champion": "rimefoil",
+				"value": 90
+			},
+			{
+				"champion": "saltspire",
+				"value": 70
+			},
+			{
+				"champion": "siltwing",
+				"value": 35
+			}
+		]
+	},
+	{
+		"id": "forge-jungle",
+		"team": "forge",
+		"role": "jungle",
+		"level": 81,
+		"mains": ["duskroot"],
+		"secondary": ["coalstride"],
+		"weak": ["reedclaw"],
+		"attributes": {
+			"lanes": 76,
+			"farming": 76,
+			"waves": 76,
+			"macro": 86,
+			"roaming": 76,
+			"vision": 76,
+			"anticipation": 84,
+			"objectiveControl": 90,
+			"teamfight": 76,
+			"mechanics": 76,
+			"positioning": 76,
+			"aggression": 76,
+			"composure": 76,
+			"resilience": 76,
+			"experience": 76,
+			"consistency": 76,
+			"focus": 76,
+			"shotcalling": 76,
+			"communication": 76,
+			"versatility": 76
+		},
+		"leader": false,
+		"mastery": [
+			{
+				"champion": "duskroot",
+				"value": 90
+			},
+			{
+				"champion": "coalstride",
+				"value": 70
+			},
+			{
+				"champion": "reedclaw",
+				"value": 35
+			}
+		]
+	},
+	{
+		"id": "forge-mid",
+		"team": "forge",
+		"role": "mid",
+		"level": 94,
+		"mains": ["glasswake"],
+		"secondary": ["rimefoil"],
+		"weak": ["waxblade"],
+		"attributes": {
+			"lanes": 92,
+			"farming": 92,
+			"waves": 92,
+			"macro": 92,
+			"roaming": 88,
+			"vision": 92,
+			"anticipation": 92,
+			"objectiveControl": 92,
+			"teamfight": 92,
+			"mechanics": 92,
+			"positioning": 92,
+			"aggression": 92,
+			"composure": 95,
+			"resilience": 92,
+			"experience": 98,
+			"consistency": 92,
+			"focus": 92,
+			"shotcalling": 92,
+			"communication": 92,
+			"versatility": 92
+		},
+		"leader": true,
+		"mastery": [
+			{
+				"champion": "glasswake",
+				"value": 90
+			},
+			{
+				"champion": "rimefoil",
+				"value": 70
+			},
+			{
+				"champion": "waxblade",
+				"value": 35
+			}
+		]
+	},
+	{
+		"id": "forge-bot",
+		"team": "forge",
+		"role": "bot",
+		"level": 79,
+		"mains": ["copperfin"],
+		"secondary": ["suncord"],
+		"weak": ["briarshot"],
+		"attributes": {
+			"lanes": 70,
+			"farming": 88,
+			"waves": 70,
+			"macro": 70,
+			"roaming": 70,
+			"vision": 70,
+			"anticipation": 70,
+			"objectiveControl": 70,
+			"teamfight": 70,
+			"mechanics": 70,
+			"positioning": 84,
+			"aggression": 70,
+			"composure": 70,
+			"resilience": 60,
+			"experience": 70,
+			"consistency": 70,
+			"focus": 70,
+			"shotcalling": 40,
+			"communication": 70,
+			"versatility": 70
+		},
+		"leader": false,
+		"mastery": [
+			{
+				"champion": "copperfin",
+				"value": 90
+			},
+			{
+				"champion": "suncord",
+				"value": 70
+			},
+			{
+				"champion": "briarshot",
+				"value": 35
+			}
+		]
+	},
+	{
+		"id": "forge-support",
+		"team": "forge",
+		"role": "support",
+		"level": 65,
+		"mains": ["bronzehook"],
+		"secondary": ["shellward"],
+		"weak": ["riftchime"],
+		"attributes": {
+			"lanes": 72,
+			"farming": 72,
+			"waves": 72,
+			"macro": 72,
+			"roaming": 82,
+			"vision": 90,
+			"anticipation": 72,
+			"objectiveControl": 72,
+			"teamfight": 72,
+			"mechanics": 60,
+			"positioning": 72,
+			"aggression": 72,
+			"composure": 72,
+			"resilience": 72,
+			"experience": 90,
+			"consistency": 72,
+			"focus": 72,
+			"shotcalling": 72,
+			"communication": 72,
+			"versatility": 72
+		},
+		"leader": false,
+		"mastery": [
+			{
+				"champion": "bronzehook",
+				"value": 90
+			},
+			{
+				"champion": "shellward",
+				"value": 70
+			},
+			{
+				"champion": "riftchime",
+				"value": 35
+			}
+		]
+	},
+	{
+		"id": "shoal-top",
+		"team": "shoal",
+		"role": "top",
+		"level": 72,
+		"mains": ["saltspire"],
+		"secondary": ["mosshelm"],
+		"weak": ["cragbell"],
+		"attributes": {
+			"lanes": 74,
+			"farming": 60,
+			"waves": 60,
+			"macro": 60,
+			"roaming": 60,
+			"vision": 60,
+			"anticipation": 60,
+			"objectiveControl": 60,
+			"teamfight": 60,
+			"mechanics": 60,
+			"positioning": 60,
+			"aggression": 85,
+			"composure": 60,
+			"resilience": 60,
+			"experience": 45,
+			"consistency": 60,
+			"focus": 50,
+			"shotcalling": 60,
+			"communication": 60,
+			"versatility": 60
+		},
+		"leader": false,
+		"mastery": [
+			{
+				"champion": "saltspire",
+				"value": 90
+			},
+			{
+				"champion": "mosshelm",
+				"value": 70
+			},
+			{
+				"champion": "cragbell",
+				"value": 35
+			}
+		]
+	},
+	{
+		"id": "shoal-jungle",
+		"team": "shoal",
+		"role": "jungle",
+		"level": 85,
+		"mains": ["coalstride"],
+		"secondary": ["duskroot"],
+		"weak": ["ashmoth"],
+		"attributes": {
+			"lanes": 82,
+			"farming": 82,
+			"waves": 82,
+			"macro": 88,
+			"roaming": 82,
+			"vision": 82,
+			"anticipation": 82,
+			"objectiveControl": 82,
+			"teamfight": 82,
+			"mechanics": 82,
+			"positioning": 82,
+			"aggression": 78,
+			"composure": 82,
+			"resilience": 82,
+			"experience": 82,
+			"consistency": 82,
+			"focus": 82,
+			"shotcalling": 90,
+			"communication": 82,
+			"versatility": 82
+		},
+		"leader": true,
+		"mastery": [
+			{
+				"champion": "coalstride",
+				"value": 90
+			},
+			{
+				"champion": "duskroot",
+				"value": 70
+			},
+			{
+				"champion": "ashmoth",
+				"value": 35
+			}
+		]
+	},
+	{
+		"id": "shoal-mid",
+		"team": "shoal",
+		"role": "mid",
+		"level": 83,
+		"mains": ["waxblade"],
+		"secondary": ["prismoth"],
+		"weak": ["rimefoil"],
+		"attributes": {
+			"lanes": 85,
+			"farming": 74,
+			"waves": 74,
+			"macro": 74,
+			"roaming": 74,
+			"vision": 74,
+			"anticipation": 74,
+			"objectiveControl": 74,
+			"teamfight": 74,
+			"mechanics": 88,
+			"positioning": 74,
+			"aggression": 74,
+			"composure": 74,
+			"resilience": 74,
+			"experience": 74,
+			"consistency": 58,
+			"focus": 74,
+			"shotcalling": 74,
+			"communication": 74,
+			"versatility": 50
+		},
+		"leader": false,
+		"mastery": [
+			{
+				"champion": "waxblade",
+				"value": 90
+			},
+			{
+				"champion": "prismoth",
+				"value": 70
+			},
+			{
+				"champion": "rimefoil",
+				"value": 35
+			}
+		]
+	},
+	{
+		"id": "shoal-bot",
+		"team": "shoal",
+		"role": "bot",
+		"level": 99,
+		"mains": ["suncord"],
+		"secondary": ["copperfin"],
+		"weak": ["rillbow"],
+		"attributes": {
+			"lanes": 98,
+			"farming": 96,
+			"waves": 88,
+			"macro": 88,
+			"roaming": 88,
+			"vision": 88,
+			"anticipation": 88,
+			"objectiveControl": 88,
+			"teamfight": 88,
+			"mechanics": 99,
+			"positioning": 88,
+			"aggression": 88,
+			"composure": 88,
+			"resilience": 88,
+			"experience": 88,
+			"consistency": 88,
+			"focus": 88,
+			"shotcalling": 45,
+			"communication": 88,
+			"versatility": 88
+		},
+		"leader": false,
+		"mastery": [
+			{
+				"champion": "suncord",
+				"value": 90
+			},
+			{
+				"champion": "copperfin",
+				"value": 70
+			},
+			{
+				"champion": "rillbow",
+				"value": 35
+			}
+		]
+	},
+	{
+		"id": "shoal-support",
+		"team": "shoal",
+		"role": "support",
+		"level": 61,
+		"mains": ["shellward"],
+		"secondary": ["fenveil"],
+		"weak": ["bronzehook"],
+		"attributes": {
+			"lanes": 66,
+			"farming": 66,
+			"waves": 66,
+			"macro": 66,
+			"roaming": 66,
+			"vision": 80,
+			"anticipation": 66,
+			"objectiveControl": 66,
+			"teamfight": 66,
+			"mechanics": 62,
+			"positioning": 66,
+			"aggression": 66,
+			"composure": 66,
+			"resilience": 66,
+			"experience": 66,
+			"consistency": 66,
+			"focus": 66,
+			"shotcalling": 66,
+			"communication": 78,
+			"versatility": 66
+		},
+		"leader": false,
+		"mastery": [
+			{
+				"champion": "shellward",
+				"value": 90
+			},
+			{
+				"champion": "fenveil",
+				"value": 70
+			},
+			{
+				"champion": "bronzehook",
+				"value": 35
+			}
+		]
+	}
+]
