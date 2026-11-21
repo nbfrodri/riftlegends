@@ -1,9 +1,13 @@
 import { describe, expect, it } from "vitest";
 import type { Fixed } from "../math";
+import { int } from "../rng/helpers";
 import { SCOPES } from "../rng/scopes";
 import { deriveSeed } from "../rng/seeds";
 import { createRng as rawRng } from "../rng/streams";
 import { choose, type DIFFICULTY, difficultyOf, type Scored } from "./choose";
+import { PROFILES } from "./profiles";
+
+const { balanced } = PROFILES;
 
 // Seeds go through deriveSeed, as in production: consecutive raw seeds give
 // correlated first draws.
@@ -19,7 +23,7 @@ const ladder = (...totals: number[]): Scored[] =>
 const runs = (difficulty: keyof typeof DIFFICULTY, scored: Scored[], n = 500) =>
 	Array.from(
 		{ length: n },
-		(_, seed) => choose(createRng(seed), scored, {}, difficulty).champion,
+		(_, seed) => choose(createRng(seed), scored, balanced, difficulty).champion,
 	);
 
 describe("difficulty (C4)", () => {
@@ -41,8 +45,8 @@ describe("choice (C2, C3)", () => {
 	const scored = ladder(10, 9, 8.5, 8, 7, 6, 5, 4);
 
 	it("is the same for the same seed", () => {
-		const a = choose(createRng(9), scored, {}, "normal");
-		expect(choose(createRng(9), scored, {}, "normal")).toEqual(a);
+		const a = choose(createRng(9), scored, balanced, "normal");
+		expect(choose(createRng(9), scored, balanced, "normal")).toEqual(a);
 	});
 
 	it("on hard stays within the two best and nearly always takes the first", () => {
@@ -68,10 +72,56 @@ describe("choice (C2, C3)", () => {
 	});
 
 	it("takes a lone candidate", () => {
-		expect(choose(createRng(1), ladder(3), {}, "easy")).toMatchObject({
+		expect(choose(createRng(1), ladder(3), balanced, "easy")).toMatchObject({
 			champion: "c0",
 			alternatives: [],
 		});
+	});
+});
+
+describe("profile adjustments to difficulty", () => {
+	it("applies temperature before computing the runner-up's chance", () => {
+		// Gap of one normal temperature. At half temperature the runner-up's weight is 135.
+		const decision = choose(
+			createRng(3),
+			ladder(6, 4),
+			{ ...balanced, temperature: 5_000 },
+			"normal",
+		);
+		expect(decision.alternatives).toEqual([
+			{ champion: "c1", total: pts(4), chance: 1_189 },
+		]);
+	});
+
+	it("adds the profile's extra places to the pool", () => {
+		const decision = choose(
+			createRng(3),
+			ladder(1, 1, 1),
+			{ ...balanced, pool: 1 },
+			"hard",
+		);
+		expect(decision.alternatives.map((c) => c.chance)).toEqual([3_333, 3_333]);
+	});
+
+	it("keeps at least the leader when the pool adjustment is negative", () => {
+		const decision = choose(
+			createRng(3),
+			ladder(1, 1),
+			{ ...balanced, pool: -5 },
+			"hard",
+		);
+		expect(decision.champion).toBe("c0");
+		expect(decision.alternatives[0]?.chance).toBe(0);
+	});
+
+	it("uses the adjusted wildcard threshold and first rank outside the adjusted pool", () => {
+		const candidates = ladder(6, 5, 4);
+		const profile = { ...balanced, pool: -1, wildcard: 20_000 };
+		for (let seed = 0; seed < 100; seed++) {
+			const roll = int(createRng(seed), 0, 9_999);
+			const decision = choose(createRng(seed), candidates, profile, "normal");
+			expect(decision.champion === "c2").toBe(roll < 1_000);
+		}
 	});
 });
 
@@ -93,7 +143,12 @@ describe("explanation (E1, E2)", () => {
 
 	it("weights each component by personality and drops zeros", () => {
 		const weights = { meta: 16_000 as Fixed };
-		const decision = choose(createRng(3), scored, weights, "hard");
+		const decision = choose(
+			createRng(3),
+			scored,
+			{ ...balanced, weights },
+			"hard",
+		);
 		expect(decision.champion).toBe("a");
 		expect(decision.components).toEqual([
 			{ key: "meta", points: pts(8) },
@@ -103,7 +158,7 @@ describe("explanation (E1, E2)", () => {
 	});
 
 	it("lists three alternatives with their chance", () => {
-		const decision = choose(createRng(3), scored, {}, "hard");
+		const decision = choose(createRng(3), scored, balanced, "hard");
 		expect(decision.alternatives.map((a) => a.champion)).toEqual([
 			"b",
 			"c",
