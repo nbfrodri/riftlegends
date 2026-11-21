@@ -54,9 +54,7 @@
 		</header>
 		<aside class="rail" aria-label="Barra lateral plegada">
 			<div class="club">
-				<svg class="crest" viewBox="0 0 64 64" aria-hidden="true">
-					<path fill="currentColor" d="M8 12h52L49 23H20zm12 16h27L36 39H23zm4 16h9l-4 13z" />
-				</svg>
+				<img src="../../brand/icon/icon-small.svg" width="32" height="32" alt="Rift Legends">
 			</div>
 			<div class="rail-items">
 				<span title="Inicio" aria-label="Inicio"
@@ -331,7 +329,7 @@
 				<section class="pool panel">
 					<div class="pool-top">
 						<h2>Campeones</h2>
-						<span role="status" id="pool-count">1–8 de 40</span>
+						<span role="status" id="pool-count">40 campeones</span>
 					</div>
 					<div class="filters">
 						<input type="search" id="search" aria-label="Buscar campeón" placeholder="Buscar campeón…">
@@ -344,7 +342,7 @@
 							<option value="support">Support</option>
 						</select>
 					</div>
-					<div class="grid">
+					<div class="grid" tabindex="0" role="region" aria-label="Campeones, lista desplazable">
 						<button
 							class="tile free"
 							data-roles="mid"
@@ -428,7 +426,6 @@
 							data-state="Elegido"
 							aria-pressed="false"
 							disabled
-							hidden
 						>
 							<span aria-hidden="true" class="face " style="--h:2">CR</span><b>Cragbell</b
 							><small>Elegido</small>
@@ -439,7 +436,6 @@
 							data-state="Vetado"
 							aria-pressed="false"
 							disabled
-							hidden
 						>
 							<span aria-hidden="true" class="face " style="--h:100">RI</span><b>Rimefoil</b
 							><small>Vetado</small>
@@ -450,7 +446,6 @@
 							data-state="Elegido"
 							aria-pressed="false"
 							disabled
-							hidden
 						>
 							<span aria-hidden="true" class="face " style="--h:306">SA</span><b>Saltspire</b
 							><small>Elegido</small>
@@ -461,7 +456,6 @@
 							data-state="Vetado"
 							aria-pressed="false"
 							disabled
-							hidden
 						>
 							<span aria-hidden="true" class="face " style="--h:222">MO</span><b>Mosshelm</b
 							><small>Vetado</small>
@@ -472,7 +466,6 @@
 							data-state="Fearless"
 							aria-pressed="false"
 							disabled
-							hidden
 						>
 							<span aria-hidden="true" class="face " style="--h:34">SI</span><b>Siltwing</b
 							><small>Fearless</small>
@@ -482,7 +475,6 @@
 							data-name="Quillforge"
 							data-state="Libre"
 							aria-pressed="false"
-							hidden
 						>
 							<span aria-hidden="true" class="face " style="--h:51">QU</span><b>Quillforge</b
 							><small>Libre</small>
@@ -493,7 +485,6 @@
 							data-state="Fearless"
 							aria-pressed="false"
 							disabled
-							hidden
 						>
 							<span aria-hidden="true" class="face " style="--h:339">UR</span><b>Urnward</b
 							><small>Fearless</small>
@@ -503,7 +494,6 @@
 							data-name="Fallowhorn"
 							data-state="Libre"
 							aria-pressed="false"
-							hidden
 						>
 							<span aria-hidden="true" class="face " style="--h:9">FA</span><b>Fallowhorn</b
 							><small>Libre</small>
@@ -514,7 +504,6 @@
 							data-state="Elegido"
 							aria-pressed="false"
 							disabled
-							hidden
 						>
 							<span aria-hidden="true" class="face " style="--h:240">CO</span><b>Coalstride</b
 							><small>Elegido</small>
@@ -525,7 +514,6 @@
 							data-state="Elegido"
 							aria-pressed="false"
 							disabled
-							hidden
 						>
 							<span aria-hidden="true" class="face " style="--h:312">DU</span><b>Duskroot</b
 							><small>Elegido</small>
@@ -536,7 +524,6 @@
 							data-state="Fearless"
 							aria-pressed="false"
 							disabled
-							hidden
 						>
 							<span aria-hidden="true" class="face " style="--h:171">BE</span><b>Bellwisp</b
 							><small>Fearless</small>
@@ -547,7 +534,6 @@
 							data-state="Vetado"
 							aria-pressed="false"
 							disabled
-							hidden
 						>
 							<span aria-hidden="true" class="face " style="--h:140">NE</span><b>Nettleguard</b
 							><small>Vetado</small>
@@ -558,21 +544,18 @@
 							data-state="Vetado"
 							aria-pressed="false"
 							disabled
-							hidden
 						>
 							<span aria-hidden="true" class="face " style="--h:197">FR</span><b>Frostdrum</b
 							><small>Vetado</small>
 						</button><button
-							class="tile locked"
+							class="tile free"
 							data-roles="mid bot"
 							data-name="Tideglass"
-							data-state="Fearless"
+							data-state="Libre"
 							aria-pressed="false"
-							disabled
-							hidden
 						>
 							<span aria-hidden="true" class="face " style="--h:330">TI</span><b>Tideglass</b
-							><small>Fearless</small>
+							><small>Libre</small>
 						</button><button
 							class="tile locked"
 							data-roles="mid"
@@ -580,7 +563,6 @@
 							data-state="Fearless"
 							aria-pressed="false"
 							disabled
-							hidden
 						>
 							<span aria-hidden="true" class="face " style="--h:148">CI</span><b>Cinderlens</b
 							><small>Fearless</small>
@@ -591,7 +573,6 @@
 							data-state="Fearless"
 							aria-pressed="false"
 							disabled
-							hidden
 						>
 							<span aria-hidden="true" class="face " style="--h:30">RU</span><b>Rushquill</b
 							><small>Fearless</small>
@@ -602,7 +583,6 @@
 							data-state="Vetado"
 							aria-pressed="false"
 							disabled
-							hidden
 						>
 							<span aria-hidden="true" class="face " style="--h:14">MI</span><b>Mistloom</b
 							><small>Vetado</small>
@@ -613,7 +593,6 @@
 							data-state="Vetado"
 							aria-pressed="false"
 							disabled
-							hidden
 						>
 							<span aria-hidden="true" class="face " style="--h:300">SI</span><b>Silkflare</b
 							><small>Vetado</small>
@@ -624,7 +603,6 @@
 							data-state="Elegido"
 							aria-pressed="false"
 							disabled
-							hidden
 						>
 							<span aria-hidden="true" class="face " style="--h:107">SU</span><b>Suncord</b
 							><small>Elegido</small>
@@ -635,7 +613,6 @@
 							data-state="Vetado"
 							aria-pressed="false"
 							disabled
-							hidden
 						>
 							<span aria-hidden="true" class="face " style="--h:152">BR</span><b>Briarshot</b
 							><small>Vetado</small>
@@ -646,7 +623,6 @@
 							data-state="Fearless"
 							aria-pressed="false"
 							disabled
-							hidden
 						>
 							<span aria-hidden="true" class="face " style="--h:141">SP</span><b>Spraylark</b
 							><small>Fearless</small>
@@ -656,7 +632,6 @@
 							data-name="Rillbow"
 							data-state="Libre"
 							aria-pressed="false"
-							hidden
 						>
 							<span aria-hidden="true" class="face " style="--h:176">RI</span><b>Rillbow</b
 							><small>Libre</small>
@@ -667,7 +642,6 @@
 							data-state="Fearless"
 							aria-pressed="false"
 							disabled
-							hidden
 						>
 							<span aria-hidden="true" class="face " style="--h:65">ST</span><b>Starloom</b
 							><small>Fearless</small>
@@ -677,7 +651,6 @@
 							data-name="Whetstone"
 							data-state="Libre"
 							aria-pressed="false"
-							hidden
 						>
 							<span aria-hidden="true" class="face " style="--h:14">WH</span><b>Whetstone</b
 							><small>Libre</small>
@@ -687,7 +660,6 @@
 							data-name="Hushwire"
 							data-state="Libre"
 							aria-pressed="false"
-							hidden
 						>
 							<span aria-hidden="true" class="face " style="--h:177">HU</span><b>Hushwire</b
 							><small>Libre</small>
@@ -697,7 +669,6 @@
 							data-name="Shellward"
 							data-state="Libre"
 							aria-pressed="false"
-							hidden
 						>
 							<span aria-hidden="true" class="face " style="--h:64">SH</span><b>Shellward</b
 							><small>Libre</small>
@@ -707,20 +678,19 @@
 							data-name="Bronzehook"
 							data-state="Libre"
 							aria-pressed="false"
-							hidden
 						>
 							<span aria-hidden="true" class="face " style="--h:308">BR</span><b>Bronzehook</b
 							><small>Libre</small>
 						</button><button
-							class="tile free"
+							class="tile locked"
 							data-roles="support"
 							data-name="Fenveil"
-							data-state="Libre"
+							data-state="Fearless"
 							aria-pressed="false"
-							hidden
+							disabled
 						>
 							<span aria-hidden="true" class="face " style="--h:306">FE</span><b>Fenveil</b
-							><small>Libre</small>
+							><small>Fearless</small>
 						</button><button
 							class="tile ban"
 							data-roles="support"
@@ -728,7 +698,6 @@
 							data-state="Vetado"
 							aria-pressed="false"
 							disabled
-							hidden
 						>
 							<span aria-hidden="true" class="face " style="--h:83">AM</span><b>Amberwall</b
 							><small>Vetado</small>
@@ -739,7 +708,6 @@
 							data-state="Fearless"
 							aria-pressed="false"
 							disabled
-							hidden
 						>
 							<span aria-hidden="true" class="face " style="--h:203">MI</span><b>Mirethorn</b
 							><small>Fearless</small>
@@ -750,7 +718,6 @@
 							data-state="Vetado"
 							aria-pressed="false"
 							disabled
-							hidden
 						>
 							<span aria-hidden="true" class="face " style="--h:247">DE</span><b>Dewshroud</b
 							><small>Vetado</small>
@@ -760,7 +727,6 @@
 							data-name="Rushbell"
 							data-state="Libre"
 							aria-pressed="false"
-							hidden
 						>
 							<span aria-hidden="true" class="face " style="--h:176">RU</span><b>Rushbell</b
 							><small>Libre</small>
@@ -771,10 +737,6 @@
 							>Libre para elegir · × Vetado este mapa · ✓ Ya elegido<br>▧ Fearless: jugado en el mapa
 							anterior</span
 						>
-						<div>
-							<button id="prev" aria-label="Página anterior" disabled>‹</button
-							><button id="next" aria-label="Página siguiente">›</button>
-						</div>
 					</div>
 					<div class="selection" aria-live="polite">
 						<div>
@@ -872,14 +834,9 @@
 				</section>
 			</div>
 			<div class="inspection">
-				<aside class="profile panel" id="profile" aria-label="Ficha de jugador">
-					<header>
-						<div>
-							<p class="label">Ficha de jugador</p>
-							<h2 id="player-name">Forge Mid</h2>
-						</div>
-						<span>Atributos / 100</span>
-					</header>
+				<details class="profile panel" id="profile">
+					<summary>Ficha de jugador <span id="player-name">Forge Mid</span></summary>
+					<p class="attribute-scale">Atributos sobre 100</p>
 					<div class="attrs">
 						<section>
 							<h3>Línea</h3>
@@ -987,8 +944,8 @@
 							</dl>
 						</section>
 					</div>
-				</aside>
-				<details open class="ai panel">
+				</details>
+				<details class="ai panel">
 					<summary>Lectura de la IA <span>R4 · Shoal</span></summary>
 					<div class="ai-body">
 						<div>
@@ -1030,84 +987,71 @@
 			</div>
 		</main>
 		<script>
-			const $ = (selector) => document.querySelector(selector);
-			const all = (selector) => Array.from(document.querySelectorAll(selector));
+		const $ = (selector) => document.querySelector(selector);
+		const all = (selector) => Array.from(document.querySelectorAll(selector));
 
-			const tiles = all(".tile");
-			const limit = 8;
-			let page = 0;
-			function filter(reset = false) {
-				if (reset) page = 0;
-				const query = $("#search").value.trim().toLowerCase();
-				const role = $("#role-filter").value;
-				const matches = tiles.filter(
-					(tile) =>
-						tile.dataset.name.toLowerCase().includes(query) &&
-						(!role || tile.dataset.roles.split(" ").includes(role)),
-				);
-				const shown = matches.slice(page * limit, (page + 1) * limit);
-				for (const tile of tiles) tile.hidden = !shown.includes(tile);
-				$("#pool-count").textContent = matches.length
-					? page * limit + 1 + "–" + (page * limit + shown.length) + " de " + matches.length
-					: "Sin coincidencias";
-				$("#prev").disabled = page === 0;
-				$("#next").disabled = (page + 1) * limit >= matches.length;
+		const tiles = all(".tile");
+
+		function filter() {
+			const query = $("#search").value.trim().toLowerCase();
+			const role = $("#role-filter").value;
+			const matches = tiles.filter(
+				(tile) =>
+					tile.dataset.name.toLowerCase().includes(query) &&
+					(!role || tile.dataset.roles.split(" ").includes(role)),
+			);
+			for (const tile of tiles) tile.hidden = !matches.includes(tile);
+			$(".grid").scrollTop = 0;
+			$("#pool-count").textContent = matches.length ? matches.length + " de 40" : "Sin coincidencias";
+		}
+		$("#search").oninput = $("#role-filter").onchange = filter;
+		for (const tile of tiles) {
+			tile.onclick = () => {
+				for (const other of tiles) other.setAttribute("aria-pressed", String(tile === other));
+				$("#selected").textContent = tile.dataset.name;
+				$("#lock").disabled = false;
+			};
+		}
+		$("#lock").onclick = () => {
+			const tile = $(".tile[aria-pressed=true]");
+			tile.classList.replace("free", "used");
+			tile.disabled = true;
+			tile.querySelector("small").textContent = "Elegido";
+			tile.setAttribute("aria-pressed", "false");
+			$(".pick.current strong").textContent = tile.dataset.name;
+			$(".selection .label").textContent = "B4 · Elección confirmada";
+			$("#lock").hidden = true;
+			const next = document.createElement("a");
+			next.className = "primary";
+			next.href = "roles.html";
+			next.textContent = "Ver reparto →";
+			$(".selection").append(next);
+			for (const button of tiles) button.onclick = null;
+		};
+		// Base rating and exceptions from packages/core/content/match.ts.
+		const players = {
+			"forge-top": [80, { lanes: 88, mechanics: 90, waves: 86, shotcalling: 55 }],
+			"forge-jungle": [76, { macro: 86, objectiveControl: 90, anticipation: 84 }],
+			"forge-mid": [92, { experience: 98, composure: 95, roaming: 88 }],
+			"forge-bot": [70, { farming: 88, positioning: 84, resilience: 60, shotcalling: 40 }],
+			"forge-support": [72, { vision: 90, experience: 90, mechanics: 60, roaming: 82 }],
+			"shoal-top": [60, { lanes: 74, aggression: 85, experience: 45, focus: 50 }],
+			"shoal-jungle": [82, { shotcalling: 90, macro: 88, aggression: 78 }],
+			"shoal-mid": [74, { mechanics: 88, lanes: 85, consistency: 58, versatility: 50 }],
+			"shoal-bot": [88, { mechanics: 99, lanes: 98, farming: 96, shotcalling: 45 }],
+			"shoal-support": [66, { vision: 80, communication: 78, mechanics: 62 }],
+		};
+		const fields = all("[data-attr]");
+		for (const pick of all(".pick")) {
+			function showProfile() {
+				$("#profile").open = true;
+				const [base, overrides] = players[pick.dataset.profile];
+				$("#player-name").textContent = pick.querySelector("small").textContent;
+				$("#profile").style.borderColor = getComputedStyle(pick).getPropertyValue("--side");
+				for (const field of fields) field.textContent = overrides[field.dataset.attr] ?? base;
 			}
-			$("#search").oninput = $("#role-filter").onchange = () => filter(true);
-			$("#prev").onclick = () => {
-				page--;
-				filter();
-			};
-			$("#next").onclick = () => {
-				page++;
-				filter();
-			};
-			for (const tile of tiles) {
-				tile.onclick = () => {
-					for (const other of tiles) other.setAttribute("aria-pressed", String(tile === other));
-					$("#selected").textContent = tile.dataset.name;
-					$("#lock").disabled = false;
-				};
-			}
-			$("#lock").onclick = () => {
-				const tile = $(".tile[aria-pressed=true]");
-				tile.classList.replace("free", "used");
-				tile.disabled = true;
-				tile.querySelector("small").textContent = "Elegido";
-				tile.setAttribute("aria-pressed", "false");
-				$(".pick.current strong").textContent = tile.dataset.name;
-				$(".selection .label").textContent = "B4 · Elección confirmada";
-				$("#lock").hidden = true;
-				const next = document.createElement("a");
-				next.className = "primary";
-				next.href = "roles.html";
-				next.textContent = "Ver reparto →";
-				$(".selection").append(next);
-				for (const button of tiles) button.onclick = null;
-			};
-			// Base rating and exceptions from packages/core/content/match.ts.
-			const players = {
-				"forge-top": [80, { lanes: 88, mechanics: 90, waves: 86, shotcalling: 55 }],
-				"forge-jungle": [76, { macro: 86, objectiveControl: 90, anticipation: 84 }],
-				"forge-mid": [92, { experience: 98, composure: 95, roaming: 88 }],
-				"forge-bot": [70, { farming: 88, positioning: 84, resilience: 60, shotcalling: 40 }],
-				"forge-support": [72, { vision: 90, experience: 90, mechanics: 60, roaming: 82 }],
-				"shoal-top": [60, { lanes: 74, aggression: 85, experience: 45, focus: 50 }],
-				"shoal-jungle": [82, { shotcalling: 90, macro: 88, aggression: 78 }],
-				"shoal-mid": [74, { mechanics: 88, lanes: 85, consistency: 58, versatility: 50 }],
-				"shoal-bot": [88, { mechanics: 99, lanes: 98, farming: 96, shotcalling: 45 }],
-				"shoal-support": [66, { vision: 80, communication: 78, mechanics: 62 }],
-			};
-			const fields = all("[data-attr]");
-			for (const pick of all(".pick")) {
-				function showProfile() {
-					const [base, overrides] = players[pick.dataset.profile];
-					$("#player-name").textContent = pick.querySelector("small").textContent;
-					$("#profile").style.borderColor = getComputedStyle(pick).getPropertyValue("--side");
-					for (const field of fields) field.textContent = overrides[field.dataset.attr] ?? base;
-				}
-				pick.onmouseenter = pick.onfocus = pick.onclick = showProfile;
-			}
+			pick.onmouseenter = pick.onfocus = pick.onclick = showProfile;
+		}
 		</script>
 	</body>
 </html>
