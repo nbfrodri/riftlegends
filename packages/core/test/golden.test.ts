@@ -125,7 +125,12 @@ describe("coherence (D3)", () => {
 
 describe("committed goldens", () => {
 	test("exist for the example cases", () => {
-		expect(goldenCases.map((c) => c.seed)).toEqual([0, 2, 4294967295]);
+		expect(goldenCases.map((c) => `${c.module}/${c.seed}`)).toEqual([
+			"rng/0",
+			"rng/2",
+			"rng/4294967295",
+			"draft/2026",
+		]);
 	});
 
 	test("are coherent with SIM_VERSION and CONTENT_VERSION", () => {
