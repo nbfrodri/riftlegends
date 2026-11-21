@@ -1,6 +1,9 @@
 import { z } from "zod";
 import { defineCommands, defineQueries, position } from "../envelope";
 import { defineFacts } from "../facts";
+import { aiDecidedFact, aiPerTeam } from "./ai";
+
+export * from "./ai";
 
 // Catalog of plan 06: draft rules and fearless series.
 
@@ -51,6 +54,8 @@ export const draftCommands = defineCommands({
 		pool: z.array(championId).refine(unique, "pool repeats a champion"),
 		/** Root seed of the series' RNG (plan 05). */
 		seed: uint32,
+		/** Which teams the AI plays (plan 07). */
+		ai: aiPerTeam.optional(),
 	}),
 	"side.choose": z.strictObject({ team: teamId, side }),
 	"draft.ban": z.strictObject({
@@ -59,6 +64,8 @@ export const draftCommands = defineCommands({
 	}),
 	"draft.pick": z.strictObject({ team: teamId, champion: championId }),
 	"draft.timeout": z.strictObject({}),
+	/** The AI of the team whose turn it is acts (plan 07). */
+	"draft.ai": z.strictObject({}),
 	"draft.roles": z.strictObject({ team: teamId, roles: roleAssignment }),
 	/** Provisional until the match simulation (plan 08) decides the winner. */
 	"game.finish": z.strictObject({ winner: teamId }),
@@ -77,6 +84,7 @@ export const draftFacts = defineFacts({
 		timer: z.boolean(),
 		pool: z.array(championId),
 		seed: uint32,
+		ai: aiPerTeam.optional(),
 	},
 	"side.chosen": {
 		game: position,
@@ -97,6 +105,7 @@ export const draftFacts = defineFacts({
 		champion: championId,
 		timeout: z.boolean(),
 	},
+	"ai.decided": aiDecidedFact,
 	"draft.rolesAssigned": {
 		game: position,
 		team: teamId,
