@@ -13,21 +13,23 @@
 		}
 		main { max-width: 30rem; margin: 3rem auto; padding-inline: 1rem; }
 		h1 { font-size: 1.5rem; }
+		h2 { margin-top: 2rem; font-size: 1.25rem; }
 		table { width: 100%; border-collapse: collapse; background: #191f2f; }
 		th, td { padding: 0.75rem; border-bottom: 1px solid #3c455b; }
 		thead { color: #b6c0d2; background: #222b3e; }
 		th:first-child { text-align: left; }
 		td svg { display: block; margin-inline: auto; }
+		.alternatives svg { fill: none; stroke: currentColor; stroke-width: 2; stroke-linejoin: bevel; }
 	</style>
 </head>
 <body>
 	<!-- Los trazados coinciden con packages/ui-kit/components/role-icon.tsx. -->
 	<svg width="0" height="0" style="position: absolute" aria-hidden="true">
 		<symbol id="top" viewBox="0 0 24 24">
-			<path d="M4 4h4v3h8V4h4v6l-3 3v7H7v-7l-3-3z"/>
+			<path d="M3 14l9-9 9 9-4 4-5-5-5 5z"/>
 		</symbol>
 		<symbol id="jungle" viewBox="0 0 24 24">
-			<path d="M12 21v-8l7-6V4h-5 M12 17l-7-6V7h5"/>
+			<path d="M6 18v-8l6-6h8v8l-6 6z M3 21l11-11"/>
 		</symbol>
 		<symbol id="mid" viewBox="0 0 24 24">
 			<path d="M12 3l9 9-9 9-9-9z"/>
@@ -37,6 +39,18 @@
 		</symbol>
 		<symbol id="support" viewBox="0 0 24 24">
 			<path d="M4 5h16v8l-8 7-8-7z M9 11h6 M12 8v6"/>
+		</symbol>
+		<symbol id="top-a" viewBox="0 0 24 24">
+			<path d="M3 19l9-14 9 14z M9 10l3 3 3-3"/>
+		</symbol>
+		<symbol id="top-b" viewBox="0 0 24 24">
+			<path d="M6 4h4v4h4V4h4v16H6z M10 20v-5h4v5"/>
+		</symbol>
+		<symbol id="jungle-a" viewBox="0 0 24 24">
+			<path d="M5 4h14v6l-4 6-8 5 3-9z"/>
+		</symbol>
+		<symbol id="jungle-b" viewBox="0 0 24 24">
+			<path d="M5 15l3-8 5-3-3 8z M11 20l3-8 5-3-3 8z"/>
 		</symbol>
 	</svg>
 	<main>
@@ -83,6 +97,33 @@
 				</tr>
 			</tbody>
 		</table>
+		<section aria-labelledby="alternatives-title">
+			<h2 id="alternatives-title">Alternativas</h2>
+			<table class="alternatives" aria-label="Comparación a 16 px">
+				<thead>
+					<tr>
+						<th scope="col">Posición</th>
+						<th scope="col">Elegido</th>
+						<th scope="col">A</th>
+						<th scope="col">B</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<th scope="row">Top</th>
+						<td><svg width="16" height="16" role="img" aria-label="Chevrón"><use href="#top"/></svg></td>
+						<td><svg width="16" height="16" role="img" aria-label="Pico"><use href="#top-a"/></svg></td>
+						<td><svg width="16" height="16" role="img" aria-label="Torre"><use href="#top-b"/></svg></td>
+					</tr>
+					<tr>
+						<th scope="row">Jungla</th>
+						<td><svg width="16" height="16" role="img" aria-label="Hoja"><use href="#jungle"/></svg></td>
+						<td><svg width="16" height="16" role="img" aria-label="Colmillo"><use href="#jungle-a"/></svg></td>
+						<td><svg width="16" height="16" role="img" aria-label="Garras"><use href="#jungle-b"/></svg></td>
+					</tr>
+				</tbody>
+			</table>
+		</section>
 	</main>
 </body>
 </html>

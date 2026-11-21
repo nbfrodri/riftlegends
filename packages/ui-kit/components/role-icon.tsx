@@ -1,6 +1,6 @@
 const rolePaths = {
-	top: "M4 4h4v3h8V4h4v6l-3 3v7H7v-7l-3-3z",
-	jungle: "M12 21v-8l7-6V4h-5 M12 17l-7-6V7h5",
+	top: "M3 14l9-9 9 9-4 4-5-5-5 5z",
+	jungle: "M6 18v-8l6-6h8v8l-6 6z M3 21l11-11",
 	mid: "M12 3l9 9-9 9-9-9z",
 	bot: "M9 9h6v6H9z M12 3v3 M12 18v3 M3 12h3 M18 12h3",
 	support: "M4 5h16v8l-8 7-8-7z M9 11h6 M12 8v6",
