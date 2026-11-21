@@ -2,6 +2,7 @@ import {
 	DataTable,
 	type DataTableColumn,
 } from "@rift-legends/ui-kit/components/data-table";
+import { RoleIcon } from "@rift-legends/ui-kit/components/role-icon";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -41,6 +42,12 @@ export function MarketScreen() {
 				id: "role",
 				header: t("market.column.role"),
 				value: (player) => t(`market.role.${player.role}`),
+				cell: (player) => (
+					<span className="inline-flex items-center gap-2 align-middle">
+						<RoleIcon role={player.role} size={16} />
+						{t(`market.role.${player.role}`)}
+					</span>
+				),
 			},
 			{
 				id: "team",

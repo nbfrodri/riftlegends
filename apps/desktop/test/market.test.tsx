@@ -66,6 +66,24 @@ describe("Mercado screen", () => {
 		expect(screen.getByRole("status").textContent).toBe("36 of 36 players");
 	});
 
+	test.each([
+		["es-ES", "Jungla"],
+		["en-US", "Jungle"],
+	] as const)(
+		"shows a decorative icon beside the role in %s",
+		async (locale, role) => {
+			await renderInLocale(<MarketScreen />, locale);
+			const cell = screen.getAllByRole("cell", { name: role })[0];
+			expect(cell?.textContent).toBe(role);
+			expect(cell?.querySelector("svg")?.getAttribute("aria-hidden")).toBe(
+				"true",
+			);
+			expect(
+				screen.getAllByRole("cell", { name: "ADC" }).length,
+			).toBeGreaterThan(0);
+		},
+	);
+
 	test("formats salary, form and contract end with Intl for the language", async () => {
 		await renderInLocale(<MarketScreen />, "es-ES");
 		const nadir = screen.getByRole("row", { name: /^Nadir\b/ });
