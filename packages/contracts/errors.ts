@@ -19,6 +19,7 @@ export const ERROR_CODES = [
 	"pool-too-small",
 	"series-over",
 	"timer-off",
+	"game-not-played",
 ] as const;
 
 export type ErrorCode = (typeof ERROR_CODES)[number];

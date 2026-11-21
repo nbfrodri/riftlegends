@@ -34,6 +34,7 @@ describe("AI settings in series.start", () => {
 			"AI on one side",
 			{ ai: [null, { personality: "meta", coachRating: 35 }] },
 		],
+		["AI from the coach", { ai: ["coach", null] }],
 		[
 			"AI by difficulty",
 			{ ai: [{ personality: "comfort", difficulty: "hard" }, null] },

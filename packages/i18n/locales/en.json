@@ -56,6 +56,7 @@
 	"errors.pool-too-small": "There are not enough champions for this series: {{needed}} needed, {{available}} available.",
 	"errors.series-over": "The series is already over.",
 	"errors.timer-off": "The timer is off in this series.",
+	"errors.game-not-played": "That game has not been played yet.",
 	"coreProbe.title": "Core probe",
 	"coreProbe.tick": "Tick"
 }

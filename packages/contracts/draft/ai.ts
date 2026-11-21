@@ -48,11 +48,12 @@ const aiSettings = z.strictObject({
 	difficulty: z.enum(DIFFICULTIES).optional(),
 });
 
-/** In the order of `series.start` teams; `null` is a human team. */
-export const aiPerTeam = z.tuple([
-	aiSettings.nullable(),
-	aiSettings.nullable(),
-]);
+/**
+ * In the order of `series.start` teams; `null` is a human team and `"coach"`
+ * takes the personality and rating from the team's coach in the content.
+ */
+const aiOfTeam = z.union([aiSettings, z.literal("coach")]).nullable();
+export const aiPerTeam = z.tuple([aiOfTeam, aiOfTeam]);
 
 const points = z.int();
 
@@ -123,4 +124,5 @@ export const aiContent = z.strictObject({
 
 export type AiContent = z.infer<typeof aiContent>;
 export type AiSettings = z.infer<typeof aiSettings>;
+export type AiOfTeam = z.infer<typeof aiOfTeam>;
 export type Personality = (typeof PERSONALITIES)[number];

@@ -76,6 +76,8 @@ export const draftCommands = defineCommands({
 export const draftQueries = defineQueries({
 	/** `team` is who looks: with soft fearless, availability depends on it. */
 	"draft.view": z.strictObject({ team: teamId.optional() }),
+	/** The facts of a played game, to replay it without simulating again. */
+	"match.view": z.strictObject({ game: position }),
 });
 
 export const draftFacts = defineFacts({

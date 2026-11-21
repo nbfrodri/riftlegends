@@ -1,6 +1,6 @@
 import type {
 	AiContent,
-	AiSettings,
+	AiOfTeam,
 	MatchContent,
 	Side,
 } from "@rift-legends/contracts";
@@ -9,7 +9,7 @@ import { pick } from "../rng/helpers";
 import { SCOPES } from "../rng/scopes";
 import { deriveSeed } from "../rng/seeds";
 import { createRng } from "../rng/streams";
-import type { CommandHandler, Outcome } from "../server/dispatcher";
+import type { CommandHandler, Emitted, Outcome } from "../server/dispatcher";
 import {
 	type AvailabilityInput,
 	availability,
@@ -39,7 +39,7 @@ export interface SeriesConfig {
 	readonly pool: readonly string[];
 	readonly seed: number;
 	/** Which teams the AI plays, in `teams` order (plan 07). */
-	readonly ai?: readonly [AiSettings | null, AiSettings | null];
+	readonly ai?: readonly [AiOfTeam, AiOfTeam];
 }
 
 export interface SeriesState {
@@ -63,6 +63,8 @@ export interface SeriesState {
 		readonly winner: string;
 		readonly edge: Contest | null;
 	}[];
+	/** The `match.*` facts of each finished game, for `match.view` (plan 09, Q3). */
+	readonly matches: readonly (readonly Emitted[])[];
 }
 
 export { done, fail, WINS_NEEDED } from "./outcome";
@@ -79,6 +81,7 @@ export const initialSeries: SeriesState = {
 	content: null,
 	match: null,
 	outcomes: [],
+	matches: [],
 };
 
 /** The sides of a game once `team` takes `side`. */

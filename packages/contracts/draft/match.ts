@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { position } from "../envelope";
+import { PERSONALITIES } from "./ai";
 
 // Match simulation of plan 08: its facts and the content it reads. Points
 // and chances are fixed point (scale 10,000, plan 05).
@@ -157,6 +158,17 @@ export const matchContent = z.strictObject({
 	teams: z.array(
 		z.strictObject({
 			id,
+			/** Proper name shown in the UI; it is not translated. */
+			name: z.string().min(1).max(64).optional(),
+			/** Decides the team's draft AI; without one, a default (plan 09, Q2). */
+			coach: z
+				.strictObject({
+					name: z.string().min(1).max(64),
+					personality: z.enum(PERSONALITIES),
+					/** In tenths: 0 to 50 (0.0 to 5.0), as `coachRating` of the AI. */
+					rating: z.int().min(0).max(50),
+				})
+				.optional(),
 			/** Between two players of the team. */
 			chemistry: z.array(z.strictObject({ a: id, b: id, value: rating })),
 			strategy: z.strictObject({
@@ -202,3 +214,17 @@ export const matchContent = z.strictObject({
 
 export type MatchContent = z.infer<typeof matchContent>;
 export type MatchEvent = z.infer<z.ZodObject<typeof matchEventFact>>;
+
+/** What `match.view` answers: the facts a game emitted, without positions. */
+export const matchView = z.strictObject({
+	game: position,
+	facts: z.array(
+		z.discriminatedUnion("type", [
+			z.strictObject({ type: z.literal("match.started"), ...matchStartedFact }),
+			z.strictObject({ type: z.literal("match.event"), ...matchEventFact }),
+			z.strictObject({ type: z.literal("match.ended"), ...matchEndedFact }),
+		]),
+	),
+});
+
+export type MatchView = z.infer<typeof matchView>;
