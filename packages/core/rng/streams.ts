@@ -13,6 +13,10 @@ export type RngState = readonly [number, number, number, number];
  */
 export type Rng = RandomGenerator;
 
+/**
+ * Seed it with `deriveSeed`, never with a raw counter: consecutive small seeds
+ * give correlated first draws.
+ */
 export function createRng(seed: number): Rng {
 	return xoroshiro128plus(seed);
 }

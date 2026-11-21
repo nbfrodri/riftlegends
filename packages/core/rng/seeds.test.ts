@@ -76,6 +76,6 @@ describe("SCOPES", () => {
 	});
 
 	test("G7: existing numbers are stable", () => {
-		expect(SCOPES).toEqual({ draft: 1, match: 2 });
+		expect(SCOPES).toEqual({ draft: 1, match: 2, ai: 3 });
 	});
 });
