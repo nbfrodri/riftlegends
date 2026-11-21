@@ -30,7 +30,7 @@ import {
  */
 export type Presentation = "side" | "match" | "result";
 
-export interface DraftSession {
+interface DraftSession {
 	sessionId: number;
 	/** Teams (name and coach) and the champion pool the session offers. */
 	options: SeriesOptions;

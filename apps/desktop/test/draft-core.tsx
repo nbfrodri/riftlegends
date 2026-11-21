@@ -18,7 +18,7 @@ import { CoreProvider } from "../src/renderer/core";
 import type { CoreApi, CoreCommand, CoreFact } from "../src/shared/bridge";
 
 /** The real draft dispatcher with the packaged content, behind the renderer's `CoreApi`. */
-export function draftCore() {
+function draftCore() {
 	const listeners = new Set<(facts: readonly CoreFact[]) => void>();
 	const sent: CoreCommand[] = [];
 	let session: Session<SeriesState> | null = null;

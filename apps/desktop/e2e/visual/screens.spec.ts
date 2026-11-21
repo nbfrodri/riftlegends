@@ -18,7 +18,7 @@ test.beforeEach(async ({ electronApp, appWindow }) => {
 		.poll(() => appWindow.evaluate(() => [innerWidth, innerHeight]))
 		.toEqual([size.width, size.height]);
 	await expect(appWindow.getByRole("heading", { level: 1 })).toHaveText(
-		"Draft",
+		"Configurar serie",
 	);
 });
 
