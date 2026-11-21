@@ -48,7 +48,14 @@ function drafted(state = loaded()) {
 	current = ok(
 		run(current, "side.choose", { team: "forge", side: "blue" }),
 	).state;
-	const wanted = { blue: mains("forge"), red: mains("shoal") };
+	return draftWith(current);
+}
+
+/** Drafts the current game: each team picks its players' mains. */
+function draftWith(state: SeriesState) {
+	let current = state;
+	const team = (side: "blue" | "red") => current.draft?.[side] ?? "";
+	const wanted = { blue: mains(team("blue")), red: mains(team("red")) };
 	const next = { blue: 0, red: 0 };
 	for (const step of DRAFT_ORDER) {
 		const team = current.draft?.[step.side] ?? "";
@@ -59,14 +66,11 @@ function drafted(state = loaded()) {
 		const champion = wanted[step.side][next[step.side]++];
 		current = ok(run(current, "draft.pick", { team, champion })).state;
 	}
-	for (const [side, team] of [
-		["blue", "forge"],
-		["red", "shoal"],
-	] as const) {
+	for (const side of ["blue", "red"] as const) {
 		const [top, jungle, mid, bot, support] = wanted[side];
 		current = ok(
 			run(current, "draft.roles", {
-				team,
+				team: team(side),
 				roles: { top, jungle, mid, bot, support },
 			}),
 		).state;
@@ -89,6 +93,35 @@ describe("match.play", () => {
 		const index = ended.winner === "forge" ? 0 : 1;
 		expect(outcome.state.wins[index]).toBe(1);
 		expect(outcome.state.phase).toBe("side");
+	});
+
+	it("carries the series into the next game: momentum and what the rival did best", () => {
+		const first = ok(run(drafted(), "match.play", {}));
+		const causes = (facts: readonly { type: string }[]) =>
+			new Set(
+				facts
+					.filter((f) => f.type === "match.event")
+					.flatMap(
+						(f) => (f as unknown as { causes: { key: string }[] }).causes,
+					)
+					.map((c) => c.key),
+			);
+		expect(causes(first.facts).has("momentum")).toBe(false);
+		expect(causes(first.facts).has("side")).toBe(true);
+		const [outcome] = first.state.outcomes;
+		expect(outcome?.winner).toBe(
+			(first.facts.at(-1) as unknown as { winner: string }).winner,
+		);
+		expect(["lane", "jungle", "fight", "objective", "siege"]).toContain(
+			outcome?.edge,
+		);
+
+		let next = first.state;
+		const chooser = next.chooser ?? "";
+		next = ok(run(next, "side.choose", { team: chooser, side: "red" })).state;
+		next = draftWith(next);
+		const second = ok(run(next, "match.play", {}));
+		expect(causes(second.facts).has("momentum")).toBe(true);
 	});
 
 	it("is deterministic for the series seed", () => {

@@ -5,7 +5,9 @@ import type {
 	MatchContent,
 	Side,
 } from "@rift-legends/contracts";
+import { mentalEdge, type SeriesContext } from "../match/mental";
 import { playGame } from "../match/play";
+import type { Contest } from "../match/profile";
 import { pick } from "../rng/helpers";
 import { SCOPES } from "../rng/scopes";
 import { deriveSeed } from "../rng/seeds";
@@ -57,6 +59,11 @@ export interface SeriesState {
 	readonly content: AiContent | null;
 	/** What the match simulation reads (plan 08); loaded the same way. */
 	readonly match: MatchContent | null;
+	/** Each finished game: its winner and where it won the most (F8, F12). */
+	readonly outcomes: readonly {
+		readonly winner: string;
+		readonly edge: Contest | null;
+	}[];
 }
 
 export const initialSeries: SeriesState = {
@@ -69,6 +76,7 @@ export const initialSeries: SeriesState = {
 	previous: [],
 	content: null,
 	match: null,
+	outcomes: [],
 };
 
 export const WINS_NEEDED: Record<Format, number> = { bo1: 1, bo3: 2, bo5: 3 };
@@ -212,13 +220,38 @@ const timeout = during<Record<string, never>>(
 	},
 );
 
+/** What the mental layer reads about the series, seen from `team`. */
+function seriesContext(
+	state: SeriesState,
+	config: SeriesConfig,
+	team: string,
+): SeriesContext {
+	const results = state.outcomes.map((o) =>
+		o.winner === team ? ("win" as const) : ("loss" as const),
+	);
+	const last = state.outcomes.at(-1);
+	const needed = WINS_NEEDED[config.format];
+	return {
+		game: state.game,
+		// Someone wins the series with this game: the last one or an elimination.
+		decisive: state.wins.some((w) => w === needed - 1),
+		stage: "regular",
+		results,
+		...(last && last.winner !== team && last.edge
+			? { rivalEdge: last.edge }
+			: {}),
+	};
+}
+
 /** Records a finished game and either moves on or ends the series. */
 function finish(
 	state: SeriesState,
 	config: SeriesConfig,
 	winner: string,
 	played: readonly Emitted[] = [],
+	edge: Contest | null = null,
 ): Outcome<SeriesState> {
+	const outcomes = [...state.outcomes, { winner, edge }];
 	const index = config.teams.indexOf(winner);
 	const draft = state.draft as GameDraft;
 	const wins: [number, number] = [state.wins[0], state.wins[1]];
@@ -230,7 +263,7 @@ function finish(
 	const finished = { type: "game.finished", game: state.game, winner };
 	if (wins[index] === WINS_NEEDED[config.format]) {
 		return done(
-			{ ...state, wins, previous, phase: "over", chooser: null },
+			{ ...state, wins, previous, outcomes, phase: "over", chooser: null },
 			...played,
 			finished,
 			{ type: "series.finished", winner, wins },
@@ -241,6 +274,7 @@ function finish(
 			...state,
 			wins,
 			previous,
+			outcomes,
 			game: state.game + 1,
 			phase: "side",
 			chooser: other(config, winner),
@@ -344,15 +378,27 @@ export const seriesCommands = {
 			}
 			const draft = state.draft as GameDraft;
 			const { blue, red } = draft.roles as Required<typeof draft.roles>;
+			const lineups = {
+				blue: { team: draft.blue, roles: blue },
+				red: { team: draft.red, roles: red },
+			};
+			const mental = (side: Side) =>
+				mentalEdge(
+					state.content as AiContent,
+					state.match as MatchContent,
+					lineups[side],
+					side,
+					seriesContext(state, config, lineups[side].team),
+				);
 			const game = playGame({
 				seed: config.seed,
 				game: state.game,
 				draft: state.content,
 				match: state.match,
-				blue: { team: draft.blue, roles: blue },
-				red: { team: draft.red, roles: red },
+				...lineups,
+				mental: { blue: mental("blue"), red: mental("red") },
 			});
-			return finish(state, config, game.winner, game.facts);
+			return finish(state, config, game.winner, game.facts, game.edge);
 		},
 	),
 } satisfies Record<string, CommandHandler<SeriesState>>;

@@ -6,11 +6,12 @@ import type {
 	Side,
 } from "@rift-legends/contracts";
 import { indexContent } from "../ai/content-index";
-import { type Fixed, SCALE, toInt } from "../math";
+import { type Fixed, mul, SCALE, toInt } from "../math";
 import { int } from "../rng/helpers";
 import { SCOPES } from "../rng/scopes";
 import { deriveSeed } from "../rng/seeds";
 import { createRng } from "../rng/streams";
+import type { MentalEdge } from "./mental";
 import { type Lineup, type Profile, profiles } from "./profile";
 
 /** Minutes each buff lasts after its objective falls. */
@@ -26,6 +27,8 @@ export interface MatchSetup {
 	readonly match: MatchContent;
 	readonly blue: Lineup;
 	readonly red: Lineup;
+	/** Mental and series edge of each side (F6–F12); none in a lone game. */
+	readonly mental?: Readonly<Record<Side, MentalEdge>>;
 }
 
 interface SideContext {
@@ -36,6 +39,7 @@ interface SideContext {
 	readonly positioning: number;
 	/** How the team plays today, in points; one draw per game. */
 	readonly form: number;
+	readonly mental: MentalEdge | null;
 	/** Player id in each role. */
 	readonly players: Readonly<Record<Role, string>>;
 }
@@ -122,7 +126,13 @@ export function createMatch(setup: MatchSetup): MatchState {
 	);
 	// No contest plays minute 0: the form of the day has that stream.
 	const rng = createRng(deriveSeed(setup.seed, SCOPES.match, setup.game, 0, 0));
-	const side = (lineup: Lineup, profile: Profile): SideContext => {
+	const side = (lineup: Lineup, profile: Profile, which: Side): SideContext => {
+		const mental = setup.mental?.[which] ?? null;
+		// Consistency widens or narrows the form (F10); 10,000 is normal.
+		const form = mul(
+			int(rng, -FORM, FORM) as Fixed,
+			(mental?.variance ?? SCALE) as Fixed,
+		);
 		const ids = players(setup.draft, lineup.team);
 		const roster = Object.values(ids).map((id) => {
 			const player = setup.match.players.find((p) => p.id === id);
@@ -136,7 +146,8 @@ export function createMatch(setup: MatchSetup): MatchState {
 			);
 		return {
 			team: lineup.team,
-			form: int(rng, -FORM, FORM),
+			form,
+			mental,
 			strategy: strategy(setup.match, lineup.team),
 			profile,
 			players: ids,
@@ -160,8 +171,8 @@ export function createMatch(setup: MatchSetup): MatchState {
 			seed: setup.seed,
 			game: setup.game,
 			rules: setup.match.rules,
-			blue: side(setup.blue, us),
-			red: side(setup.red, them),
+			blue: side(setup.blue, us, "blue"),
+			red: side(setup.red, them, "red"),
 		},
 		minute: 0,
 		blue: start,

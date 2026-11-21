@@ -50,7 +50,11 @@ function strength(state: MatchState, side: Side, contest: Contest) {
 	for (const part of parts) {
 		for (const { key, points } of part.causes) add(key, points);
 	}
-	add("form", state.context[side].form);
+	const { form, mental } = state.context[side];
+	add("form", form);
+	for (const scored of [mental?.general, mental?.byContest[contest]]) {
+		for (const { key, points } of scored?.causes ?? []) add(key, points);
+	}
 	const own = state[side];
 	if (
 		contest === "siege" &&

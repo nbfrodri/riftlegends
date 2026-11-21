@@ -1,12 +1,28 @@
-import type { Side } from "@rift-legends/contracts";
+import type { MatchEvent, Side } from "@rift-legends/contracts";
 import type { Emitted } from "../server/dispatcher";
 import { decisive } from "./explain";
 import { MATCH_CONTESTS, playMatch } from "./loop";
-import { summarize } from "./profile";
+import { type Contest, summarize } from "./profile";
 import { createMatch, type MatchSetup } from "./state";
 import { playerStats } from "./stats";
 
 const SIDES: readonly Side[] = ["blue", "red"];
+
+/** The contest each kind of event belongs to, for adaptation (F12). */
+const CONTEST_OF: Record<MatchEvent["kind"], Contest> = {
+	lane: "lane",
+	gank: "jungle",
+	kill: "fight",
+	fight: "fight",
+	dragon: "objective",
+	herald: "objective",
+	baron: "objective",
+	elder: "objective",
+	siege: "siege",
+	tower: "siege",
+	inhibitor: "siege",
+	nexus: "siege",
+};
 
 /**
  * Plays a whole game and returns its facts, without positions: the
@@ -33,6 +49,8 @@ export function playGame(setup: MatchSetup) {
 			champions: setup.red.roles,
 		},
 	};
+	const swings = decisive(indexed, side);
+	const top = swings[0] ? events[swings[0].event] : undefined;
 	const facts: Emitted[] = [
 		{
 			type: "match.started",
@@ -50,8 +68,10 @@ export function playGame(setup: MatchSetup) {
 			winner,
 			duration,
 			players: playerStats(indexed, teams, setup.match.rules, duration),
-			decisive: decisive(indexed, side),
+			decisive: swings,
 		},
 	];
-	return { winner, events, facts };
+	/** Where the winner gained the most: what the loser's coach adapts to. */
+	const edge = top ? CONTEST_OF[top.kind] : null;
+	return { winner, edge, events, facts };
 }
