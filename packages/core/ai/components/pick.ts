@@ -1,12 +1,14 @@
 import { indexContent, selectedChampions } from "../content-index";
-import type { AiContext, Component } from "../context";
+import { type AiContext, type Component, nonzeroComponents } from "../context";
 import { canAssign } from "../positions";
 import { comfort } from "./comfort";
 import { composition } from "./composition";
+import { fearlessReserve } from "./fearless-reserve";
 import { flex } from "./flex";
 import { identity } from "./identity";
 import { matchup } from "./matchup";
 import { meta } from "./meta";
+import { side } from "./side";
 import { synergy } from "./synergy";
 
 export function scorePick(ctx: AiContext, champion: string): Component[] {
@@ -42,20 +44,20 @@ export function scorePick(ctx: AiContext, champion: string): Component[] {
 		...enemy,
 		...ctx.bans.filter((b) => b !== null),
 	]);
-	const scores = {
+	const flexPoints = flex(
+		candidate,
+		positions.map((p) => p.role),
+		allies,
+		roster,
+		unavailable,
+	);
+	return nonzeroComponents({
 		...lane,
 		synergy: synergy(index.synergies.get(champion), own, ctx.bans),
 		composition: composition(candidate, allies),
-		flex: flex(
-			candidate,
-			positions.map((p) => p.role),
-			allies,
-			roster,
-			unavailable,
-		),
+		flex: flexPoints,
 		identity: identity(ctx.content.identities, candidate, allies),
-	};
-	return Object.entries(scores)
-		.filter(([, points]) => points !== 0)
-		.map(([key, points]) => ({ key, points }));
+		fearlessReserve: fearlessReserve(ctx, candidate),
+		side: side(ctx, flexPoints, lane.matchup),
+	});
 }

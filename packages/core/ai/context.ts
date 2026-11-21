@@ -21,3 +21,11 @@ export interface Component {
 	readonly key: string;
 	readonly points: number;
 }
+
+export function nonzeroComponents(
+	scores: Readonly<Record<string, number>>,
+): Component[] {
+	return Object.entries(scores)
+		.filter(([, points]) => points !== 0)
+		.map(([key, points]) => ({ key, points }));
+}
