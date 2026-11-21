@@ -1,0 +1,300 @@
+import {
+	decodeFact,
+	draftFacts,
+	encodeFact,
+	type MatchEvent,
+	ROLES,
+	type Role,
+	type Side,
+} from "@rift-legends/contracts";
+import fc from "fast-check";
+import { describe, expect, it } from "vitest";
+import { fictionalContent } from "../ai/fixtures/content";
+import { decisive } from "./explain";
+import { fictionalMatchContent } from "./fixtures/content";
+import { type Contest, LANE_CONTESTS, playMatch } from "./loop";
+import { type EventFact, playerStats, type Teams } from "./stats";
+
+const rules = fictionalMatchContent.rules;
+const ids = (prefix: string) =>
+	Object.fromEntries(ROLES.map((r) => [r, `${prefix}-${r}`])) as Record<
+		Role,
+		string
+	>;
+const teams: Teams = {
+	blue: { team: "forge", players: ids("b"), champions: ids("bc") },
+	red: { team: "shoal", players: ids("r"), champions: ids("rc") },
+};
+
+const event = (change: Partial<EventFact>): EventFact => ({
+	position: 1,
+	game: 1,
+	minute: 5,
+	second: 0,
+	kind: "lane",
+	side: "blue",
+	zone: "lane-mid",
+	kills: [],
+	gold: { blue: 0, red: 0 },
+	chance: 5000,
+	causes: [],
+	...change,
+});
+
+const sum = (xs: number[]) => xs.reduce((a, b) => a + b, 0);
+
+/** Random but coherent events: kills of the winner side, gold from the rules. */
+const eventsArb = fc
+	.array(
+		fc.record({
+			side: fc.constantFrom<Side>("blue", "red"),
+			kind: fc.constantFrom<MatchEvent["kind"]>(
+				"lane",
+				"fight",
+				"siege",
+				"tower",
+			),
+			kills: fc.array(
+				fc.record({
+					killer: fc.constantFrom(...ROLES),
+					victim: fc.constantFrom(...ROLES),
+					assists: fc.uniqueArray(fc.constantFrom(...ROLES), { maxLength: 4 }),
+				}),
+				{ maxLength: 4 },
+			),
+			extra: fc.nat(1500),
+			chance: fc.integer({ min: 0, max: 10000 }),
+		}),
+		{ maxLength: 30 },
+	)
+	.map((list) =>
+		list.map(({ side, kind, kills, extra, chance }, i): EventFact => {
+			const winners = teams[side];
+			const losers = teams[side === "blue" ? "red" : "blue"];
+			const fixed = kills.map((k) => ({
+				killer: winners.players[k.killer],
+				victim: losers.players[k.victim],
+				assists: k.assists.map((a) => winners.players[a]),
+			}));
+			const earned =
+				extra +
+				sum(
+					fixed.map(
+						(k) => rules.economy.kill + rules.economy.assist * k.assists.length,
+					),
+				);
+			return event({
+				position: i + 1,
+				side,
+				kind,
+				kills: fixed,
+				chance,
+				gold:
+					side === "blue" ? { blue: earned, red: 0 } : { blue: 0, red: earned },
+			});
+		}),
+	);
+
+const total = (events: EventFact[], side: Side, minutes: number) =>
+	rules.economy.passive * minutes + sum(events.map((e) => e.gold[side]));
+
+/** Ends the game at minute 20 so lane contests alone can be tested. */
+const finisher: Contest = {
+	id: 99,
+	due: (s) => s.minute === 20,
+	resolve: () => [
+		{
+			kind: "nexus",
+			side: "blue",
+			zone: "base-red",
+			second: 30,
+			kills: [],
+			gold: { blue: 0, red: 0 },
+			chance: 10000,
+			causes: [],
+		},
+	],
+};
+
+function playGame(seed: number) {
+	const result = playMatch(
+		{
+			seed,
+			game: 1,
+			draft: fictionalContent,
+			match: fictionalMatchContent,
+			blue: {
+				team: "forge",
+				roles: {
+					top: "cragbell",
+					jungle: "duskroot",
+					mid: "glasswake",
+					bot: "copperfin",
+					support: "bronzehook",
+				},
+			},
+			red: {
+				team: "shoal",
+				roles: {
+					top: "saltspire",
+					jungle: "coalstride",
+					mid: "waxblade",
+					bot: "suncord",
+					support: "shellward",
+				},
+			},
+		},
+		[...LANE_CONTESTS, finisher],
+	);
+	const { blue, red } = result.state.context;
+	const champions = (players: Record<Role, string>) =>
+		Object.fromEntries(ROLES.map((r) => [r, `c-${players[r]}`])) as Record<
+			Role,
+			string
+		>;
+	const real: Teams = {
+		blue: {
+			team: blue.team,
+			players: blue.players,
+			champions: champions(blue.players),
+		},
+		red: {
+			team: red.team,
+			players: red.players,
+			champions: champions(red.players),
+		},
+	};
+	const events = result.events.map(
+		(e, i): EventFact => ({ ...e, position: i + 1 }),
+	);
+	const last = events.at(-1);
+	return {
+		teams: real,
+		events,
+		duration: last ? (last.minute - 1) * 60 + last.second : 0,
+	};
+}
+
+describe("M4 · gold and kills add up", () => {
+	it("the gold of the five players is the gold of the side", () => {
+		fc.assert(
+			fc.property(
+				eventsArb,
+				fc.integer({ min: 1, max: 50 }),
+				(events, mins) => {
+					const stats = playerStats(events, teams, rules, mins * 60);
+					const gold = (team: string) =>
+						sum(stats.filter((p) => p.team === team).map((p) => p.gold));
+					expect(gold("forge")).toBe(total(events, "blue", mins));
+					expect(gold("shoal")).toBe(total(events, "red", mins));
+				},
+			),
+		);
+	});
+
+	it("kills of one team are the deaths of the other, in real games", () => {
+		for (const seed of [1, 2, 3, 4, 5, 6]) {
+			const game = playGame(seed);
+			const stats = playerStats(game.events, game.teams, rules, game.duration);
+			const by = (team: string, key: "kills" | "deaths") =>
+				sum(stats.filter((p) => p.team === team).map((p) => p[key]));
+			expect(by("forge", "kills")).toBe(by("shoal", "deaths"));
+			expect(by("shoal", "kills")).toBe(by("forge", "deaths"));
+			const gold = (team: string, side: Side) =>
+				sum(stats.filter((p) => p.team === team).map((p) => p.gold)) -
+				total(game.events, side, 20);
+			expect(gold("forge", "blue")).toBe(0);
+			expect(gold("shoal", "red")).toBe(0);
+		}
+	});
+});
+
+describe("M5 · stats come from the facts", () => {
+	const events = [
+		event({
+			position: 1,
+			kills: [
+				{ killer: "b-mid", victim: "r-mid", assists: ["b-jungle"] },
+				{ killer: "b-mid", victim: "r-top", assists: [] },
+			],
+			gold: { blue: 2 * rules.economy.kill + rules.economy.assist, red: 0 },
+		}),
+		event({
+			position: 2,
+			side: "red",
+			kills: [{ killer: "r-bot", victim: "b-mid", assists: ["r-support"] }],
+			gold: { blue: 0, red: rules.economy.kill + rules.economy.assist },
+		}),
+	];
+	const stats = playerStats(events, teams, rules, 600);
+	const of = (player: string) => {
+		const found = stats.find((p) => p.player === player);
+		if (!found) throw new Error(player);
+		return found;
+	};
+
+	it("counts K/D/A exactly", () => {
+		expect(of("b-mid")).toMatchObject({ kills: 2, deaths: 1, assists: 0 });
+		expect(of("b-jungle")).toMatchObject({ kills: 0, deaths: 0, assists: 1 });
+		expect(of("r-bot")).toMatchObject({ kills: 1, deaths: 0, assists: 0 });
+		expect(of("r-mid")).toMatchObject({ deaths: 1 });
+	});
+
+	it("pays kill and assist gold to who earned it", () => {
+		const share = (rules.economy.passive * 10) / 5;
+		expect(of("b-mid").gold).toBe(share + 2 * rules.economy.kill);
+		expect(of("b-jungle").gold).toBe(share + rules.economy.assist);
+	});
+
+	it("participation is kills plus assists over the team kills", () => {
+		expect(of("b-mid").participation).toBe(10000);
+		expect(of("b-jungle").participation).toBe(5000);
+		expect(of("b-top").participation).toBe(0);
+		expect(of("r-bot").participation).toBe(10000);
+	});
+
+	it("is zero when the team has no kills, never above 100 %", () => {
+		const none = playerStats([], teams, rules, 600);
+		expect(none.every((p) => p.participation === 0)).toBe(true);
+		fc.assert(
+			fc.property(eventsArb, (list) => {
+				for (const p of playerStats(list, teams, rules, 900)) {
+					expect(p.participation).toBeLessThanOrEqual(10000);
+					expect(p.damage).toBeGreaterThanOrEqual(0);
+					expect(Number.isInteger(p.damage)).toBe(true);
+					expect(p.rating).toBeGreaterThanOrEqual(0);
+					expect(p.rating).toBeLessThanOrEqual(100);
+				}
+			}),
+		);
+	});
+
+	it("rates the one who carries above the one who dies", () => {
+		expect(of("b-jungle").rating).toBeGreaterThan(of("r-mid").rating);
+		expect(of("b-top").rating).toBe(60);
+	});
+
+	it("lists blue then red, in role order, with their champion", () => {
+		expect(stats.map((p) => p.player)).toEqual([
+			...ROLES.map((r) => `b-${r}`),
+			...ROLES.map((r) => `r-${r}`),
+		]);
+		expect(of("r-bot")).toMatchObject({ team: "shoal", champion: "rc-bot" });
+	});
+});
+
+describe("match.ended schema", () => {
+	it("a real game passes the contract", () => {
+		const game = playGame(7);
+		const fact = {
+			type: "match.ended" as const,
+			position: 99,
+			game: 1,
+			winner: "forge",
+			duration: game.duration,
+			players: playerStats(game.events, game.teams, rules, game.duration),
+			decisive: decisive(game.events, "blue"),
+		};
+		expect(decodeFact(draftFacts, encodeFact(fact))).toEqual(fact);
+	});
+});

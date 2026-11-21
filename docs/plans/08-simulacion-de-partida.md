@@ -72,6 +72,14 @@
 | `match.event` | minuto y segundo, tipo (`kill`, `tower`, `dragon`, `herald`, `baron`, `elder`, `fight`, `inhibitor`, `nexus`…), lado, **zona del mapa** (línea, cuadrante de jungla, foso de dragón o barón, base), jugadores implicados y causas (`[{ key, points }]`) |
 | `match.ended` | ganador, duración, estadísticas por jugador (K/D/A, oro, daño, participación y nota) y las 3 disputas que más pesaron |
 
+Estadísticas (`stats.ts`) y «por qué ganó» (`explain.ts`), funciones puras sobre los hechos:
+
+- **Oro:** kill y asistencia, a quien las hizo; el resto del lado (pasivo y objetivos) a partes iguales, y el resto entero al primer rol. La suma de los cinco = oro del lado.
+- **Daño** (no está en los hechos, se estima): kill 1.500, asistencia 600, muerte 300, 150 por minuto, y 500 (ganadores) o 250 (perdedores) por cada lucha o asedio.
+- **Participación:** (kills + asistencias) / kills del equipo, por 10.000; 0 sin kills.
+- **Nota:** 60 + 6 por kill + 3 por asistencia − 5 por muerte + hasta 10 por participación, acotada a 0–100.
+- **Decisivas:** de las disputas que ganó el ganador, las 3 con más `swing` = (10.000 − probabilidad) × peso del tipo. Pesos: lucha, barón y élder 1; asedio 0,7; dragón 0,6; inhibidor 0,5; heraldo y torre 0,4; kill y gank 0,3; línea 0,2; nexo 0. Empate: el evento más temprano.
+
 `game.finish` desaparece: tras los roles, `match.play {}` juega el game entero y emite sus hechos y `game.finished`.
 
 ### Atributos de jugador
