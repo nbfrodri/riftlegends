@@ -2,8 +2,10 @@ import { z } from "zod";
 import { defineCommands, defineQueries, position } from "../envelope";
 import { defineFacts } from "../facts";
 import { aiDecidedFact, aiPerTeam } from "./ai";
+import { matchEndedFact, matchEventFact, matchStartedFact } from "./match";
 
 export * from "./ai";
+export * from "./match";
 
 // Catalog of plan 06: draft rules and fearless series.
 
@@ -69,6 +71,8 @@ export const draftCommands = defineCommands({
 	"draft.roles": z.strictObject({ team: teamId, roles: roleAssignment }),
 	/** Provisional until the match simulation (plan 08) decides the winner. */
 	"game.finish": z.strictObject({ winner: teamId }),
+	/** Plays the game after the roles (plan 08). */
+	"match.play": z.strictObject({}),
 });
 
 export const draftQueries = defineQueries({
@@ -111,6 +115,9 @@ export const draftFacts = defineFacts({
 		team: teamId,
 		roles: roleAssignment,
 	},
+	"match.started": matchStartedFact,
+	"match.event": matchEventFact,
+	"match.ended": matchEndedFact,
 	"game.finished": { game: position, winner: teamId },
 	/** `wins` follows the order of `series.started` teams. */
 	"series.finished": { winner: teamId, wins: pair(position) },
