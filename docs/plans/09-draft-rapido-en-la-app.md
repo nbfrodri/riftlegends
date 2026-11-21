@@ -1,6 +1,6 @@
 # Plan 09 — Draft rápido en la app: draft broadcast, partida y resultados
 
-- **Estado:** borrador (21-11-2026), pendiente de aprobación. Redactado por Claude con las decisiones del usuario (al final).
+- **Estado:** aprobado (21-11-2026). Redactado por Claude con las decisiones del usuario (al final).
 - **Fase:** 2 · Draft rápido completo ([plan general](00-plan-general.md)).
 - **Objetivo:** jugar en la app una serie contra la IA de principio a fin. Incluye configurar la serie, elegir lado, el draft broadcast, los roles, ver la partida en un timeline animado y el resultado del game y de la serie. Cierra la salida de la Fase 2: una Bo5 fearless contra la IA, con un E2E del flujo.
 
@@ -91,7 +91,7 @@ Sin imágenes de Riot: en el modo ficticio, los campeones se muestran con inicia
 
 ## Riesgos
 
-- **Contenido mínimo:** 40 campeones no bastan para una Bo5 con fearless hard (60 picks). El E1 usa fearless soft o sin, o espera al dataset de 60+ del plan 10. Se decide al trocear.
+- **Contenido mínimo:** 40 campeones no bastan para una Bo5 con fearless hard (60 picks). El E1 usa **fearless soft** y pasará a hard cuando el plan 10 traiga 60+ campeones.
 - **Rendimiento del broadcast:** la escena real es más rica que la del spike. E3 lo vigila en el CI y en el Arch del usuario.
 - **Pantallas en paralelo:** comparten `ui-kit` y los catálogos i18n. Cada issue declara qué ficheros toca.
 
@@ -101,4 +101,5 @@ Sin imágenes de Riot: en el modo ficticio, los campeones se muestran con inicia
 2. La partida se ve en un **timeline animado**, con velocidades y botón de saltar.
 3. El desglose de la IA va en un **panel opcional y plegable**.
 4. Se configuran equipos, formato y fearless, y temporizador. **La personalidad y la dificultad de la IA no las elige el jugador:** salen del coach y del staff de cada equipo.
-5. Implementa **Codex**; Claude redacta el plan, trocea, revisa e integra.
+5. Reparto: **Codex `gpt-6.2-astra` (high)** para lo visual (issues 3, 4 y 7) y **subagentes de Claude** (Sonnet, medium) para el resto. Claude redacta, trocea, revisa e integra.
+6. El E2E de la Bo5 usa fearless soft hasta que el plan 10 traiga 60+ campeones.
