@@ -14,7 +14,7 @@ export const CONTESTS = [
 ] as const;
 
 type Phase = (typeof PHASES)[number];
-type Contest = (typeof CONTESTS)[number];
+export type Contest = (typeof CONTESTS)[number];
 
 export interface Scored {
 	readonly total: number;

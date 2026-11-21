@@ -195,7 +195,7 @@ export const matchContent = z.strictObject({
 		goldWeight: z
 			.array(z.strictObject({ minute: position, weight: share }))
 			.min(1),
-		/** Edge of the blue side, in points. */
+		/** Edge of the blue side, in fixed-point points (30,000 = 3 points). */
 		blueSide: points,
 	}),
 });
