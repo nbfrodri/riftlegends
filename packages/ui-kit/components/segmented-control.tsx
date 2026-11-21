@@ -1,10 +1,10 @@
-import { useId } from "react";
+import { type ReactNode, useId } from "react";
 import { cn } from "../lib/utils";
 
 interface SegmentedControlProps<Value extends string> {
 	/** Accessible name of the group. */
 	label: string;
-	options: readonly { value: Value; label: string }[];
+	options: readonly { value: Value; label: ReactNode }[];
 	value: Value;
 	onChange: (value: Value) => void;
 	className?: string;

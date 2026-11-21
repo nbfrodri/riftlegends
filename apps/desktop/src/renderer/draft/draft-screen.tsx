@@ -8,7 +8,7 @@ function DraftFlow() {
 	const Stage = draftStages[stage];
 	return (
 		<section className="flex min-h-full flex-col gap-gap px-gutter py-[clamp(16px,2.5vh,26px)]">
-			<PageHeader stage={stage} />
+			{stage !== "match" && <PageHeader stage={stage} />}
 			<Stage />
 		</section>
 	);
