@@ -49,6 +49,13 @@
 	"errors.stale-position": "The state changed while the order was being sent. Try again.",
 	"errors.core-restarted": "The core restarted and the order was not applied.",
 	"errors.core-timeout": "The core did not answer in time.",
+	"errors.not-your-turn": "It is not that team's turn.",
+	"errors.wrong-action": "That action is not allowed in this phase of the draft.",
+	"errors.champion-unavailable": "{{champion}} is not available.",
+	"errors.invalid-roles": "Each picked champion needs a different role.",
+	"errors.pool-too-small": "There are not enough champions for this series: {{needed}} needed, {{available}} available.",
+	"errors.series-over": "The series is already over.",
+	"errors.timer-off": "The timer is off in this series.",
 	"coreProbe.title": "Core probe",
 	"coreProbe.tick": "Tick"
 }

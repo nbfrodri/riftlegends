@@ -49,6 +49,13 @@
 	"errors.stale-position": "El estado cambió mientras enviabas la orden. Vuelve a intentarlo.",
 	"errors.core-restarted": "El núcleo se ha reiniciado y la orden no se aplicó.",
 	"errors.core-timeout": "El núcleo no respondió a tiempo.",
+	"errors.not-your-turn": "No es el turno de ese equipo.",
+	"errors.wrong-action": "Esa acción no toca en esta fase del draft.",
+	"errors.champion-unavailable": "{{champion}} no está disponible.",
+	"errors.invalid-roles": "Cada campeón elegido necesita un rol distinto.",
+	"errors.pool-too-small": "No hay campeones suficientes para esta serie: hacen falta {{needed}} y hay {{available}}.",
+	"errors.series-over": "La serie ya ha terminado.",
+	"errors.timer-off": "El temporizador está desactivado en esta serie.",
 	"coreProbe.title": "Sonda del núcleo",
 	"coreProbe.tick": "Tick"
 }
