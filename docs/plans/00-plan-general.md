@@ -99,7 +99,7 @@ Cada fase termina con un hito verificable y un commit o PR fusionado en `main`. 
 ### Fase 7 — Profundidad de gestión
 - Meta y parches entre splits (tiers dinámicos, notas de parche generadas).
 - Scouting e información imperfecta.
-- Entrenamiento con coste de oportunidad y **scrims** ([IDEA §8](../../IDEA.md#8-novedades-respecto-a-draftsim)).
+- Entrenamiento con coste de oportunidad (elegir qué atributos de cada jugador mejorar) y **scrims** ([IDEA §8](../../IDEA.md#8-novedades-respecto-a-draftsim)).
 - Moral, química y vestuario.
 - **Salida:** cada sistema influye en resultados de forma explicable (visible en el desglose) y probada con tests de propiedades.
 
@@ -134,7 +134,7 @@ Cada plan se crea al empezar su fase con `to-spec` o `dev-workflow`, y se trocea
 | 05 | [RNG, determinismo y golden tests](05-rng-determinismo.md) | 2 |
 | 06 | [Reglas de draft y series (fearless)](../archive/plans/06-reglas-de-draft.md) (hecho) | 2 |
 | 07 | [IA de draft explicable y personalidades](../archive/plans/07-ia-de-draft.md) (hecho) | 2 |
-| 08 | Simulación de partida v1 y timeline | 2 |
+| 08 | [Simulación de partida v1 y timeline](08-simulacion-de-partida.md) | 2 |
 | 09 | Pantalla de draft broadcast | 2 |
 | 10 | Esquemas de contenido, dataset ficticio y caché de Data Dragon | 2–3 |
 | 11 | Pipeline de datos de Leaguepedia y atributos de jugadores | 3 |
