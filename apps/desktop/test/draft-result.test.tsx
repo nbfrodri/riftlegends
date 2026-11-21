@@ -206,6 +206,12 @@ describe("game result (U9)", () => {
 					? "Even"
 					: `${points} ${points === 1 ? "point" : "points"} more`,
 			);
+			const gold = line.gold * (line.rating < 0 ? -1 : 1);
+			expect(row.textContent).toContain(
+				gold === 0
+					? "Even"
+					: `${gold > 0 ? "+" : "−"}${grouped(Math.abs(gold))} gold`,
+			);
 			expect(points > 15).toBe(line.gap);
 		});
 		const gaps = lines.flatMap((l, i) => (l.gap ? [ROLES[i]] : []));

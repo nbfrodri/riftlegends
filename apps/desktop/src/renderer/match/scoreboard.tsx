@@ -15,6 +15,16 @@ export function useGoldFormat() {
 	);
 }
 
+/** A gold difference with its sign: "+300 gold", "−1,550 gold". */
+export function useGoldDiff() {
+	const { t } = useTranslation();
+	const format = useGoldFormat();
+	return (gold: number) =>
+		t("draft.match.goldDiff", {
+			amount: `${gold < 0 ? "−" : "+"}${format.format(Math.abs(gold))}`,
+		});
+}
+
 export function TeamTotals({
 	snapshot,
 	names,
@@ -66,7 +76,7 @@ export function GoldChart({
 	duration: number;
 }) {
 	const { t } = useTranslation();
-	const format = useGoldFormat();
+	const goldDiff = useGoldDiff();
 	const chart = useMemo(() => {
 		const visible = snapshots.slice(0, index + 1);
 		const leads = visible.map((s) => s.blue.gold - s.red.gold);
@@ -85,9 +95,7 @@ export function GoldChart({
 	const amount =
 		chart.lead === 0
 			? t("draft.match.even")
-			: t("draft.match.moreGold", {
-					amount: format.format(Math.abs(chart.lead)),
-				});
+			: goldDiff(Math.abs(chart.lead));
 	return (
 		<figure className="match-chart">
 			<figcaption>

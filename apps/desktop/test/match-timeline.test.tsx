@@ -220,7 +220,7 @@ test("reveals facts at their second and updates the map and gold from the comple
 	advance(4000);
 	expect(top.getAllByTitle("Torre destruida")).toHaveLength(2);
 	expect(top.getByText("02:00")).toBeTruthy();
-	expect(screen.getByText("3.200 de oro más")).toBeTruthy();
+	expect(screen.getByText("+3.200 oro")).toBeTruthy();
 	expect(screen.getByText("3 de 4")).toBeTruthy();
 	expect(
 		within(screen.getByRole("row", { name: /Barones/ })).getByText("02:00"),
@@ -280,22 +280,21 @@ test("face to face shows each lane's numbers for the current minute and advances
 	expect(top.getByText("40")).toBeTruthy();
 });
 
-test("face to face says in words who is ahead in gold and CS, with the leader's colour", async () => {
+test("face to face says who is ahead, with signed gold and CS in words, with the leader's colour", async () => {
 	await renderInLocale(<Match />);
 	faceToFace();
 	advance(5000);
 	const top = lane("Top");
-	const text = top.getByText("Forge: 300 more gold and 18 CS more");
+	const text = top.getByText("Forge: +300 gold and 18 CS more");
 	expect(text.closest("[data-side]")?.getAttribute("data-side")).toBe("blue");
 	const jungle = lane("Jungle");
 	expect(
 		jungle
-			.getByText("Shoal: 500 more gold")
+			.getByText("Shoal: +500 gold")
 			.closest("[data-side]")
 			?.getAttribute("data-side"),
 	).toBe("red");
 	expect(jungle.getByText(/Forge: 2 CS more/)).toBeTruthy();
-	expect(screen.queryByText(/\+/)).toBeNull();
 });
 
 test("face to face says even when a lane is tied", async () => {
@@ -304,6 +303,6 @@ test("face to face says even when a lane is tied", async () => {
 	advance(5000);
 	expect(lane("Mid", "Cara a cara").getByText("Igualados")).toBeTruthy();
 	expect(
-		lane("Top", "Cara a cara").getByText("Forge: 300 de oro más y 18 CS más"),
+		lane("Top", "Cara a cara").getByText("Forge: +300 oro y 18 CS más"),
 	).toBeTruthy();
 });

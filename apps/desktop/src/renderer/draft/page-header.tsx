@@ -22,17 +22,18 @@ function Score({ view }: { view: ScoreView | null }) {
 	return (
 		<fieldset
 			aria-label={t("draft.score.label")}
-			className="m-0 grid min-w-0 border-0 p-0 grid-cols-[1fr_auto_auto_1fr] items-center gap-x-3 text-center"
+			className="m-0 grid min-w-0 border-0 p-0 grid-cols-[1fr_auto_1fr] items-center gap-x-3 text-center"
 		>
 			<span className={`font-bold ${sides[0]?.color}`}>
 				{teamName(options, view.blue.team)}
 			</span>
-			<b className="font-display text-3xl">{wins(view.blue.team)}</b>
-			<b className="font-display text-3xl">{wins(view.red.team)}</b>
+			<b className="whitespace-nowrap font-display text-3xl">
+				{wins(view.blue.team)} – {wins(view.red.team)}
+			</b>
 			<span className={`font-bold ${sides[1]?.color}`}>
 				{teamName(options, view.red.team)}
 			</span>
-			<small className="col-span-4 mt-1 text-muted">
+			<small className="col-span-3 mt-1 text-muted">
 				{t("draft.score.game", { game: view.game })}
 			</small>
 		</fieldset>

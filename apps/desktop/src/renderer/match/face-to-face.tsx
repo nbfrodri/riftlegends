@@ -2,7 +2,12 @@ import type { MapSnapshot, Side } from "@rift-legends/contracts";
 import { RoleIcon } from "@rift-legends/ui-kit/components/role-icon";
 import { Fragment } from "react";
 import { useTranslation } from "react-i18next";
-import { sides, type TeamNames, useGoldFormat } from "./scoreboard";
+import {
+	sides,
+	type TeamNames,
+	useGoldDiff,
+	useGoldFormat,
+} from "./scoreboard";
 
 const roles = ["top", "jungle", "mid", "bot", "support"] as const;
 type Line = MapSnapshot["players"][number];
@@ -32,9 +37,9 @@ function Ahead({
 }) {
 	const { t } = useTranslation();
 	const format = useGoldFormat();
+	const goldDiff = useGoldDiff();
 	const text = {
-		gold: (amount: number) =>
-			t("draft.match.moreGold", { amount: format.format(amount) }),
+		gold: goldDiff,
 		cs: (amount: number) =>
 			t("draft.match.faceToFace.moreCs", { amount: format.format(amount) }),
 	};
