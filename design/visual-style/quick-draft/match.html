@@ -1,0 +1,834 @@
+<!doctype html>
+<html lang="es">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Partida en curso · Rift Legends</title>
+		<link rel="stylesheet" href="fonts.css">
+		<link rel="stylesheet" href="quick-draft.css">
+	</head>
+	<body class="match">
+		<header class="window-strip">
+			<div class="window-name">
+				<img src="../../brand/icon/icon-small.svg" width="16" height="16" alt="">Rift Legends
+			</div>
+			<div class="window-keys" aria-hidden="true">
+				<svg
+					width="13"
+					height="13"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="1.65"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					aria-hidden="true"
+				>
+					<path d="M5 12h14" />
+				</svg><svg
+					width="13"
+					height="13"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="1.65"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					aria-hidden="true"
+				>
+					<path d="M5 5h14v14H5z" />
+				</svg><svg
+					width="13"
+					height="13"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="1.65"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					aria-hidden="true"
+				>
+					<path d="M5 5l14 14 M19 5 5 19" />
+				</svg>
+			</div>
+		</header>
+		<aside class="rail" aria-label="Barra lateral plegada">
+			<div class="club">
+				<img src="../../brand/icon/icon-small.svg" width="32" height="32" alt="Rift Legends">
+			</div>
+			<div class="rail-items">
+				<span title="Inicio" aria-label="Inicio"
+					><svg
+						width="20"
+						height="20"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="1.65"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						aria-hidden="true"
+					>
+						<path d="M3 11l9-8 9 8 M5 10v10h5v-6h4v6h5V10" />
+					</svg></span
+				>
+				<span title="Calendario" aria-label="Calendario"
+					><svg
+						width="20"
+						height="20"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="1.65"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						aria-hidden="true"
+					>
+						<path d="M4 6h16v15H4z M4 10h16 M8 3v5 M16 3v5 M8 14h2 M14 14h2" />
+					</svg></span
+				>
+				<a href="index.html" aria-label="Índice de draft rápido" title="Draft rápido"
+					><svg
+						width="20"
+						height="20"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="1.65"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						aria-hidden="true"
+					>
+						<path d="M3 5h7v14H3z M14 5h7v14h-7z M6 9h1 M17 15h1" />
+					</svg></a
+				>
+				<span title="Plantilla" aria-label="Plantilla"
+					><svg
+						width="20"
+						height="20"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="1.65"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						aria-hidden="true"
+					>
+						<path
+							d="M4 20v-2a5 5 0 0 1 10 0v2 M15 13a5 5 0 0 1 5 5v2 M12 7a3 3 0 1 1-6 0 3 3 0 0 1 6 0 M15 4a3 3 0 0 1 0 6"
+						/>
+					</svg></span
+				>
+				<span title="Mercado" aria-label="Mercado"
+					><svg
+						width="20"
+						height="20"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="1.65"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						aria-hidden="true"
+					>
+						<path d="M3 7h17l-4-4 M21 17H4l4 4 M20 7l-4 4 M4 17l4-4" />
+					</svg></span
+				>
+				<span title="Scouting" aria-label="Scouting"
+					><svg
+						width="20"
+						height="20"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="1.65"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						aria-hidden="true"
+					>
+						<path d="M15 15l6 6 M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0" />
+					</svg></span
+				>
+				<span title="Entrenamiento" aria-label="Entrenamiento"
+					><svg
+						width="20"
+						height="20"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="1.65"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						aria-hidden="true"
+					>
+						<path d="M3 10h3v4H3z M6 7h3v10H6z M9 12h6 M15 7h3v10h-3z M18 10h3v4h-3z" />
+					</svg></span
+				>
+				<span title="Competición" aria-label="Competición"
+					><svg
+						width="20"
+						height="20"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="1.65"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						aria-hidden="true"
+					>
+						<path
+							d="M7 3h10v5a5 5 0 0 1-10 0z M7 5H3v2a4 4 0 0 0 5 4 M17 5h4v2a4 4 0 0 1-5 4 M12 13v5 M8 21h8 M9 18h6"
+						/>
+					</svg></span
+				>
+				<span title="Noticias" aria-label="Noticias"
+					><svg
+						width="20"
+						height="20"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="1.65"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						aria-hidden="true"
+					>
+						<path d="M3 5h15v15H5a2 2 0 0 1-2-2z M18 9h3v9a2 2 0 0 1-2 2 M7 9h6 M7 13h7 M7 16h5" />
+					</svg></span
+				>
+				<span title="Historial" aria-label="Historial"
+					><svg
+						width="20"
+						height="20"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="1.65"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						aria-hidden="true"
+					>
+						<path d="M3 4v6h6 M3 10a9 9 0 1 1 1 7 M12 7v5l3 2" />
+					</svg></span
+				>
+				<span title="Ajustes" aria-label="Ajustes"
+					><svg
+						width="20"
+						height="20"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="1.65"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						aria-hidden="true"
+					>
+						<path d="M3 6h7m4 0h7 M3 12h12m4 0h2 M3 18h3m4 0h11 M10 3v6 M15 9v6 M7 15v6" />
+					</svg></span
+				>
+			</div>
+		</aside>
+		<svg class="icon-defs" width="0" height="0" aria-hidden="true">
+			<defs>
+				<symbol id="icon-tower" viewBox="0 0 24 24">
+					<path d="M7 3v3h3V3h4v3h3V3h2v6l-3 2 1 8h2v2H5v-2h2l1-8-3-2V3z M10 19v-4h4v4" />
+				</symbol>
+				<symbol id="icon-tower-down" viewBox="0 0 24 24">
+					<path d="M3 20h18M6 17l1-5 4 1-1 4zm8 0 1-7 3 2 1 5zM4 5l3 2m11-4-2 3" />
+				</symbol>
+				<symbol id="icon-inhibitor" viewBox="0 0 24 24">
+					<path d="M12 2l5 7-5 7-5-7zM6 14l-2 4 8 4 8-4-2-4M8 18l4 2 4-2" />
+				</symbol>
+				<symbol id="icon-inhibitor-down" viewBox="0 0 24 24">
+					<path d="m6 7 4 4-2 5-4-5zm10-4 4 5-5 6-2-5zM4 17l8 4 8-4" />
+				</symbol>
+				<symbol id="icon-nexus" viewBox="0 0 24 24">
+					<path d="M12 2l6 8-6 9-6-9zM12 2v17M3 11v6l9 5 9-5v-6" />
+				</symbol>
+				<symbol id="icon-dragon" viewBox="0 0 24 24">
+					<path d="M3 18l5-9 5-5-1 5 8-2-3 5 4 2-3 3-7-2-3 4zM13 11h1" />
+				</symbol>
+				<symbol id="icon-herald" viewBox="0 0 24 24">
+					<path d="M4 7l4 2 4-5 4 5 4-2-1 9-7 5-7-5zM7 13q5-6 10 0-5 6-10 0zM12 12v2" />
+				</symbol>
+				<symbol id="icon-baron" viewBox="0 0 24 24">
+					<path d="M4 4l4 6 4-7 4 7 4-6-1 11-4 5-3-2-3 2-4-5zM7 12l3 1m4 0 3-1M10 16h4" />
+				</symbol>
+				<symbol id="icon-elder" viewBox="0 0 24 24">
+					<path d="M2 15l5-5-1-6 5 4 6-6-1 7 5-1-3 5 3 2-4 3-6-2-4 5-4-2 3-4zM14 11h1" />
+				</symbol>
+			</defs>
+		</svg>
+		<main>
+			<header class="mast">
+				<div>
+					<p class="crumb"><a href="index.html">Draft rápido</a> <span>/</span> Mapa 2</p>
+					<h1>Partida en curso</h1>
+				</div>
+				<div class="score">
+					<span class="blue">Forge</span><b>1 – 0</b><span class="red">Shoal</span><small>Bo3 · Mapa 2</small>
+				</div>
+				<div class="clock">
+					<p class="label">Reloj de partida</p>
+					<b>24:36</b>
+				</div>
+			</header>
+			<div class="match-layout">
+				<div class="totals">
+					<div class="team-total blue">
+						<svg class="crest" viewBox="0 0 64 64" aria-hidden="true">
+							<path fill="currentColor" d="M8 12h52L49 23H20zm12 16h27L36 39H23zm4 16h9l-4 13z" />
+						</svg>
+						<div>
+							<h2>Forge</h2>
+							<p>42.800 de oro</p>
+						</div>
+						<div class="kills"><b>12</b><small>Bajas</small></div>
+					</div>
+					<div class="team-total red">
+						<svg class="crest" viewBox="0 0 64 64" aria-hidden="true">
+							<path
+								fill="currentColor"
+								d="M5 23 28 9l30 9-9 7-20-6-15 9zm3 13 21-12 24 7-9 7-14-5-13 8zm6 12 17-9 11 4-13 12z"
+							/>
+						</svg>
+						<div>
+							<h2>Shoal</h2>
+							<p>39.600 de oro</p>
+						</div>
+						<div class="kills"><b>8</b><small>Bajas</small></div>
+					</div>
+				</div>
+				<figure class="graph">
+					<figcaption><span>Ventaja de oro · Forge</span><strong>3.200 de oro más</strong></figcaption>
+					<svg
+						viewBox="0 0 600 120"
+						preserveAspectRatio="none"
+						role="img"
+						aria-label="Forge pasa de una desventaja inicial a una ventaja de 3.200 de oro"
+					>
+						<g stroke="#364256" fill="none">
+							<path d="M0 20h600 M0 63h600 M0 106h600" stroke-dasharray="3 5" />
+						</g>
+						<path
+							fill="#88d6ff"
+							opacity=".16"
+							d="M0 63 36 64 62 58 87 66 122 73 148 69 182 76 215 65 249 62 280 52 305 54 334 48 361 50 395 39 425 41 448 31 476 34 501 25 526 26 548 22 571 23 597 10V63H0Z"
+						/>
+						<path
+							fill="none"
+							stroke="#88d6ff"
+							stroke-width="3"
+							vector-effect="non-scaling-stroke"
+							stroke-linejoin="round"
+							d="M0 63 36 64 62 58 87 66 122 73 148 69 182 76 215 65 249 62 280 52 305 54 334 48 361 50 395 39 425 41 448 31 476 34 501 25 526 26 548 22 571 23 597 10"
+						/>
+						<circle cx="596" cy="10" r="4" fill="#a8deff" />
+					</svg>
+					<div class="axis"><span>00:00</span><span>08:00</span><span>16:00</span><span>24:36</span></div>
+				</figure>
+				<div class="map-stack">
+					<section class="map-panel panel" id="structures">
+						<div class="section-line">
+							<h2>Estructuras</h2>
+							<span class="map-key"
+								><span
+									><svg class="objective-icon" viewBox="0 0 24 24" aria-hidden="true">
+										<use href="#icon-tower" />
+									</svg>
+									En pie</span
+								>
+								<span
+									><svg class="objective-icon" viewBox="0 0 24 24" aria-hidden="true">
+										<use href="#icon-tower-down" />
+									</svg>
+									Destruida</span
+								></span
+							>
+						</div>
+						<table class="forts">
+							<caption class="sr-only">
+								Defensas propias por equipo. El inhibidor caído muestra el tiempo hasta reaparecer.
+							</caption>
+							<thead>
+								<tr>
+									<th colspan="4" scope="colgroup" class="blue">Base de Forge</th>
+									<th></th>
+									<th colspan="4" scope="colgroup" class="red">Base de Shoal</th>
+								</tr>
+								<tr>
+									<th>Inhibidor</th>
+									<th>Base</th>
+									<th>Interior</th>
+									<th>Exterior</th>
+									<th>Línea</th>
+									<th>Exterior</th>
+									<th>Interior</th>
+									<th>Base</th>
+									<th>Inhibidor</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td class="inhib" title="Inhibidor en pie">
+										<svg class="objective-icon" viewBox="0 0 24 24" aria-hidden="true">
+											<use href="#icon-inhibitor" />
+										</svg><span class="sr-only">En pie</span>
+									</td>
+									<td data-tower="forge-Top-3" class="tower-cell standing" title="Torre en pie">
+										<span class="sr-only">Torre en pie</span
+										><svg class="objective-icon" viewBox="0 0 24 24" aria-hidden="true">
+											<use href="#icon-tower" />
+										</svg>
+									</td>
+									<td data-tower="forge-Top-2" class="tower-cell standing" title="Torre en pie">
+										<span class="sr-only">Torre en pie</span
+										><svg class="objective-icon" viewBox="0 0 24 24" aria-hidden="true">
+											<use href="#icon-tower" />
+										</svg>
+									</td>
+									<td data-tower="forge-Top-1" class="tower-cell down" title="Torre destruida">
+										<span class="sr-only">Torre destruida</span
+										><svg class="objective-icon" viewBox="0 0 24 24" aria-hidden="true">
+											<use href="#icon-tower-down" />
+										</svg>
+									</td>
+									<th scope="row">Top</th>
+									<td data-tower="shoal-Top-1" class="tower-cell down" title="Torre destruida">
+										<span class="sr-only">Torre destruida</span
+										><svg class="objective-icon" viewBox="0 0 24 24" aria-hidden="true">
+											<use href="#icon-tower-down" />
+										</svg>
+									</td>
+									<td data-tower="shoal-Top-2" class="tower-cell standing" title="Torre en pie">
+										<span class="sr-only">Torre en pie</span
+										><svg class="objective-icon" viewBox="0 0 24 24" aria-hidden="true">
+											<use href="#icon-tower" />
+										</svg>
+									</td>
+									<td data-tower="shoal-Top-3" class="tower-cell standing" title="Torre en pie">
+										<span class="sr-only">Torre en pie</span
+										><svg class="objective-icon" viewBox="0 0 24 24" aria-hidden="true">
+											<use href="#icon-tower" />
+										</svg>
+									</td>
+									<td class="inhib" title="Inhibidor en pie">
+										<svg class="objective-icon" viewBox="0 0 24 24" aria-hidden="true">
+											<use href="#icon-inhibitor" />
+										</svg><span class="sr-only">En pie</span>
+									</td>
+								</tr>
+								<tr>
+									<td class="inhib" title="Inhibidor en pie">
+										<svg class="objective-icon" viewBox="0 0 24 24" aria-hidden="true">
+											<use href="#icon-inhibitor" />
+										</svg><span class="sr-only">En pie</span>
+									</td>
+									<td data-tower="forge-Mid-3" class="tower-cell standing" title="Torre en pie">
+										<span class="sr-only">Torre en pie</span
+										><svg class="objective-icon" viewBox="0 0 24 24" aria-hidden="true">
+											<use href="#icon-tower" />
+										</svg>
+									</td>
+									<td data-tower="forge-Mid-2" class="tower-cell standing" title="Torre en pie">
+										<span class="sr-only">Torre en pie</span
+										><svg class="objective-icon" viewBox="0 0 24 24" aria-hidden="true">
+											<use href="#icon-tower" />
+										</svg>
+									</td>
+									<td data-tower="forge-Mid-1" class="tower-cell standing" title="Torre en pie">
+										<span class="sr-only">Torre en pie</span
+										><svg class="objective-icon" viewBox="0 0 24 24" aria-hidden="true">
+											<use href="#icon-tower" />
+										</svg>
+									</td>
+									<th scope="row">Mid</th>
+									<td data-tower="shoal-Mid-1" class="tower-cell down" title="Torre destruida">
+										<span class="sr-only">Torre destruida</span
+										><svg class="objective-icon" viewBox="0 0 24 24" aria-hidden="true">
+											<use href="#icon-tower-down" />
+										</svg>
+									</td>
+									<td data-tower="shoal-Mid-2" class="tower-cell down" title="Torre destruida">
+										<span class="sr-only">Torre destruida</span
+										><svg class="objective-icon" viewBox="0 0 24 24" aria-hidden="true">
+											<use href="#icon-tower-down" />
+										</svg>
+									</td>
+									<td data-tower="shoal-Mid-3" class="tower-cell down" title="Torre destruida">
+										<span class="sr-only">Torre destruida</span
+										><svg class="objective-icon" viewBox="0 0 24 24" aria-hidden="true">
+											<use href="#icon-tower-down" />
+										</svg>
+									</td>
+									<td class="inhib down" id="red-mid-inhib" data-until="1600" title="Inhibidor destruido">
+										<svg class="objective-icon" viewBox="0 0 24 24" aria-hidden="true">
+											<use href="#icon-inhibitor-down" />
+										</svg> <span class="timer-value" aria-label="Tiempo hasta reaparecer">02:04</span>
+									</td>
+								</tr>
+								<tr>
+									<td class="inhib" title="Inhibidor en pie">
+										<svg class="objective-icon" viewBox="0 0 24 24" aria-hidden="true">
+											<use href="#icon-inhibitor" />
+										</svg><span class="sr-only">En pie</span>
+									</td>
+									<td data-tower="forge-Bot-3" class="tower-cell standing" title="Torre en pie">
+										<span class="sr-only">Torre en pie</span
+										><svg class="objective-icon" viewBox="0 0 24 24" aria-hidden="true">
+											<use href="#icon-tower" />
+										</svg>
+									</td>
+									<td data-tower="forge-Bot-2" class="tower-cell standing" title="Torre en pie">
+										<span class="sr-only">Torre en pie</span
+										><svg class="objective-icon" viewBox="0 0 24 24" aria-hidden="true">
+											<use href="#icon-tower" />
+										</svg>
+									</td>
+									<td data-tower="forge-Bot-1" class="tower-cell down" title="Torre destruida">
+										<span class="sr-only">Torre destruida</span
+										><svg class="objective-icon" viewBox="0 0 24 24" aria-hidden="true">
+											<use href="#icon-tower-down" />
+										</svg>
+									</td>
+									<th scope="row">Bot</th>
+									<td data-tower="shoal-Bot-1" class="tower-cell standing" title="Torre en pie">
+										<span class="sr-only">Torre en pie</span
+										><svg class="objective-icon" viewBox="0 0 24 24" aria-hidden="true">
+											<use href="#icon-tower" />
+										</svg>
+									</td>
+									<td data-tower="shoal-Bot-2" class="tower-cell standing" title="Torre en pie">
+										<span class="sr-only">Torre en pie</span
+										><svg class="objective-icon" viewBox="0 0 24 24" aria-hidden="true">
+											<use href="#icon-tower" />
+										</svg>
+									</td>
+									<td data-tower="shoal-Bot-3" class="tower-cell standing" title="Torre en pie">
+										<span class="sr-only">Torre en pie</span
+										><svg class="objective-icon" viewBox="0 0 24 24" aria-hidden="true">
+											<use href="#icon-tower" />
+										</svg>
+									</td>
+									<td class="inhib" title="Inhibidor en pie">
+										<svg class="objective-icon" viewBox="0 0 24 24" aria-hidden="true">
+											<use href="#icon-inhibitor" />
+										</svg><span class="sr-only">En pie</span>
+									</td>
+								</tr>
+								<tr class="nexus-line">
+									<td colspan="4">
+										<svg class="objective-icon" viewBox="0 0 24 24" aria-hidden="true">
+											<use href="#icon-tower" />
+										</svg>
+										<svg class="objective-icon" viewBox="0 0 24 24" aria-hidden="true">
+											<use href="#icon-tower" />
+										</svg>
+										<span>2 en pie</span>
+									</td>
+									<th scope="row">
+										<svg class="objective-icon" viewBox="0 0 24 24" aria-hidden="true">
+											<use href="#icon-nexus" />
+										</svg>
+										Nexo
+									</th>
+									<td colspan="4" id="red-nexus">
+										<svg class="objective-icon" viewBox="0 0 24 24" aria-hidden="true">
+											<use href="#icon-tower" />
+										</svg>
+										<svg class="objective-icon" viewBox="0 0 24 24" aria-hidden="true">
+											<use href="#icon-tower" />
+										</svg>
+										<span>2 en pie</span>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+						<p class="key-note">
+							El tiempo junto al inhibidor destruido indica cuánto falta para que vuelva.
+						</p>
+					</section>
+					<section class="neutral-panel panel" id="neutrals">
+						<div class="section-line">
+							<h2>Objetivos</h2>
+						</div>
+						<table class="neutrals">
+							<colgroup>
+								<col class="label-col">
+							</colgroup>
+							<colgroup span="2"></colgroup>
+							<colgroup span="2"></colgroup>
+							<thead>
+								<tr>
+									<th scope="col" rowspan="2">Objetivo</th>
+									<th scope="colgroup" class="blue" colspan="2">Forge</th>
+									<th scope="colgroup" class="red" colspan="2">Shoal</th>
+								</tr>
+								<tr>
+									<th>Capturas</th>
+									<th>Efecto</th>
+									<th>Capturas</th>
+									<th>Efecto</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<th scope="row">
+										<span class="objective-name"
+											><svg class="objective-icon" viewBox="0 0 24 24" aria-hidden="true">
+												<use href="#icon-dragon" />
+											</svg>
+											Dragones</span
+										>
+									</th>
+									<td>3 de 4</td>
+									<td>A 1 del alma</td>
+									<td>1 de 4</td>
+									<td>A 3 del alma</td>
+								</tr>
+								<tr>
+									<th scope="row">
+										<span class="objective-name"
+											><svg class="objective-icon" viewBox="0 0 24 24" aria-hidden="true">
+												<use href="#icon-herald" />
+											</svg>
+											Heraldos</span
+										>
+									</th>
+									<td>1</td>
+									<td>Sin efecto</td>
+									<td>0</td>
+									<td>Sin efecto</td>
+								</tr>
+								<tr>
+									<th scope="row">
+										<span class="objective-name"
+											><svg class="objective-icon" viewBox="0 0 24 24" aria-hidden="true">
+												<use href="#icon-baron" />
+											</svg>
+											Barones</span
+										>
+									</th>
+									<td><b id="blue-barons">0</b></td>
+									<td><span id="blue-baron-buff">Sin efecto</span></td>
+									<td>1</td>
+									<td><span class="buff" data-until="1505">00:29</span></td>
+								</tr>
+								<tr>
+									<th scope="row">
+										<span class="objective-name"
+											><svg class="objective-icon" viewBox="0 0 24 24" aria-hidden="true">
+												<use href="#icon-elder" />
+											</svg>
+											Dragones ancianos</span
+										>
+									</th>
+									<td>0</td>
+									<td>Sin efecto</td>
+									<td>0</td>
+									<td>Sin efecto</td>
+								</tr>
+							</tbody>
+						</table>
+					</section>
+				</div>
+				<section class="feed panel">
+					<h2>Eventos de la partida</h2>
+					<ol>
+						<li class="blue">
+							<time>24:36</time>
+							<div>
+								<p class="event-meta">Forge · Foso del dragón</p>
+								<h3>Dragón</h3>
+								<p>Duskroot llega primero con visión del foso.</p>
+							</div>
+						</li>
+						<li class="blue">
+							<time>23:52</time>
+							<div>
+								<p class="event-meta">Forge · Jungla roja inferior</p>
+								<h3>Pelea</h3>
+								<p>Cragbell separa a Suncord de su apoyo.</p>
+							</div>
+						</li>
+						<li class="red">
+							<time>21:40</time>
+							<div>
+								<p class="event-meta">Shoal · Top</p>
+								<h3>Torre</h3>
+								<p>Saltspire empuja mientras Forge vuelve a base.</p>
+							</div>
+						</li>
+						<li class="blue">
+							<time>19:18</time>
+							<div>
+								<p class="event-meta">Forge · Mid</p>
+								<h3>Baja</h3>
+								<p>Glasswake castiga la rotación de Waxblade.</p>
+							</div>
+						</li>
+					</ol>
+				</section>
+			</div>
+			<footer class="pagefoot">
+				<div class="playback">
+					<button id="pause">
+						<svg
+							class="ui-icon"
+							viewBox="0 0 24 24"
+							aria-hidden="true"
+							fill="none"
+							stroke="currentColor"
+							stroke-width="1.8"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+						>
+							<path d="m7 4 13 8-13 8z" />
+						</svg><span>Reanudar</span>
+					</button><span>Velocidad</span>
+					<div class="segments" role="radiogroup" aria-label="Velocidad">
+						<label><input type="radio" name="speed" value="×1"><span>×1</span></label
+						><label><input type="radio" name="speed" value="×4" checked><span>×4</span></label
+						><label><input type="radio" name="speed" value="×16"><span>×16</span></label>
+					</div>
+				</div>
+				<a class="primary" href="result.html"
+					>Saltar al final
+					<svg
+						class="ui-icon"
+						viewBox="0 0 24 24"
+						aria-hidden="true"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="1.8"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+					>
+						<path d="M4 12h15m-6-6 6 6-6 6" />
+					</svg></a
+				>
+			</footer>
+		</main>
+		<script>
+		const $ = (selector) => document.querySelector(selector);
+		const all = (selector) => Array.from(document.querySelectorAll(selector));
+
+		// The review opens paused on the dragon. Play only replays recorded sample events.
+		let second = 24 * 60 + 36;
+		let interval;
+		const checkpoints = [
+			{
+				at: 26 * 60 + 10,
+				action: "Pelea",
+				zone: "Mid",
+				cause: "Copperfin remata a dos rivales tras la entrada de Cragbell.",
+				kills: [14, 9],
+				gold: [46500, 42700],
+			},
+			{
+				at: 28 * 60 + 12,
+				action: "Barón",
+				zone: "Foso del barón",
+				cause: "Cragbell corta el paso al jungla rival y protege la captura.",
+				kills: [16, 9],
+				gold: [50900, 45000],
+			},
+			{
+				at: 30 * 60 + 48,
+				action: "Inhibidor",
+				zone: "Mid",
+				cause: "Forge acompaña la oleada con el Barón y vuelve a abrir la base roja.",
+				kills: [18, 10],
+				gold: [58800, 51300],
+			},
+			{
+				at: 31 * 60 + 20,
+				action: "Torre",
+				zone: "Base roja",
+				cause: "Forge derriba la primera torre del nexo tras abrir Mid.",
+				kills: [19, 10],
+				gold: [60500, 52100],
+			},
+		];
+		const formatTime = (s) =>
+			String(Math.floor(s / 60)).padStart(2, "0") + ":" + String(s % 60).padStart(2, "0");
+		const formatGold = (n) => n.toLocaleString("de-DE");
+		function showEvent(frame) {
+			const row = $(".feed li").cloneNode(true);
+			row.className = "blue";
+			row.querySelector("time").textContent = formatTime(frame.at);
+			row.querySelector(".event-meta").textContent = "Forge · " + frame.zone;
+			row.querySelector("h3").textContent = frame.action;
+			row.querySelector("p:last-child").textContent = frame.cause;
+			$(".feed ol").prepend(row);
+			$(".feed li:last-child").remove();
+			all(".team-total").forEach((team, i) => {
+				team.querySelector("p").textContent = formatGold(frame.gold[i]) + " de oro";
+				team.querySelector(".kills b").textContent = frame.kills[i];
+			});
+			if (frame.action === "Barón") {
+				$("#blue-barons").textContent = "1";
+				const buff = $("#blue-baron-buff");
+				buff.dataset.until = frame.at + 180;
+				buff.className = "buff";
+			}
+			if (frame.action === "Torre") {
+				$("#red-nexus use").setAttribute("href", "#icon-tower-down");
+				$("#red-nexus span").textContent = "1 en pie";
+			}
+			if (frame.action === "Inhibidor") {
+				const inhibitor = $("#red-mid-inhib");
+				inhibitor.classList.add("down");
+				inhibitor.title = "Inhibidor destruido";
+				inhibitor.querySelector("use").setAttribute("href", "#icon-inhibitor-down");
+				inhibitor.dataset.until = frame.at + 300;
+			}
+		}
+		function refreshTimers() {
+			for (const cell of all("[data-until]")) {
+				const remaining = Number(cell.dataset.until) - second;
+				const inhibitor = cell.classList.contains("inhib");
+				const value = inhibitor ? cell.querySelector(".timer-value") : cell;
+				if (remaining > 0) value.textContent = formatTime(remaining);
+				else {
+					value.textContent = inhibitor ? "" : "Sin efecto";
+					if (inhibitor) {
+						cell.title = "Inhibidor en pie";
+						cell.querySelector("use").setAttribute("href", "#icon-inhibitor");
+					}
+					cell.className = inhibitor ? "inhib" : "";
+					delete cell.dataset.until;
+				}
+			}
+		}
+		function tick() {
+			const before = second;
+			second += Number($("[name=speed]:checked").value.slice(1));
+			if (second >= 32 * 60 + 48) {
+				clearInterval(interval);
+				location.href = "result.html";
+				return;
+			}
+			$(".clock b").textContent = formatTime(second);
+			for (const frame of checkpoints) {
+				if (frame.at > before && frame.at <= second) showEvent(frame);
+			}
+			refreshTimers();
+		}
+		$("#pause").onclick = () => {
+			if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
+				location.href = "result.html";
+				return;
+			}
+			if (interval) {
+				clearInterval(interval);
+				interval = undefined;
+			} else {
+				interval = setInterval(tick, 1000);
+			}
+			$("#pause span").textContent = interval ? "Pausar" : "Reanudar";
+			$("#pause path").setAttribute("d", interval ? "M7 5h3v14H7z M14 5h3v14h-3z" : "m7 4 13 8-13 8z");
+		};
+		</script>
+	</body>
+</html>
