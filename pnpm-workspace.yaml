@@ -3,6 +3,9 @@ packages:
   - "packages/*"
 allowBuilds:
   lefthook: true
+# PixiJS declares distanceField as optional on the class but required on its interface.
+patchedDependencies:
+  pixi.js@8.23.0: patches/pixi.js@8.23.0.patch
 minimumReleaseAgeExclude:
   - electron@45.4.1
 # Stryker 10.1.1 pulls vulnerable versions (Dependabot alerts 1-5).

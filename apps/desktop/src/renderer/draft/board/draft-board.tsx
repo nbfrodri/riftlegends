@@ -88,7 +88,7 @@ function TurnBar(props: {
 /**
  * U3 and U5: the draft board. Both sides' picks and bans, the champion pool
  * and, on the user's turn, Confirm sends `draft.ban` or `draft.pick`. On the
- * AI's turn the board only says whose turn it is (its moves are #193).
+ * AI's turn the board shows the acting team until the core confirms its move.
  */
 export function DraftBoard() {
 	const { view, options, mine, send } = useDraftSession();

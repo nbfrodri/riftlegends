@@ -24,13 +24,21 @@ import {
 
 /**
  * Presentation-only stages that the core does not know about (plan 09, "Flujo").
- * - `side`: the side the AI took, shown until the user continues.
+ * - `side`: the side the AI took, shown briefly or until the user continues.
  * - `match`: the game being replayed (the core has already played it).
  * - `result`: the finished game's result, shown until the user continues.
  */
 export type Presentation = "side" | "match" | "result";
 
 interface DraftSession {
+	timer: boolean;
+	lock: {
+		game: number;
+		position: number;
+		team: string;
+		champion: string | null;
+		action: "ban" | "pick";
+	} | null;
 	sessionId: number;
 	/** Teams (name and coach) and the champion pool the session offers. */
 	options: SeriesOptions;
@@ -39,7 +47,7 @@ interface DraftSession {
 	/** The team the user plays; set by the setup screen when the series starts. */
 	mine: string | null;
 	setMine(team: string): void;
-	/** Sends a command at the session's next position; false if the core rejected it. */
+	/** False if the turn was already claimed or the core rejected the command. */
 	send(kind: string, payload: unknown): Promise<boolean>;
 	presentation: Presentation | null;
 	/** Shows a presentation stage over the core's phase; `null` goes back to it. */
@@ -71,6 +79,9 @@ function LoadedSession(props: {
 	const { sessionId, onLost } = props;
 	const { mutateAsync } = useCoreCommand();
 	const position = useRef(0);
+	const [timer, setTimer] = useState(false);
+	const [lock, setLock] = useState<DraftSession["lock"]>(null);
+	const claimedTurn = useRef<DraftView | null>(null);
 	const [error, setError] = useState<CoreRequestError | null>(null);
 	const [mine, setMine] = useState<string | null>(null);
 	const [presentation, present] = useState<Presentation | null>(null);
@@ -86,6 +97,10 @@ function LoadedSession(props: {
 
 	const send = useCallback(
 		async (kind: string, payload: unknown) => {
+			// A click and its deadline can race before the refreshed view arrives.
+			const turn = view.data?.turn ? view.data : null;
+			if (turn && claimedTurn.current === turn) return false;
+			if (turn) claimedTurn.current = turn;
 			try {
 				const result = await mutateAsync({
 					v: CONTRACT_VERSION,
@@ -95,16 +110,34 @@ function LoadedSession(props: {
 					payload,
 				});
 				position.current = result.position;
+				for (const fact of result.facts) {
+					if (fact.type === "series.started") setTimer(fact.timer === true);
+					if (
+						(fact.type === "draft.banned" || fact.type === "draft.picked") &&
+						typeof fact.game === "number" &&
+						typeof fact.team === "string" &&
+						(typeof fact.champion === "string" || fact.champion === null)
+					) {
+						setLock({
+							game: fact.game,
+							position: fact.position,
+							team: fact.team,
+							champion: fact.champion,
+							action: fact.type === "draft.banned" ? "ban" : "pick",
+						});
+					}
+				}
 				setError(null);
 				return true;
 			} catch (caught) {
+				if (claimedTurn.current === turn) claimedTurn.current = null;
 				if (!(caught instanceof CoreRequestError)) throw caught;
 				setError(caught);
 				if (sessionLost(caught)) onLost();
 				return false;
 			}
 		},
-		[mutateAsync, sessionId, onLost],
+		[mutateAsync, sessionId, onLost, view.data],
 	);
 
 	const value = useMemo(
@@ -113,6 +146,8 @@ function LoadedSession(props: {
 				? {
 						sessionId,
 						options: options.data,
+						timer,
+						lock,
 						view: view.data,
 						mine,
 						setMine,
@@ -122,7 +157,17 @@ function LoadedSession(props: {
 						restart: onLost,
 					}
 				: null,
-		[sessionId, options.data, view.data, mine, send, presentation, onLost],
+		[
+			sessionId,
+			options.data,
+			view.data,
+			mine,
+			send,
+			presentation,
+			onLost,
+			timer,
+			lock,
+		],
 	);
 
 	const failure = options.error ?? view.error ?? error;
