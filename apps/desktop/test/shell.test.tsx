@@ -3,7 +3,7 @@ import { cleanup, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, test } from "vitest";
 import { createAppRouter } from "../src/renderer/router";
-import { renderInLocale } from "./render-in-locale";
+import { renderWithDraftCore } from "./draft-core";
 
 afterEach(cleanup);
 
@@ -26,7 +26,7 @@ const pendingEs = sectionsEs.filter(
 
 async function renderShell(path = "/mercado", locale = "es-ES") {
 	const router = createAppRouter(path);
-	await renderInLocale(<RouterProvider router={router} />, locale);
+	await renderWithDraftCore(<RouterProvider router={router} />, locale);
 	await screen.findByRole("heading", { level: 1 });
 	return { router, user: userEvent.setup() };
 }
@@ -48,24 +48,28 @@ describe("T5: sidebar sections", () => {
 		).toEqual(sectionsEs);
 	});
 
+	// The Draft screen is titled after its current stage (plan 09).
 	test.each([
-		["Draft", "/draft"],
-		["Mercado", "/mercado"],
-		["Ajustes", "/ajustes"],
-	])("%s opens its screen and is marked as current", async (name, path) => {
-		const { router, user } = await renderShell("/mercado");
-		await user.click(section(name === "Mercado" ? "Ajustes" : "Mercado"));
-		await user.click(section(name));
-		await waitFor(() => expect(heading().textContent).toBe(name));
-		expect(router.state.location.pathname).toBe(path);
-		expect(section(name).getAttribute("aria-current")).toBe("page");
-		const others = within(sections())
-			.getAllByRole("button")
-			.filter((button) => button !== section(name));
-		for (const other of others) {
-			expect(other.getAttribute("aria-current")).toBeNull();
-		}
-	});
+		["Draft", "Configurar serie", "/draft"],
+		["Mercado", "Mercado", "/mercado"],
+		["Ajustes", "Ajustes", "/ajustes"],
+	])(
+		"%s opens its screen and is marked as current",
+		async (name, title, path) => {
+			const { router, user } = await renderShell("/mercado");
+			await user.click(section(name === "Mercado" ? "Ajustes" : "Mercado"));
+			await user.click(section(name));
+			await waitFor(() => expect(heading().textContent).toBe(title));
+			expect(router.state.location.pathname).toBe(path);
+			expect(section(name).getAttribute("aria-current")).toBe("page");
+			const others = within(sections())
+				.getAllByRole("button")
+				.filter((button) => button !== section(name));
+			for (const other of others) {
+				expect(other.getAttribute("aria-current")).toBeNull();
+			}
+		},
+	);
 
 	test("pending sections are disabled and described as coming soon", async () => {
 		const { router, user } = await renderShell("/mercado");
@@ -137,7 +141,7 @@ describe("T5: sidebar sections", () => {
 
 	test("opens Draft by default", async () => {
 		const { router } = await renderShell("/");
-		expect(heading().textContent).toBe("Draft");
+		expect(heading().textContent).toBe("Configurar serie");
 		expect(router.state.location.pathname).toBe("/draft");
 	});
 });
@@ -214,7 +218,7 @@ describe("T6: collapsing and keyboard", () => {
 		expect(toggle().getAttribute("aria-expanded")).toBe("true");
 
 		await user.click(section("Draft"));
-		await waitFor(() => expect(heading().textContent).toBe("Draft"));
+		await waitFor(() => expect(heading().textContent).toBe("Configurar serie"));
 		expect(toggle().getAttribute("aria-expanded")).toBe("false");
 
 		await user.keyboard("{Alt>}b{/Alt}");
@@ -228,7 +232,7 @@ describe("T6: collapsing and keyboard", () => {
 
 		// Every entry into Draft collapses it again.
 		await user.click(section("Draft"));
-		await waitFor(() => expect(heading().textContent).toBe("Draft"));
+		await waitFor(() => expect(heading().textContent).toBe("Configurar serie"));
 		expect(toggle().getAttribute("aria-expanded")).toBe("false");
 		await user.click(toggle());
 		await user.click(section("Mercado"));
