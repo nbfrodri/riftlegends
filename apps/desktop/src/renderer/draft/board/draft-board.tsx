@@ -1,7 +1,7 @@
 import type { DraftView, Role, SeriesOptions } from "@rift-legends/contracts";
 import { Button } from "@rift-legends/ui-kit/components/button";
 import { Check } from "lucide-react";
-import { useCallback, useMemo, useState } from "react";
+import { memo, useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { teamName, useDraftSession } from "../session";
 import { ChampionPool, type PoolChampion } from "./champion-pool";
@@ -91,13 +91,15 @@ function TurnBar(props: {
  * AI's turn the board only says whose turn it is (its moves are #193).
  */
 export function DraftBoard() {
-	const { t } = useTranslation();
 	const { view, options, mine, send } = useDraftSession();
 	const [selected, setSelected] = useState<string | null>(null);
 	const [busy, setBusy] = useState(false);
 	const [player, setPlayer] = useState<PlayerRef | null>(null);
 	const [cardOpen, setCardOpen] = useState(false);
-	const [aiOpen, setAiOpen] = useState(false);
+	const myMid = useMemo<PlayerRef | null>(
+		() => (mine ? { team: mine, role: "mid" } : null),
+		[mine],
+	);
 	if (!view) throw new Error("The draft board needs a series");
 	const pool = usePool(view, options);
 
@@ -141,20 +143,19 @@ export function DraftBoard() {
 		);
 	};
 
-	const shown = player ?? (mine ? { team: mine, role: "mid" as const } : null);
-	const attributes = options.teams
-		.find((team) => team.id === shown?.team)
-		?.players.find((p) => p.role === shown?.role)?.attributes;
-
 	return (
 		<>
 			<div className="grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_minmax(0,2fr)_minmax(0,1fr)] gap-3">
 				{column("blue")}
-				<ChampionPool
-					champions={pool.champions}
-					selected={choice?.id ?? null}
-					onSelect={setSelected}
+				<section
+					aria-labelledby="pool-title"
+					className="flex min-h-0 min-w-0 flex-col bg-panel px-[15px] pt-[13px]"
 				>
+					<ChampionPool
+						champions={pool.champions}
+						selected={choice?.id ?? null}
+						onSelect={setSelected}
+					/>
 					{turn && (
 						<TurnBar
 							turn={turn}
@@ -165,49 +166,71 @@ export function DraftBoard() {
 							onConfirm={() => void confirm()}
 						/>
 					)}
-				</ChampionPool>
+				</section>
 				{column("red")}
 			</div>
-			<div className="grid grid-cols-[minmax(0,1.72fr)_minmax(0,1fr)] items-start gap-3">
-				<InspectionPanel
-					id="player-card"
-					title={t("draft.board.playerCard")}
-					note={
-						shown
-							? t("draft.board.player", {
-									team: teamName(options, shown.team),
-									role: t(`market.role.${shown.role}`),
-								})
-							: undefined
-					}
-					open={cardOpen}
-					onOpenChange={setCardOpen}
-					accent={
-						shown?.team === view.red.team
-							? "border-side-red"
-							: "border-side-blue"
-					}
-				>
-					{attributes ? (
-						<PlayerAttributes attributes={attributes} />
-					) : (
-						<p className="mt-2 text-[13px] text-muted">
-							{t("draft.board.playerHint")}
-						</p>
-					)}
-				</InspectionPanel>
-				<InspectionPanel
-					id="ai-read"
-					title={t("draft.board.aiRead")}
-					open={aiOpen}
-					onOpenChange={setAiOpen}
-					accent="border-side-red"
-				>
-					<p className="mt-2 text-[13px] text-muted">
-						{t("draft.board.aiReadEmpty")}
-					</p>
-				</InspectionPanel>
-			</div>
+			<Inspection
+				player={player ?? myMid}
+				red={view.red.team}
+				cardOpen={cardOpen}
+				onCardOpen={setCardOpen}
+			/>
 		</>
 	);
 }
+
+/** The collapsible panels under the board: player card (U5) and AI read (#194). */
+const Inspection = memo(function Inspection(props: {
+	player: PlayerRef | null;
+	red: string;
+	cardOpen: boolean;
+	onCardOpen: (open: boolean) => void;
+}) {
+	const { t } = useTranslation();
+	const { options } = useDraftSession();
+	const [aiOpen, setAiOpen] = useState(false);
+	const { player } = props;
+	const attributes = options.teams
+		.find((team) => team.id === player?.team)
+		?.players.find((p) => p.role === player?.role)?.attributes;
+	return (
+		<div className="grid grid-cols-[minmax(0,1.72fr)_minmax(0,1fr)] items-start gap-3">
+			<InspectionPanel
+				id="player-card"
+				title={t("draft.board.playerCard")}
+				note={
+					player
+						? t("draft.board.player", {
+								team: teamName(options, player.team),
+								role: t(`market.role.${player.role}`),
+							})
+						: undefined
+				}
+				open={props.cardOpen}
+				onOpenChange={props.onCardOpen}
+				accent={
+					player?.team === props.red ? "border-side-red" : "border-side-blue"
+				}
+			>
+				{attributes ? (
+					<PlayerAttributes attributes={attributes} />
+				) : (
+					<p className="mt-2 text-[13px] text-muted">
+						{t("draft.board.playerHint")}
+					</p>
+				)}
+			</InspectionPanel>
+			<InspectionPanel
+				id="ai-read"
+				title={t("draft.board.aiRead")}
+				open={aiOpen}
+				onOpenChange={setAiOpen}
+				accent="border-side-red"
+			>
+				<p className="mt-2 text-[13px] text-muted">
+					{t("draft.board.aiReadEmpty")}
+				</p>
+			</InspectionPanel>
+		</div>
+	);
+});

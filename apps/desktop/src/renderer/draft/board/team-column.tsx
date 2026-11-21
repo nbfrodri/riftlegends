@@ -82,9 +82,7 @@ export function TeamColumn(props: {
 									<RoleIcon role={role} />
 								</span>
 								<span className="min-w-0">
-									<strong
-										className={`block truncate ${champion || current ? "text-text" : "font-medium text-muted"}`}
-									>
+									<strong className="block truncate">
 										{champion
 											? championName(champion)
 											: current

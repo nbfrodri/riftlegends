@@ -10,7 +10,7 @@ import {
 	type CSSProperties,
 	type KeyboardEvent,
 	memo,
-	type ReactNode,
+	useCallback,
 	useRef,
 	useState,
 } from "react";
@@ -39,14 +39,15 @@ const NEXT: Record<string, number> = {
 
 /** A champion of the grid; unavailable ones are grey and struck, with the reason only in their name. */
 const Tile = memo(function Tile(props: {
-	champion: PoolChampion;
+	id: string;
+	unavailable: Unavailable;
 	index: number;
 	selected: boolean;
 	tabbable: boolean;
 	onSelect: (id: string) => void;
 }) {
 	const { t } = useTranslation();
-	const { id, unavailable } = props.champion;
+	const { id, unavailable } = props;
 	const name = championName(id);
 	const reason = unavailable ? t(`draft.board.status.${unavailable}`) : null;
 	return (
@@ -73,7 +74,7 @@ const Tile = memo(function Tile(props: {
 				{initials(id)}
 			</span>
 			<b
-				className={`truncate px-1.5 py-1 text-[14px] ${unavailable ? "font-medium text-muted" : ""}`}
+				className={`truncate px-1.5 py-1 text-[clamp(12px,0.95vw,14px)] ${unavailable ? "font-medium text-muted" : ""}`}
 			>
 				{name}
 			</b>
@@ -81,15 +82,49 @@ const Tile = memo(function Tile(props: {
 	);
 });
 
+/** The role filter, a Caja select. */
+const RoleSelect = memo(function RoleSelect(props: {
+	value: RoleFilter;
+	onChange: (value: RoleFilter) => void;
+}) {
+	const { t } = useTranslation();
+	const items = ROLE_FILTER.map((value) => ({
+		value,
+		label:
+			value === "all" ? t("draft.board.allRoles") : t(`market.role.${value}`),
+	}));
+	return (
+		<Select
+			items={items}
+			value={props.value}
+			onValueChange={(value) => value && props.onChange(value as RoleFilter)}
+		>
+			<SelectTrigger
+				aria-label={t("draft.board.roleFilter")}
+				className="min-w-40 text-[13px]"
+			>
+				<SelectValue />
+			</SelectTrigger>
+			<SelectContent>
+				{items.map((item) => (
+					<SelectItem key={item.value} value={item.value}>
+						{item.label}
+					</SelectItem>
+				))}
+			</SelectContent>
+		</Select>
+	);
+});
+
 /**
  * The champion pool: role filter, search and a dense grid (about 24 visible,
- * the rest scrolls). Arrows move through the grid and Enter selects.
+ * the rest scrolls). Arrows move through the grid and Enter selects. Memoised:
+ * confirming re-renders only the tiles that change.
  */
-export function ChampionPool(props: {
+export const ChampionPool = memo(function ChampionPool(props: {
 	champions: readonly PoolChampion[];
 	selected: string | null;
 	onSelect: (id: string) => void;
-	children: ReactNode;
 }) {
 	const { t } = useTranslation();
 	const [query, setQuery] = useState("");
@@ -120,17 +155,13 @@ export function ChampionPool(props: {
 			?.focus();
 	};
 
-	const items = ROLE_FILTER.map((value) => ({
-		value,
-		label:
-			value === "all" ? t("draft.board.allRoles") : t(`market.role.${value}`),
-	}));
+	const chooseRole = useCallback((value: RoleFilter) => {
+		setRole(value);
+		setActive(0);
+	}, []);
 
 	return (
-		<section
-			aria-labelledby="pool-title"
-			className="flex min-h-0 min-w-0 flex-col bg-panel px-[15px] pt-[13px]"
-		>
+		<>
 			<div className="flex items-center justify-between gap-3.5">
 				<h2
 					id="pool-title"
@@ -158,28 +189,7 @@ export function ChampionPool(props: {
 					placeholder={t("draft.board.searchPlaceholder")}
 					className="min-w-0 flex-1 rounded-control border border-line bg-surface px-2.5 py-[5px] text-[13px] text-text placeholder:text-muted hover:border-muted focus-visible:border-action"
 				/>
-				<Select
-					items={items}
-					value={role}
-					onValueChange={(value) => {
-						if (value) setRole(value as RoleFilter);
-						setActive(0);
-					}}
-				>
-					<SelectTrigger
-						aria-label={t("draft.board.roleFilter")}
-						className="min-w-40 text-[13px]"
-					>
-						<SelectValue />
-					</SelectTrigger>
-					<SelectContent>
-						{items.map((item) => (
-							<SelectItem key={item.value} value={item.value}>
-								{item.label}
-							</SelectItem>
-						))}
-					</SelectContent>
-				</Select>
+				<RoleSelect value={role} onChange={chooseRole} />
 			</div>
 			<fieldset
 				ref={grid}
@@ -194,7 +204,8 @@ export function ChampionPool(props: {
 				{shown.map((champion, index) => (
 					<Tile
 						key={champion.id}
-						champion={champion}
+						id={champion.id}
+						unavailable={champion.unavailable}
 						index={index}
 						selected={champion.id === props.selected}
 						tabbable={index === focusable}
@@ -202,7 +213,6 @@ export function ChampionPool(props: {
 					/>
 				))}
 			</fieldset>
-			{props.children}
-		</section>
+		</>
 	);
-}
+});
