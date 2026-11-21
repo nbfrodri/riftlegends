@@ -71,8 +71,11 @@ function Replay({ match, entry }: { match: MatchView; entry: DraftView }) {
 				/>
 				<div className="match-map">
 					{/* Both panes share one cell, so the row keeps its height. */}
-					<div className="match-pane match-pane-map" hidden={panel !== "map"}
-						inert={panel !== "map"}>
+					<div
+						className="match-pane match-pane-map"
+						hidden={panel !== "map"}
+						inert={panel !== "map"}
+					>
 						<Structures
 							snapshot={snapshot}
 							second={player.second}
@@ -84,8 +87,11 @@ function Replay({ match, entry }: { match: MatchView; entry: DraftView }) {
 							names={names}
 						/>
 					</div>
-					<div className="match-pane" hidden={panel !== "faceToFace"}
-						inert={panel !== "faceToFace"}>
+					<div
+						className="match-pane"
+						hidden={panel !== "faceToFace"}
+						inert={panel !== "faceToFace"}
+					>
 						<FaceToFace snapshot={snapshot} names={names} />
 					</div>
 				</div>

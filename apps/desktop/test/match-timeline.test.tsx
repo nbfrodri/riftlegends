@@ -266,7 +266,7 @@ test("face to face shows each lane's numbers for the current minute and advances
 	await renderInLocale(<Match />);
 	faceToFace();
 	const table = screen.getByRole("table", { name: "Face to face" });
-	advance(4000);
+	advance(5000);
 	expect(within(table).getAllByRole("row")).toHaveLength(lanes.length + 2);
 	let top = lane("Top");
 	expect(top.getByText("1/0/2")).toBeTruthy();
@@ -301,5 +301,7 @@ test("face to face says even when a lane is tied", async () => {
 	fireEvent.click(screen.getByRole("radio", { name: "Cara a cara" }));
 	advance(5000);
 	expect(lane("Mid", "Cara a cara").getByText("Igualados")).toBeTruthy();
-	expect(lane("Top", "Cara a cara").getByText("Forge: 300 de oro más y 18 CS más")).toBeTruthy();
+	expect(
+		lane("Top", "Cara a cara").getByText("Forge: 300 de oro más y 18 CS más"),
+	).toBeTruthy();
 });
