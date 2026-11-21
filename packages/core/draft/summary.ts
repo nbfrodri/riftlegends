@@ -1,4 +1,5 @@
 import {
+	GAP_RATING,
 	ROLES,
 	type Role,
 	type SeriesSummary,
@@ -6,9 +7,6 @@ import {
 } from "@rift-legends/contracts";
 import type { Emitted } from "../server/dispatcher";
 import type { SeriesState } from "./series";
-
-/** Rating points of difference in a lane from which it counts as a gap. */
-export const GAP_RATING = 15;
 
 interface Line {
 	player: string;

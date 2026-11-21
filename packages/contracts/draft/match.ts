@@ -278,6 +278,9 @@ export const matchView = z.strictObject({
 
 export type MatchView = z.infer<typeof matchView>;
 
+/** Rating points of difference in a lane from which it counts as a gap (plan 09, Q5). */
+export const GAP_RATING = 15;
+
 const lineGap = z.strictObject({
 	role: z.enum(["top", "jungle", "mid", "bot", "support"]),
 	/** Blue rating minus red rating. */

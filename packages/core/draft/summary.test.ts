@@ -1,11 +1,15 @@
-import { CONTRACT_VERSION, seriesSummary } from "@rift-legends/contracts";
+import {
+	CONTRACT_VERSION,
+	GAP_RATING,
+	seriesSummary,
+} from "@rift-legends/contracts";
 import { describe, expect, it } from "vitest";
 import { fictionalContent } from "../ai/fixtures/content";
 import { fictionalMatchContent } from "../match/fixtures/content";
 import { openSession, type Session } from "../server/dispatcher";
 import { draftDispatcher, draftStateWith } from "./index";
 import type { SeriesState } from "./series";
-import { GAP_RATING, summarizeSeries } from "./summary";
+import { summarizeSeries } from "./summary";
 
 const ROLES = ["top", "jungle", "mid", "bot", "support"] as const;
 
