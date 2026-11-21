@@ -95,6 +95,7 @@ Cada fase termina con un hito verificable y un commit o PR fusionado en `main`. 
 ### Fase 6 — Jugadores, mercado y temporadas
 - Evolución por edad y forma, pools de campeones, contratos, renovaciones, agentes libres, academias, **regens**, offseason y bucle de varias temporadas.
 - **Salida:** 10 temporadas simuladas con distribuciones de edad, nivel y fichajes dentro de bandas Monte Carlo acordadas.
+- **Propuesta del usuario para el plan 17 (21-11-2026):** ventanas de fichajes durante la temporada (entre fases) y en la offseason. En la lista del mercado, al pulsar un jugador su fila se despliega hacia abajo con la ficha (los 20 atributos), sus estadísticas y las acciones: hacer una oferta, seguirle o pedir un informe de scouting. Alternativa a valorar: un panel lateral fijo. Se decide al redactar el plan.
 
 ### Fase 7 — Profundidad de gestión
 - Meta y parches entre splits (tiers dinámicos, notas de parche generadas).
