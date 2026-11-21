@@ -9,7 +9,7 @@
 		"packages/core/**/*.ts",
 		"!packages/core/**/*.test.ts",
 		"!packages/core/test/**",
-		"!packages/core/ai/fixtures/**"
+		"!packages/core/**/fixtures/**"
 	],
 	"reporters": ["clear-text", "progress", "html"],
 	"htmlReporter": {
