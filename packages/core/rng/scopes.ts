@@ -7,5 +7,3 @@ export const SCOPES = {
 	match: 2,
 	ai: 3,
 } as const;
-
-export type Scope = (typeof SCOPES)[keyof typeof SCOPES];

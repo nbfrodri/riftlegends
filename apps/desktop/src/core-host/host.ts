@@ -59,7 +59,7 @@ type AnyCatalog = any;
  * The core's side of the IPC: validates every message, owns the sessions and
  * runs the dispatcher. Messages are handled one at a time, in arrival order.
  */
-export const createHost = <S>(definition: {
+const createHost = <S>(definition: {
 	commands: CommandCatalog<AnyCatalog>;
 	queries: QueryCatalog<AnyCatalog>;
 	dispatcher: ReturnType<typeof createDispatcher<S>>;

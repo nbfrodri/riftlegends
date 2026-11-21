@@ -2,13 +2,8 @@ import type { AiSettings } from "@rift-legends/contracts";
 import { abs, type Fixed, max, mul, SCALE } from "../math";
 import { int, weighted } from "../rng/helpers";
 import type { Rng } from "../rng/streams";
+import type { Component } from "./context";
 import type { Profile } from "./profiles";
-
-export interface Component {
-	readonly key: string;
-	/** Fixed point, scale 10,000. */
-	readonly points: number;
-}
 
 export interface Scored {
 	readonly champion: string;

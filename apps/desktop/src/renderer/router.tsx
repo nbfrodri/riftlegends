@@ -53,7 +53,7 @@ export function createAppRouter(initialPath = "/") {
 	});
 }
 
-export type AppRouter = ReturnType<typeof createAppRouter>;
+type AppRouter = ReturnType<typeof createAppRouter>;
 
 declare module "@tanstack/react-router" {
 	interface Register {

@@ -1,0 +1,33 @@
+{
+	"$schema": "./node_modules/knip/schema.json",
+	"includeEntryExports": true,
+	"includeSubpathExports": true,
+	"tags": ["-knipignore"],
+	"workspaces": {
+		".": {
+			"entry": ["scripts/session-context.sh"],
+			"vitest": {
+				"config": [
+					"vitest.config.ts",
+					"vitest.goldens.config.ts",
+					"vitest.stryker.config.ts"
+				]
+			},
+			"stryker": { "config": ["stryker.config.json"] },
+			"ignoreDependencies": ["lefthook"]
+		},
+		"apps/desktop": {
+			"entry": ["src/core-host/index.ts!", "src/renderer/styles.css!"],
+			"electron-vite": { "config": ["electron.vite.config.ts"] },
+			"playwright": {
+				"config": ["playwright.config.ts", "playwright.visual.config.ts"]
+			}
+		},
+		"packages/core": {
+			"entry": ["test/update-goldens.script.ts"],
+			"ignoreIssues": {
+				"test/fixtures/forbidden.ts": ["unlisted"]
+			}
+		}
+	}
+}

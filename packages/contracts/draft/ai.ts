@@ -19,7 +19,7 @@ export const PERSONALITIES = [
 	"side-lane",
 ] as const;
 
-export const DIFFICULTIES = ["easy", "normal", "hard"] as const;
+const DIFFICULTIES = ["easy", "normal", "hard"] as const;
 
 export const TIERS = ["S+", "S", "A", "B", "C", "D"] as const;
 
@@ -41,7 +41,7 @@ const roles = z.enum(["top", "jungle", "mid", "bot", "support"]);
 const id = z.string().min(1).max(64);
 
 /** AI of one team. The coach decides the difficulty; without one, `difficulty`. */
-export const aiSettings = z.strictObject({
+const aiSettings = z.strictObject({
 	personality: z.enum(PERSONALITIES),
 	/** Coach strength in tenths: 0 to 50 (0.0 to 5.0). */
 	coachRating: z.int().min(0).max(50).optional(),

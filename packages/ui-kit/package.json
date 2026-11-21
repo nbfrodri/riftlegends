@@ -5,8 +5,7 @@
 	"exports": {
 		"./components/*": "./components/*.tsx",
 		"./lib/utils": "./lib/utils.ts",
-		"./styles.css": "./styles.css",
-		"./tokens.css": "./tokens.css"
+		"./styles.css": "./styles.css"
 	},
 	"dependencies": {
 		"@base-ui/react": "1.9.0",
@@ -29,7 +28,6 @@
 		"@testing-library/user-event": "14.6.12",
 		"@types/react": "19.3.0",
 		"@types/react-dom": "19.3.0",
-		"happy-dom": "21.0.4",
 		"react": "19.3.1",
 		"react-dom": "19.3.1"
 	}

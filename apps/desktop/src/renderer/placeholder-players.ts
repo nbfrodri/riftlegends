@@ -3,7 +3,7 @@
 // when the market reads real players from the core (spike S2 and phase 2);
 // do not move it into `packages/core`.
 
-export type PlayerRole = "top" | "jungle" | "mid" | "bot" | "support";
+type PlayerRole = "top" | "jungle" | "mid" | "bot" | "support";
 
 export type PlaceholderPlayer = {
 	id: string;

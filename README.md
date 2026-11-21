@@ -99,7 +99,7 @@ mise exec -- pnpm install --frozen-lockfile
 mise exec -- pnpm verify
 ```
 
-`pnpm verify` ejecuta el lint, la comprobación de tipos y los tests. Para ejecutar solo los tests:
+`pnpm verify` ejecuta el lint, la comprobación de tipos, los tests y Knip para detectar código sin uso. Para ejecutar solo los tests:
 
 ```sh
 mise exec -- pnpm test
