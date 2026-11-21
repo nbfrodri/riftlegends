@@ -50,7 +50,7 @@ Por capa, en el orden en que se escriben. «Rojo» significa ver el test fallar 
 
 | # | Comportamiento | Caso límite |
 | --- | --- | --- |
-| R1 | `window.riftlegends.core` expone solo `send`, `query` y `subscribe`, con tipos de `packages/contracts` | No hay acceso a `ipcRenderer` ni a canales arbitrarios |
+| R1 | `window.riftlegends.core` expone solo `open`, `send`, `query` y `subscribe` (`open` crea la sesión), con tipos de `packages/contracts` | No hay acceso a `ipcRenderer` ni a canales arbitrarios |
 | R2 | Un hook de consulta (TanStack Query) se invalida cuando llega un hecho que afecta a su vista | Hechos que no la afectan no provocan otra consulta |
 | R3 | Un error del núcleo se muestra con su texto traducido | Cambio de idioma con el error visible |
 

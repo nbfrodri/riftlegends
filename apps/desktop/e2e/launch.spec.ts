@@ -26,12 +26,15 @@ test("keeps Node globals out of the renderer", async ({ appWindow }) => {
 	).toEqual(["undefined", "undefined", "undefined"]);
 });
 
-test("exposes only ping, the system locale and the window controls", async ({
+test("exposes only ping, the system locale, the window controls and the core", async ({
 	appWindow,
 }) => {
 	expect(
 		await appWindow.evaluate(() => Object.keys(window.riftlegends).sort()),
-	).toEqual(["ping", "systemLocale", "window"]);
+	).toEqual(["core", "ping", "systemLocale", "window"]);
+	expect(
+		await appWindow.evaluate(() => Object.keys(window.riftlegends.core).sort()),
+	).toEqual(["open", "query", "send", "subscribe"]);
 	expect(
 		await appWindow.evaluate(() => window.riftlegends.systemLocale()),
 	).toBe("en-US");
