@@ -11,6 +11,14 @@ export const ERROR_CODES = [
 	"stale-position",
 	"core-restarted",
 	"core-timeout",
+	// Draft rules (plan 06)
+	"not-your-turn",
+	"wrong-action",
+	"champion-unavailable",
+	"invalid-roles",
+	"pool-too-small",
+	"series-over",
+	"timer-off",
 ] as const;
 
 export type ErrorCode = (typeof ERROR_CODES)[number];
