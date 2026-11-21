@@ -2,39 +2,11 @@ import type { MatchContent, MatchEvent } from "@rift-legends/contracts";
 import { describe, expect, it } from "vitest";
 import { fictionalContent } from "../ai/fixtures/content";
 import { fictionalMatchContent } from "./fixtures/content";
+import { matchSetup } from "./fixtures/setup";
 import { type Contest, LANE_CONTESTS, playMatch, playMinute } from "./loop";
-import type { Lineup } from "./profile";
-import { createMatch, type MatchSetup, type MatchState } from "./state";
+import { createMatch, type MatchState } from "./state";
 
-const forge: Lineup = {
-	team: "forge",
-	roles: {
-		top: "cragbell",
-		jungle: "duskroot",
-		mid: "glasswake",
-		bot: "copperfin",
-		support: "bronzehook",
-	},
-};
-const shoal: Lineup = {
-	team: "shoal",
-	roles: {
-		top: "saltspire",
-		jungle: "coalstride",
-		mid: "waxblade",
-		bot: "suncord",
-		support: "shellward",
-	},
-};
-const setup = (change: Partial<MatchSetup> = {}): MatchSetup => ({
-	seed: 42,
-	game: 1,
-	draft: fictionalContent,
-	match: fictionalMatchContent,
-	blue: forge,
-	red: shoal,
-	...change,
-});
+const setup = matchSetup;
 
 function run(
 	minutes: number,

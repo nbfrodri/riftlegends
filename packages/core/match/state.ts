@@ -6,6 +6,10 @@ import type {
 	Side,
 } from "@rift-legends/contracts";
 import { indexContent } from "../ai/content-index";
+import { int } from "../rng/helpers";
+import { SCOPES } from "../rng/scopes";
+import { deriveSeed } from "../rng/seeds";
+import { createRng } from "../rng/streams";
 import { type Lineup, type Profile, profiles } from "./profile";
 
 export interface MatchSetup {
@@ -20,7 +24,10 @@ export interface MatchSetup {
 
 interface SideContext {
 	readonly team: string;
+	readonly strategy: MatchContent["teams"][number]["strategy"];
 	readonly profile: Profile;
+	/** How the team plays today, in points; one draw per game. */
+	readonly form: number;
 	/** Player id in each role. */
 	readonly players: Readonly<Record<Role, string>>;
 }
@@ -34,9 +41,26 @@ interface MatchContext {
 	readonly red: SideContext;
 }
 
+export type Lane = "top" | "mid" | "bot";
+export const LANES: readonly Lane[] = ["top", "mid", "bot"];
+type Objective = "dragon" | "herald" | "baron" | "elder";
+
+/** Minutes each buff lasts after its objective falls. A balance constant. */
+const BUFF_MINUTES = { herald: 2, baron: 3, elder: 2 } as const;
+/** A side's dragons that complete its soul and end the dragons. */
+export const SOUL = 4;
+
 interface SideState {
 	readonly gold: number;
 	readonly kills: number;
+	readonly dragons: number;
+	/** Towers this side has lost in each lane (0–3) and at its nexus (0–2). */
+	readonly towers: Readonly<Record<Lane, number>>;
+	readonly nexusTowers: number;
+	/** Minute each lost inhibitor is back; it is down while that is later. */
+	readonly inhibitors: Readonly<Record<Lane, number>>;
+	/** Minute each buff wears off; 0 if the side never had it. */
+	readonly buffs: Readonly<Record<keyof typeof BUFF_MINUTES, number>>;
 }
 
 export interface MatchState {
@@ -45,10 +69,25 @@ export interface MatchState {
 	readonly minute: number;
 	readonly blue: SideState;
 	readonly red: SideState;
+	/** Minute from which each objective can be taken. */
+	readonly objectives: Readonly<Record<Objective, number>>;
 	readonly winner: Side | null;
 }
 
+/** The minute in which `seconds` falls: an objective at 5:00 is up in minute 5. */
+export const minuteOf = (seconds: number) =>
+	(seconds + 59 - ((seconds + 59) % 60)) / 60;
+
+export const inhibitorDown = (side: SideState, minute: number) =>
+	LANES.some((lane) => side.inhibitors[lane] > minute);
+
 export const other = (side: Side): Side => (side === "blue" ? "red" : "blue");
+
+function strategy(match: MatchContent, team: string) {
+	const found = match.teams.find((t) => t.id === team);
+	if (!found) throw new Error(`No match data for team ${team}`);
+	return found.strategy;
+}
 
 function players(draft: AiContent, team: string) {
 	const roster = indexContent(draft).rosters.get(team);
@@ -66,6 +105,9 @@ function players(draft: AiContent, team: string) {
 	};
 }
 
+/** Range of the form of the day, in points. A balance constant (F10 tunes it). */
+const FORM = 600_000;
+
 export function createMatch(setup: MatchSetup): MatchState {
 	const { us, them } = profiles(
 		setup.draft,
@@ -73,12 +115,25 @@ export function createMatch(setup: MatchSetup): MatchState {
 		setup.blue,
 		setup.red,
 	);
+	// No contest plays minute 0: the form of the day has that stream.
+	const rng = createRng(deriveSeed(setup.seed, SCOPES.match, setup.game, 0, 0));
 	const side = (lineup: Lineup, profile: Profile): SideContext => ({
 		team: lineup.team,
+		form: int(rng, -FORM, FORM),
+		strategy: strategy(setup.match, lineup.team),
 		profile,
 		players: players(setup.draft, lineup.team),
 	});
-	const start: SideState = { gold: 0, kills: 0 };
+	const start: SideState = {
+		gold: 0,
+		kills: 0,
+		dragons: 0,
+		towers: { top: 0, mid: 0, bot: 0 },
+		nexusTowers: 0,
+		inhibitors: { top: 0, mid: 0, bot: 0 },
+		buffs: { herald: 0, baron: 0, elder: 0 },
+	};
+	const { objectives } = setup.match.rules;
 	return {
 		context: {
 			seed: setup.seed,
@@ -90,28 +145,81 @@ export function createMatch(setup: MatchSetup): MatchState {
 		minute: 0,
 		blue: start,
 		red: start,
+		objectives: {
+			dragon: minuteOf(objectives.dragon.first),
+			herald: minuteOf(objectives.herald.first),
+			baron: minuteOf(objectives.baron.first),
+			elder: minuteOf(objectives.elder.first),
+		},
 		winner: null,
 	};
 }
 
-/** Adds what the events of a minute earned to each side. */
+const lane = (event: MatchEvent) => event.zone.slice("lane-".length) as Lane;
+
+/** One event's mark on the side that won it and on the other side. */
+function mark(state: MatchState, e: MatchEvent): MatchState {
+	const { rules } = state.context;
+	const winner = state[e.side];
+	const loser = state[other(e.side)];
+	let won: SideState = {
+		...winner,
+		gold: winner.gold + e.gold[e.side],
+		kills: winner.kills + e.kills.length,
+	};
+	let lost: SideState = { ...loser, gold: loser.gold + e.gold[other(e.side)] };
+	let objectives = state.objectives;
+	const respawn = (kind: Objective) => ({
+		...objectives,
+		[kind]: e.minute + minuteOf(rules.objectives[kind].respawn),
+	});
+	const buff = (kind: keyof typeof BUFF_MINUTES) => ({
+		...won.buffs,
+		[kind]: e.minute + BUFF_MINUTES[kind],
+	});
+	switch (e.kind) {
+		case "tower":
+			lost =
+				e.tier === 4
+					? { ...lost, nexusTowers: lost.nexusTowers + 1 }
+					: {
+							...lost,
+							towers: { ...lost.towers, [lane(e)]: lost.towers[lane(e)] + 1 },
+						};
+			break;
+		case "inhibitor":
+			lost = {
+				...lost,
+				inhibitors: {
+					...lost.inhibitors,
+					[lane(e)]: e.minute + minuteOf(rules.inhibitorRespawn),
+				},
+			};
+			break;
+		case "dragon":
+			won = { ...won, dragons: won.dragons + 1 };
+			objectives = respawn("dragon");
+			break;
+		case "herald":
+		case "baron":
+		case "elder":
+			won = { ...won, buffs: buff(e.kind) };
+			objectives = respawn(e.kind);
+			break;
+	}
+	return {
+		...state,
+		[e.side]: won,
+		[other(e.side)]: lost,
+		objectives,
+		winner: e.kind === "nexus" ? e.side : state.winner,
+	};
+}
+
+/** Applies the events of a minute, in order. */
 export function applyEvents(
 	state: MatchState,
 	events: readonly MatchEvent[],
 ): MatchState {
-	const earn = (side: Side): SideState =>
-		events.reduce(
-			(acc, e) => ({
-				gold: acc.gold + e.gold[side],
-				kills: acc.kills + (e.side === side ? e.kills.length : 0),
-			}),
-			state[side],
-		);
-	const nexus = events.find((e) => e.kind === "nexus");
-	return {
-		...state,
-		blue: earn("blue"),
-		red: earn("red"),
-		winner: nexus ? nexus.side : state.winner,
-	};
+	return events.reduce(mark, state);
 }

@@ -2,7 +2,10 @@ import type { MatchEvent } from "@rift-legends/contracts";
 import { SCOPES } from "../rng/scopes";
 import { deriveSeed } from "../rng/seeds";
 import { createRng } from "../rng/streams";
-import type { Contest } from "./contests/lane";
+import type { Contest } from "./contests/contest";
+import { LANE_CONTESTS } from "./contests/lane";
+import { OBJECTIVE_CONTESTS } from "./contests/objectives";
+import { STRUCTURE_CONTESTS } from "./contests/structures";
 import {
 	applyEvents,
 	createMatch,
@@ -10,7 +13,15 @@ import {
 	type MatchState,
 } from "./state";
 
-export { type Contest, LANE_CONTESTS } from "./contests/lane";
+export type { Contest } from "./contests/contest";
+export { LANE_CONTESTS };
+
+/** Every contest of a game, in the order they resolve within a minute. */
+export const MATCH_CONTESTS: readonly Contest[] = [
+	...LANE_CONTESTS,
+	...OBJECTIVE_CONTESTS,
+	...STRUCTURE_CONTESTS,
+];
 
 /** Far past any real game: reaching it means no contest can end the game. */
 const RUNAWAY = 120;
@@ -44,6 +55,9 @@ export function playMinute(
 		)
 		// Stable: events of the same second keep the order of the contests.
 		.sort((a, b) => a.second - b.second);
+	// Nothing happens after the nexus falls.
+	const end = events.findIndex((e) => e.kind === "nexus");
+	if (end >= 0) events.length = end + 1;
 	return { state: applyEvents(current, events), events };
 }
 
