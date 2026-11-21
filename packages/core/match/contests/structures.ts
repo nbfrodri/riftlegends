@@ -11,9 +11,9 @@ import { type Contest, type ContestEvent, paid, roll } from "./contest";
 import { edge, outcome } from "./edge";
 
 /** First minute teams push for structures, once the lanes are over. */
-const PUSH_FROM = 14;
+const PUSH_FROM = 12;
 /** Chance, per 10,000, that a won push takes a structure. Balance constants. */
-const TAKE = 2200;
+const TAKE = 3500;
 const BUFF_TAKE = { herald: 2500, baron: 4000, elder: 5000 } as const;
 
 type Loss = Pick<MatchState["blue"], "towers" | "nexusTowers" | "inhibitors">;

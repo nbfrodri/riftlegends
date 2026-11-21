@@ -12,8 +12,6 @@ export const draftDispatcher = createDispatcher<SeriesState>({
 	queries: { "draft.view": viewDraft },
 });
 
-export const initialDraftState = initialSeries;
-
 /**
  * A session whose AI teams read `content` (plan 07) and whose games are played
  * with `match` (plan 08).

@@ -20,7 +20,7 @@ const BUFF_POINTS: Record<
 	elder: { fight: 200_000, siege: 200_000, objective: 100_000 },
 };
 /** Calibrates the probability curve to game outcomes (K4). */
-const EDGE_SCALE = 2200 as Fixed;
+const EDGE_SCALE = 1600 as Fixed;
 const RISK_SCALE = { safe: 18_000, balanced: 10_000, risky: 2000 } as const;
 const AGGRESSION_SCALE = 28;
 const FIGHT_PUSH_POINTS = 500_000;

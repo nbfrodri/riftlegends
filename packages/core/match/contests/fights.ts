@@ -7,8 +7,8 @@ import { type Contest, roll } from "./contest";
 import { edge, MID_GAME, outcome } from "./edge";
 import { kill } from "./lane";
 
-const TEMPO_CHANCE = { slow: 1800, balanced: 3000, fast: 4400 } as const;
-const EXCHANGE_CHANCE = 3300;
+const TEMPO_CHANCE = { slow: 1300, balanced: 2200, fast: 3200 } as const;
+const EXCHANGE_CHANCE = 2300;
 const AGGRESSION_POINTS = 25;
 const POSITIONING_POINTS = 30;
 const ZONES = [
