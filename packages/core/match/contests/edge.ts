@@ -19,7 +19,12 @@ const BUFF_POINTS: Record<
 	baron: { siege: 150_000, fight: 80_000, objective: 50_000 },
 	elder: { fight: 200_000, siege: 200_000, objective: 100_000 },
 };
-const MID_GAME = 14;
+/** Calibrates the probability curve to game outcomes (K4). */
+const EDGE_SCALE = 2200 as Fixed;
+const RISK_SCALE = { safe: 18_000, balanced: 10_000, risky: 2000 } as const;
+const AGGRESSION_SCALE = 28;
+const FIGHT_PUSH_POINTS = 500_000;
+export const MID_GAME = 14;
 const LATE_GAME = 26;
 
 const phaseOf = (minute: number) =>
@@ -47,6 +52,12 @@ function strength(state: MatchState, side: Side, contest: Contest) {
 	}
 	add("form", state.context[side].form);
 	const own = state[side];
+	if (
+		contest === "siege" &&
+		state.minute > 0 &&
+		own.fightPushAt === state.minute
+	)
+		add("fight", FIGHT_PUSH_POINTS);
 	add("dragons", own.dragons * DRAGON_POINTS);
 	if (own.dragons >= SOUL) add("soul", SOUL_POINTS);
 	for (const buff of ["herald", "baron", "elder"] as const) {
@@ -92,7 +103,16 @@ export function edge(
 	);
 	if (gold !== 0) causes.push({ key: "gold", points: gold });
 	const total = causes.reduce((sum, c) => sum + c.points, 0);
-	return { blue: chance(total), causes };
+	// Both teams affect how decisive the contest is, independently of who leads.
+	const risk = (side: Side) => {
+		const { aggression, strategy } = state.context[side];
+		return RISK_SCALE[strategy.risk] + (50 - aggression) * AGGRESSION_SCALE;
+	};
+	const scale = (risk("blue") + risk("red")) / 2;
+	const adjusted = mul(total as Fixed, scale as Fixed);
+	const adjustment = adjusted - total;
+	if (adjustment !== 0) causes.push({ key: "risk", points: adjustment });
+	return { blue: chance(mul(adjusted, EDGE_SCALE)), causes };
 }
 
 /** The winner's chance and causes, seen from the winner. */
