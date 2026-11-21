@@ -11,6 +11,7 @@
 - **Plan 10:** amplía el contenido con los atributos que pide este plan. Los tests usan el fixture de la IA, ampliado.
 - **Minimapa (Fase 9, plan 23):** reproducirá estos mismos hechos, sin volver a simular. Por eso cada evento lleva desde ya su zona del mapa y su segundo. El minimapa interpola el movimiento entre eventos; no hace falta simular posiciones.
 - **Fase 7 (plan 21):** moral y química completas.
+- **Atributos visibles:** los atributos de cada jugador se mostrarán en su perfil y en el mercado (plan 15) y al pasar el ratón en el draft (plan 09). De los rivales se verá lo que permita el scouting (plan 19). Este plan los define y los usa; la UI llega en esos planes.
 
 ## Lista de tests
 
