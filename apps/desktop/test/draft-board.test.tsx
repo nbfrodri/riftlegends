@@ -246,12 +246,4 @@ describe("player card (U5)", () => {
 			"99",
 		);
 	});
-
-	test("the AI panel is a collapsed, empty slot for now", async () => {
-		const user = userEvent.setup();
-		await renderWithDraftCore(<DraftScreen />);
-		await toBoard(user);
-		const ai = screen.getByRole("group", { name: /AI read/ });
-		expect(ai.hasAttribute("open")).toBe(false);
-	});
 });

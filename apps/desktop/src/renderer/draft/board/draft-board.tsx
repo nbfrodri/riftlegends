@@ -4,6 +4,7 @@ import { Check } from "lucide-react";
 import { memo, useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { teamName, useDraftSession } from "../session";
+import { AiDecisionPanel } from "./ai-decision-panel";
 import { ChampionPool, type PoolChampion } from "./champion-pool";
 import { championName, slotRoles } from "./champions";
 import { InspectionPanel, PlayerAttributes } from "./player-card";
@@ -187,8 +188,7 @@ const Inspection = memo(function Inspection(props: {
 	onCardOpen: (open: boolean) => void;
 }) {
 	const { t } = useTranslation();
-	const { options } = useDraftSession();
-	const [aiOpen, setAiOpen] = useState(false);
+	const { options, view } = useDraftSession();
 	const { player } = props;
 	const attributes = options.teams
 		.find((team) => team.id === player?.team)
@@ -220,17 +220,7 @@ const Inspection = memo(function Inspection(props: {
 					</p>
 				)}
 			</InspectionPanel>
-			<InspectionPanel
-				id="ai-read"
-				title={t("draft.board.aiRead")}
-				open={aiOpen}
-				onOpenChange={setAiOpen}
-				accent="border-side-red"
-			>
-				<p className="mt-2 text-[13px] text-muted">
-					{t("draft.board.aiReadEmpty")}
-				</p>
-			</InspectionPanel>
+			<AiDecisionPanel key={view?.game} />
 		</div>
 	);
 });
