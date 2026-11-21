@@ -1,7 +1,7 @@
 import type { MatchEvent, Side } from "@rift-legends/contracts";
 import type { Emitted } from "../server/dispatcher";
 import { decisive } from "./explain";
-import { MATCH_CONTESTS, playMatch } from "./loop";
+import { MATCH_CONTESTS, matchDuration, playMatch } from "./loop";
 import { type Contest, summarize } from "./profile";
 import { createMatch, type MatchSetup } from "./state";
 import { playerStats } from "./stats";
@@ -34,8 +34,7 @@ export function playGame(setup: MatchSetup) {
 	const { state, events, snapshots } = playMatch(setup, MATCH_CONTESTS);
 	const side = state.winner as Side;
 	const winner = context[side].team;
-	const last = events.at(-1);
-	const duration = last ? (last.minute - 1) * 60 + last.second : 0;
+	const duration = matchDuration(events.at(-1));
 	const indexed = events.map((event, position) => ({ ...event, position }));
 	const teams = {
 		blue: {

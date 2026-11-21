@@ -365,7 +365,15 @@ const side = {
 	elders: 0,
 	buffs: { herald: null, baron: null, elder: null },
 };
-const snapshot = { minute: 1, blue: side, red: side };
+const player = {
+	player: "p1",
+	kills: 0,
+	deaths: 0,
+	assists: 0,
+	gold: 100,
+	cs: 8,
+};
+const snapshot = { minute: 1, blue: side, red: side, players: [player] };
 
 describe("match.view", () => {
 	const query = (params: unknown) =>
@@ -408,6 +416,19 @@ describe("match.view", () => {
 			matchView.safeParse({ ...view, snapshots: [{ ...snapshot, minute: -1 }] })
 				.success,
 		).toBe(false);
+	});
+
+	it("requires player stats with nonnegative integer counters in each snapshot", () => {
+		const invalid = [
+			{ minute: 1, blue: side, red: side },
+			{ ...snapshot, players: [{ ...player, cs: -1 }] },
+			{ ...snapshot, players: [{ ...player, gold: 0.5 }] },
+		];
+		for (const entry of invalid) {
+			expect(
+				matchView.safeParse({ game: 1, facts: [], snapshots: [entry] }).success,
+			).toBe(false);
+		}
 	});
 });
 

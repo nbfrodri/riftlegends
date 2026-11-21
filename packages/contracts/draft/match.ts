@@ -256,6 +256,17 @@ export const mapSnapshot = z.strictObject({
 	minute: position,
 	blue: mapSide,
 	red: mapSide,
+	/** Blue then red, each in role order. CS is a cosmetic estimate. */
+	players: z.array(
+		z.strictObject({
+			player: id,
+			kills: position,
+			deaths: position,
+			assists: position,
+			gold: position,
+			cs: position,
+		}),
+	),
 });
 
 export type MapSnapshot = z.infer<typeof mapSnapshot>;

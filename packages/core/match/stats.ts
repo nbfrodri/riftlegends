@@ -1,12 +1,13 @@
 import {
 	type MatchContent,
+	type MatchEvent,
 	ROLES,
 	type Role,
 	type Side,
 } from "@rift-legends/contracts";
 import { SCALE } from "../math";
 import { clamp } from "../math/int";
-import type { EventFact } from "./explain";
+import { minuteOf } from "./state";
 
 export type { EventFact } from "./explain";
 
@@ -61,42 +62,27 @@ interface Line {
 }
 
 /**
- * Per-player stats of a game, from its events (`match.ended`, plan 08).
- * Kill and assist gold goes to who earned it; the rest of the side's gold
- * (passive and objectives) is split evenly, the remainder to the first role.
+ * Records each event once. Kill and assist gold goes to who earned it.
+ * All other gold is shared evenly, with the remainder going to the first role.
  */
-export function playerStats(
-	events: readonly EventFact[],
-	teams: Teams,
+export function trackPlayerStats(
+	teams: Readonly<Record<Side, Pick<SideTeam, "players">>>,
 	rules: MatchContent["rules"],
-	duration: number,
-): PlayerStats[] {
-	const minutes = div(duration + 59, 60);
+) {
+	const slots = SIDES.flatMap((side) =>
+		ROLES.map((role) => ({ side, role, player: teams[side].players[role] })),
+	);
 	const lines = new Map<string, Line>();
-	for (const side of SIDES) {
-		for (const role of ROLES) {
-			lines.set(teams[side].players[role], {
-				kills: 0,
-				deaths: 0,
-				assists: 0,
-				gold: 0,
-				damage: DAMAGE_PER_MINUTE * minutes,
-			});
-		}
+	const sideOf = new Map<string, Side>();
+	for (const { player, side } of slots) {
+		lines.set(player, { kills: 0, deaths: 0, assists: 0, gold: 0, damage: 0 });
+		sideOf.set(player, side);
 	}
-	const total = { blue: rules.economy.passive * minutes, red: 0 };
-	total.red = total.blue;
-	const paid = { blue: 0, red: 0 };
+	const shared = { blue: 0, red: 0 };
 	const teamKills = { blue: 0, red: 0 };
 
-	const sideOf = new Map<string, Side>();
-	for (const side of SIDES) {
-		for (const role of ROLES) sideOf.set(teams[side].players[role], side);
-	}
-
-	for (const event of events) {
+	const record = (event: MatchEvent) => {
 		const winner = event.side;
-		for (const side of SIDES) total[side] += event.gold[side];
 		// Each side pays its own killers from what it earned in the event, and
 		// never more, so the shared rest stays >= 0.
 		const left = { blue: event.gold.blue, red: event.gold.red };
@@ -104,7 +90,6 @@ export function playerStats(
 			const given = amount < left[side] ? amount : left[side];
 			line.gold += given;
 			left[side] -= given;
-			paid[side] += given;
 		};
 		for (const k of event.kills) {
 			// In a fight both sides can score: a kill is its killer's side's.
@@ -130,48 +115,72 @@ export function playerStats(
 				}
 			}
 		}
+		for (const side of SIDES) shared[side] += left[side];
 		if (FIGHTS.has(event.kind)) {
-			for (const side of SIDES) {
-				for (const role of ROLES) {
-					const line = lines.get(teams[side].players[role]);
-					if (line) line.damage += side === winner ? DAMAGE.won : DAMAGE.lost;
-				}
+			for (const { player, side } of slots) {
+				const line = lines.get(player) as Line;
+				line.damage += side === winner ? DAMAGE.won : DAMAGE.lost;
 			}
 		}
-	}
+	};
 
-	return SIDES.flatMap((side) => {
-		const rest = total[side] - paid[side];
-		const share = div(rest, ROLES.length);
-		const extra = rest - share * ROLES.length;
-		return ROLES.map((role, index) => {
-			const player = teams[side].players[role];
-			const line = lines.get(player) as Line;
-			const involved = line.kills + line.assists;
-			const participation =
-				teamKills[side] === 0
-					? 0
-					: clamp(div(involved * SCALE, teamKills[side]), 0, SCALE);
-			return {
-				player,
-				team: teams[side].team,
-				champion: teams[side].champions[role],
-				kills: line.kills,
-				deaths: line.deaths,
-				assists: line.assists,
-				gold: line.gold + share + (index === 0 ? extra : 0),
-				damage: line.damage,
-				participation,
-				rating: clamp(
-					RATING.base +
-						RATING.kill * line.kills +
-						RATING.assist * line.assists +
-						RATING.death * line.deaths +
-						div(RATING.participation * participation, SCALE),
-					0,
-					100,
-				),
-			};
+	const at = <T>(
+		minutes: number,
+		project: (
+			slot: (typeof slots)[number],
+			line: Readonly<Line>,
+			gold: number,
+		) => T,
+	): T[] => {
+		const passive = rules.economy.passive * minutes;
+		return slots.map((slot) => {
+			const rest = shared[slot.side] + passive;
+			const share = div(rest, ROLES.length);
+			const extra = slot.role === ROLES[0] ? rest % ROLES.length : 0;
+			const line = lines.get(slot.player) as Line;
+			return project(slot, line, line.gold + share + extra);
 		});
+	};
+
+	return { record, at, teamKills };
+}
+
+/** Per-player stats of a game, from its events (`match.ended`, plan 08). */
+export function playerStats(
+	events: readonly MatchEvent[],
+	teams: Teams,
+	rules: MatchContent["rules"],
+	duration: number,
+): PlayerStats[] {
+	const stats = trackPlayerStats(teams, rules);
+	for (const event of events) stats.record(event);
+	const minutes = minuteOf(duration);
+	return stats.at(minutes, ({ side, role, player }, line, gold) => {
+		const { kills, deaths, assists, damage } = line;
+		const teamKills = stats.teamKills[side];
+		const participation =
+			teamKills === 0
+				? 0
+				: clamp(div((kills + assists) * SCALE, teamKills), 0, SCALE);
+		return {
+			player,
+			team: teams[side].team,
+			champion: teams[side].champions[role],
+			kills,
+			deaths,
+			assists,
+			gold,
+			damage: damage + DAMAGE_PER_MINUTE * minutes,
+			participation,
+			rating: clamp(
+				RATING.base +
+					RATING.kill * kills +
+					RATING.assist * assists +
+					RATING.death * deaths +
+					div(RATING.participation * participation, SCALE),
+				0,
+				100,
+			),
+		};
 	});
 }

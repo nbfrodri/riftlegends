@@ -74,7 +74,7 @@ const match: MatchView = {
 		},
 	],
 	snapshots: [
-		{ minute: 0, blue: side, red: side },
+		{ minute: 0, blue: side, red: side, players: [] },
 		{
 			minute: 1,
 			blue: {
@@ -90,11 +90,13 @@ const match: MatchView = {
 				towers: { top: 2, mid: 0, bot: 0 },
 				inhibitors: { top: 3, mid: null, bot: null },
 			},
+			players: [],
 		},
 		{
 			minute: 2,
 			blue: { ...side, gold: 5100, kills: 4, dragons: 4, soul: true },
 			red: { ...side, nexusTowers: 2 },
+			players: [],
 		},
 	],
 };

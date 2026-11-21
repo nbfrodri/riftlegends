@@ -7,7 +7,7 @@ import { FIGHT_CONTEST } from "./contests/fights";
 import { LANE_CONTESTS } from "./contests/lane";
 import { OBJECTIVE_CONTESTS } from "./contests/objectives";
 import { STRUCTURE_CONTESTS } from "./contests/structures";
-import { snapshotOf } from "./snapshot";
+import { trackSnapshots } from "./snapshot";
 import {
 	applyEvents,
 	createMatch,
@@ -28,6 +28,9 @@ export const MATCH_CONTESTS: readonly Contest[] = [
 
 /** Far past any real game: reaching it means no contest can end the game. */
 const RUNAWAY = 120;
+
+export const matchDuration = (last: MatchEvent | undefined): number =>
+	last ? (last.minute - 1) * 60 + last.second : 0;
 
 /**
  * Plays one more minute: each due contest draws from its own stream
@@ -71,7 +74,8 @@ export function playMinute(
 export function playMatch(setup: MatchSetup, contests: readonly Contest[]) {
 	let state = createMatch(setup);
 	const events: MatchEvent[] = [];
-	const snapshots = [snapshotOf(state)];
+	const capture = trackSnapshots(state, setup.match);
+	const snapshots = [capture(state, [], 0)];
 	while (state.winner === null) {
 		if (state.minute >= RUNAWAY) {
 			throw new Error(`No nexus fell in ${RUNAWAY} minutes`);
@@ -79,7 +83,10 @@ export function playMatch(setup: MatchSetup, contests: readonly Contest[]) {
 		const next = playMinute(state, contests);
 		events.push(...next.events);
 		state = next.state;
-		snapshots.push(snapshotOf(state));
+		const elapsed = state.winner
+			? matchDuration(next.events.at(-1))
+			: state.minute * 60;
+		snapshots.push(capture(state, next.events, elapsed));
 	}
 	return { state, events, snapshots };
 }
