@@ -2,14 +2,25 @@ import { join } from "node:path";
 import { app, BrowserWindow, ipcMain, shell, utilityProcess } from "electron";
 import coreHostPath from "../core-host/index?modulePath";
 import { pingChannel } from "../shared/bridge";
+import { createAssetCache } from "./assets/cache";
 import { type CoreProcess, createCoreBridge } from "./core-bridge";
 import { registerCoreIpc } from "./core-ipc";
 import { registerSystemLocale } from "./system-locale";
 import { createMainWindowOptions, secureNavigation } from "./window";
 import { registerWindowControls, supportsMinimize } from "./window-controls";
 
-app.whenReady().then(async () => {
+async function start() {
 	const window = new BrowserWindow(createMainWindowOptions());
+	const assets = createAssetCache(app.getPath("userData"), {
+		...(process.env.RIFT_E2E_OFFLINE === "1" && {
+			transport: async () => {
+				throw Object.assign(new Error("Asset network unavailable"), {
+					code: "ENETUNREACH",
+				});
+			},
+		}),
+	});
+	void assets.sync();
 	const { session } = window.webContents;
 	session.setPermissionCheckHandler(() => false);
 	session.setPermissionRequestHandler((_contents, _permission, reply) =>
@@ -57,6 +68,16 @@ app.whenReady().then(async () => {
 			query,
 		});
 	}
-});
+}
 
-app.on("window-all-closed", () => app.quit());
+if (app.requestSingleInstanceLock()) {
+	app.on("second-instance", () => {
+		const [window] = BrowserWindow.getAllWindows();
+		if (window?.isMinimized()) window.restore();
+		window?.focus();
+	});
+	app.on("window-all-closed", () => app.quit());
+	void app.whenReady().then(start);
+} else {
+	app.quit();
+}

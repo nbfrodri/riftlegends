@@ -7,6 +7,9 @@ const session = {
 };
 const mainFrame = {};
 const loadRenderer = vi.fn();
+const assetSync = vi.fn(() => new Promise<never>(() => {}));
+const acquireInstance = vi.fn(() => true);
+const quit = vi.fn();
 const handlers = new Map<
 	string,
 	(event: { senderFrame: unknown }) => unknown
@@ -18,10 +21,13 @@ beforeEach(async () => {
 	handlers.clear();
 	vi.doMock("electron", () => ({
 		app: {
+			requestSingleInstanceLock: acquireInstance,
+			quit,
 			whenReady: () => Promise.resolve(),
 			on: vi.fn(),
 			once: vi.fn(),
 			getLocale: () => "en-US",
+			getPath: () => "/profile",
 		},
 		utilityProcess: {
 			fork: () => ({ on: vi.fn(), postMessage: vi.fn(), kill: vi.fn() }),
@@ -45,7 +51,25 @@ beforeEach(async () => {
 	vi.doMock("../src/core-host/index?modulePath", () => ({
 		default: "core.js",
 	}));
+	vi.doMock("../src/main/assets/cache", () => ({
+		createAssetCache: () => ({ sync: assetSync }),
+	}));
 	await import("../src/main/index");
+});
+
+test("D0 loads the renderer while asset synchronization is pending", () => {
+	expect(assetSync).toHaveBeenCalledOnce();
+	expect(assetSync).toHaveBeenCalledBefore(loadRenderer);
+});
+
+test("D0 a second app instance quits before starting another sync", async () => {
+	vi.resetModules();
+	vi.clearAllMocks();
+	acquireInstance.mockReturnValueOnce(false);
+	await import("../src/main/index");
+	expect(quit).toHaveBeenCalledOnce();
+	expect(assetSync).not.toHaveBeenCalled();
+	expect(loadRenderer).not.toHaveBeenCalled();
 });
 
 test.each(["notifications", "media"])(
