@@ -1,7 +1,7 @@
 # Plan 08 — Simulación de partida v1 y timeline
 
-- **Estado:** aprobado (21-11-2026). Redactado por Claude con las decisiones del usuario (al final) y el [estudio de DraftSim](../research/draftsim-simulacion.md).
-- **Fase:** 2 · Draft rápido completo ([plan general](00-plan-general.md)).
+- **Estado:** hecho (21-11-2026; PR #177, #178, #180–#184, #187 y el del #175). `match.play` sustituye a `game.finish`; `SIM_VERSION` 2. Redactado por Claude con las decisiones del usuario (al final) y el [estudio de DraftSim](../../research/draftsim-simulacion.md).
+- **Fase:** 2 · Draft rápido completo ([plan general](../../plans/00-plan-general.md)).
 - **Objetivo:** simular un game a partir del draft y de los jugadores. **El ganador sale de lo que pasa en la partida**: nadie decide el resultado de antemano para después contarlo. Todo es determinista y explicable, y sustituye al comando provisional `game.finish`.
 
 ## Contexto
@@ -143,6 +143,22 @@ Con jugadores reales, los atributos se derivan de estadísticas por rol y liga (
 | 8 | `match.play` en el dispatcher, calibración y golden | K1–K5, M1 |
 
 2 tras 1; 3 tras 2; 4 y 5 tras 3 (en paralelo); 6 tras 2; 7 tras 4 y 5; 8 cierra el plan y sube `SIM_VERSION`.
+
+## Calibración (21-11-2026)
+
+Medida con `calibration/calibration.test.ts`: dos equipos sintéticos medios, semillas fijas (1.000 partidas; 600 para K1) y la capa mental de un game 1.
+
+| Banda | Objetivo | Resultado |
+| --- | --- | --- |
+| K1 favorito (+10 en todos los atributos) | 60–75 % | 72,2 % |
+| K2 duración | mediana 28–34; 90 % entre 22 y 45 | 33 (25–40) |
+| K3 kills | mediana 15–30 | 22 |
+| K4 remontada con 3.000 de oro en contra al 20 | 15–30 % | 20,9 % |
+| K5 lado azul con equipos iguales | 50–54 % | 52,7 % |
+
+Constantes que más mueven las bandas: `EDGE_SCALE` (lo decisiva que es cada disputa), `FORM` (forma del día), `TAKE` y `PUSH_FROM` (ritmo de estructuras), `TEMPO_CHANCE` y `EXCHANGE_CHANCE` (peleas) y `rules.blueSide`.
+
+`match.ended.decisive` apunta al evento por su índice entre los `match.event` del game: el handler no conoce las posiciones del registro.
 
 ## Riesgos
 
