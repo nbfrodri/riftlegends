@@ -55,6 +55,7 @@ Resumen de las decisiones **vigentes**, para empezar cualquier sesión sin volve
 | 2026-11-21 | **20 atributos de jugador** en cinco áreas (línea, mapa, pelea, mental y equipo); se añaden farming, roaming, visión, agresividad, posicionamiento, control de objetivos, gestión de oleadas, versatilidad, anticipación, comunicación y concentración. Se ven en el perfil, el mercado y el draft; los de rivales, según el scouting (plan 19). Con jugadores reales salen de estadísticas por rol y liga (plan 11) | [plan 08](../archive/plans/08-simulacion-de-partida.md#atributos-de-jugador) |
 | 2026-11-21 | `match.play` **sustituye a `game.finish`**: tras los roles se juega el game y su ganador sale de la simulación. Forma del día por equipo (escalada por la constancia) y riesgo simétrico como causas visibles; calibración K1–K5 en verde con `SIM_VERSION` 2 | [plan 08](../archive/plans/08-simulacion-de-partida.md#calibración-21-11-2026) |
 | 2026-11-21 | Los atributos **se entrenan**: el usuario elige qué mejorar en el entrenamiento (plan 20), con coste de oportunidad, límites por edad y potencial, y rendimientos decrecientes; los mentales mejoran más despacio | [plan 08](../archive/plans/08-simulacion-de-partida.md) |
+| 2026-11-21 | **La IA de cada equipo sale de su coach y su staff** (personalidad y dificultad); el jugador no la configura antes de una partida | [plan 09](../plans/09-draft-rapido-en-la-app.md) |
 
 ## Estilo visual
 
