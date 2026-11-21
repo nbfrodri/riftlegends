@@ -3,7 +3,13 @@ import {
 	type MatchView,
 	type SeriesSummary,
 } from "@rift-legends/contracts";
-import { cleanup, configure, screen, within } from "@testing-library/react";
+import {
+	cleanup,
+	configure,
+	screen,
+	waitFor,
+	within,
+} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useEffect, useRef } from "react";
 import { afterEach, describe, expect, test, vi } from "vitest";
@@ -181,8 +187,12 @@ describe("game result (U9)", () => {
 		});
 		const summary = await ask<SeriesSummary>(core, "series.summary", {});
 		const lines = summary.lanes[0]?.lines ?? [];
-		const rows = within(table).getAllByRole("row").slice(1);
-		expect(rows).toHaveLength(5);
+		// The table can show before its rows load.
+		const rows = await waitFor(() => {
+			const found = within(table).getAllByRole("row").slice(1);
+			expect(found).toHaveLength(5);
+			return found;
+		});
 		lines.forEach((line, i) => {
 			const row = rows[i] as HTMLElement;
 			expect(row.getAttribute("data-gap")).toBe(String(line.gap));

@@ -1,11 +1,18 @@
+import type { DraftView } from "@rift-legends/contracts";
 import { ChevronRight } from "lucide-react";
+import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { teamName, useDraftSession } from "./session";
 import type { DraftStage } from "./stages";
 
-function Score() {
+type ScoreView = Pick<DraftView, "wins" | "game"> & {
+	blue: { team: string };
+	red: { team: string };
+};
+
+function Score({ view }: { view: ScoreView | null }) {
 	const { t } = useTranslation();
-	const { view, options, mine } = useDraftSession();
+	const { options, mine } = useDraftSession();
 	if (!view) return null;
 	const wins = (team: string) => view.wins[team === mine ? 0 : 1];
 	const sides = [
@@ -33,10 +40,25 @@ function Score() {
 }
 
 /** Breadcrumb, title and series score, as in the approved mockups. */
-export function PageHeader({ stage }: { stage: DraftStage }) {
+export function PageHeader({
+	stage,
+	score,
+	children,
+}: {
+	stage: DraftStage;
+	score?: ScoreView;
+	children?: ReactNode;
+}) {
+	const { view } = useDraftSession();
 	const { t } = useTranslation();
 	return (
-		<header className="flex items-center justify-between gap-4">
+		<header
+			className={
+				stage === "match"
+					? "grid grid-cols-[1fr_auto_1fr] items-center gap-4"
+					: "flex items-center justify-between gap-4"
+			}
+		>
 			<div>
 				<nav aria-label={t("draft.crumb.label")}>
 					<ol className="mb-1 flex items-center gap-2 text-[13px] text-muted">
@@ -44,14 +66,23 @@ export function PageHeader({ stage }: { stage: DraftStage }) {
 						<li aria-hidden="true">
 							<ChevronRight className="size-3.5" />
 						</li>
-						<li aria-current="page">{t(`draft.stage.${stage}.crumb`)}</li>
+						<li aria-current="page">
+							{stage === "match" && score
+								? t("draft.score.game", { game: score.game })
+								: t(`draft.stage.${stage}.crumb`)}
+						</li>
 					</ol>
 				</nav>
-				<h1 className="font-bold font-display text-[clamp(29px,2.5vw,48px)] leading-none tracking-heading">
-					{t(`draft.stage.${stage}.title`)}
+				<h1
+					className={`font-bold font-display leading-none tracking-heading ${stage === "match" ? "text-[clamp(32px,3vw,48px)]" : "text-[clamp(29px,2.5vw,48px)]"}`}
+				>
+					{stage === "match"
+						? t("draft.match.title")
+						: t(`draft.stage.${stage}.title`)}
 				</h1>
 			</div>
-			<Score />
+			<Score view={score ?? view} />
+			{children}
 		</header>
 	);
 }

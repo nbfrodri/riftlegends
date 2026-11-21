@@ -1,6 +1,6 @@
 import type { DraftView } from "@rift-legends/contracts";
 import type { ComponentType } from "react";
-import { useTranslation } from "react-i18next";
+import { MatchScreen } from "../match/match-screen";
 import { DraftBoard } from "./board/draft-board";
 import { ResultScreen } from "./result-screen";
 import { RolesScreen } from "./roles-screen";
@@ -42,27 +42,15 @@ export function stageOf(
 	}
 }
 
-function Placeholder({ stage }: { stage: DraftStage }) {
-	const { t } = useTranslation();
-	return (
-		<p className="text-muted" data-stage={stage}>
-			{t("draft.placeholder")}
-		</p>
-	);
-}
-
-const MatchPlaceholder = () => <Placeholder stage="match" />;
-
 /**
- * The body of each stage; `DraftScreen` draws the header around it. To build a
- * placeholder's real screen, replace its entry: the component reads the flow
- * with `useDraftSession()` and needs no props.
+ * The component for each stage in the quick-draft flow: each one reads the
+ * flow with `useDraftSession()` and needs no props.
  */
 export const draftStages: Record<DraftStage, ComponentType> = {
 	setup: SetupScreen,
 	side: SideScreen,
 	draft: DraftBoard,
 	roles: RolesScreen,
-	match: MatchPlaceholder,
+	match: MatchScreen,
 	result: ResultScreen,
 };
