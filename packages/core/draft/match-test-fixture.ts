@@ -1,0 +1,79 @@
+import { type AiOfTeam, ROLES } from "@rift-legends/contracts";
+import { fictionalContent } from "../ai/fixtures/content";
+import { fictionalMatchContent } from "../match/fixtures/content";
+import type { CommandHandler, Outcome } from "../server/dispatcher";
+import { DRAFT_ORDER } from "./order";
+import { initialSeries, type SeriesState, seriesCommands } from "./series";
+
+export type Accepted = Extract<Outcome<SeriesState>, { ok: true }>;
+export const run = (state: SeriesState, kind: string, payload: object) =>
+	(
+		seriesCommands[
+			kind as keyof typeof seriesCommands
+		] as CommandHandler<SeriesState>
+	)(state, payload);
+export const ok = (outcome: Outcome<SeriesState>): Accepted => {
+	if (!outcome.ok) throw new Error(JSON.stringify(outcome.error));
+	return outcome;
+};
+
+const POOL = fictionalContent.champions.map((c) => c.id);
+/** The champions each team's players main, in role order. */
+const mains = (team: string) =>
+	ROLES.map(
+		(role) =>
+			fictionalContent.players.find((p) => p.team === team && p.role === role)
+				?.mains[0] ?? "",
+	);
+
+export const loaded = (match = fictionalMatchContent): SeriesState => ({
+	...initialSeries,
+	content: fictionalContent,
+	match,
+});
+
+export function drafted(state = loaded(), ai?: [AiOfTeam, AiOfTeam]) {
+	let current = ok(
+		run(state, "series.start", {
+			teams: ["forge", "shoal"],
+			seeds: [1, 2],
+			format: "bo3",
+			fearless: "off",
+			timer: false,
+			pool: POOL,
+			seed: 11,
+			...(ai ? { ai } : {}),
+		}),
+	).state;
+	current = ok(
+		run(current, "side.choose", { team: "forge", side: "blue" }),
+	).state;
+	return draftWith(current);
+}
+
+/** Drafts the current game: each team picks its players' mains. */
+export function draftWith(state: SeriesState) {
+	let current = state;
+	const team = (side: "blue" | "red") => current.draft?.[side] ?? "";
+	const wanted = { blue: mains(team("blue")), red: mains(team("red")) };
+	const next = { blue: 0, red: 0 };
+	for (const step of DRAFT_ORDER) {
+		const team = current.draft?.[step.side] ?? "";
+		if (step.action === "ban") {
+			current = ok(run(current, "draft.ban", { team, champion: null })).state;
+			continue;
+		}
+		const champion = wanted[step.side][next[step.side]++];
+		current = ok(run(current, "draft.pick", { team, champion })).state;
+	}
+	for (const side of ["blue", "red"] as const) {
+		const [top, jungle, mid, bot, support] = wanted[side];
+		current = ok(
+			run(current, "draft.roles", {
+				team: team(side),
+				roles: { top, jungle, mid, bot, support },
+			}),
+		).state;
+	}
+	return current;
+}

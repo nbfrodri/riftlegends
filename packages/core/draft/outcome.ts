@@ -17,3 +17,10 @@ export const done = (
 
 export const other = (config: SeriesConfig, team: string) =>
 	config.teams[0] === team ? config.teams[1] : config.teams[0];
+
+/** The plan has a target only in a human-vs-AI series. An omitted AI pair means two humans. */
+export const humanTeam = (config: SeriesConfig): string | null => {
+	const [first, second] = config.ai ?? [null, null];
+	if ((first === null) === (second === null)) return null;
+	return config.teams[first === null ? 0 : 1];
+};

@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { position } from "../envelope";
 import { PERSONALITIES } from "./ai";
+import { teamStrategy } from "./plan";
 
 // Match simulation of plan 08: its facts and the content it reads. Points
 // and chances are fixed point (scale 10,000, plan 05).
@@ -171,11 +172,7 @@ export const matchContent = z.strictObject({
 				.optional(),
 			/** Between two players of the team. */
 			chemistry: z.array(z.strictObject({ a: id, b: id, value: rating })),
-			strategy: z.strictObject({
-				tempo: z.enum(["slow", "balanced", "fast"]),
-				objectives: z.enum(["dragon", "balanced", "baron"]),
-				risk: z.enum(["safe", "balanced", "risky"]),
-			}),
+			strategy: teamStrategy,
 			/** How well the coach adapts between games. */
 			adaptation: rating,
 		}),

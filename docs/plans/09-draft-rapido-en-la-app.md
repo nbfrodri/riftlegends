@@ -24,6 +24,7 @@
 | Q4 | `match.view` incluye el estado del mapa minuto a minuto: estructuras, objetivos, buffs y, por jugador, bajas, muertes, asistencias, oro y CS estimado | El mapa cuadra con los eventos y las estadísticas finales coinciden con `match.ended`. El CS es visual |
 | Q7 | `match.play` acepta la estrategia del equipo del usuario (ritmo, objetivos y riesgo) y una vista sugiere una según su draft, con el porqué | Sin estrategia, la del contenido; la del rival sale de su coach; misma semilla y misma estrategia, misma partida |
 | Q5 | Una vista `series.summary` da el MVP de la serie y los gaps por línea de cada game, con su explicación | Sin games jugados, vacía; un gap solo se marca por encima de un umbral documentado |
+| Q7 | `match.plan` sugiere ritmo, prioridad de objetivos y riesgo a partir de ambos drafts. `match.play` aplica la estrategia elegida al equipo humano durante ese game | Misma semilla y estrategia, mismos hechos. Sin estrategia se mantienen los bytes de los goldens. El ritmo rápido refuerza el inicio y el riesgo alto acerca las disputas al 50 % |
 
 ### Pantallas (tests de componentes)
 
@@ -66,6 +67,13 @@ Una sola ruta, `/draft`, con sub-pantallas según la fase de `draft.view` (`side
 - `match.view { game }` devuelve `{ game, facts }` con los hechos `match.*` guardados en la serie; un game sin jugar responde `game-not-played`.
 - El `core-host` combina el catálogo del draft (primero) con el de depuración, que siguen usando la sonda del renderer y el E2E del IPC.
 
+#### Plan de partida (Q7)
+
+- Tras asignar los roles de ambos equipos, `match.plan {}` devuelve `{ game, team, strategy, causes }` para el único equipo con `null` en `series.start.ai`. Fuera de esa fase devuelve `wrong-action`. Si faltan datos de campeones devuelve `invalid-command` con `path: content`.
+- `match.play { strategy }` sustituye las tres opciones del contenido de ese equipo para ese game. `match.play {}` usa el contenido. Con dos humanos (incluido `ai` omitido) o dos equipos de IA, la sugerencia y la estrategia explícita devuelven `invalid-command` con `path: strategy`.
+- La sugerencia cuenta los campeones por fase y arquetipo, sin azar. El ritmo da doble peso al inicio o escalado propio y busca jugar fuera del pico rival. La ventaja temprana y la iniciación favorecen dragón. El pico de medio juego, el poke y la presión lateral favorecen barón. La iniciación favorece asumir riesgos y el poke y el escalado favorecen jugar seguro.
+- Las causas son contribuciones en punto fijo (escala 10.000). Se suman por prefijo. En `tempo.*`, un total positivo indica `fast` y uno negativo `slow`. En `objectives.*`, positivo indica `dragon` y negativo `baron`. En `risk.*`, positivo indica `risky` y negativo `safe`. Cero indica `balanced`.
+
 ### UI
 
 | Pieza | Ubicación |
@@ -98,7 +106,7 @@ Sin imágenes de Riot: en el modo ficticio, los campeones se muestran con inicia
 | 8 | Resultado del game y de la serie | U9, U10 |
 | 9 | E2E de la Bo5 fearless, capturas visuales e i18n completo | E1, E2, E4 |
 | 10 | Núcleo: estado del mapa por minuto en `match.view` y `series.summary` (MVP y gaps por línea) | Q4, Q5 |
-| 11 | Núcleo: estrategia del usuario en `match.play` y sugerencia según el draft | Q7 |
+| 11 | Núcleo: estrategia del usuario en `match.play` y sugerencia según el draft (#216) | Q7 |
 | 12 | Pantalla «Plan de partida» entre roles y partida | U12 |
 
 1 primero; 2, 3, 6 y 10 en paralelo tras 1; 7 y 8 tras 10; 4 y 5 tras 3; 9 cierra el plan. Las maquetas aprobadas están en [design/visual-style/quick-draft/](../../design/visual-style/quick-draft/index.html).

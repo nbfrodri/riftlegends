@@ -9,6 +9,7 @@ import {
 	MAP_ZONES,
 	MATCH_EVENTS,
 	matchContent,
+	matchPlan,
 	matchView,
 	PLAYER_ATTRIBUTES,
 	parseCommand,
@@ -30,12 +31,58 @@ const rejects = (fact: object) =>
 	expect(() => decodeFact(draftFacts, encodeFact(fact))).toThrow();
 
 describe("match.play", () => {
-	it("takes no payload", () => {
+	it("accepts an empty payload and rejects a supplied winner", () => {
 		expect(parseCommand(draftCommands, command("match.play", {})).ok).toBe(
 			true,
 		);
 		expect(
 			parseCommand(draftCommands, command("match.play", { winner: "t1" })).ok,
+		).toBe(false);
+	});
+
+	it("accepts a full strategy", () => {
+		const strategy = { tempo: "fast", objectives: "dragon", risk: "risky" };
+		expect(
+			parseCommand(draftCommands, command("match.play", { strategy })).ok,
+		).toBe(true);
+	});
+
+	it.each([
+		null,
+		{ tempo: "fast" },
+		{ tempo: "quick", objectives: "dragon", risk: "safe" },
+		{ tempo: "fast", objectives: "herald", risk: "safe" },
+		{ tempo: "fast", objectives: "dragon", risk: "high" },
+		{ tempo: "fast", objectives: "dragon", risk: "safe", team: "t1" },
+	])("rejects an invalid strategy (%j)", (strategy) => {
+		expect(
+			parseCommand(draftCommands, command("match.play", { strategy })).ok,
+		).toBe(false);
+	});
+});
+
+describe("match.plan", () => {
+	it("queries the current game without accepting a game parameter", () => {
+		const query = { v: CONTRACT_VERSION, kind: "match.plan", sessionId: 1 };
+		expect(parseQuery(draftQueries, { ...query, params: {} }).ok).toBe(true);
+		expect(parseQuery(draftQueries, { ...query, params: { game: 2 } }).ok).toBe(
+			false,
+		);
+	});
+
+	it("validates the suggested strategy and signed integer causes", () => {
+		const view = {
+			game: 1,
+			team: "t1",
+			strategy: { tempo: "slow", objectives: "baron", risk: "safe" },
+			causes: [{ key: "tempo.own.late", points: -20000 }],
+		};
+		expect(matchPlan.parse(view)).toEqual(view);
+		expect(
+			matchPlan.safeParse({
+				...view,
+				causes: [{ key: "tempo.own.late", points: -0.5 }],
+			}).success,
 		).toBe(false);
 	});
 });

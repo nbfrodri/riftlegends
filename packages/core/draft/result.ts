@@ -1,15 +1,10 @@
-import type {
-	AiContent,
-	MapSnapshot,
-	MatchContent,
-	Side,
-} from "@rift-legends/contracts";
+import type { MapSnapshot, Side, TeamStrategy } from "@rift-legends/contracts";
 import { mentalEdge, type SeriesContext } from "../match/mental";
 import { playGame } from "../match/play";
 import type { Contest } from "../match/profile";
 import type { Emitted, Outcome } from "../server/dispatcher";
 import type { GameDraft } from "./game";
-import { done, fail, other, WINS_NEEDED } from "./outcome";
+import { done, fail, humanTeam, other, WINS_NEEDED } from "./outcome";
 import type { SeriesConfig, SeriesState } from "./series";
 
 /** What the mental layer reads about the series, seen from `team`. */
@@ -94,9 +89,22 @@ export function finishGame(
 export function playResult(
 	state: SeriesState,
 	config: SeriesConfig,
+	{ strategy }: { strategy?: TeamStrategy },
 ): Outcome<SeriesState> {
-	if (!state.match || !state.content) {
+	const { content } = state;
+	if (!state.match || !content) {
 		return fail("invalid-command", { path: "match" });
+	}
+	let match = state.match;
+	if (strategy) {
+		const team = humanTeam(config);
+		if (team === null) return fail("invalid-command", { path: "strategy" });
+		match = {
+			...match,
+			teams: match.teams.map((entry) =>
+				entry.id === team ? { ...entry, strategy } : entry,
+			),
+		};
 	}
 	const draft = state.draft as GameDraft;
 	const { blue, red } = draft.roles as Required<typeof draft.roles>;
@@ -106,8 +114,8 @@ export function playResult(
 	};
 	const mental = (side: Side) =>
 		mentalEdge(
-			state.content as AiContent,
-			state.match as MatchContent,
+			content,
+			match,
 			lineups[side],
 			side,
 			seriesContext(state, config, lineups[side].team),
@@ -115,8 +123,8 @@ export function playResult(
 	const game = playGame({
 		seed: config.seed,
 		game: state.game,
-		draft: state.content,
-		match: state.match,
+		draft: content,
+		match,
 		...lineups,
 		mental: { blue: mental("blue"), red: mental("red") },
 	});

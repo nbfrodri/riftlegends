@@ -8,9 +8,11 @@ import {
 	matchEventFact,
 	matchStartedFact,
 } from "./match";
+import { teamStrategy } from "./plan";
 
 export * from "./ai";
 export * from "./match";
+export { type MatchPlan, matchPlan, type TeamStrategy } from "./plan";
 
 // Catalog of plan 06: draft rules and fearless series.
 
@@ -75,12 +77,14 @@ export const draftCommands = defineCommands({
 	"draft.ai": z.strictObject({}),
 	"draft.roles": z.strictObject({ team: teamId, roles: roleAssignment }),
 	/** Plays the game after the roles; its winner comes out of play (plan 08). */
-	"match.play": z.strictObject({}),
+	"match.play": z.strictObject({ strategy: teamStrategy.optional() }),
 });
 
 export const draftQueries = defineQueries({
 	/** `team` is who looks: with soft fearless, availability depends on it. */
 	"draft.view": z.strictObject({ team: teamId.optional() }),
+	/** A strategy suggestion for the only human team in the current draft. */
+	"match.plan": z.strictObject({}),
 	/** The facts of a played game, to replay it without simulating again. */
 	"match.view": z.strictObject({ game: position }),
 	/** MVP of the series and the gap of each lane in each game (Q5). */
