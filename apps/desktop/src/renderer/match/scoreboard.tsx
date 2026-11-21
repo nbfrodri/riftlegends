@@ -7,7 +7,7 @@ import { clockTime } from "./playback";
 export const sides = ["blue", "red"] as const;
 export type TeamNames = Record<Side, string>;
 
-function useGoldFormat() {
+export function useGoldFormat() {
 	const { i18n } = useTranslation();
 	return useMemo(
 		() => new Intl.NumberFormat(i18n.language, { useGrouping: true }),

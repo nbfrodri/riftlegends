@@ -81,6 +81,21 @@ test("replays a drafted game and continues to its result", async ({
 		await expect(
 			page.getByRole("button", { name: "Ver resultado" }),
 		).toBeInViewport({ ratio: 1 });
+		// The face-to-face panel takes the map's place without growing the page.
+		const height = () =>
+			page.evaluate(() => document.documentElement.scrollHeight);
+		const before = await height();
+		await page
+			.getByRole("radio", { name: "Cara a cara" })
+			.check({ force: true });
+		const faceToFace = page.getByRole("table", { name: "Cara a cara" });
+		await expect(faceToFace).toBeInViewport({ ratio: 1 });
+		await expect(faceToFace.getByRole("row")).toHaveCount(7);
+		expect(await height()).toBe(before);
+		await page.getByRole("radio", { name: "Mapa" }).check({ force: true });
+		await expect(page.getByRole("table", { name: "Objetivos" })).toBeInViewport(
+			{ ratio: 1 },
+		);
 		await page.getByRole("button", { name: "Ver resultado" }).click();
 		await expect(
 			page.getByRole("heading", { level: 1, name: "Resultado" }),
