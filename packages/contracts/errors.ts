@@ -26,10 +26,7 @@ export type ErrorCode = (typeof ERROR_CODES)[number];
 export const errorKey = (code: ErrorCode) => `errors.${code}` as const;
 
 /** Params interpolated into the translated message. */
-export const errorParamsSchema = z.record(
-	z.string(),
-	z.union([z.string(), z.int()]),
-);
+const errorParamsSchema = z.record(z.string(), z.union([z.string(), z.int()]));
 
 export const coreErrorSchema = z.strictObject({
 	code: z.enum(ERROR_CODES),

@@ -72,9 +72,7 @@ export const defineQueries = <C extends Catalog>(
 	})) as unknown as z.ZodType<QueryOf<C>>,
 });
 
-export type Parsed<T> =
-	| { ok: true; value: T }
-	| { ok: false; error: CoreError };
+type Parsed<T> = { ok: true; value: T } | { ok: false; error: CoreError };
 
 const isRecord = (raw: unknown): raw is Record<string, unknown> =>
 	typeof raw === "object" && raw !== null && !Array.isArray(raw);

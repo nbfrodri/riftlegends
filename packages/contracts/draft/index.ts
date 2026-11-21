@@ -8,14 +8,14 @@ export * from "./ai";
 // Catalog of plan 06: draft rules and fearless series.
 
 const id = z.string().min(1).max(64);
-export const teamId = id;
-export const championId = id;
+const teamId = id;
+const championId = id;
 
-export const SIDES = ["blue", "red"] as const;
+const SIDES = ["blue", "red"] as const;
 export const ROLES = ["top", "jungle", "mid", "bot", "support"] as const;
-export const FORMATS = ["bo1", "bo3", "bo5"] as const;
-export const FEARLESS = ["hard", "soft", "off"] as const;
-export const PHASES = [
+const FORMATS = ["bo1", "bo3", "bo5"] as const;
+const FEARLESS = ["hard", "soft", "off"] as const;
+const PHASES = [
 	"side",
 	"bans1",
 	"picks1",
@@ -35,7 +35,7 @@ const unique = <T>(list: readonly T[]) => new Set(list).size === list.length;
 const pair = <T extends z.ZodType>(item: T) => z.tuple([item, item]);
 
 /** Champion of each role; every role once. */
-export const roleAssignment = z.strictObject({
+const roleAssignment = z.strictObject({
 	top: championId,
 	jungle: championId,
 	mid: championId,

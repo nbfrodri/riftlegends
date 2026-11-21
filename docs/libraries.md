@@ -97,6 +97,7 @@ Todas las animaciones respetan `prefers-reduced-motion` y se pueden saltar sin a
 | Mutación | `@stryker-mutator/core` | 10.1 | Apache-2.0 |
 | Runner de Stryker para Vitest | `@stryker-mutator/vitest-runner` | 10.1 | Apache-2.0 |
 | Lint y formato | `@biomejs/biome` | 2.6 | MIT o Apache-2.0 |
+| Detectar archivos, dependencias y exports sin uso en todo el monorepo con `verify` | `knip` | 6.46.1 | ISC |
 | Hooks de Git | `lefthook` | 2.2 | MIT |
 
 ## Descartadas

@@ -1,6 +1,5 @@
 import { z } from "zod";
-import { defineCommands, defineQueries, position } from "./envelope";
-import { defineFacts } from "./facts";
+import { defineCommands, defineQueries } from "./envelope";
 
 /**
  * A minimal catalog to exercise the IPC plumbing until the draft rules
@@ -12,8 +11,4 @@ export const debugCommands = defineCommands({
 
 export const debugQueries = defineQueries({
 	"debug.count": z.strictObject({}),
-});
-
-export const debugFacts = defineFacts({
-	"debug.ticked": { count: position },
 });

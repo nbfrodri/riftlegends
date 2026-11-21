@@ -4,6 +4,7 @@ import { int, weighted } from "../rng/helpers";
 import type { Rng } from "../rng/streams";
 import type { Profile } from "./profiles";
 
+/** @knipignore Keep this API while draft AI dispatch is integrated in #155. */
 export interface Component {
 	readonly key: string;
 	/** Fixed point, scale 10,000. */
