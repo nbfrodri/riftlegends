@@ -99,7 +99,7 @@ Cada fase termina con un hito verificable y un commit o PR fusionado en `main`. 
 ### Fase 7 — Profundidad de gestión
 - Meta y parches entre splits (tiers dinámicos, notas de parche generadas).
 - Scouting e información imperfecta.
-- Entrenamiento con coste de oportunidad y **scrims** ([IDEA §8](../../IDEA.md#8-novedades-respecto-a-draftsim)).
+- Entrenamiento con coste de oportunidad (elegir qué atributos de cada jugador mejorar) y **scrims** ([IDEA §8](../../IDEA.md#8-novedades-respecto-a-draftsim)).
 - Moral, química y vestuario.
 - **Salida:** cada sistema influye en resultados de forma explicable (visible en el desglose) y probada con tests de propiedades.
 

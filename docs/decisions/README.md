@@ -52,6 +52,7 @@ Resumen de las decisiones **vigentes**, para empezar cualquier sesión sin volve
 | 2026-11-21 | IA de draft: componentes con puntos enteros, 12 personalidades como datos, dificultad por coach (margen de error, lectura del rival y mirar adelante) y explicación en el hecho `ai.decided` | [plan 07](../archive/plans/07-ia-de-draft.md) |
 | 2026-11-21 | Simulación de partida: **el ganador sale de la partida** (bucle por minuto con disputas y causas; termina al caer un nexo), 13 factores y bandas de calibración Monte Carlo; cada evento lleva zona y segundo para el minimapa | [plan 08](../plans/08-simulacion-de-partida.md) |
 | 2026-11-21 | **Atributos de jugador** (líneas, peleas, macro, mecánicas, temple, resistencia mental, experiencia, constancia y shotcalling) que deciden las disputas; se ven en el perfil del jugador, el mercado y el draft. Los de rivales, con la precisión que dé el scouting (plan 19) | [plan 08](../plans/08-simulacion-de-partida.md) |
+| 2026-11-21 | Los atributos **se entrenan**: el usuario elige qué mejorar en el entrenamiento (plan 20), con coste de oportunidad, límites por edad y potencial, y rendimientos decrecientes; los mentales mejoran más despacio | [plan 08](../plans/08-simulacion-de-partida.md) |
 
 ## Estilo visual
 
