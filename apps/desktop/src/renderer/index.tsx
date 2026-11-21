@@ -4,9 +4,14 @@ import { RouterProvider } from "@tanstack/react-router";
 import { createRoot } from "react-dom/client";
 import { I18nextProvider } from "react-i18next";
 import { CoreProvider } from "./core";
+import { CoreProbe } from "./core/probe";
 import { initialLocale } from "./language";
 import { createAppRouter } from "./router";
 import { TitleBar } from "./title-bar";
+
+// Set by main only in the E2E runs of plan 04.
+const probe =
+	new URLSearchParams(window.location.search).get("probe") === "core";
 
 async function start(root: HTMLElement) {
 	const locale = await initialLocale(() => window.riftlegends.systemLocale());
@@ -18,6 +23,7 @@ async function start(root: HTMLElement) {
 				<CoreProvider api={window.riftlegends.core}>
 					<div className="flex h-dvh flex-col">
 						<TitleBar controls={window.riftlegends.window} />
+						{probe && <CoreProbe />}
 						<RouterProvider router={createAppRouter()} />
 					</div>
 				</CoreProvider>

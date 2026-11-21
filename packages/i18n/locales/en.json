@@ -48,5 +48,7 @@
 	"errors.unknown-session": "The match no longer exists in the core.",
 	"errors.stale-position": "The state changed while the order was being sent. Try again.",
 	"errors.core-restarted": "The core restarted and the order was not applied.",
-	"errors.core-timeout": "The core did not answer in time."
+	"errors.core-timeout": "The core did not answer in time.",
+	"coreProbe.title": "Core probe",
+	"coreProbe.tick": "Tick"
 }

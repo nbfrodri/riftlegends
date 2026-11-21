@@ -1,6 +1,13 @@
 import type { CoreError } from "@rift-legends/contracts";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createContext, type ReactNode, use, useEffect, useRef } from "react";
+import {
+	createContext,
+	type ReactNode,
+	use,
+	useCallback,
+	useEffect,
+	useRef,
+} from "react";
 import { useTranslation } from "react-i18next";
 import type {
 	CoreApi,
@@ -62,6 +69,31 @@ export function useCoreQuery<View>(
 			return result.view as View;
 		},
 	});
+}
+
+const lostCodes = new Set([
+	"unknown-session",
+	"core-restarted",
+	"core-timeout",
+]);
+
+/** True when the core no longer has the session the request was for. */
+export const sessionLost = (error: CoreRequestError) =>
+	lostCodes.has(error.error.code);
+
+/**
+ * Opens a session and drops any cached view under its id: a restarted core
+ * numbers its sessions from 1 again.
+ */
+export function useOpenSession() {
+	const core = useCore();
+	const client = useQueryClient();
+	return useCallback(async () => {
+		const result = await core.open();
+		if (!result.ok) throw new CoreRequestError(result.error);
+		await client.resetQueries({ queryKey: ["core", result.sessionId] });
+		return result.sessionId;
+	}, [core, client]);
 }
 
 /** Sends commands; a rejection becomes a `CoreRequestError`. */
