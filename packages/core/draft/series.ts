@@ -4,6 +4,7 @@ import type {
 	MapSnapshot,
 	MatchContent,
 	Side,
+	TeamStrategy,
 } from "@rift-legends/contracts";
 import type { Contest } from "../match/profile";
 import { pick } from "../rng/helpers";
@@ -288,5 +289,9 @@ export const seriesCommands = {
 	),
 
 	/** Plays the game from the draft (plan 08); its winner comes out of play. */
-	"match.play": during<Record<string, never>>("result", "result", playResult),
+	"match.play": during<{ strategy?: TeamStrategy }>(
+		"result",
+		"result",
+		playResult,
+	),
 } satisfies Record<string, CommandHandler<SeriesState>>;

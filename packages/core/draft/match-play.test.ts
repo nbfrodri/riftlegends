@@ -1,82 +1,17 @@
-import { ROLES } from "@rift-legends/contracts";
 import { describe, expect, it } from "vitest";
 import { fictionalContent } from "../ai/fixtures/content";
 import { fictionalMatchContent } from "../match/fixtures/content";
-import type { CommandHandler, Outcome } from "../server/dispatcher";
-import { DRAFT_ORDER } from "./order";
-import { initialSeries, type SeriesState, seriesCommands } from "./series";
-
-type Accepted = Extract<Outcome<SeriesState>, { ok: true }>;
-const run = (state: SeriesState, kind: string, payload: object) =>
-	(
-		seriesCommands[
-			kind as keyof typeof seriesCommands
-		] as CommandHandler<SeriesState>
-	)(state, payload);
-const ok = (outcome: Outcome<SeriesState>): Accepted => {
-	if (!outcome.ok) throw new Error(JSON.stringify(outcome.error));
-	return outcome;
-};
+import { abs } from "../math";
+import {
+	type Accepted,
+	drafted,
+	draftWith,
+	loaded,
+	ok,
+	run,
+} from "./match-test-fixture";
 
 const POOL = fictionalContent.champions.map((c) => c.id);
-/** The champions each team's players main, in role order. */
-const mains = (team: string) =>
-	ROLES.map(
-		(role) =>
-			fictionalContent.players.find((p) => p.team === team && p.role === role)
-				?.mains[0] ?? "",
-	);
-
-const loaded = (match = fictionalMatchContent): SeriesState => ({
-	...initialSeries,
-	content: fictionalContent,
-	match,
-});
-
-function drafted(state = loaded()) {
-	let current = ok(
-		run(state, "series.start", {
-			teams: ["forge", "shoal"],
-			seeds: [1, 2],
-			format: "bo3",
-			fearless: "off",
-			timer: false,
-			pool: POOL,
-			seed: 11,
-		}),
-	).state;
-	current = ok(
-		run(current, "side.choose", { team: "forge", side: "blue" }),
-	).state;
-	return draftWith(current);
-}
-
-/** Drafts the current game: each team picks its players' mains. */
-function draftWith(state: SeriesState) {
-	let current = state;
-	const team = (side: "blue" | "red") => current.draft?.[side] ?? "";
-	const wanted = { blue: mains(team("blue")), red: mains(team("red")) };
-	const next = { blue: 0, red: 0 };
-	for (const step of DRAFT_ORDER) {
-		const team = current.draft?.[step.side] ?? "";
-		if (step.action === "ban") {
-			current = ok(run(current, "draft.ban", { team, champion: null })).state;
-			continue;
-		}
-		const champion = wanted[step.side][next[step.side]++];
-		current = ok(run(current, "draft.pick", { team, champion })).state;
-	}
-	for (const side of ["blue", "red"] as const) {
-		const [top, jungle, mid, bot, support] = wanted[side];
-		current = ok(
-			run(current, "draft.roles", {
-				team: team(side),
-				roles: { top, jungle, mid, bot, support },
-			}),
-		).state;
-	}
-	return current;
-}
 
 describe("match.play", () => {
 	it("plays the game and finishes it with its winner", () => {
@@ -153,6 +88,90 @@ describe("match.play", () => {
 		expect(run(state, "match.play", {})).toMatchObject({
 			ok: false,
 			error: { code: "invalid-command", params: { path: "match" } },
+		});
+	});
+});
+
+const balanced = {
+	tempo: "balanced",
+	objectives: "balanced",
+	risk: "balanced",
+} as const;
+const fast = { ...balanced, tempo: "fast" } as const;
+const balancedMatch = {
+	...fictionalMatchContent,
+	teams: fictionalMatchContent.teams.map((team) => ({
+		...team,
+		strategy: balanced,
+	})),
+};
+const profile = (result: Accepted) =>
+	(
+		result.facts[0] as unknown as {
+			profiles: Record<"blue" | "red", { phases: { early: number } }>;
+		}
+	).profiles;
+const firstEvent = (result: Accepted) =>
+	result.facts.find((f) => f.type === "match.event") as unknown as {
+		chance: number;
+	};
+
+describe("match.play strategy", () => {
+	it("applies fast tempo only to the human team and only for that game", () => {
+		const state = drafted(loaded(balancedMatch), ["coach", null]);
+		const original = ok(run(state, "match.play", {}));
+		const played = ok(run(state, "match.play", { strategy: fast }));
+		expect(profile(played).red.phases.early).toBeGreaterThan(
+			profile(original).red.phases.early,
+		);
+		expect(profile(played).blue).toEqual(profile(original).blue);
+		expect(played).toEqual(run(state, "match.play", { strategy: fast }));
+		expect(played.state.match).toBe(balancedMatch);
+		expect(played.state.match?.teams.map((t) => t.strategy)).toEqual([
+			balanced,
+			balanced,
+		]);
+		const chooser = played.state.chooser ?? "";
+		const side = chooser === "forge" ? "blue" : "red";
+		const next = draftWith(
+			ok(run(played.state, "side.choose", { team: chooser, side })).state,
+		);
+		expect(profile(ok(run(next, "match.play", {})))).toEqual(profile(original));
+	});
+
+	it("pulls the same opening contest toward even odds with risky play", () => {
+		const state = drafted(loaded(balancedMatch), [null, "coach"]);
+		const normal = firstEvent(ok(run(state, "match.play", {})));
+		const risky = firstEvent(
+			ok(
+				run(state, "match.play", { strategy: { ...balanced, risk: "risky" } }),
+			),
+		);
+		expect(abs(risky.chance - 5000)).toBeLessThan(abs(normal.chance - 5000));
+	});
+
+	it("adds objective priority to the chosen contest", () => {
+		const state = drafted(loaded(balancedMatch), [null, "coach"]);
+		const dragon = (result: Accepted) =>
+			result.facts.find((f) => f.kind === "dragon") as unknown as {
+				side: "blue" | "red";
+				causes: { key: string; points: number }[];
+			};
+		expect(
+			dragon(ok(run(state, "match.play", {}))).causes.some(
+				(c) => c.key === "strategy",
+			),
+		).toBe(false);
+		const event = dragon(
+			ok(
+				run(state, "match.play", {
+					strategy: { ...balanced, objectives: "dragon" },
+				}),
+			),
+		);
+		expect(event.causes).toContainEqual({
+			key: "strategy",
+			points: event.side === "blue" ? 30000 : -30000,
 		});
 	});
 });
