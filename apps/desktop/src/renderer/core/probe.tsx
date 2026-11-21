@@ -18,7 +18,7 @@ function Count({ sessionId }: { sessionId: number }) {
 
 /**
  * Test-only panel (plan 04, E1): drives the debug catalog through the real
- * renderer API. Shown only when the app starts with RIFT_E2E_CORE=1.
+ * renderer API. Shown only when the app starts with RIFT_E2E_PROBE=1.
  */
 export function CoreProbe() {
 	const { t } = useTranslation();

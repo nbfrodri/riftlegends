@@ -16,7 +16,7 @@ test("a command's fact reaches the screen, also after the core is killed", async
 		{
 			profileDir: testInfo.outputPath("profile"),
 			systemLocale: "en-US",
-			env: { RIFT_E2E_CORE: "1" },
+			env: { RIFT_E2E_PROBE: "1" },
 		},
 	);
 	try {

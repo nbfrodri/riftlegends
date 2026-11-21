@@ -38,10 +38,13 @@ app.whenReady().then(async () => {
 	registerCoreIpc(window, ipcMain, core);
 	app.once("before-quit", () => core.dispose());
 	// End-to-end tests drive the core from the main process.
-	// E2E only: expose the bridge to main and show the core probe (plan 04).
-	const e2eCore = process.env.RIFT_E2E_CORE === "1";
-	if (e2eCore) Object.assign(globalThis, { riftCore: core });
-	const query: Record<string, string> = e2eCore ? { probe: "core" } : {};
+	// E2E only (plan 04). Separate flags: the probe opens its own session,
+	// which would race with a test that drives the bridge directly.
+	if (process.env.RIFT_E2E_CORE === "1") {
+		Object.assign(globalThis, { riftCore: core });
+	}
+	const query: Record<string, string> =
+		process.env.RIFT_E2E_PROBE === "1" ? { probe: "core" } : {};
 
 	if (import.meta.env.DEV && process.env.ELECTRON_RENDERER_URL) {
 		const url = new URL(process.env.ELECTRON_RENDERER_URL);
