@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="es">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Iconos de posición · Caja</title>
+	<style>
+		:root {
+			color-scheme: dark;
+			background: #101420;
+			color: #f4f6ff;
+			font: 16px/1.2 Archivo, "Noto Sans", sans-serif;
+		}
+		main { max-width: 30rem; margin: 3rem auto; padding-inline: 1rem; }
+		h1 { font-size: 1.5rem; }
+		table { width: 100%; border-collapse: collapse; background: #191f2f; }
+		th, td { padding: 0.75rem; border-bottom: 1px solid #3c455b; }
+		thead { color: #b6c0d2; background: #222b3e; }
+		th:first-child { text-align: left; }
+		td svg { display: block; margin-inline: auto; }
+	</style>
+</head>
+<body>
+	<!-- Los trazados coinciden con packages/ui-kit/components/role-icon.tsx. -->
+	<svg width="0" height="0" style="position: absolute" aria-hidden="true">
+		<symbol id="top" viewBox="0 0 24 24">
+			<path d="M4 4h4v3h8V4h4v6l-3 3v7H7v-7l-3-3z"/>
+		</symbol>
+		<symbol id="jungle" viewBox="0 0 24 24">
+			<path d="M12 21v-8l7-6V4h-5 M12 17l-7-6V7h5"/>
+		</symbol>
+		<symbol id="mid" viewBox="0 0 24 24">
+			<path d="M12 3l9 9-9 9-9-9z"/>
+		</symbol>
+		<symbol id="bot" viewBox="0 0 24 24">
+			<path d="M9 9h6v6H9z M12 3v3 M12 18v3 M3 12h3 M18 12h3"/>
+		</symbol>
+		<symbol id="support" viewBox="0 0 24 24">
+			<path d="M4 5h16v8l-8 7-8-7z M9 11h6 M12 8v6"/>
+		</symbol>
+	</svg>
+	<main>
+		<h1>Iconos de posición</h1>
+		<table>
+			<thead>
+				<tr>
+					<th scope="col">Posición</th>
+					<th scope="col">16 px</th>
+					<th scope="col">20 px</th>
+					<th scope="col">24 px</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<th scope="row">Top</th>
+					<td><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="bevel" aria-hidden="true"><use href="#top"/></svg></td>
+					<td><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="bevel" aria-hidden="true"><use href="#top"/></svg></td>
+					<td><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="bevel" aria-hidden="true"><use href="#top"/></svg></td>
+				</tr>
+				<tr>
+					<th scope="row">Jungla</th>
+					<td><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="bevel" aria-hidden="true"><use href="#jungle"/></svg></td>
+					<td><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="bevel" aria-hidden="true"><use href="#jungle"/></svg></td>
+					<td><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="bevel" aria-hidden="true"><use href="#jungle"/></svg></td>
+				</tr>
+				<tr>
+					<th scope="row">Mid</th>
+					<td><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="bevel" aria-hidden="true"><use href="#mid"/></svg></td>
+					<td><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="bevel" aria-hidden="true"><use href="#mid"/></svg></td>
+					<td><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="bevel" aria-hidden="true"><use href="#mid"/></svg></td>
+				</tr>
+				<tr>
+					<th scope="row">ADC</th>
+					<td><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="bevel" aria-hidden="true"><use href="#bot"/></svg></td>
+					<td><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="bevel" aria-hidden="true"><use href="#bot"/></svg></td>
+					<td><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="bevel" aria-hidden="true"><use href="#bot"/></svg></td>
+				</tr>
+				<tr>
+					<th scope="row">Support</th>
+					<td><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="bevel" aria-hidden="true"><use href="#support"/></svg></td>
+					<td><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="bevel" aria-hidden="true"><use href="#support"/></svg></td>
+					<td><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="bevel" aria-hidden="true"><use href="#support"/></svg></td>
+				</tr>
+			</tbody>
+		</table>
+	</main>
+</body>
+</html>
