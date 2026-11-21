@@ -55,9 +55,39 @@ describe("series.options (plan 09, U1)", () => {
 			expect(view.positions[champion.id]).toEqual(champion.positions);
 	});
 
+	it("gives each champion's roles and each team's players with their attributes (U3, U5)", () => {
+		const result = options(
+			draftStateWith(fictionalContent, fictionalMatchContent),
+		);
+		if (!result.ok) throw new Error(JSON.stringify(result));
+		const view = seriesOptions.parse(result.view);
+		expect(view.champions).toContainEqual({
+			id: "rimefoil",
+			roles: ["top", "mid"],
+		});
+		expect(view.champions.map((c) => c.id)).toEqual(view.pool);
+		const forge = view.teams[0]?.players ?? [];
+		expect(forge.map((p) => p.role)).toEqual([
+			"top",
+			"jungle",
+			"mid",
+			"bot",
+			"support",
+		]);
+		expect(forge[2]).toMatchObject({
+			id: "forge-mid",
+			attributes: { experience: 98, composure: 95, lanes: 92 },
+		});
+	});
+
 	it("is empty in a session without content", () => {
 		const result = options(initialSeries);
 		if (!result.ok) throw new Error(JSON.stringify(result));
-		expect(result.view).toEqual({ teams: [], pool: [], positions: {} });
+		expect(result.view).toEqual({
+			teams: [],
+			pool: [],
+			positions: {},
+			champions: [],
+		});
 	});
 });
