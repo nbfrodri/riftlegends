@@ -8,6 +8,7 @@ import {
 	MAP_ZONES,
 	MATCH_EVENTS,
 	matchContent,
+	PLAYER_ATTRIBUTES,
 	parseCommand,
 } from "../index";
 
@@ -175,6 +176,17 @@ describe("MatchContent", () => {
 		experience: 100,
 		consistency: 85,
 		shotcalling: 70,
+		farming: 85,
+		waves: 90,
+		roaming: 95,
+		vision: 80,
+		anticipation: 92,
+		objectiveControl: 75,
+		positioning: 90,
+		aggression: 60,
+		focus: 95,
+		communication: 90,
+		versatility: 98,
 	};
 	const content = {
 		players: [
@@ -220,6 +232,13 @@ describe("MatchContent", () => {
 			blueSide: 300,
 		},
 	};
+
+	it("rates twenty attributes in five areas", () => {
+		expect(PLAYER_ATTRIBUTES).toHaveLength(20);
+		expect(Object.keys(attributes).sort()).toEqual(
+			[...PLAYER_ATTRIBUTES].sort(),
+		);
+	});
 
 	it("accepts what the simulation reads", () => {
 		expect(matchContent.parse(content)).toEqual(content);
