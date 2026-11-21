@@ -6,11 +6,17 @@ import type {
 	Side,
 } from "@rift-legends/contracts";
 import { indexContent } from "../ai/content-index";
+import { type Fixed, SCALE, toInt } from "../math";
 import { int } from "../rng/helpers";
 import { SCOPES } from "../rng/scopes";
 import { deriveSeed } from "../rng/seeds";
 import { createRng } from "../rng/streams";
 import { type Lineup, type Profile, profiles } from "./profile";
+
+/** Minutes each buff lasts after its objective falls. */
+const BUFF_MINUTES = { herald: 2, baron: 3, elder: 2 } as const;
+/** Range of the form of the day, in points (F10 tunes it). */
+const FORM = 600_000;
 
 export interface MatchSetup {
 	/** Root seed of the series (plan 05). */
@@ -26,6 +32,8 @@ interface SideContext {
 	readonly team: string;
 	readonly strategy: MatchContent["teams"][number]["strategy"];
 	readonly profile: Profile;
+	readonly aggression: number;
+	readonly positioning: number;
 	/** How the team plays today, in points; one draw per game. */
 	readonly form: number;
 	/** Player id in each role. */
@@ -45,8 +53,6 @@ export type Lane = "top" | "mid" | "bot";
 export const LANES: readonly Lane[] = ["top", "mid", "bot"];
 type Objective = "dragon" | "herald" | "baron" | "elder";
 
-/** Minutes each buff lasts after its objective falls. A balance constant. */
-const BUFF_MINUTES = { herald: 2, baron: 3, elder: 2 } as const;
 /** A side's dragons that complete its soul and end the dragons. */
 export const SOUL = 4;
 
@@ -57,6 +63,8 @@ interface SideState {
 	/** Towers this side has lost in each lane (0–3) and at its nexus (0–2). */
 	readonly towers: Readonly<Record<Lane, number>>;
 	readonly nexusTowers: number;
+	/** Minute the side can press its advantage after a fight. */
+	readonly fightPushAt: number;
 	/** Minute each lost inhibitor is back; it is down while that is later. */
 	readonly inhibitors: Readonly<Record<Lane, number>>;
 	/** Minute each buff wears off; 0 if the side never had it. */
@@ -105,9 +113,6 @@ function players(draft: AiContent, team: string) {
 	};
 }
 
-/** Range of the form of the day, in points. A balance constant (F10 tunes it). */
-const FORM = 600_000;
-
 export function createMatch(setup: MatchSetup): MatchState {
 	const { us, them } = profiles(
 		setup.draft,
@@ -117,19 +122,35 @@ export function createMatch(setup: MatchSetup): MatchState {
 	);
 	// No contest plays minute 0: the form of the day has that stream.
 	const rng = createRng(deriveSeed(setup.seed, SCOPES.match, setup.game, 0, 0));
-	const side = (lineup: Lineup, profile: Profile): SideContext => ({
-		team: lineup.team,
-		form: int(rng, -FORM, FORM),
-		strategy: strategy(setup.match, lineup.team),
-		profile,
-		players: players(setup.draft, lineup.team),
-	});
+	const side = (lineup: Lineup, profile: Profile): SideContext => {
+		const ids = players(setup.draft, lineup.team);
+		const roster = Object.values(ids).map((id) => {
+			const player = setup.match.players.find((p) => p.id === id);
+			if (!player) throw new Error(`No match data for player ${id}`);
+			return player.attributes;
+		});
+		const average = (key: "aggression" | "positioning") =>
+			toInt(
+				((roster.reduce((sum, p) => sum + p[key], 0) * SCALE) /
+					roster.length) as Fixed,
+			);
+		return {
+			team: lineup.team,
+			form: int(rng, -FORM, FORM),
+			strategy: strategy(setup.match, lineup.team),
+			profile,
+			players: ids,
+			aggression: average("aggression"),
+			positioning: average("positioning"),
+		};
+	};
 	const start: SideState = {
 		gold: 0,
 		kills: 0,
 		dragons: 0,
 		towers: { top: 0, mid: 0, bot: 0 },
 		nexusTowers: 0,
+		fightPushAt: 0,
 		inhibitors: { top: 0, mid: 0, bot: 0 },
 		buffs: { herald: 0, baron: 0, elder: 0 },
 	};
@@ -161,13 +182,25 @@ const lane = (event: MatchEvent) => event.zone.slice("lane-".length) as Lane;
 function mark(state: MatchState, e: MatchEvent): MatchState {
 	const { rules } = state.context;
 	const winner = state[e.side];
-	const loser = state[other(e.side)];
+	const loserSide = other(e.side);
+	const loser = state[loserSide];
+	let loserKills = 0;
+	if (e.kind === "fight") {
+		const loserPlayers = Object.values(state.context[loserSide].players);
+		loserKills = e.kills.filter((kill) =>
+			loserPlayers.includes(kill.killer),
+		).length;
+	}
 	let won: SideState = {
 		...winner,
 		gold: winner.gold + e.gold[e.side],
-		kills: winner.kills + e.kills.length,
+		kills: winner.kills + e.kills.length - loserKills,
 	};
-	let lost: SideState = { ...loser, gold: loser.gold + e.gold[other(e.side)] };
+	let lost: SideState = {
+		...loser,
+		gold: loser.gold + e.gold[loserSide],
+		kills: loser.kills + loserKills,
+	};
 	let objectives = state.objectives;
 	const respawn = (kind: Objective) => ({
 		...objectives,
@@ -178,6 +211,9 @@ function mark(state: MatchState, e: MatchEvent): MatchState {
 		[kind]: e.minute + BUFF_MINUTES[kind],
 	});
 	switch (e.kind) {
+		case "fight":
+			won = { ...won, fightPushAt: e.minute + 1 };
+			break;
 		case "tower":
 			lost =
 				e.tier === 4
@@ -210,7 +246,7 @@ function mark(state: MatchState, e: MatchEvent): MatchState {
 	return {
 		...state,
 		[e.side]: won,
-		[other(e.side)]: lost,
+		[loserSide]: lost,
 		objectives,
 		winner: e.kind === "nexus" ? e.side : state.winner,
 	};

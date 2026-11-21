@@ -3,6 +3,7 @@ import { SCOPES } from "../rng/scopes";
 import { deriveSeed } from "../rng/seeds";
 import { createRng } from "../rng/streams";
 import type { Contest } from "./contests/contest";
+import { FIGHT_CONTEST } from "./contests/fights";
 import { LANE_CONTESTS } from "./contests/lane";
 import { OBJECTIVE_CONTESTS } from "./contests/objectives";
 import { STRUCTURE_CONTESTS } from "./contests/structures";
@@ -20,6 +21,7 @@ export { LANE_CONTESTS };
 export const MATCH_CONTESTS: readonly Contest[] = [
 	...LANE_CONTESTS,
 	...OBJECTIVE_CONTESTS,
+	FIGHT_CONTEST,
 	...STRUCTURE_CONTESTS,
 ];
 

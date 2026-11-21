@@ -13,7 +13,7 @@ const LANE_GOLD = 150;
 /** Chance, per 10,000, that a won lane contest ends in a kill. */
 const SOLO_KILL = 2500;
 
-function kill(
+export function kill(
 	state: MatchState,
 	winner: Side,
 	killer: Role,
