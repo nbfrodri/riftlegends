@@ -183,7 +183,7 @@ function Loading() {
 }
 
 export function MatchScreen() {
-	const { view, present, send } = useDraftSession();
+	const { view, present, send, strategy } = useDraftSession();
 	// Keep the pre-game score and game number when match.play advances the core.
 	const [entry] = useState(view);
 	const [ready, setReady] = useState(entry?.phase !== "result");
@@ -194,14 +194,14 @@ export function MatchScreen() {
 		if (!entry || ready || failed || started.current) return;
 		started.current = true;
 		present("match");
-		void send("match.play", {}).then((ok) => {
+		void send("match.play", strategy ? { strategy } : {}).then((ok) => {
 			if (ok) setReady(true);
 			else {
 				started.current = false;
 				setFailed(true);
 			}
 		});
-	}, [entry, ready, failed, present, send]);
+	}, [entry, ready, failed, present, send, strategy]);
 	if (!entry) return null;
 	if (failed)
 		return (

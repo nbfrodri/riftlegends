@@ -2,6 +2,7 @@ import {
 	CONTRACT_VERSION,
 	type DraftView,
 	type SeriesOptions,
+	type TeamStrategy,
 } from "@rift-legends/contracts";
 import {
 	createContext,
@@ -49,6 +50,9 @@ interface DraftSession {
 	setMine(team: string): void;
 	/** False if the turn was already claimed or the core rejected the command. */
 	send(kind: string, payload: unknown): Promise<boolean>;
+	/** The plan chosen on the plan screen, which the match screen sends with `match.play`. */
+	strategy: TeamStrategy | null;
+	setStrategy(strategy: TeamStrategy | null): void;
 	presentation: Presentation | null;
 	/** Shows a presentation stage over the core's phase; `null` goes back to it. */
 	present(stage: Presentation | null): void;
@@ -85,6 +89,7 @@ function LoadedSession(props: {
 	const [error, setError] = useState<CoreRequestError | null>(null);
 	const [mine, setMine] = useState<string | null>(null);
 	const [presentation, present] = useState<Presentation | null>(null);
+	const [strategy, setStrategy] = useState<TeamStrategy | null>(null);
 
 	const view = useCoreQuery<DraftView | null>(
 		{ v: CONTRACT_VERSION, kind: "draft.view", sessionId, params: {} },
@@ -151,6 +156,8 @@ function LoadedSession(props: {
 						view: view.data,
 						mine,
 						setMine,
+						strategy,
+						setStrategy,
 						send,
 						presentation,
 						present,
@@ -162,6 +169,7 @@ function LoadedSession(props: {
 			options.data,
 			view.data,
 			mine,
+			strategy,
 			send,
 			presentation,
 			onLost,
