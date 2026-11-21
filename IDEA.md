@@ -33,7 +33,7 @@ La simulación sigue siendo central: partidas, temporadas, mercado y evolución 
 ### Bucle principal (día a día)
 
 1. Avanzar el calendario hasta el siguiente evento: partido, ventana de fichajes, parche, reunión.
-2. Prepararse: scouting del rival, entrenamiento, elección de estrategia.
+2. Prepararse: scouting del rival, entrenamiento, scrims, elección de estrategia.
 3. Jugar el **draft** (o delegarlo en el staff).
 4. Ver la partida (resumen animado, timeline de eventos o simulación instantánea).
 5. Reaccionar: moral, forma, prensa, ajustes para el siguiente partido.
@@ -110,6 +110,11 @@ Inventario basado en DraftSim, que ya validó que estos sistemas funcionan y apo
 - **Objetivos de directiva y presupuesto**: expectativas por temporada y consecuencias si no se cumplen.
 - **Moral y dinámica de vestuario**: química, egos, conflictos por minutos.
 - **Entrenamiento con coste de oportunidad**: no se puede preparar todo a la vez.
+- **Scrims** (partidos de práctica):
+  - **Cómo se consiguen:** bloques semanales automáticos o peticiones a un equipo concreto en un hueco del calendario. El otro equipo acepta o no según nivel, reputación, relación y si os enfrentáis pronto. La IA también pide scrims y scrimea entre sí.
+  - **Qué mejoran:** forma y química, dominio de los campeones practicados, preparación contra un estilo de rival y lectura del meta del parche.
+  - **Información en ambos sentidos:** ves parte del pool y las tendencias del rival, y él ve las tuyas. Hay que decidir si practicar las estrategias buenas o esconderlas.
+  - **Presentación:** resultado y resumen del staff (victorias, picks probados, notas); opcionalmente, jugar tú el draft del scrim.
 - **Presentación de juego**: un draft animado y con tensión, celebraciones, noticias y titulares.
 - **Narrativa emergente**: prensa, rivalidades y momentos destacados generados a partir de los sistemas.
 
