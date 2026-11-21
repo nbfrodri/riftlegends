@@ -17,3 +17,12 @@ export const DRAFT_ORDER: readonly DraftStep[] = [
 	...steps("ban", "R B R B"),
 	...steps("pick", "R B B R"),
 ];
+
+/** Phase of the step at `index`; past the last step, roles are assigned. */
+export const phaseAt = (index: number) => {
+	if (index < 6) return "bans1";
+	if (index < 12) return "picks1";
+	if (index < 16) return "bans2";
+	if (index < 20) return "picks2";
+	return "roles";
+};
