@@ -73,6 +73,11 @@
 
 - Stryker (`@stryker-mutator/core` 10.1, ya en el catálogo) sobre `packages/core`, ejecutado a mano o en un workflow manual al cerrar cada fase, no en cada PR, por su coste.
 - **Umbral:** `break` en 70 % y objetivo de 80 %. Los mutantes que sobreviven se revisan y se cubren o se justifican.
+- **Ejecuciones:**
+
+  | Fecha | Puntuación | Más bajos |
+  | --- | --- | --- |
+  | 21-11-2026 (cierre del plan 07) | **85,17 %** (1.367 muertos, 194 supervivientes) | `server` 68,9 % (`debug.ts` sin tests), `ai/components/pick.ts` 67,7 %, `flex.ts` 71,0 % |
 
 ## Troceado en issues (Tarea de plan · milestone «Fase 2 — Draft rápido completo»)
 
