@@ -130,7 +130,7 @@ Cada plan se crea al empezar su fase con `to-spec` o `dev-workflow`, y se trocea
 | 01 | Cimientos del monorepo, tooling y CI | 0 |
 | 02 | Estilo visual y `ui-kit` (ADR 0002) | 0 |
 | 03 | Spikes S1+S2, S3 y S7+S8 | 1 |
-| 04 | [Contratos de IPC, comandos y hechos](04-contratos-ipc.md) | 2 |
+| 04 | [Contratos de IPC, comandos y hechos](../archive/plans/04-contratos-ipc.md) (hecho) | 2 |
 | 05 | [RNG, determinismo y golden tests](05-rng-determinismo.md) | 2 |
 | 06 | Reglas de draft y series (fearless) | 2 |
 | 07 | IA de draft explicable y personalidades | 2 |

@@ -48,5 +48,7 @@
 	"errors.unknown-session": "La partida ya no existe en el núcleo.",
 	"errors.stale-position": "El estado cambió mientras enviabas la orden. Vuelve a intentarlo.",
 	"errors.core-restarted": "El núcleo se ha reiniciado y la orden no se aplicó.",
-	"errors.core-timeout": "El núcleo no respondió a tiempo."
+	"errors.core-timeout": "El núcleo no respondió a tiempo.",
+	"coreProbe.title": "Sonda del núcleo",
+	"coreProbe.tick": "Tick"
 }

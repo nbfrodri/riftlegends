@@ -38,14 +38,21 @@ app.whenReady().then(async () => {
 	registerCoreIpc(window, ipcMain, core);
 	app.once("before-quit", () => core.dispose());
 	// End-to-end tests drive the core from the main process.
-	if (process.env.RIFT_E2E_CORE === "1") {
-		Object.assign(globalThis, { riftCore: core });
-	}
+	// E2E only: expose the bridge to main and show the core probe (plan 04).
+	const e2eCore = process.env.RIFT_E2E_CORE === "1";
+	if (e2eCore) Object.assign(globalThis, { riftCore: core });
+	const query: Record<string, string> = e2eCore ? { probe: "core" } : {};
 
 	if (import.meta.env.DEV && process.env.ELECTRON_RENDERER_URL) {
-		await window.loadURL(process.env.ELECTRON_RENDERER_URL);
+		const url = new URL(process.env.ELECTRON_RENDERER_URL);
+		for (const [key, value] of Object.entries(query)) {
+			url.searchParams.set(key, value);
+		}
+		await window.loadURL(url.toString());
 	} else {
-		await window.loadFile(join(__dirname, "../renderer/index.html"));
+		await window.loadFile(join(__dirname, "../renderer/index.html"), {
+			query,
+		});
 	}
 });
 

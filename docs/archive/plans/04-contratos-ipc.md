@@ -1,13 +1,13 @@
 # Plan 04 — Contratos de IPC, comandos y hechos
 
-- **Estado:** aprobado (20-11-2026). Redactado por Claude y aprobado por el usuario con las cuatro decisiones propuestas.
-- **Fase:** 2 · Draft rápido completo ([plan general](00-plan-general.md)).
+- **Estado:** hecho (21-11-2026; PR #112, #117, #121, #124, #128 y #130)
+- **Fase:** 2 · Draft rápido completo ([plan general](../../plans/00-plan-general.md)).
 - **Objetivo:** fijar cómo habla la interfaz con el núcleo: un único canal tipado y validado, con comandos que producen hechos, consultas que devuelven vistas y errores que no alteran el estado. Los planes 06 a 09 añaden sus comandos y hechos sobre este marco sin rediseñarlo.
 
 ## Contexto
 
-- **Arquitectura** ([plan general](00-plan-general.md#arquitectura-de-flujo), [ADR 0001](../decisions/0001-stack-tecnologico.md)): renderer → preload → main → `utilityProcess` del núcleo, que es la única autoridad. Hoy solo existen canales de ventana y de idioma (`apps/desktop/src/shared/bridge.ts`).
-- **Evidencias de la Fase 1** ([ADR 0003](../decisions/0003-go-no-go-fase1.md)): en S3 un comando ilegal no consume RNG ni cambia el estado. En S7 el reintento con el mismo ordinal es idempotente y el `utilityProcess` sobrevive a un `SIGKILL` sin perder nada confirmado. Los hechos se codifican como tuplas JSON canónicas.
+- **Arquitectura** ([plan general](../../plans/00-plan-general.md#arquitectura-de-flujo), [ADR 0001](../../decisions/0001-stack-tecnologico.md)): renderer → preload → main → `utilityProcess` del núcleo, que es la única autoridad. Hoy solo existen canales de ventana y de idioma (`apps/desktop/src/shared/bridge.ts`).
+- **Evidencias de la Fase 1** ([ADR 0003](../../decisions/0003-go-no-go-fase1.md)): en S3 un comando ilegal no consume RNG ni cambia el estado. En S7 el reintento con el mismo ordinal es idempotente y el `utilityProcess` sobrevive a un `SIGKILL` sin perder nada confirmado. Los hechos se codifican como tuplas JSON canónicas.
 - **Alcance:** este plan cubre el marco y los comandos transversales (sesión, consulta y suscripción). Los comandos y hechos concretos del draft, la IA, la partida y el contenido los definen los planes 06, 07, 08 y 10, con este formato.
 
 ## Lista de tests
@@ -64,7 +64,7 @@ Por capa, en el orden en que se escriben. «Rojo» significa ver el test fallar 
 
 ### Paquete `packages/contracts`
 
-- Tipos y esquemas **Zod 4** (catálogo: [libraries.md](../libraries.md)) de: sobre de comando, sobre de consulta, respuesta, error y hecho. El núcleo y la UI importan los tipos de aquí; nadie más define formas que crucen el IPC.
+- Tipos y esquemas **Zod 4** (catálogo: [libraries.md](../../libraries.md)) de: sobre de comando, sobre de consulta, respuesta, error y hecho. El núcleo y la UI importan los tipos de aquí; nadie más define formas que crucen el IPC.
 - **Sobre de comando:** `{ v, kind, sessionId, expectedPosition, payload }`. `v` es la versión del contrato. `expectedPosition` es la posición del siguiente hecho que el emisor espera: da idempotencia (N4) y ordena los reintentos, generalizando el ordinal de S7.
 - **Hechos:** unión discriminada por `type`, con `position` y datos enteros. La forma canónica es JSON con claves ordenadas y una línea por hecho (S3 usaba tuplas; las claves con nombre facilitan migrar el esquema, y el orden fijo mantiene los bytes estables). El catálogo de hechos crece por módulo: `draft/`, `match/`, etc.
 - **Respuesta:** `{ ok: true, position, facts }` o `{ ok: false, error: { code, params } }`. El código se traduce con la clave `errors.<code>` del catálogo i18n; el núcleo nunca devuelve texto para el usuario.
