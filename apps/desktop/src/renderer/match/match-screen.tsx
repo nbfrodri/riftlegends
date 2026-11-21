@@ -13,6 +13,7 @@ import { CoreErrorMessage, useCoreQuery } from "../core";
 import { PageHeader } from "../draft/page-header";
 import { teamName, useDraftSession } from "../draft/session";
 import { EventFeed } from "./event-feed";
+import { FaceToFace } from "./face-to-face";
 import { Objectives, Structures } from "./map-tables";
 import { clockTime, speeds, usePlayback } from "./playback";
 import { GoldChart, TeamTotals } from "./scoreboard";
@@ -25,6 +26,7 @@ function Replay({ match, entry }: { match: MatchView; entry: DraftView }) {
 	const last = match.facts.at(-1);
 	const end = last?.type === "match.ended" ? last : undefined;
 	const player = usePlayback(end?.duration ?? 0);
+	const [panel, setPanel] = useState<"map" | "faceToFace">("map");
 	const index = player.ended
 		? match.snapshots.length - 1
 		: Math.floor(player.second / 60);
@@ -68,16 +70,24 @@ function Replay({ match, entry }: { match: MatchView; entry: DraftView }) {
 					duration={end.duration}
 				/>
 				<div className="match-map">
-					<Structures
-						snapshot={snapshot}
-						second={player.second}
-						names={names}
-					/>
-					<Objectives
-						snapshot={snapshot}
-						second={player.second}
-						names={names}
-					/>
+					{/* Both panes share one cell, so the row keeps its height. */}
+					<div className="match-pane match-pane-map" hidden={panel !== "map"}
+						inert={panel !== "map"}>
+						<Structures
+							snapshot={snapshot}
+							second={player.second}
+							names={names}
+						/>
+						<Objectives
+							snapshot={snapshot}
+							second={player.second}
+							names={names}
+						/>
+					</div>
+					<div className="match-pane" hidden={panel !== "faceToFace"}
+						inert={panel !== "faceToFace"}>
+						<FaceToFace snapshot={snapshot} names={names} />
+					</div>
 				</div>
 				<EventFeed
 					facts={match.facts}
@@ -87,6 +97,17 @@ function Replay({ match, entry }: { match: MatchView; entry: DraftView }) {
 				/>
 			</div>
 			<footer className="flex items-center gap-3 border-t border-line pt-3">
+				<span className="text-muted">{t("draft.match.panel")}</span>
+				<SegmentedControl
+					label={t("draft.match.panel")}
+					options={[
+						{ value: "map", label: t("draft.match.panelMap") },
+						{ value: "faceToFace", label: t("draft.match.faceToFace") },
+					]}
+					value={panel}
+					onChange={setPanel}
+				/>
+				<span aria-hidden="true" className="h-5 border-l border-line" />
 				{!player.ended && (
 					<>
 						<Button
