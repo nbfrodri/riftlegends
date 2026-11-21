@@ -289,8 +289,10 @@ test("face to face says in words who is ahead in gold and CS, with the leader's 
 	expect(text.closest("[data-side]")?.getAttribute("data-side")).toBe("blue");
 	const jungle = lane("Jungle");
 	expect(
-		jungle.getByText("Shoal: 500 more gold").closest("[data-side]")?.dataset
-			.side,
+		jungle
+			.getByText("Shoal: 500 more gold")
+			.closest("[data-side]")
+			?.getAttribute("data-side"),
 	).toBe("red");
 	expect(jungle.getByText(/Forge: 2 CS more/)).toBeTruthy();
 	expect(screen.queryByText(/\+/)).toBeNull();

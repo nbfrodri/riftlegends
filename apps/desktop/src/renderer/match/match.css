@@ -145,7 +145,7 @@
 	font-weight: 700;
 	color: var(--side);
 }
-.match-face tbody td[data-side] {
+.match-face td[data-side] {
 	color: var(--side);
 }
 .match-face thead tr:nth-child(2) {
