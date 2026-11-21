@@ -133,7 +133,7 @@ Cada plan se crea al empezar su fase con `to-spec` o `dev-workflow`, y se trocea
 | 04 | [Contratos de IPC, comandos y hechos](../archive/plans/04-contratos-ipc.md) (hecho) | 2 |
 | 05 | [RNG, determinismo y golden tests](05-rng-determinismo.md) | 2 |
 | 06 | [Reglas de draft y series (fearless)](../archive/plans/06-reglas-de-draft.md) (hecho) | 2 |
-| 07 | [IA de draft explicable y personalidades](07-ia-de-draft.md) | 2 |
+| 07 | [IA de draft explicable y personalidades](../archive/plans/07-ia-de-draft.md) (hecho) | 2 |
 | 08 | Simulación de partida v1 y timeline | 2 |
 | 09 | Pantalla de draft broadcast | 2 |
 | 10 | Esquemas de contenido, dataset ficticio y caché de Data Dragon | 2–3 |
