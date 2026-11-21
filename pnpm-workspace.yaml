@@ -5,3 +5,7 @@ allowBuilds:
   lefthook: true
 minimumReleaseAgeExclude:
   - electron@45.4.1
+# Stryker 10.1.1 pulls vulnerable versions (Dependabot alerts 1-5).
+overrides:
+  qs: ^6.17.1
+  minimatch@<11.0.1: ^11.0.9
