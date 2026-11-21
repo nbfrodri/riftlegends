@@ -1,4 +1,9 @@
-import type { AiContent, MatchContent, Side } from "@rift-legends/contracts";
+import type {
+	AiContent,
+	MapSnapshot,
+	MatchContent,
+	Side,
+} from "@rift-legends/contracts";
 import { mentalEdge, type SeriesContext } from "../match/mental";
 import { playGame } from "../match/play";
 import type { Contest } from "../match/profile";
@@ -36,10 +41,12 @@ export function finishGame(
 	winner: string,
 	played: readonly Emitted[] = [],
 	edge: Contest | null = null,
+	map: readonly MapSnapshot[] = [],
 ): Outcome<SeriesState> {
 	const config = state.config as SeriesConfig;
 	const outcomes = [...state.outcomes, { winner, edge }];
 	const matches = [...state.matches, played];
+	const maps = [...state.maps, map];
 	const index = config.teams.indexOf(winner);
 	const draft = state.draft as GameDraft;
 	const wins: [number, number] = [state.wins[0], state.wins[1]];
@@ -57,6 +64,7 @@ export function finishGame(
 				previous,
 				outcomes,
 				matches,
+				maps,
 				phase: "over",
 				chooser: null,
 			},
@@ -72,6 +80,7 @@ export function finishGame(
 			previous,
 			outcomes,
 			matches,
+			maps,
 			game: state.game + 1,
 			phase: "side",
 			chooser: other(config, winner),
@@ -111,5 +120,5 @@ export function playResult(
 		...lineups,
 		mental: { blue: mental("blue"), red: mental("red") },
 	});
-	return finishGame(state, game.winner, game.facts, game.edge);
+	return finishGame(state, game.winner, game.facts, game.edge, game.snapshots);
 }

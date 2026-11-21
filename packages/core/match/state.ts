@@ -16,6 +16,8 @@ import { type Lineup, type Profile, profiles } from "./profile";
 
 /** Minutes each buff lasts after its objective falls. */
 const BUFF_MINUTES = { herald: 2, baron: 3, elder: 2 } as const;
+/** The counter each buffing objective adds to. */
+const TAKEN = { herald: "heralds", baron: "barons", elder: "elders" } as const;
 /** Range of the form of the day, in points (F10 tunes it). */
 const FORM = 600_000;
 
@@ -64,6 +66,10 @@ interface SideState {
 	readonly gold: number;
 	readonly kills: number;
 	readonly dragons: number;
+	/** Objectives this side has taken. */
+	readonly heralds: number;
+	readonly barons: number;
+	readonly elders: number;
 	/** Towers this side has lost in each lane (0–3) and at its nexus (0–2). */
 	readonly towers: Readonly<Record<Lane, number>>;
 	readonly nexusTowers: number;
@@ -159,6 +165,9 @@ export function createMatch(setup: MatchSetup): MatchState {
 		gold: 0,
 		kills: 0,
 		dragons: 0,
+		heralds: 0,
+		barons: 0,
+		elders: 0,
 		towers: { top: 0, mid: 0, bot: 0 },
 		nexusTowers: 0,
 		fightPushAt: 0,
@@ -250,7 +259,11 @@ function mark(state: MatchState, e: MatchEvent): MatchState {
 		case "herald":
 		case "baron":
 		case "elder":
-			won = { ...won, buffs: buff(e.kind) };
+			won = {
+				...won,
+				[TAKEN[e.kind]]: won[TAKEN[e.kind]] + 1,
+				buffs: buff(e.kind),
+			};
 			objectives = respawn(e.kind);
 			break;
 	}

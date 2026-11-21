@@ -215,7 +215,55 @@ export const matchContent = z.strictObject({
 export type MatchContent = z.infer<typeof matchContent>;
 export type MatchEvent = z.infer<z.ZodObject<typeof matchEventFact>>;
 
-/** What `match.view` answers: the facts a game emitted, without positions. */
+const lanes = z.strictObject({
+	top: position,
+	mid: position,
+	bot: position,
+});
+const lanesBack = z.strictObject({
+	top: position.nullable(),
+	mid: position.nullable(),
+	bot: position.nullable(),
+});
+
+/** One side of the map at the end of a minute (plan 09, Q4). */
+const mapSide = z.strictObject({
+	gold: position,
+	kills: position,
+	/** Towers this side has lost in each lane (0 to 3). */
+	towers: lanes,
+	/** Nexus towers this side has lost (0 to 2). */
+	nexusTowers: position,
+	/** Minute each lost inhibitor is back; null while it stands. */
+	inhibitors: lanesBack,
+	/** Dragons this side has taken. */
+	dragons: position,
+	/** The side has the soul: four dragons. */
+	soul: z.boolean(),
+	heralds: position,
+	barons: position,
+	elders: position,
+	/** Minute each active buff wears off; null if it is not active. */
+	buffs: z.strictObject({
+		herald: position.nullable(),
+		baron: position.nullable(),
+		elder: position.nullable(),
+	}),
+});
+
+/** The map after `minute`; minute 0 is the start. */
+export const mapSnapshot = z.strictObject({
+	minute: position,
+	blue: mapSide,
+	red: mapSide,
+});
+
+export type MapSnapshot = z.infer<typeof mapSnapshot>;
+
+/**
+ * What `match.view` answers: the facts a game emitted, without positions, and
+ * the state of the map at each minute.
+ */
 export const matchView = z.strictObject({
 	game: position,
 	facts: z.array(
@@ -225,6 +273,41 @@ export const matchView = z.strictObject({
 			z.strictObject({ type: z.literal("match.ended"), ...matchEndedFact }),
 		]),
 	),
+	snapshots: z.array(mapSnapshot),
 });
 
 export type MatchView = z.infer<typeof matchView>;
+
+const lineGap = z.strictObject({
+	role: z.enum(["top", "jungle", "mid", "bot", "support"]),
+	/** Blue rating minus red rating. */
+	rating: z.int(),
+	/** Blue gold minus red gold. */
+	gold: z.int(),
+	/** Side with the better rating; null if tied. */
+	favored: side.nullable(),
+	/** The rating difference passes the threshold. */
+	gap: z.boolean(),
+});
+
+/** What `series.summary` answers (plan 09, Q5). */
+export const seriesSummary = z.strictObject({
+	mvp: z
+		.strictObject({
+			player: id,
+			team: id,
+			champions: z.array(id),
+			/** Mean rating over the games played, in tenths. */
+			rating: position,
+			kills: position,
+			deaths: position,
+			assists: position,
+			/** Mean participation per 10,000. */
+			participation: share,
+			games: position,
+		})
+		.nullable(),
+	lanes: z.array(z.strictObject({ game: position, lines: z.array(lineGap) })),
+});
+
+export type SeriesSummary = z.infer<typeof seriesSummary>;

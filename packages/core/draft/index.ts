@@ -3,6 +3,7 @@ import { createDispatcher } from "../server/dispatcher";
 import { aiTurn } from "./ai-turn";
 import { viewMatch } from "./match-view";
 import { initialSeries, type SeriesState, seriesCommands } from "./series";
+import { viewSummary } from "./summary";
 import { viewDraft } from "./view";
 
 export type { SeriesState } from "./series";
@@ -10,7 +11,11 @@ export type { SeriesState } from "./series";
 /** Dispatcher of the draft catalog (plan 06). */
 export const draftDispatcher = createDispatcher<SeriesState>({
 	commands: { ...seriesCommands, "draft.ai": aiTurn },
-	queries: { "draft.view": viewDraft, "match.view": viewMatch },
+	queries: {
+		"draft.view": viewDraft,
+		"match.view": viewMatch,
+		"series.summary": viewSummary,
+	},
 });
 
 /**

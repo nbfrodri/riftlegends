@@ -78,6 +78,8 @@ export const draftQueries = defineQueries({
 	"draft.view": z.strictObject({ team: teamId.optional() }),
 	/** The facts of a played game, to replay it without simulating again. */
 	"match.view": z.strictObject({ game: position }),
+	/** MVP of the series and the gap of each lane in each game (Q5). */
+	"series.summary": z.strictObject({}),
 });
 
 export const draftFacts = defineFacts({

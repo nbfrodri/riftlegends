@@ -64,7 +64,14 @@ describe("match.view (Q3)", () => {
 		expect(expected.length).toBeGreaterThan(2);
 
 		const answer = view(session, 1);
-		expect(answer).toEqual({ ok: true, view: { game: 1, facts: expected } });
+		const { view: shown } = answer as { view: { snapshots: unknown[] } };
+		expect(answer).toEqual({
+			ok: true,
+			view: { game: 1, facts: expected, snapshots: shown.snapshots },
+		});
+		// Q4: the start plus one snapshot per minute, up to the last event's.
+		const last = expected.filter((f) => f.type === "match.event").at(-1);
+		expect(shown.snapshots).toHaveLength((last?.minute as number) + 1);
 		expect(matchView.parse((answer as { view: unknown }).view)).toBeTruthy();
 		// Reading twice gives the same facts: nothing is played again.
 		expect(view(session, 1)).toEqual(answer);
