@@ -1,5 +1,6 @@
 import type { Page } from "@playwright/test";
 import { expect, test } from "../fixtures";
+import { playQuickDraftBo5 } from "../quick-draft-flow";
 
 test.skip(
 	process.platform !== "linux",
@@ -54,4 +55,33 @@ test("Ajustes", async ({ appWindow }) => {
 	await expandSidebar(appWindow);
 	await goTo(appWindow, "Ajustes");
 	await expect(appWindow).toHaveScreenshot("ajustes.png");
+});
+
+test.describe("Quick draft", () => {
+	test.use({ appEnv: { RIFT_E2E_CORE: "1" } });
+
+	test("E2: captures the screens of a seeded Bo5", async ({
+		electronApp,
+		appWindow,
+	}) => {
+		test.setTimeout(120_000);
+		await appWindow.emulateMedia({ reducedMotion: "reduce" });
+		await playQuickDraftBo5(electronApp, appWindow, async (screen) => {
+			if (screen === "game-result") {
+				// Wait for the series summary to populate all five roles.
+				const gaps = appWindow.getByRole("table", {
+					name: "Diferencias por rol",
+				});
+				await expect(gaps.getByRole("row")).toHaveCount(6);
+			}
+			// The draft timer is off, and the match clock stops at the final frame.
+			await appWindow.mouse.move(0, 0);
+			await expect(appWindow).toHaveScreenshot(`quick-draft-${screen}.png`);
+			// Reduced motion starts the replay at its final frame. Re-enable
+			// motion before playing so the shared flow can use Skip to end.
+			if (screen === "game-plan") {
+				await appWindow.emulateMedia({ reducedMotion: "no-preference" });
+			}
+		});
+	});
 });
