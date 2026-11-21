@@ -36,7 +36,7 @@ Rift Legends es una **app de escritorio instalable** (Electron), no una web: tie
 | Tablas densas | `@tanstack/react-table` | 9.3 | MIT | Mercado, plantilla, estadísticas. Ya en `packages/ui-kit` (9.3.1) como base de `DataTable` |
 | Listas largas | `@tanstack/react-virtual` | 3.14 (fijada 3.14.26) | MIT | Ya en `packages/ui-kit` (3.14.26, la versión medida en el spike S2): `DataTable` monta solo las filas cercanas a la ventana de visión. Para otras listas, cuando superen unas cien filas visibles |
 | Navegación entre pantallas | `@tanstack/react-router` | 1.170 | MIT | `createMemoryHistory`, rutas tipadas |
-| Datos del núcleo en la UI | `@tanstack/react-query` | 5.108 | MIT | Caché e invalidación de las consultas IPC al núcleo |
+| Datos del núcleo en la UI | `@tanstack/react-query` | 5.108 | MIT | Caché e invalidación de las consultas IPC al núcleo. Ya en `apps/desktop` (5.108.2) |
 | Estado de UI compartido | `zustand` | 5.1 | MIT | **Aplazado** hasta que dos pantallas compartan estado transitorio |
 | Formularios | `react-hook-form` + `zod` | 7.92 / 4.6 | MIT | Editor del Sandbox, ajustes |
 | Avisos | `sonner` | 2.0 | MIT | A través del componente de shadcn |

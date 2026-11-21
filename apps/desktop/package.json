@@ -12,6 +12,7 @@
 		"@rift-legends/core": "workspace:*",
 		"@rift-legends/i18n": "workspace:*",
 		"@rift-legends/ui-kit": "workspace:*",
+		"@tanstack/react-query": "5.108.2",
 		"@tanstack/react-router": "1.170.46",
 		"lucide-react": "1.75.0",
 		"react": "19.3.1",
