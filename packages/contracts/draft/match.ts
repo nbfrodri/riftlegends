@@ -201,3 +201,4 @@ export const matchContent = z.strictObject({
 });
 
 export type MatchContent = z.infer<typeof matchContent>;
+export type MatchEvent = z.infer<z.ZodObject<typeof matchEventFact>>;
