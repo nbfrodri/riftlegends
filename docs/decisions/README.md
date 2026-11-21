@@ -58,6 +58,8 @@ Resumen de las decisiones **vigentes**, para empezar cualquier sesión sin volve
 | 2026-11-21 | Los atributos **se entrenan**: el usuario elige qué mejorar en el entrenamiento (plan 20), con coste de oportunidad, límites por edad y potencial, y rendimientos decrecientes; los mentales mejoran más despacio | [plan 08](../archive/plans/08-simulacion-de-partida.md) |
 | 2026-11-21 | **La IA de cada equipo sale de su coach y su staff** (personalidad y dificultad); el jugador no la configura antes de una partida | [plan 09](../plans/09-draft-rapido-en-la-app.md) |
 | 2026-11-21 | El único equipo humano puede consultar y sustituir su **plan de partida** para el game actual | [plan 09, Q7](../plans/09-draft-rapido-en-la-app.md#plan-de-partida-q7) |
+| 2026-11-22 | Contenido ficticio: **70 campeones** (14 por rol) y **8 equipos** con coach y sembrado, en JSON validado con Zod; Bo5 con fearless hard sin red | [plan 10](../plans/10-contenido.md) |
+| 2026-11-22 | El juego usa los **assets reales** de LoL y de los equipos de esports: caché de Data Dragon y CommunityDragon con **descarga automática** al arrancar con red; iconos oficiales de rol y objetivos ya en el plan 10; campeones reales jugables, logos y todos los equipos de LCK, LPL, LEC, LCP, LCS y CBLOL en el plan 11 | [plan 10](../plans/10-contenido.md#decisiones-del-usuario-22-11-2026) |
 
 ## Estilo visual
 
