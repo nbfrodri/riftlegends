@@ -99,6 +99,7 @@ Cada fase termina con un hito verificable y un commit o PR fusionado en `main`. 
 
 ### Fase 7 — Profundidad de gestión
 - Meta y parches entre splits (tiers dinámicos, notas de parche generadas).
+- **Propuesta del usuario (21-11-2026):** dirigir la partida como coach más allá del «Plan de partida» del plan 09: pausas tácticas en momentos clave (p. ej. minutos 15 y 25) para cambiar de plan (el «pivote estratégico»), ejecutadas mejor o peor según el shotcalling; y palancas nuevas (línea a la que se juega, invadir o defender la jungla, splitpush o agruparse), cada una con su efecto en la simulación y su calibración.
 - Scouting e información imperfecta.
 - Entrenamiento con coste de oportunidad (elegir qué atributos de cada jugador mejorar) y **scrims** ([IDEA §8](../../IDEA.md#8-novedades-respecto-a-draftsim)).
 - Moral, química y vestuario.
