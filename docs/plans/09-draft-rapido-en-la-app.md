@@ -57,9 +57,10 @@ Una sola ruta, `/draft`, con sub-pantallas según la fase de `draft.view` (`side
 ### Núcleo
 
 - `core-host` con `draftCommands`, `draftQueries` y `draftDispatcher`. La sesión se abre con `draftStateWith(contenido, contenido de partida)`.
-- `series.start` pasa a indicar solo qué equipo juega la IA. Su personalidad y dificultad salen del coach del equipo en el contenido.
-- Query nueva `match.view { game }`, que devuelve los hechos de ese game. Para eso, la serie guarda los hechos de cada partida.
-- Contenido empaquetado: el fixture ficticio pasa a `packages/core/content/` como contenido de producción mínimo. Se le añaden nombres visibles (i18n) y un coach por equipo. El plan 10 lo amplía.
+- `series.start` indica por equipo `null` (humano), `"coach"` o ajustes explícitos. Con `"coach"`, la personalidad y el `coachRating` salen del coach del equipo en el contenido; sin coach, `balanced` con dificultad `normal`.
+- Contenido empaquetado: el fixture ficticio vive en `packages/core/content/` como contenido de producción mínimo (los fixtures de test lo reexportan). Cada equipo de `matchContent.teams` gana un `name` (nombre propio, sin i18n) y un `coach` `{ name, personality, rating }`, ambos opcionales. El plan 10 lo amplía.
+- `match.view { game }` devuelve `{ game, facts }` con los hechos `match.*` guardados en la serie; un game sin jugar responde `game-not-played`.
+- El `core-host` combina el catálogo del draft (primero) con el de depuración, que siguen usando la sonda del renderer y el E2E del IPC.
 
 ### UI
 

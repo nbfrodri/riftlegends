@@ -3,6 +3,8 @@ import {
 	type CoreError,
 	debugCommands,
 	debugQueries,
+	draftCommands,
+	draftQueries,
 	parseCommand,
 	parseQuery,
 	type QueryCatalog,
@@ -11,9 +13,13 @@ import {
 import {
 	type createDispatcher,
 	debugDispatcher,
+	draftDispatcher,
+	draftStateWith,
 	type Fact,
 	initialDebugState,
 	openSession,
+	packagedDraftContent,
+	packagedMatchContent,
 	type Session,
 } from "@rift-legends/core";
 
@@ -55,17 +61,27 @@ const readBody = (body: unknown): unknown => {
 // biome-ignore lint/suspicious/noExplicitAny: catalogs and dispatchers are checked where they are built
 type AnyCatalog = any;
 
-/**
- * The core's side of the IPC: validates every message, owns the sessions and
- * runs the dispatcher. Messages are handled one at a time, in arrival order.
- */
-const createHost = <S>(definition: {
+/** A catalog with its dispatcher and the state a new session starts from. */
+interface HostModule<S> {
+	/** Whether a command or query `kind` belongs to this module. */
+	owns(kind: string): boolean;
 	commands: CommandCatalog<AnyCatalog>;
 	queries: QueryCatalog<AnyCatalog>;
 	dispatcher: ReturnType<typeof createDispatcher<S>>;
 	initialState: () => S;
-}) => {
-	const sessions = new Map<number, Session<S>>();
+}
+
+// biome-ignore lint/suspicious/noExplicitAny: modules differ in their state; each one only sees its own
+type AnyModule = HostModule<any>;
+
+/**
+ * The core's side of the IPC: validates every message, owns the sessions and
+ * runs the dispatchers. Messages are handled one at a time, in arrival order.
+ * A session holds one state per module; a message goes to the module that
+ * owns its `kind`, and the first module takes whatever nobody owns.
+ */
+const createHost = (modules: readonly [AnyModule, ...AnyModule[]]) => {
+	const sessions = new Map<number, Session<unknown>[]>();
 	let nextSessionId = 1;
 
 	const unknownSession = (sessionId: number): HostResult => ({
@@ -73,12 +89,18 @@ const createHost = <S>(definition: {
 		error: { code: "unknown-session", params: { sessionId } },
 	});
 
+	const moduleOf = (raw: unknown) => {
+		const kind = isRecord(raw) && typeof raw.kind === "string" ? raw.kind : "";
+		const index = modules.findIndex((m) => m.owns(kind));
+		return index === -1 ? 0 : index;
+	};
+
 	const run = (message: Record<string, unknown>): HostResult => {
 		if (message.op === "open") {
 			const sessionId = nextSessionId++;
 			sessions.set(
 				sessionId,
-				openSession(sessionId, definition.initialState()),
+				modules.map((m) => openSession(sessionId, m.initialState())),
 			);
 			return { ok: true, sessionId };
 		}
@@ -90,24 +112,27 @@ const createHost = <S>(definition: {
 		} catch {
 			return invalid("body");
 		}
+		const index = moduleOf(raw);
+		const module = modules[index] as AnyModule;
 
 		if (message.op === "query") {
-			const parsed = parseQuery(definition.queries, raw);
+			const parsed = parseQuery(module.queries, raw);
 			if (!parsed.ok) return parsed;
-			const session = sessions.get(parsed.query.sessionId);
+			const session = sessions.get(parsed.query.sessionId)?.[index];
 			if (!session) return unknownSession(parsed.query.sessionId);
-			return definition.dispatcher.query(session, parsed.query);
+			return module.dispatcher.query(session, parsed.query);
 		}
 
-		const parsed = parseCommand(definition.commands, raw);
+		const parsed = parseCommand(module.commands, raw);
 		if (!parsed.ok) return parsed;
-		const session = sessions.get(parsed.command.sessionId);
-		if (!session) return unknownSession(parsed.command.sessionId);
-		const { session: next, response } = definition.dispatcher.handle(
+		const all = sessions.get(parsed.command.sessionId);
+		const session = all?.[index];
+		if (!all || !session) return unknownSession(parsed.command.sessionId);
+		const { session: next, response } = module.dispatcher.handle(
 			session,
 			parsed.command,
 		);
-		sessions.set(next.id, next);
+		all[index] = next;
 		return response;
 	};
 
@@ -121,11 +146,26 @@ const createHost = <S>(definition: {
 	};
 };
 
-/** Host with the debug catalog, used until the draft commands exist. */
-export const createDebugHost = () =>
-	createHost({
-		commands: debugCommands,
-		queries: debugQueries,
-		dispatcher: debugDispatcher,
-		initialState: () => initialDebugState,
-	});
+/**
+ * The game's host: the draft catalog with the packaged content loaded in each
+ * session (plan 09), plus the debug catalog that the renderer probe and the
+ * IPC E2E use (plan 04).
+ */
+export const createCoreHost = () =>
+	createHost([
+		{
+			owns: (kind) => !kind.startsWith("debug."),
+			commands: draftCommands,
+			queries: draftQueries,
+			dispatcher: draftDispatcher,
+			initialState: () =>
+				draftStateWith(packagedDraftContent, packagedMatchContent),
+		},
+		{
+			owns: (kind) => kind.startsWith("debug."),
+			commands: debugCommands,
+			queries: debugQueries,
+			dispatcher: debugDispatcher,
+			initialState: () => initialDebugState,
+		},
+	]);
