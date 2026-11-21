@@ -128,6 +128,14 @@ describe("F1 · attributes by area", () => {
 		["mechanics", "lane", "early"],
 		["teamfight", "fight", "late"],
 		["macro", "objective", "mid"],
+		["farming", "lane", "early"],
+		["waves", "siege", "mid"],
+		["roaming", "jungle", "early"],
+		["anticipation", "jungle", "early"],
+		["vision", "objective", "mid"],
+		["objectiveControl", "objective", "mid"],
+		["positioning", "fight", "late"],
+		["communication", "fight", "late"],
 	] as const)("%s raises the %s contest and the %s phase", (attr, c, ph) => {
 		const low = ours(withAttribute(attr, 40));
 		const high = ours(withAttribute(attr, 90));
@@ -136,7 +144,21 @@ describe("F1 · attributes by area", () => {
 	});
 
 	it("never lowers a contest when an attribute goes up", () => {
-		const attributes = ["lanes", "teamfight", "macro", "mechanics"] as const;
+		const attributes = [
+			"lanes",
+			"teamfight",
+			"macro",
+			"mechanics",
+			"farming",
+			"waves",
+			"roaming",
+			"anticipation",
+			"vision",
+			"objectiveControl",
+			"positioning",
+			"communication",
+			"versatility",
+		] as const;
 		fc.assert(
 			fc.property(
 				fc.constantFrom(...attributes),
@@ -165,6 +187,20 @@ describe("F2 · mastery", () => {
 		expect(main.contests.lane.causes).toContainEqual(
 			expect.objectContaining({ key: "mastery" }),
 		);
+	});
+
+	it("versatility softens a champion outside the player's pool", () => {
+		// forge-top has never shown fallowhorn.
+		const offPool = (value: number) =>
+			ours({
+				...withAttribute("versatility", value),
+				us: withRoles({ top: "fallowhorn" }).us,
+			});
+		expect(contest(offPool(95), "lane")).toBeGreaterThan(
+			contest(offPool(10), "lane"),
+		);
+		const inPool = (value: number) => ours(withAttribute("versatility", value));
+		expect(inPool(95)).toEqual(inPool(10));
 	});
 });
 

@@ -34,6 +34,37 @@ export const MAP_ZONES = [
 	"base-red",
 ] as const;
 
+/** Twenty ratings from 0 to 100, by area (plan 08, "Atributos de jugador"). */
+export const PLAYER_ATTRIBUTES = [
+	// Lane
+	"lanes",
+	"farming",
+	"waves",
+	// Map
+	"macro",
+	"roaming",
+	"vision",
+	"anticipation",
+	"objectiveControl",
+	// Fight
+	"teamfight",
+	"mechanics",
+	"positioning",
+	"aggression",
+	// Mental
+	"composure",
+	"resilience",
+	"experience",
+	"consistency",
+	"focus",
+	// Team
+	"shotcalling",
+	"communication",
+	"versatility",
+] as const;
+
+export type PlayerAttribute = (typeof PLAYER_ATTRIBUTES)[number];
+
 const id = z.string().min(1).max(64);
 const side = z.enum(["blue", "red"]);
 const points = z.int();
@@ -113,17 +144,11 @@ export const matchContent = z.strictObject({
 	players: z.array(
 		z.strictObject({
 			id,
-			attributes: z.strictObject({
-				lanes: rating,
-				teamfight: rating,
-				macro: rating,
-				mechanics: rating,
-				composure: rating,
-				resilience: rating,
-				experience: rating,
-				consistency: rating,
-				shotcalling: rating,
-			}),
+			attributes: z.strictObject(
+				Object.fromEntries(
+					PLAYER_ATTRIBUTES.map((key) => [key, rating]),
+				) as Record<PlayerAttribute, typeof rating>,
+			),
 			/** Calls the plays in game. */
 			leader: z.boolean(),
 			mastery: z.array(z.strictObject({ champion: id, value: rating })),

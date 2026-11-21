@@ -30,7 +30,7 @@
 
 | # | Factor |
 | --- | --- |
-| F1 | Atributos por área: líneas, peleas en equipo, macro y mecánicas; cada fase usa los suyos |
+| F1 | Atributos por área (ver [Atributos de jugador](#atributos-de-jugador)); cada fase y cada disputa usan los suyos |
 | F2 | Maestría del jugador con su campeón |
 | F3 | Draft: meta, sinergias, counters de línea y fase de poder (un equipo de late gana más partidas largas) |
 | F4 | Composición en peleas: daño AD/AP, frontline, engage y peel |
@@ -74,9 +74,38 @@
 
 `game.finish` desaparece: tras los roles, `match.play {}` juega el game entero y emite sus hechos y `game.finished`.
 
+### Atributos de jugador
+
+20 atributos de 0 a 100, en cinco áreas. Ampliados el 21-11 (#179).
+
+| Área | Atributo (clave) | Qué decide |
+| --- | --- | --- |
+| Línea | Líneas (`lanes`) | Duelos y disputas de línea |
+| Línea | Farming (`farming`) | Oro de línea por minuto, aunque no gane duelos |
+| Línea | Gestión de oleadas (`waves`) | Presión de oleadas, splitpush y torres sin pelea |
+| Mapa | Macro (`macro`) | Decisiones de objetivos y rotaciones |
+| Mapa | Roaming (`roaming`) | Influencia de mid y support en otras líneas y en los ganks |
+| Mapa | Visión (`vision`) | Picks y disputas de objetivos |
+| Mapa | Anticipación (`anticipation`) | Leer el mapa y al jungla rival: esquivar ganks y contragankear |
+| Mapa | Control de objetivos (`objectiveControl`) | Asegurar y robar dragones y barones |
+| Pelea | Peleas en equipo (`teamfight`) | Peleas y asedios |
+| Pelea | Mecánicas (`mechanics`) | Duelos, escaramuzas y ejecución |
+| Pelea | Posicionamiento (`positioning`) | Morir menos en las peleas |
+| Pelea | Agresividad (`aggression`) | Más kills a favor y en contra; más varianza (#172) |
+| Mental | Temple (`composure`) | Games decisivos (F7) |
+| Mental | Resistencia mental (`resilience`) | Rachas de derrotas (F8) |
+| Mental | Experiencia (`experience`) | Presión en escenarios grandes (F9) |
+| Mental | Constancia (`consistency`) | Varianza del jugador (F10) |
+| Mental | Concentración (`focus`) | Aguante en partidas y series largas (#173) |
+| Equipo | Shotcalling (`shotcalling`) | Decisiones de objetivos y peleas del líder (F11) |
+| Equipo | Comunicación (`communication`) | Coordinación en peleas; suma a la química |
+| Equipo | Versatilidad (`versatility`) | Menos penalización con campeones fuera del pool y en flex |
+
+Con jugadores reales, los atributos se derivan de estadísticas por rol y liga (plan 11); los mentales se estiman y se pueden ajustar a mano.
+
 ### Contenido nuevo (para el plan 10)
 
-- **Jugador:** atributos (líneas, peleas, macro y mecánicas), maestría por campeón, temple, resistencia mental, experiencia, constancia y si es líder en partida.
+- **Jugador:** los 20 atributos de la tabla siguiente, maestría por campeón y si es líder en partida.
 - **Equipo:** química (por pares) y estrategia por defecto.
 - **Campeón:** CC, movilidad y frontline.
 - **Partida:** tiempos de objetivos, economía y constantes de balance como datos, no en el código.

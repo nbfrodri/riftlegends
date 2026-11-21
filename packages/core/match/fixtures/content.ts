@@ -1,4 +1,4 @@
-import type { MatchContent } from "@rift-legends/contracts";
+import { type MatchContent, PLAYER_ATTRIBUTES } from "@rift-legends/contracts";
 import { fictionalContent as draft } from "../../ai/fixtures/content";
 
 // What the match simulation reads for the fictional pool of the draft AI
@@ -8,29 +8,15 @@ type Player = MatchContent["players"][number];
 type Attributes = Player["attributes"];
 type Champion = MatchContent["champions"][number];
 
-/** Attributes in the order of `Attributes`, to keep each row short. */
-const attributes = (
-	...[
-		lanes,
-		teamfight,
-		macro,
-		mechanics,
-		composure,
-		resilience,
-		experience,
-		consistency,
-		shotcalling,
-	]: number[]
+/** Every attribute at `base`, except the ones the player stands out in. */
+const rated = (
+	base: number,
+	standout: Partial<Attributes> = {},
 ): Attributes => ({
-	lanes: lanes ?? 0,
-	teamfight: teamfight ?? 0,
-	macro: macro ?? 0,
-	mechanics: mechanics ?? 0,
-	composure: composure ?? 0,
-	resilience: resilience ?? 0,
-	experience: experience ?? 0,
-	consistency: consistency ?? 0,
-	shotcalling: shotcalling ?? 0,
+	...(Object.fromEntries(
+		PLAYER_ATTRIBUTES.map((key) => [key, base]),
+	) as Attributes),
+	...standout,
 });
 
 const MASTERY = { mains: 90, secondary: 70, weak: 35 } as const;
@@ -79,22 +65,53 @@ const champion = ({
 
 export const fictionalMatchContent: MatchContent = {
 	players: [
-		// lanes, teamfight, macro, mechanics, composure, resilience,
-		// experience, consistency, shotcalling
-		player("forge-top", attributes(88, 84, 80, 90, 75, 70, 85, 80, 55)),
-		player("forge-jungle", attributes(70, 80, 86, 78, 82, 76, 72, 74, 72)),
-		player("forge-mid", attributes(92, 90, 94, 93, 95, 92, 98, 90, 88), true),
-		player("forge-bot", attributes(80, 82, 70, 84, 66, 60, 64, 62, 40)),
-		player("forge-support", attributes(62, 72, 74, 60, 70, 80, 90, 85, 76)),
-		player("shoal-top", attributes(74, 66, 62, 76, 58, 55, 45, 60, 35)),
 		player(
-			"shoal-jungle",
-			attributes(78, 86, 88, 82, 80, 84, 80, 82, 90),
+			"forge-top",
+			rated(80, { lanes: 88, mechanics: 90, waves: 86, shotcalling: 55 }),
+		),
+		player(
+			"forge-jungle",
+			rated(76, { macro: 86, objectiveControl: 90, anticipation: 84 }),
+		),
+		player(
+			"forge-mid",
+			rated(92, { experience: 98, composure: 95, roaming: 88 }),
 			true,
 		),
-		player("shoal-mid", attributes(85, 80, 76, 88, 72, 64, 60, 58, 50)),
-		player("shoal-bot", attributes(98, 96, 82, 99, 85, 78, 70, 92, 45)),
-		player("shoal-support", attributes(58, 70, 66, 62, 64, 72, 75, 70, 68)),
+		player(
+			"forge-bot",
+			rated(70, {
+				farming: 88,
+				positioning: 84,
+				resilience: 60,
+				shotcalling: 40,
+			}),
+		),
+		player(
+			"forge-support",
+			rated(72, { vision: 90, experience: 90, mechanics: 60, roaming: 82 }),
+		),
+		player(
+			"shoal-top",
+			rated(60, { lanes: 74, aggression: 85, experience: 45, focus: 50 }),
+		),
+		player(
+			"shoal-jungle",
+			rated(82, { shotcalling: 90, macro: 88, aggression: 78 }),
+			true,
+		),
+		player(
+			"shoal-mid",
+			rated(74, { mechanics: 88, lanes: 85, consistency: 58, versatility: 50 }),
+		),
+		player(
+			"shoal-bot",
+			rated(88, { mechanics: 99, lanes: 98, farming: 96, shotcalling: 45 }),
+		),
+		player(
+			"shoal-support",
+			rated(66, { vision: 80, communication: 78, mechanics: 62 }),
+		),
 	],
 	teams: [
 		{

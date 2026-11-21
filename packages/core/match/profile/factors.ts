@@ -17,10 +17,22 @@ export type Factors = Readonly<Record<string, Fixed>>;
 
 const TIER_POINTS = { "S+": 6, S: 4, A: 2, B: 0, C: -2, D: -4 } as const;
 const OFF_ROLE = -6;
-/** Mastery of a champion the player has never shown. */
-const UNKNOWN_MASTERY = 20;
 const TEMPO = { slow: -3, balanced: 0, fast: 3 } as const;
-const AREAS = ["lanes", "teamfight", "macro", "mechanics"] as const;
+/** Attributes the profile averages over the team; the rest act in play. */
+const AREAS = [
+	"lanes",
+	"farming",
+	"waves",
+	"macro",
+	"roaming",
+	"vision",
+	"anticipation",
+	"objectiveControl",
+	"teamfight",
+	"mechanics",
+	"positioning",
+	"communication",
+] as const;
 
 const fixed = (n: number) => (n * SCALE) as Fixed;
 /** How far the average of five values is above `mid`, in fixed point (exact). */
@@ -117,8 +129,9 @@ export function teamFactors(
 	const mastery = roster.reduce(
 		(sum, p) =>
 			sum +
+			// A champion the player has never shown: versatility softens it.
 			(p.mastery.find((m) => m.champion === p.champion)?.value ??
-				UNKNOWN_MASTERY),
+				p.attributes.versatility / 2),
 		0,
 	);
 	const { frontline, cc } = combat(match, Object.values(us.roles));
