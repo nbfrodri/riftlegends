@@ -1,4 +1,4 @@
-import { ROLES, type Role } from "@rift-legends/contracts";
+import { type AiSettings, ROLES, type Role } from "@rift-legends/contracts";
 import { choose, DIFFICULTY, difficultyOf, type Scored } from "../ai/choose";
 import { scoreBan } from "../ai/components/ban";
 import { comfort } from "../ai/components/comfort";
@@ -27,8 +27,25 @@ import {
 
 const LOOKAHEAD_SHORTLIST = 5;
 const total = (s: Scored) => s.components.reduce((sum, c) => sum + c.points, 0);
-const settingsOf = (config: SeriesConfig, team: string) =>
-	config.ai?.[config.teams.indexOf(team)] ?? null;
+/** What a team without a coach in the content plays with (plan 09, Q2). */
+const DEFAULT_AI: AiSettings = {
+	personality: "balanced",
+	difficulty: "normal",
+};
+
+/** The AI of `team`: explicit settings, or the ones its coach gives. */
+const settingsOf = (
+	state: SeriesState,
+	config: SeriesConfig,
+	team: string,
+): AiSettings | null => {
+	const settings = config.ai?.[config.teams.indexOf(team)] ?? null;
+	if (settings !== "coach") return settings;
+	const coach = state.match?.teams.find((t) => t.id === team)?.coach;
+	return coach
+		? { personality: coach.personality, coachRating: coach.rating }
+		: DEFAULT_AI;
+};
 
 /** The five picks in the roles that best fit tier and comfort; ties keep `ROLES` order. */
 const bestRoles = (
@@ -83,7 +100,7 @@ export const aiTurn: CommandHandler<SeriesState> = (state) => {
 
 	if (state.phase === "side") {
 		const team = state.chooser as string;
-		if (!settingsOf(config, team))
+		if (!settingsOf(state, config, team))
 			return fail("wrong-action", { expected: "human" });
 		return seriesCommands["side.choose"](state, { team, side: "blue" });
 	}
@@ -93,7 +110,7 @@ export const aiTurn: CommandHandler<SeriesState> = (state) => {
 	const draft = state.draft as GameDraft;
 	const next = turn(draft);
 	if (!next) return fail("wrong-action", { expected: "result" });
-	const settings = settingsOf(config, next.team);
+	const settings = settingsOf(state, config, next.team);
 	if (!settings) return fail("wrong-action", { expected: "human" });
 	if (next.action === "roles") {
 		const roles = bestRoles(state, next.team, draft.picks[next.side]);

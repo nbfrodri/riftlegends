@@ -19,6 +19,11 @@ export type CommandHandler<S> = (
 	payload: any,
 ) => Outcome<S>;
 
+/** What a query handler returns to answer with an error instead of a view. */
+export class QueryRejection {
+	constructor(readonly error: CoreError) {}
+}
+
 // biome-ignore lint/suspicious/noExplicitAny: each query declares its own params type
 export type QueryHandler<S> = (state: S, params: any) => unknown;
 
@@ -137,7 +142,10 @@ export const createDispatcher = <S>(definition: {
 		}
 		const handler = definition.queries[request.kind];
 		if (!handler) throw new Error(`No handler for query ${request.kind}`);
-		return { ok: true, view: handler(session.state, request.params) };
+		const view = handler(session.state, request.params);
+		return view instanceof QueryRejection
+			? fail(view.error)
+			: { ok: true, view };
 	};
 
 	return { handle, query };

@@ -39,6 +39,7 @@ export function finishGame(
 ): Outcome<SeriesState> {
 	const config = state.config as SeriesConfig;
 	const outcomes = [...state.outcomes, { winner, edge }];
+	const matches = [...state.matches, played];
 	const index = config.teams.indexOf(winner);
 	const draft = state.draft as GameDraft;
 	const wins: [number, number] = [state.wins[0], state.wins[1]];
@@ -50,7 +51,15 @@ export function finishGame(
 	const finished = { type: "game.finished", game: state.game, winner };
 	if (wins[index] === WINS_NEEDED[config.format]) {
 		return done(
-			{ ...state, wins, previous, outcomes, phase: "over", chooser: null },
+			{
+				...state,
+				wins,
+				previous,
+				outcomes,
+				matches,
+				phase: "over",
+				chooser: null,
+			},
 			...played,
 			finished,
 			{ type: "series.finished", winner, wins },
@@ -62,6 +71,7 @@ export function finishGame(
 			wins,
 			previous,
 			outcomes,
+			matches,
 			game: state.game + 1,
 			phase: "side",
 			chooser: other(config, winner),

@@ -4,12 +4,15 @@ import {
 	decodeFact,
 	draftCommands,
 	draftFacts,
+	draftQueries,
 	encodeFact,
 	MAP_ZONES,
 	MATCH_EVENTS,
 	matchContent,
+	matchView,
 	PLAYER_ATTRIBUTES,
 	parseCommand,
+	parseQuery,
 } from "../index";
 
 const command = (kind: string, payload: unknown) => ({
@@ -291,5 +294,95 @@ describe("MatchContent", () => {
 		],
 	])("rejects %s", (_, bad) => {
 		expect(matchContent.safeParse(bad).success).toBe(false);
+	});
+});
+
+describe("team name and coach", () => {
+	const rules = {
+		objectives: {
+			dragon: { first: 300, respawn: 300 },
+			herald: { first: 840, respawn: 360 },
+			baron: { first: 1200, respawn: 360 },
+			elder: { first: 2100, respawn: 360 },
+		},
+		inhibitorRespawn: 300,
+		economy: {
+			passive: 2000,
+			kill: 300,
+			assist: 150,
+			tower: 550,
+			inhibitor: 50,
+			dragon: 200,
+			herald: 300,
+			baron: 1500,
+			elder: 250,
+		},
+		goldWeight: [{ minute: 0, weight: 10000 }],
+		blueSide: 60000,
+	};
+	const team = {
+		id: "t1",
+		chemistry: [],
+		strategy: { tempo: "fast", objectives: "dragon", risk: "risky" },
+		adaptation: 55,
+	};
+	const content = (extra: object) => ({
+		players: [],
+		champions: [],
+		rules,
+		teams: [{ ...team, ...extra }],
+	});
+	const coach = { name: "Kuro", personality: "meta", rating: 35 };
+
+	it("are optional and checked when present", () => {
+		expect(matchContent.safeParse(content({})).success).toBe(true);
+		expect(
+			matchContent.safeParse(content({ name: "Forge", coach })).success,
+		).toBe(true);
+		for (const bad of [
+			{ ...coach, personality: "chaos" },
+			{ ...coach, rating: 51 },
+			{ name: "Kuro", personality: "meta" },
+		]) {
+			expect(matchContent.safeParse(content({ coach: bad })).success).toBe(
+				false,
+			);
+		}
+	});
+});
+
+describe("match.view", () => {
+	const query = (params: unknown) =>
+		parseQuery(draftQueries, {
+			v: CONTRACT_VERSION,
+			kind: "match.view",
+			sessionId: 1,
+			params,
+		});
+
+	it("asks for one game", () => {
+		expect(query({ game: 1 }).ok).toBe(true);
+		expect(query({}).ok).toBe(false);
+	});
+
+	it("answers with the game and its match facts, without positions", () => {
+		const view = {
+			game: 1,
+			facts: [
+				{
+					type: "match.ended",
+					game: 1,
+					winner: "t1",
+					duration: 1800,
+					players: [],
+					decisive: [],
+				},
+			],
+		};
+		expect(matchView.parse(view)).toEqual(view);
+		expect(
+			matchView.safeParse({ game: 1, facts: [{ type: "game.finished" }] })
+				.success,
+		).toBe(false);
 	});
 });
