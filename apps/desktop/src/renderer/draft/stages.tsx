@@ -1,6 +1,7 @@
 import type { DraftView } from "@rift-legends/contracts";
 import type { ComponentType } from "react";
 import { useTranslation } from "react-i18next";
+import { DraftBoard } from "./board/draft-board";
 import { RolesScreen } from "./roles-screen";
 import type { Presentation } from "./session";
 import { SetupScreen } from "./setup-screen";
@@ -49,7 +50,6 @@ function Placeholder({ stage }: { stage: DraftStage }) {
 	);
 }
 
-const DraftPlaceholder = () => <Placeholder stage="draft" />;
 const MatchPlaceholder = () => <Placeholder stage="match" />;
 const ResultPlaceholder = () => <Placeholder stage="result" />;
 
@@ -61,7 +61,7 @@ const ResultPlaceholder = () => <Placeholder stage="result" />;
 export const draftStages: Record<DraftStage, ComponentType> = {
 	setup: SetupScreen,
 	side: SideScreen,
-	draft: DraftPlaceholder,
+	draft: DraftBoard,
 	roles: RolesScreen,
 	match: MatchPlaceholder,
 	result: ResultPlaceholder,

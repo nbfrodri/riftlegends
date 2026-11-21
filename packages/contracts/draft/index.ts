@@ -2,7 +2,12 @@ import { z } from "zod";
 import { defineCommands, defineQueries, position } from "../envelope";
 import { defineFacts } from "../facts";
 import { aiDecidedFact, aiPerTeam, PERSONALITIES, TIERS } from "./ai";
-import { matchEndedFact, matchEventFact, matchStartedFact } from "./match";
+import {
+	matchContent,
+	matchEndedFact,
+	matchEventFact,
+	matchStartedFact,
+} from "./match";
 
 export * from "./ai";
 export * from "./match";
@@ -179,6 +184,14 @@ export const seriesOptions = z.strictObject({
 					rating: z.int().min(0).max(50),
 				})
 				.optional(),
+			/** One per role, for the player card (U5). */
+			players: z.array(
+				z.strictObject({
+					id,
+					role: z.enum(ROLES),
+					attributes: matchContent.shape.players.element.shape.attributes,
+				}),
+			),
 		}),
 	),
 	pool: z.array(championId),
@@ -186,6 +199,10 @@ export const seriesOptions = z.strictObject({
 	positions: z.record(
 		championId,
 		z.array(z.strictObject({ role: z.enum(ROLES), tier: z.enum(TIERS) })),
+	),
+	/** Each champion of the pool with the roles it plays, for the role filter (U3). */
+	champions: z.array(
+		z.strictObject({ id: championId, roles: z.array(z.enum(ROLES)) }),
 	),
 });
 

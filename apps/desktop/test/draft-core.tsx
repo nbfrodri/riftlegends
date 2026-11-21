@@ -1,4 +1,8 @@
-import { draftCommands, parseCommand } from "@rift-legends/contracts";
+import {
+	CONTRACT_VERSION,
+	draftCommands,
+	parseCommand,
+} from "@rift-legends/contracts";
 import {
 	draftDispatcher,
 	draftStateWith,
@@ -22,6 +26,11 @@ function draftCore() {
 	const listeners = new Set<(facts: readonly CoreFact[]) => void>();
 	const sent: CoreCommand[] = [];
 	let session: Session<SeriesState> | null = null;
+	// Facts applied by `act`, which the renderer did not send itself.
+	let outside = 0;
+	const notify = (facts: readonly CoreFact[]) => {
+		for (const listener of [...listeners]) listener(facts);
+	};
 	const api = {
 		open: vi.fn(async () => {
 			session = openSession(
@@ -32,12 +41,16 @@ function draftCore() {
 		}),
 		send: vi.fn(async (command: CoreCommand) => {
 			sent.push(command);
-			const parsed = parseCommand(draftCommands, command);
+			const parsed = parseCommand(draftCommands, {
+				...command,
+				expectedPosition: command.expectedPosition + outside,
+			});
 			if (!parsed.ok || !session) throw new Error(JSON.stringify(parsed));
 			const next = draftDispatcher.handle(session, parsed.command);
 			session = next.session;
 			if (next.response.ok) {
-				for (const listener of [...listeners]) listener(next.response.facts);
+				outside = 0;
+				notify(next.response.facts);
 			}
 			return next.response as never;
 		}),
@@ -52,7 +65,27 @@ function draftCore() {
 			};
 		},
 	} satisfies CoreApi;
-	return { api, sent };
+	/**
+	 * Applies a command as if someone else sent it (an AI turn before #193).
+	 * The renderer's next command is shifted by the facts it did not send.
+	 */
+	const act = (kind: string, payload: unknown) => {
+		if (!session) throw new Error("no session");
+		const parsed = parseCommand(draftCommands, {
+			v: CONTRACT_VERSION,
+			kind,
+			sessionId: 1,
+			expectedPosition: session.position,
+			payload,
+		});
+		if (!parsed.ok) throw new Error(JSON.stringify(parsed));
+		const next = draftDispatcher.handle(session, parsed.command);
+		if (!next.response.ok) throw new Error(JSON.stringify(next.response));
+		outside += next.response.facts.length;
+		session = next.session;
+		notify(next.response.facts);
+	};
+	return { api, sent, act };
 }
 
 /** Renders `ui` against a real draft core, in a locale (English by default). */

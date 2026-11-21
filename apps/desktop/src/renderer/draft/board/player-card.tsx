@@ -1,0 +1,83 @@
+import type { PlayerAttribute, SeriesOptions } from "@rift-legends/contracts";
+import { ChevronRight } from "lucide-react";
+import type { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
+
+type Attributes =
+	SeriesOptions["teams"][number]["players"][number]["attributes"];
+
+/** The 20 attributes by area, in the order of the approved mockup (plan 08). */
+const AREAS = [
+	["lane", ["lanes", "farming", "waves"]],
+	["map", ["macro", "roaming", "vision", "anticipation", "objectiveControl"]],
+	["fight", ["teamfight", "mechanics", "positioning", "aggression"]],
+	["mental", ["composure", "resilience", "experience", "consistency", "focus"]],
+	["team", ["shotcalling", "communication", "versatility"]],
+] as const satisfies readonly (readonly [string, readonly PlayerAttribute[]])[];
+
+/** A collapsible panel under the board, as in the mockup. */
+export function InspectionPanel(props: {
+	id: string;
+	title: string;
+	note?: string | undefined;
+	open: boolean;
+	onOpenChange: (open: boolean) => void;
+	accent: string;
+	children: ReactNode;
+}) {
+	return (
+		<details
+			id={props.id}
+			aria-labelledby={`${props.id}-title`}
+			open={props.open}
+			onToggle={(event) => props.onOpenChange(event.currentTarget.open)}
+			className={`group min-w-0 border-t-2 bg-panel px-[15px] py-3 ${props.accent}`}
+		>
+			<summary className="flex cursor-default list-none items-center gap-2 [&::-webkit-details-marker]:hidden">
+				<ChevronRight
+					aria-hidden="true"
+					className="size-4 shrink-0 transition-transform group-open:rotate-90 motion-reduce:transition-none"
+				/>
+				<span
+					id={`${props.id}-title`}
+					className="font-bold font-display text-[17px] tracking-heading"
+				>
+					{props.title}
+				</span>
+				{props.note && (
+					<span className="ml-auto text-[13px] text-muted">{props.note}</span>
+				)}
+			</summary>
+			{props.children}
+		</details>
+	);
+}
+
+/** U5: a player's attributes by area. The rival's show the same until scouting (plan 19). */
+export function PlayerAttributes({ attributes }: { attributes: Attributes }) {
+	const { t } = useTranslation();
+	return (
+		<>
+			<p className="mt-1 text-[13px] text-muted">
+				{t("draft.board.attributeScale")}
+			</p>
+			<div className="mt-[9px] grid grid-cols-[1fr_1.2fr_1.06fr_1.16fr_1.22fr] gap-3">
+				{AREAS.map(([area, keys]) => (
+					<section key={area}>
+						<h3 className="mb-1 font-bold text-[13px] text-action">
+							{t(`draft.board.area.${area}`)}
+						</h3>
+						<dl className="text-[12px] leading-[1.47]">
+							{keys.map((key) => (
+								<div key={key} className="flex justify-between gap-2">
+									<dt className="text-muted">{t(`draft.board.attr.${key}`)}</dt>
+									<dd className="font-semibold">{attributes[key]}</dd>
+								</div>
+							))}
+						</dl>
+					</section>
+				))}
+			</div>
+		</>
+	);
+}
