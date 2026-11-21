@@ -32,6 +32,8 @@ Documentación, planes, ADR, issues, PR y respuestas al usuario: **claros, enten
 
 ## Flujo de trabajo: plan → issues → tablero → PR
 
+Vale para **todo**: las fases del plan general, las funciones nuevas que se añadan después y los cambios de algo ya hecho. Solo quedan fuera los arreglos pequeños, que van directos a un issue y su PR.
+
 1. **Plan específico.** Cada sistema o función tiene su plan en `docs/plans/NN-nombre.md` (índice en el plan general). Empieza por la **lista de tests** (comportamientos y casos límite) y después el diseño.
 2. **Troceado en issues.** Al aprobar un plan, se trocea en issues con la plantilla **"Tarea de plan"**: un issue por entregable pequeño y verificable, con su label `area:*`, el milestone de su fase y el test que lo cierra. Todos van al tablero:
    ```sh
