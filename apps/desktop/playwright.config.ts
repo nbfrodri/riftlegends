@@ -5,4 +5,16 @@ import { defineConfig } from "@playwright/test";
 export default defineConfig({
 	testDir: "e2e",
 	testIgnore: "visual/**",
+	// Measure S1 on an idle display after the other Electron windows close.
+	projects: [
+		{
+			name: "functional",
+			testIgnore: ["visual/**", "**/draft-broadcast.spec.ts"],
+		},
+		{
+			name: "broadcast",
+			testMatch: "**/draft-broadcast.spec.ts",
+			dependencies: ["functional"],
+		},
+	],
 });

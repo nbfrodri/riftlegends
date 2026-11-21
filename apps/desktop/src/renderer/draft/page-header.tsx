@@ -54,7 +54,10 @@ export function PageHeader({
 	return (
 		<header
 			className={
-				stage === "match"
+				stage === "match" ||
+				stage === "draft" ||
+				stage === "roles" ||
+				stage === "side"
 					? "grid grid-cols-[1fr_auto_1fr] items-center gap-4"
 					: "flex items-center justify-between gap-4"
 			}

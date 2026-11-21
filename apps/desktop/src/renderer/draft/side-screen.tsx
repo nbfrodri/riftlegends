@@ -1,32 +1,23 @@
 import { Button } from "@rift-legends/ui-kit/components/button";
 import { SegmentedControl } from "@rift-legends/ui-kit/components/segmented-control";
 import { ArrowRight } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { teamName, useDraftSession } from "./session";
 
 type Side = "blue" | "red";
 
 /**
- * U2: the team that chooses picks blue or red. When the AI chooses there is
- * nothing to wait for: it acts at once and the screen shows the side it took.
+ * U2: the chooser picks blue or red. Show the AI's choice briefly before the board opens.
  */
 export function SideScreen() {
 	const { t } = useTranslation();
 	const { view, options, mine, send, present, presentation } =
 		useDraftSession();
 	const [side, setSide] = useState<Side>("blue");
-	const acted = useRef(false);
 
 	const chooser = view?.phase === "side" ? view.turn?.team : undefined;
 	const aiChooses = chooser !== undefined && chooser !== mine;
-	useEffect(() => {
-		if (!aiChooses || acted.current) return;
-		acted.current = true;
-		void send("draft.ai", {}).then((ok) => {
-			if (ok) present("side");
-		});
-	}, [aiChooses, send, present]);
 
 	if (!view) return null;
 

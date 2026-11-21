@@ -9,14 +9,14 @@ import {
 } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Profiler } from "react";
-import { afterEach, describe, expect, test } from "vitest";
+import { afterEach, describe, expect, test, vi } from "vitest";
+import { pacing } from "../src/renderer/draft/broadcast/pacing";
 import { DraftScreen } from "../src/renderer/draft/draft-screen";
 import { renderWithDraftCore } from "./draft-core";
 
 afterEach(cleanup);
 
 type User = ReturnType<typeof userEvent.setup>;
-type Core = Awaited<ReturnType<typeof renderWithDraftCore>>;
 
 /** Starts a series as Forge on the blue side: Forge bans first. */
 async function toBoard(user: User) {
@@ -37,9 +37,16 @@ async function choose(user: User, champion: string) {
 	await user.click(confirm());
 }
 
-/** The AI's turn, played outside the board (its automation is #193). */
-async function aiTurn(core: Core) {
-	await act(async () => core.act("draft.ai", {}));
+async function confirmAndWaitForRival() {
+	vi.useFakeTimers();
+	try {
+		fireEvent.click(confirm());
+		await act(() => vi.advanceTimersByTimeAsync(10));
+		await act(() => vi.advanceTimersByTimeAsync(pacing.aiPauseMs));
+		await act(() => vi.advanceTimersByTimeAsync(10));
+	} finally {
+		vi.useRealTimers();
+	}
 }
 
 describe("draft board (U3)", () => {
@@ -65,25 +72,29 @@ describe("draft board (U3)", () => {
 		expect(within(blue).getByText("Cragbell").tagName).toBe("S");
 	});
 
-	test("on the AI's turn it only says whose turn it is: nothing is sent and nothing confirms", async () => {
+	test("the user cannot confirm while the rival is choosing", async () => {
 		const user = userEvent.setup();
-		const core = await renderWithDraftCore(<DraftScreen />);
+		await renderWithDraftCore(<DraftScreen />);
 		await toBoard(user);
 		await choose(user, "Cragbell");
 
 		expect(await screen.findByText("Shoal's turn")).toBeTruthy();
 		await user.click(tile("Prismoth"));
 		expect(confirm().hasAttribute("disabled")).toBe(true);
-		expect(core.sent.some((c) => c.kind === "draft.ai")).toBe(false);
 	});
 
 	test("on my pick turn, confirming sends draft.pick and the pick shows in my column with its role", async () => {
 		const user = userEvent.setup();
 		const core = await renderWithDraftCore(<DraftScreen />);
 		await toBoard(user);
-		for (const ban of ["Cragbell", "Rimefoil", "Saltspire"]) {
-			await choose(user, ban);
-			await aiTurn(core);
+		for (let ban = 0; ban < 3; ban++) {
+			const pool = within(screen.getByRole("group", { name: "Champions" }));
+			const available = pool
+				.getAllByRole("button")
+				.find((button) => !button.hasAttribute("aria-disabled"));
+			if (!available) throw new Error("no free champion");
+			await user.click(available);
+			await confirmAndWaitForRival();
 		}
 		expect(await screen.findByText("B1 · Forge pick")).toBeTruthy();
 		const free = within(screen.getByRole("group", { name: "Champions" }))
@@ -105,10 +116,10 @@ describe("draft board (U3)", () => {
 
 	test("an unavailable champion cannot be confirmed and says why only in its accessible name", async () => {
 		const user = userEvent.setup();
-		const core = await renderWithDraftCore(<DraftScreen />);
+		await renderWithDraftCore(<DraftScreen />);
 		await toBoard(user);
-		await choose(user, "Cragbell");
-		await aiTurn(core);
+		await user.click(tile("Cragbell"));
+		await confirmAndWaitForRival();
 
 		const banned = await waitFor(() => tile("Cragbell. Banned in this game"));
 		expect(banned.getAttribute("aria-disabled")).toBe("true");
@@ -194,8 +205,7 @@ describe("draft board (U3)", () => {
 		await user.click(confirm());
 		await waitFor(() => tile("Cragbell. Banned in this game"));
 		expect(core.sent.at(-1)?.kind).toBe("draft.ban");
-		// No commit comes close to rebuilding the board (the fine measurement
-		// against the S1 budget is #193).
+		// The Electron E2E measures the actual S1 frame budget.
 		expect(Math.max(...commits)).toBeLessThan(mount / 3);
 	});
 });

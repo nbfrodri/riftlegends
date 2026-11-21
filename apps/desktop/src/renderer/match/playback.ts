@@ -1,12 +1,5 @@
-import { useEffect, useState, useSyncExternalStore } from "react";
-
-const media = () => window.matchMedia("(prefers-reduced-motion: reduce)");
-const reduced = () => media().matches;
-const subscribe = (update: () => void) => {
-	const query = media();
-	query.addEventListener("change", update);
-	return () => query.removeEventListener("change", update);
-};
+import { useEffect, useState } from "react";
+import { useReducedMotion } from "../use-reduced-motion";
 
 export const clockTime = (seconds: number) =>
 	[Math.floor(seconds / 60), seconds % 60]
@@ -18,7 +11,7 @@ const GAME_SECONDS_PER_MS = 60 / 5000;
 const SAMPLE_MS = 250;
 export const speeds = ["1", "4", "16"] as const;
 export function usePlayback(duration: number) {
-	const reduceMotion = useSyncExternalStore(subscribe, reduced);
+	const reduceMotion = useReducedMotion();
 	const [second, seek] = useState(reduceMotion ? duration : 0);
 	const [paused, pause] = useState(false);
 	const [speed, setSpeed] = useState<(typeof speeds)[number]>("1");

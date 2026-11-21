@@ -1,0 +1,8 @@
+diff --git a/lib/scene/text-bitmap/AbstractBitmapFont.d.ts b/lib/scene/text-bitmap/AbstractBitmapFont.d.ts
+--- a/lib/scene/text-bitmap/AbstractBitmapFont.d.ts
++++ b/lib/scene/text-bitmap/AbstractBitmapFont.d.ts
+@@ -69,3 +69,3 @@
+         range: number;
+-    };
++    } | undefined;
+ }
