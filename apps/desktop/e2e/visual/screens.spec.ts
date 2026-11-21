@@ -64,7 +64,8 @@ test.describe("Quick draft", () => {
 		electronApp,
 		appWindow,
 	}) => {
-		test.setTimeout(120_000);
+		// A whole Bo5 with the AI pauses takes over a minute; leave room for slow CI.
+		test.setTimeout(240_000);
 		await appWindow.emulateMedia({ reducedMotion: "reduce" });
 		await playQuickDraftBo5(electronApp, appWindow, async (screen) => {
 			if (screen === "game-result") {
