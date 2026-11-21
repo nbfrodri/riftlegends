@@ -1,6 +1,7 @@
 import type { Role, SeriesOptions } from "@rift-legends/contracts";
 import { RoleIcon } from "@rift-legends/ui-kit/components/role-icon";
 import { useTranslation } from "react-i18next";
+import { useGoldDiff } from "../match/scoreboard";
 import type { RoleGap } from "./result-data";
 import { teamName } from "./session";
 
@@ -8,7 +9,8 @@ const numbers = (language: string) =>
 	new Intl.NumberFormat(language, { maximumFractionDigits: 1 });
 
 /**
- * The differences by role, in words: who is ahead and by how much. The gap
+ * The differences by role: who is ahead, by how many points (in words) and
+ * how much gold (with a sign). The gap
  * rows (over the core's threshold) are marked and named in the call-out.
  */
 export function GapsTable(props: {
@@ -21,6 +23,7 @@ export function GapsTable(props: {
 }) {
 	const { t, i18n } = useTranslation();
 	const format = numbers(i18n.language);
+	const goldDiff = useGoldDiff();
 	const roleLabel = (role: Role) => t(`draft.roles.role.${role}`);
 	const flagged = props.gaps.filter((gap) => gap.gap);
 	const roles = new Intl.ListFormat(i18n.language, {
@@ -99,12 +102,7 @@ export function GapsTable(props: {
 							<td className="p-1.5">
 								{gap.gold === 0
 									? t("draft.result.gaps.even")
-									: t(
-											gap.gold > 0
-												? "draft.result.gaps.goldMore"
-												: "draft.result.gaps.goldLess",
-											{ gold: format.format(Math.abs(gap.gold)) },
-										)}
+									: goldDiff(gap.gold)}
 							</td>
 						</tr>
 					))}

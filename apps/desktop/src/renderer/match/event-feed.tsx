@@ -3,6 +3,7 @@ import { Button } from "@rift-legends/ui-kit/components/button";
 import { animate as fade } from "motion/mini";
 import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { panelTitle } from "./classes";
 import { clockTime } from "./playback";
 import type { TeamNames } from "./scoreboard";
 
@@ -51,23 +52,31 @@ const EventRow = memo(function EventRow({
 	};
 	const summary = explain(causes.slice(0, 2));
 	return (
-		<li ref={row} data-side={event.side}>
-			<time>{clockTime(when(event))}</time>
+		<li
+			ref={row}
+			data-side={event.side}
+			className="grid min-h-[clamp(78px,12vh,120px)] grid-cols-[auto_1fr] content-center gap-3.5 border-line border-t py-[9px]"
+		>
+			<time className="font-bold text-(--side) text-[16px]">
+				{clockTime(when(event))}
+			</time>
 			<div>
-				<p className="match-event-meta">
+				<p className="font-bold text-(--side) text-[11px] uppercase tracking-[0.04em]">
 					{t("draft.match.location", {
 						team,
 						zone: t(`draft.match.zone.${event.zone}`),
 					})}
 				</p>
-				<h3>{t(`draft.match.kind.${event.kind}`)}</h3>
+				<h3 className="my-0.5 font-bold text-[16px]">
+					{t(`draft.match.kind.${event.kind}`)}
+				</h3>
 				{causes.length > 2 ? (
-					<details>
-						<summary>{summary}</summary>
+					<details className="text-muted">
+						<summary className="cursor-pointer">{summary}</summary>
 						<p>{explain(causes.slice(2))}</p>
 					</details>
 				) : (
-					<p>{summary}</p>
+					<p className="text-muted">{summary}</p>
 				)}
 			</div>
 		</li>
@@ -98,13 +107,16 @@ export function EventFeed({
 	const first = events.findIndex((e) => e.at <= second);
 	const count = first === -1 ? 0 : events.length - first;
 	return (
-		<section className="match-feed match-panel">
-			<h2>{t("draft.match.events")}</h2>
-			<div className="match-feed-scroll">
+		// Size the map row from its tables; earlier events scroll inside this panel.
+		<section className="flex min-h-0 min-w-0 flex-col bg-panel p-[clamp(12px,1.3vw,20px)] [contain:size]">
+			<h2 className={`${panelTitle} mb-3`}>{t("draft.match.events")}</h2>
+			<div className="h-0 min-h-0 flex-1 overflow-auto [scrollbar-color:var(--color-line)_transparent] [scrollbar-width:thin]">
 				{count === 0 && (
-					<p className="match-empty">{t("draft.match.noEvents")}</p>
+					<p className="border-line border-t pt-3.5 text-muted">
+						{t("draft.match.noEvents")}
+					</p>
 				)}
-				<ol aria-label={t("draft.match.events")}>
+				<ol aria-label={t("draft.match.events")} className="flex flex-col">
 					{count > 0 &&
 						events
 							.slice(first, first + limit)

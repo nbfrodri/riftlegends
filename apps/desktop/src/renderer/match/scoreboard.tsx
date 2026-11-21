@@ -15,6 +15,16 @@ export function useGoldFormat() {
 	);
 }
 
+/** A gold difference with its sign: "+300 gold", "−1,550 gold". */
+export function useGoldDiff() {
+	const { t } = useTranslation();
+	const format = useGoldFormat();
+	return (gold: number) =>
+		t("draft.match.goldDiff", {
+			amount: `${gold < 0 ? "−" : "+"}${format.format(Math.abs(gold))}`,
+		});
+}
+
 export function TeamTotals({
 	snapshot,
 	names,
@@ -27,26 +37,30 @@ export function TeamTotals({
 	const { t } = useTranslation();
 	const format = useGoldFormat();
 	return (
-		<div className="match-totals">
+		<div className="grid grid-cols-2 gap-3">
 			{sides.map((side) => (
 				<article
 					key={side}
 					aria-label={names[side]}
 					data-side={side}
-					className="match-team"
+					className="flex min-w-0 items-center gap-2.5 border-(--side) border-t-[3px] bg-panel px-[clamp(9px,1.1vw,18px)] py-2.5 [&>svg]:h-auto [&>svg]:w-[clamp(28px,3vw,44px)] [&>svg]:flex-none [&>svg]:text-(--side)"
 				>
 					<TeamCrest id={ids[side]} name={names[side]} />
 					<div>
-						<h2>{names[side]}</h2>
-						<p>
+						<h2 className="font-bold font-display text-[clamp(19px,1.9vw,30px)] leading-[1.1] tracking-[-0.045em] [overflow-wrap:anywhere]">
+							{names[side]}
+						</h2>
+						<p className="text-[13px] text-muted">
 							{t("draft.match.gold", {
 								amount: format.format(snapshot[side].gold),
 							})}
 						</p>
 					</div>
-					<div className="match-kills">
-						<b>{snapshot[side].kills}</b>
-						<p>{t("draft.match.kills")}</p>
+					<div className="ml-auto text-right">
+						<b className="block text-[clamp(31px,3vw,42px)] leading-none">
+							{snapshot[side].kills}
+						</b>
+						<p className="text-[13px] text-muted">{t("draft.match.kills")}</p>
 					</div>
 				</article>
 			))}
@@ -66,7 +80,7 @@ export function GoldChart({
 	duration: number;
 }) {
 	const { t } = useTranslation();
-	const format = useGoldFormat();
+	const goldDiff = useGoldDiff();
 	const chart = useMemo(() => {
 		const visible = snapshots.slice(0, index + 1);
 		const leads = visible.map((s) => s.blue.gold - s.red.gold);
@@ -83,21 +97,23 @@ export function GoldChart({
 	const leader = chart.lead < 0 ? "red" : "blue";
 	const label = t("draft.match.lead", { team: names[leader] });
 	const amount =
-		chart.lead === 0
-			? t("draft.match.even")
-			: t("draft.match.moreGold", {
-					amount: format.format(Math.abs(chart.lead)),
-				});
+		chart.lead === 0 ? t("draft.match.even") : goldDiff(Math.abs(chart.lead));
 	return (
-		<figure className="match-chart">
-			<figcaption>
+		<figure className="flex min-w-0 flex-col bg-panel px-3.5 py-[9px]">
+			<figcaption className="flex items-center justify-between gap-2 font-bold text-[13px]">
 				<span>{label}</span>
-				<strong data-side={leader}>{amount}</strong>
+				<strong
+					data-side={leader}
+					className="text-(--side) text-[clamp(15px,1.4vw,21px)]"
+				>
+					{amount}
+				</strong>
 			</figcaption>
 			<svg
 				viewBox="0 0 600 100"
 				preserveAspectRatio="none"
 				role="img"
+				className="my-0.5 h-0 min-h-5 w-full flex-1"
 				aria-label={t("draft.match.chart", {
 					blue: names.blue,
 					red: names.red,
@@ -132,7 +148,7 @@ export function GoldChart({
 					<ChartLine path={chart.path} />
 				</svg>
 			</svg>
-			<div className="match-axis">
+			<div className="flex items-center justify-between gap-2 text-[11px] text-muted">
 				{[0, 1, 2, 3].map((n) => (
 					<span key={n}>
 						{clockTime(Math.floor((chart.lastSecond * n) / 3))}

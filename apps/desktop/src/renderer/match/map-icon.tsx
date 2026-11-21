@@ -14,7 +14,7 @@ const paths = {
 export function MapIcon({ kind }: { kind: keyof typeof paths }) {
 	return (
 		<svg
-			className="match-icon"
+			className="inline-block size-[17px] align-middle"
 			viewBox="0 0 24 24"
 			aria-hidden="true"
 			fill="none"

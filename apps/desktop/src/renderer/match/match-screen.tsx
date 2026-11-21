@@ -17,7 +17,6 @@ import { FaceToFace } from "./face-to-face";
 import { Objectives, Structures } from "./map-tables";
 import { clockTime, speeds, usePlayback } from "./playback";
 import { GoldChart, TeamTotals } from "./scoreboard";
-import "./match.css";
 
 function Replay({ match, entry }: { match: MatchView; entry: DraftView }) {
 	const { options, present, mine } = useDraftSession();
@@ -61,7 +60,7 @@ function Replay({ match, entry }: { match: MatchView; entry: DraftView }) {
 					</time>
 				</div>
 			</PageHeader>
-			<div className="match-layout">
+			<div className="grid flex-1 grid-cols-[minmax(0,1.38fr)_minmax(0,1fr)] grid-rows-[clamp(78px,11.5vh,100px)_1fr] gap-3 text-[14px] leading-[1.3] tabular-nums [&_[data-side=blue]]:[--side:var(--color-side-blue)] [&_[data-side=red]]:[--side:var(--color-side-red)]">
 				<TeamTotals snapshot={snapshot} names={names} ids={start} />
 				<GoldChart
 					snapshots={match.snapshots}
@@ -69,11 +68,11 @@ function Replay({ match, entry }: { match: MatchView; entry: DraftView }) {
 					names={names}
 					duration={end.duration}
 				/>
-				<div className="match-map">
-					{/* Both panes share one cell, so the row keeps its height. */}
+				<div className="grid">
+					{/* Both panes share one cell and stay in the layout, so switching
+					    panels never changes the row height. */}
 					<div
-						className="match-pane match-pane-map"
-						hidden={panel !== "map"}
+						className={`grid min-w-0 grid-rows-[auto_1fr] gap-2.5 [grid-area:1/1] ${panel === "map" ? "" : "invisible"}`}
 						inert={panel !== "map"}
 					>
 						<Structures
@@ -88,8 +87,7 @@ function Replay({ match, entry }: { match: MatchView; entry: DraftView }) {
 						/>
 					</div>
 					<div
-						className="match-pane"
-						hidden={panel !== "faceToFace"}
+						className={`min-w-0 [grid-area:1/1] ${panel === "faceToFace" ? "" : "invisible"}`}
 						inert={panel !== "faceToFace"}
 					>
 						<FaceToFace snapshot={snapshot} names={names} />

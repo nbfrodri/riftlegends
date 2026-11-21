@@ -55,7 +55,7 @@ test("plays once, reads game one while the core prepares game two, and continues
 	).toBe(true);
 	const score = within(screen.getByRole("group", { name: "Series score" }));
 	expect(score.getByText("Game 1")).toBeTruthy();
-	expect(score.getAllByText("0")).toHaveLength(2);
+	expect(score.getByText("0 – 0")).toBeTruthy();
 	fireEvent.click(screen.getByRole("button", { name: "Skip to end" }));
 	fireEvent.click(screen.getByRole("button", { name: "View result" }));
 	expect(screen.getByTestId("stage").dataset.stage).toBe("result");
