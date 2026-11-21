@@ -78,7 +78,7 @@ export const done = (
 	...facts: Emitted[]
 ): Outcome<SeriesState> => ({ ok: true, state, facts });
 
-export const other = (config: SeriesConfig, team: string) =>
+const other = (config: SeriesConfig, team: string) =>
 	config.teams[0] === team ? config.teams[1] : config.teams[0];
 
 /** The sides of a game once `team` takes `side`. */
@@ -123,7 +123,7 @@ export const availabilityInput = (
 });
 
 /** Runs `handler` only in the phases where the command makes sense. */
-export const during =
+const during =
 	<P>(
 		phase: SeriesState["phase"],
 		expected: string,
