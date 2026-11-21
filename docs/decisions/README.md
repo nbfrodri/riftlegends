@@ -49,6 +49,7 @@ Resumen de las decisiones **vigentes**, para empezar cualquier sesión sin volve
 | 2026-11-20 | **Stryker** sobre `packages/core` al cerrar cada fase: `break` 70 %, objetivo 80 % | [plan 05](../plans/05-rng-determinismo.md) |
 | 2026-11-21 | Draft: fearless **hard por defecto**, configurable (hard, soft o sin); el último game **no libera** campeones | [plan 06](../archive/plans/06-reglas-de-draft.md) |
 | 2026-11-21 | Lados como en pro (game 1 el mejor sembrado o sorteo; después elige el perdedor); temporizador **opcional y apagado** por defecto, que vive en la UI | [plan 06](../archive/plans/06-reglas-de-draft.md) |
+| 2026-11-21 | IA de draft: componentes con puntos enteros, 12 personalidades como datos, dificultad por coach (margen de error, lectura del rival y mirar adelante) y explicación en el hecho `ai.decided` | [plan 07](../plans/07-ia-de-draft.md) |
 
 ## Estilo visual
 

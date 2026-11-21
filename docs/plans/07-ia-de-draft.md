@@ -1,6 +1,6 @@
 # Plan 07 — IA de draft explicable y personalidades
 
-- **Estado:** propuesto (21-11-2026). Redactado por Claude con las decisiones del usuario (al final) y el [estudio de la IA de DraftSim](../research/draftsim-ia-draft.md).
+- **Estado:** aprobado (21-11-2026). Redactado por Claude con las decisiones del usuario (al final) y el [estudio de la IA de DraftSim](../research/draftsim-ia-draft.md).
 - **Fase:** 2 · Draft rápido completo ([plan general](00-plan-general.md)).
 - **Objetivo:** que cada equipo de la IA haga picks y bans creíbles, distintos según su personalidad y su coach, y que cada decisión se pueda explicar con puntos. Es determinista: la misma semilla da el mismo draft.
 
@@ -145,5 +145,6 @@ Cada decisión cambia los goldens de draft: el primer PR que la usa sube `SIM_VE
 ## Decisiones del usuario (21-11-2026)
 
 1. La dificultad combina los cuatro mecanismos: margen de error, lectura del rival, mirar adelante y fuerza del coach.
-2. Personalidades: meta, comfort, counterpick y pocket picks, y otras más (propuestas arriba, pendientes de aprobar).
+2. Las **12 personalidades** de la tabla entran en la Fase 2.
 3. Explicación: los 3 motivos principales al pasar el ratón; el desglose completo en el resumen del draft.
+4. Reparto: Claude hace los issues 1, 5 y 8; Codex (gpt-6.2-astra, high) los 2, 3, 4, 6 y 7.
