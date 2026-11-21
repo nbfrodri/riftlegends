@@ -2,6 +2,7 @@ import type { AiContent, MatchContent } from "@rift-legends/contracts";
 import { createDispatcher } from "../server/dispatcher";
 import { aiTurn } from "./ai-turn";
 import { viewMatch } from "./match-view";
+import { viewOptions } from "./options";
 import { initialSeries, type SeriesState, seriesCommands } from "./series";
 import { viewSummary } from "./summary";
 import { viewDraft } from "./view";
@@ -15,6 +16,7 @@ export const draftDispatcher = createDispatcher<SeriesState>({
 		"draft.view": viewDraft,
 		"match.view": viewMatch,
 		"series.summary": viewSummary,
+		"series.options": viewOptions,
 	},
 });
 

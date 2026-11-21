@@ -40,7 +40,7 @@ test("T6: Alt+B toggles the sidebar and Draft collapses it", async ({
 }) => {
 	const toggle = sidebarToggle(appWindow);
 	// The app opens on Draft, which starts collapsed.
-	await expect(heading(appWindow)).toHaveText("Draft");
+	await expect(heading(appWindow)).toHaveText("Set up series");
 	await expect(toggle).toHaveAttribute("aria-expanded", "false");
 	await expect.poll(sidebarWidth(appWindow)).toBe(58);
 
@@ -84,13 +84,17 @@ test("T6: arrow keys move a visible focus between sections", async ({
 test("T7: navigating keeps the window location unchanged", async ({
 	appWindow,
 }) => {
-	await expect(heading(appWindow)).toHaveText("Draft");
+	await expect(heading(appWindow)).toHaveText("Set up series");
 	const initial = await appWindow.evaluate(() => location.href);
 	expect(initial).toMatch(/^file:.*index\.html$/);
 	const initialLength = await appWindow.evaluate(() => history.length);
-	for (const name of ["Market", "Settings", "Draft"]) {
+	for (const [name, title] of [
+		["Market", "Market"],
+		["Settings", "Settings"],
+		["Draft", "Set up series"],
+	] as const) {
 		await sections(appWindow).getByRole("button", { name }).click();
-		await expect(heading(appWindow)).toHaveText(name);
+		await expect(heading(appWindow)).toHaveText(title);
 		expect(await appWindow.evaluate(() => location.href)).toBe(initial);
 	}
 	expect(await appWindow.evaluate(() => history.length)).toBe(initialLength);

@@ -45,7 +45,12 @@ test("the core process answers, and comes back after being killed", async ({
 		},
 	);
 	try {
-		await app.firstWindow();
+		// Leave the draft screen: it opens its own sessions, also after a
+		// restart, and could take this test's session number.
+		await (await app.firstWindow())
+			.getByRole("navigation", { name: "Club sections" })
+			.getByRole("button", { name: "Settings" })
+			.click();
 		const session = await open(app);
 		expect(
 			await app.evaluate((_, body) => riftCore.send(body), tick(session, 0)),

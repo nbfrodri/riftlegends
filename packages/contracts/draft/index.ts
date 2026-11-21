@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { defineCommands, defineQueries, position } from "../envelope";
 import { defineFacts } from "../facts";
-import { aiDecidedFact, aiPerTeam } from "./ai";
+import { aiDecidedFact, aiPerTeam, PERSONALITIES } from "./ai";
 import { matchEndedFact, matchEventFact, matchStartedFact } from "./match";
 
 export * from "./ai";
@@ -80,6 +80,8 @@ export const draftQueries = defineQueries({
 	"match.view": z.strictObject({ game: position }),
 	/** MVP of the series and the gap of each lane in each game (Q5). */
 	"series.summary": z.strictObject({}),
+	/** What the setup screen offers: the teams and the champion pool (plan 09, U1). */
+	"series.options": z.strictObject({}),
 });
 
 export const draftFacts = defineFacts({
@@ -162,6 +164,27 @@ export const draftView = z.strictObject({
 	),
 });
 
+/** What `series.options` answers. Teams follow the content order. */
+export const seriesOptions = z.strictObject({
+	teams: z.array(
+		z.strictObject({
+			id: teamId,
+			/** Proper name; the id when the content gives none. */
+			name: z.string().min(1).max(64),
+			coach: z
+				.strictObject({
+					name: z.string().min(1).max(64),
+					personality: z.enum(PERSONALITIES),
+					/** In tenths: 0 to 50. */
+					rating: z.int().min(0).max(50),
+				})
+				.optional(),
+		}),
+	),
+	pool: z.array(championId),
+});
+
+export type SeriesOptions = z.infer<typeof seriesOptions>;
 export type DraftView = z.infer<typeof draftView>;
 export type Role = (typeof ROLES)[number];
 export type Side = (typeof SIDES)[number];
