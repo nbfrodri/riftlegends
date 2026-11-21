@@ -1,6 +1,6 @@
 # Plan 08 — Simulación de partida v1 y timeline
 
-- **Estado:** propuesto (21-11-2026). Redactado por Claude con las decisiones del usuario (al final) y el [estudio de DraftSim](../research/draftsim-simulacion.md).
+- **Estado:** aprobado (21-11-2026). Redactado por Claude con las decisiones del usuario (al final) y el [estudio de DraftSim](../research/draftsim-simulacion.md).
 - **Fase:** 2 · Draft rápido completo ([plan general](00-plan-general.md)).
 - **Objetivo:** simular un game a partir del draft y de los jugadores. **El ganador sale de lo que pasa en la partida**: nadie decide el resultado de antemano para después contarlo. Todo es determinista y explicable, y sustituye al comando provisional `game.finish`.
 
@@ -119,3 +119,4 @@
 4. Factores de juego en la v1: atributos por área, shotcalling, adaptación entre games y riesgo.
 5. Partida por fases con eventos; el minimapa, en la Fase 9.
 6. Varianza realista: el favorito gana un 60–75 %.
+7. Implementa Claude, con subagentes de Claude (Sonnet, medium) para las partes independientes, porque Codex está cerca de su límite.
