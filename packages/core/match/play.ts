@@ -31,7 +31,7 @@ const CONTEST_OF: Record<MatchEvent["kind"], Contest> = {
  */
 export function playGame(setup: MatchSetup) {
 	const { context } = createMatch(setup);
-	const { state, events } = playMatch(setup, MATCH_CONTESTS);
+	const { state, events, snapshots } = playMatch(setup, MATCH_CONTESTS);
 	const side = state.winner as Side;
 	const winner = context[side].team;
 	const last = events.at(-1);
@@ -73,5 +73,5 @@ export function playGame(setup: MatchSetup) {
 	];
 	/** Where the winner gained the most: what the loser's coach adapts to. */
 	const edge = top ? CONTEST_OF[top.kind] : null;
-	return { winner, edge, events, facts };
+	return { winner, edge, events, facts, snapshots, state };
 }

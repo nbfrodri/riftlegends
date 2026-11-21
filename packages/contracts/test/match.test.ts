@@ -13,6 +13,7 @@ import {
 	PLAYER_ATTRIBUTES,
 	parseCommand,
 	parseQuery,
+	seriesSummary,
 } from "../index";
 
 const command = (kind: string, payload: unknown) => ({
@@ -351,6 +352,21 @@ describe("team name and coach", () => {
 	});
 });
 
+const side = {
+	gold: 500,
+	kills: 0,
+	towers: { top: 0, mid: 0, bot: 0 },
+	nexusTowers: 0,
+	inhibitors: { top: null, mid: null, bot: null },
+	dragons: 0,
+	soul: false,
+	heralds: 0,
+	barons: 0,
+	elders: 0,
+	buffs: { herald: null, baron: null, elder: null },
+};
+const snapshot = { minute: 1, blue: side, red: side };
+
 describe("match.view", () => {
 	const query = (params: unknown) =>
 		parseQuery(draftQueries, {
@@ -378,11 +394,34 @@ describe("match.view", () => {
 					decisive: [],
 				},
 			],
+			snapshots: [snapshot],
 		};
 		expect(matchView.parse(view)).toEqual(view);
 		expect(
-			matchView.safeParse({ game: 1, facts: [{ type: "game.finished" }] })
+			matchView.safeParse({
+				game: 1,
+				facts: [{ type: "game.finished" }],
+				snapshots: [],
+			}).success,
+		).toBe(false);
+		expect(
+			matchView.safeParse({ ...view, snapshots: [{ ...snapshot, minute: -1 }] })
 				.success,
 		).toBe(false);
+	});
+});
+
+describe("series.summary", () => {
+	it("asks for nothing and answers MVP and lane gaps", () => {
+		const ask = parseQuery(draftQueries, {
+			v: CONTRACT_VERSION,
+			kind: "series.summary",
+			sessionId: 1,
+			params: {},
+		});
+		expect(ask.ok).toBe(true);
+		const empty = { mvp: null, lanes: [] };
+		expect(seriesSummary.parse(empty)).toEqual(empty);
+		expect(seriesSummary.safeParse({ mvp: null }).success).toBe(false);
 	});
 });

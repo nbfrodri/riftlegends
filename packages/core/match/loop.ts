@@ -7,6 +7,7 @@ import { FIGHT_CONTEST } from "./contests/fights";
 import { LANE_CONTESTS } from "./contests/lane";
 import { OBJECTIVE_CONTESTS } from "./contests/objectives";
 import { STRUCTURE_CONTESTS } from "./contests/structures";
+import { snapshotOf } from "./snapshot";
 import {
 	applyEvents,
 	createMatch,
@@ -63,10 +64,14 @@ export function playMinute(
 	return { state: applyEvents(current, events), events };
 }
 
-/** Plays a whole game: it ends when a nexus falls, never at a set minute. */
+/**
+ * Plays a whole game: it ends when a nexus falls, never at a set minute.
+ * `snapshots` is the map at the start and after each minute (plan 09, Q4).
+ */
 export function playMatch(setup: MatchSetup, contests: readonly Contest[]) {
 	let state = createMatch(setup);
 	const events: MatchEvent[] = [];
+	const snapshots = [snapshotOf(state)];
 	while (state.winner === null) {
 		if (state.minute >= RUNAWAY) {
 			throw new Error(`No nexus fell in ${RUNAWAY} minutes`);
@@ -74,6 +79,7 @@ export function playMatch(setup: MatchSetup, contests: readonly Contest[]) {
 		const next = playMinute(state, contests);
 		events.push(...next.events);
 		state = next.state;
+		snapshots.push(snapshotOf(state));
 	}
-	return { state, events };
+	return { state, events, snapshots };
 }

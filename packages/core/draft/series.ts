@@ -1,6 +1,7 @@
 import type {
 	AiContent,
 	AiOfTeam,
+	MapSnapshot,
 	MatchContent,
 	Side,
 } from "@rift-legends/contracts";
@@ -65,6 +66,8 @@ export interface SeriesState {
 	}[];
 	/** The `match.*` facts of each finished game, for `match.view` (plan 09, Q3). */
 	readonly matches: readonly (readonly Emitted[])[];
+	/** The map of each finished game minute by minute, for `match.view` (Q4). */
+	readonly maps: readonly (readonly MapSnapshot[])[];
 }
 
 export { done, fail, WINS_NEEDED } from "./outcome";
@@ -82,6 +85,7 @@ export const initialSeries: SeriesState = {
 	match: null,
 	outcomes: [],
 	matches: [],
+	maps: [],
 };
 
 /** The sides of a game once `team` takes `side`. */

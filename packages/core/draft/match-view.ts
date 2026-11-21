@@ -3,8 +3,9 @@ import { QueryRejection } from "../server/dispatcher";
 import type { SeriesState } from "./series";
 
 /**
- * The `match.view` query: the facts a played game emitted, so the screen can
- * replay it without simulating again (plan 09, Q3).
+ * The `match.view` query: the facts a played game emitted and the map minute
+ * by minute, so the screen can replay it without simulating again (plan 09,
+ * Q3 and Q4).
  */
 export const viewMatch = (
 	state: SeriesState,
@@ -17,5 +18,6 @@ export const viewMatch = (
 			params: { game: params.game },
 		});
 	}
-	return { game: params.game, facts } as MatchView;
+	const snapshots = state.maps[params.game - 1] ?? [];
+	return { game: params.game, facts, snapshots } as MatchView;
 };
