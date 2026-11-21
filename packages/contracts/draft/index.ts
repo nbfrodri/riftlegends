@@ -65,7 +65,8 @@ export const draftCommands = defineCommands({
 });
 
 export const draftQueries = defineQueries({
-	"draft.view": z.strictObject({}),
+	/** `team` is who looks: with soft fearless, availability depends on it. */
+	"draft.view": z.strictObject({ team: teamId.optional() }),
 });
 
 export const draftFacts = defineFacts({
@@ -117,12 +118,16 @@ export const draftView = z.strictObject({
 	game: position,
 	wins: pair(position),
 	phase: z.enum(PHASES),
+	/** Who acts next; a side is chosen before the teams have one. */
 	turn: z
-		.strictObject({
-			team: teamId,
-			side,
-			action: z.enum(["side", "ban", "pick", "roles", "result"]),
-		})
+		.union([
+			z.strictObject({
+				team: teamId,
+				side,
+				action: z.enum(["ban", "pick", "roles"]),
+			}),
+			z.strictObject({ team: teamId, action: z.literal("side") }),
+		])
 		.nullable(),
 	blue: sideView,
 	red: sideView,

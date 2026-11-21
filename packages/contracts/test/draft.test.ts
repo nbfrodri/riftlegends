@@ -164,6 +164,19 @@ describe("draft view", () => {
 		expect(draftView.parse(view)).toEqual(view);
 	});
 
+	it("names who chooses the side, before anyone has one", () => {
+		expect(
+			draftView.shape.turn.safeParse({ team: "t1", action: "side" }).success,
+		).toBe(true);
+		expect(
+			draftView.shape.turn.safeParse({
+				team: "t1",
+				side: "blue",
+				action: "result",
+			}).success,
+		).toBe(false);
+	});
+
 	it("has no turn once the series is over", () => {
 		expect(
 			draftView.safeParse({
