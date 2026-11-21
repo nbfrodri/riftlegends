@@ -16,6 +16,7 @@
 	"shell.sidebar.collapse": "Collapse",
 	"shell.sidebar.expand": "Expand",
 	"shell.sidebar.label": "Sidebar",
+	"shell.sidebar.shortcut": "Alt+B",
 	"shell.window.minimize": "Minimize",
 	"shell.window.maximize": "Maximize",
 	"shell.window.restore": "Restore",

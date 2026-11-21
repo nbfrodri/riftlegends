@@ -16,6 +16,7 @@
 	"shell.sidebar.collapse": "Contraer",
 	"shell.sidebar.expand": "Expandir",
 	"shell.sidebar.label": "Barra lateral",
+	"shell.sidebar.shortcut": "Alt+B",
 	"shell.window.minimize": "Minimizar",
 	"shell.window.maximize": "Maximizar",
 	"shell.window.restore": "Restaurar",

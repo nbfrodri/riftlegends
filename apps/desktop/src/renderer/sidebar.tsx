@@ -206,12 +206,12 @@ export function Sidebar({
 							<span className="min-w-0 font-[550] text-[12px] leading-[1.15]">
 								{toggleLabel}
 							</span>
-							<Kbd className="ml-auto">Alt+B</Kbd>
+							<Kbd className="ml-auto">{t("shell.sidebar.shortcut")}</Kbd>
 						</>
 					)}
 				</TooltipTrigger>
 				<TooltipContent>
-					{toggleLabel} <Kbd>Alt+B</Kbd>
+					{toggleLabel} <Kbd>{t("shell.sidebar.shortcut")}</Kbd>
 				</TooltipContent>
 			</Tooltip>
 		</aside>
