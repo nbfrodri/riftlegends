@@ -35,10 +35,10 @@ function Driver({ stop }: { stop: "game1" | "over" }) {
 	const { view, options, send, setMine, present, presentation } =
 		useDraftSession();
 	const busy = useRef(false);
-	// Once the series is over the user drives: after "New series" the setup must stay.
-	const finished = useRef(false);
 	useEffect(() => {
-		if (busy.current || finished.current) return;
+		// The session remounts on "New series", so the driver's memory lives
+		// outside it: once the series is over, the user drives.
+		if (busy.current || control.finished) return;
 		busy.current = true;
 		const step = async () => {
 			if (!view) {
@@ -55,7 +55,7 @@ function Driver({ stop }: { stop: "game1" | "over" }) {
 				});
 				if (ok) setMine(a as string);
 			} else if (view.phase === "over") {
-				finished.current = true;
+				control.finished = true;
 				if (presentation !== "result") present("result");
 			} else if (view.phase === "result") {
 				// The match screen shows itself over the core's phase, then the result.
@@ -83,7 +83,11 @@ function Flow() {
 	return <Stage />;
 }
 
+/** Shared by the driver across remounts of the session. */
+const control = { finished: false };
+
 function renderResult(stop: "game1" | "over") {
+	control.finished = false;
 	return renderWithDraftCore(
 		<DraftSessionProvider>
 			<Driver stop={stop} />
