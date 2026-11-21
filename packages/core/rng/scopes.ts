@@ -5,6 +5,7 @@
 export const SCOPES = {
 	draft: 1,
 	match: 2,
+	ai: 3,
 } as const;
 
 export type Scope = (typeof SCOPES)[keyof typeof SCOPES];
