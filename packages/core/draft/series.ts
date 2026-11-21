@@ -6,6 +6,7 @@ import { createRng } from "../rng/streams";
 import type { CommandHandler, Emitted, Outcome } from "../server/dispatcher";
 import {
 	type AvailabilityInput,
+	availability,
 	checkChampion,
 	type Fearless,
 	type Format,
@@ -130,12 +131,33 @@ const during =
 		return handler(state, state.config, payload);
 	};
 
+/** Applies a ban or a pick once its champion is known to be legal. */
+const apply = (
+	state: SeriesState,
+	team: string,
+	action: "ban" | "pick",
+	champion: string | null,
+	timeout: boolean,
+): Outcome<SeriesState> => {
+	const next = act(state.draft as GameDraft, team, action, champion);
+	if (!next.ok) return next;
+	return done(
+		{ ...state, draft: next.value },
+		{
+			type: action === "ban" ? "draft.banned" : "draft.picked",
+			game: state.game,
+			team,
+			champion,
+			timeout,
+		},
+	);
+};
+
 const draftAction = (action: "ban" | "pick") =>
 	during<{ team: string; champion: string | null }>(
 		"draft",
 		action,
 		(state, config, { team, champion }) => {
-			const draft = state.draft as GameDraft;
 			if (champion !== null) {
 				const free = checkChampion(
 					availabilityInput(config, state),
@@ -145,20 +167,35 @@ const draftAction = (action: "ban" | "pick") =>
 				);
 				if (!free.ok) return { ok: false, error: free.error };
 			}
-			const next = act(draft, team, action, champion);
-			if (!next.ok) return next;
-			return done(
-				{ ...state, draft: next.value },
-				{
-					type: action === "ban" ? "draft.banned" : "draft.picked",
-					game: state.game,
-					team,
-					champion,
-					timeout: false,
-				},
-			);
+			return apply(state, team, action, champion, false);
 		},
 	);
+
+/**
+ * The UI's timer ran out (the core has no clock): an empty ban, or a free
+ * champion drawn from the `draft` RNG scope for this game and step.
+ */
+const timeout = during<Record<string, never>>(
+	"draft",
+	"ban",
+	(state, config) => {
+		if (!config.timer) return fail("timer-off");
+		const draft = state.draft as GameDraft;
+		const next = turn(draft);
+		if (!next || next.action === "roles") {
+			return fail("wrong-action", { expected: next?.action ?? "none" });
+		}
+		if (next.action === "ban")
+			return apply(state, next.team, "ban", null, true);
+		const free = availability(availabilityInput(config, state), next.team)
+			.filter((entry) => entry.status === "free")
+			.map((entry) => entry.champion);
+		const rng = createRng(
+			deriveSeed(config.seed, SCOPES.draft, state.game, draft.step),
+		);
+		return apply(state, next.team, "pick", pick(rng, free), true);
+	},
+);
 
 export const seriesCommands = {
 	"series.start": (state: SeriesState, config: SeriesConfig) => {
@@ -210,6 +247,7 @@ export const seriesCommands = {
 
 	"draft.ban": draftAction("ban"),
 	"draft.pick": draftAction("pick"),
+	"draft.timeout": timeout,
 
 	"draft.roles": during<{ team: string; roles: Roles }>(
 		"draft",
