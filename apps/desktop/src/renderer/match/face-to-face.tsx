@@ -2,6 +2,7 @@ import type { MapSnapshot, Side } from "@rift-legends/contracts";
 import { RoleIcon } from "@rift-legends/ui-kit/components/role-icon";
 import { Fragment } from "react";
 import { useTranslation } from "react-i18next";
+import { panel, panelTable, panelTitle } from "./classes";
 import {
 	sides,
 	type TeamNames,
@@ -59,7 +60,11 @@ function Ahead({
 			const side = segment.side as Side;
 			const parts = segment.parts.map((p) => text[p.metric](p.amount));
 			return (
-				<span key={side} data-side={side} className="match-ahead">
+				<span
+					key={side}
+					data-side={side}
+					className="block font-bold text-(--side)"
+				>
 					{t("draft.match.faceToFace.ahead", {
 						team: names[side],
 						what: parts.join(t("draft.match.faceToFace.and")),
@@ -73,7 +78,7 @@ function Numbers({ line, side }: { line: Line; side: Side }) {
 	const format = useGoldFormat();
 	return (
 		<>
-			<td data-side={side}>
+			<td data-side={side} className="text-(--side)">
 				{line.kills}/{line.deaths}/{line.assists}
 			</td>
 			<td>{line.cs}</td>
@@ -92,9 +97,9 @@ export function FaceToFace({
 	const { t } = useTranslation();
 	const columns = ["kda", "cs", "gold"] as const;
 	return (
-		<section className="match-panel match-face">
-			<h2>{t("draft.match.faceToFace")}</h2>
-			<table aria-label={t("draft.match.faceToFace")}>
+		<section className={`${panel} h-full`}>
+			<h2 className={panelTitle}>{t("draft.match.faceToFace")}</h2>
+			<table aria-label={t("draft.match.faceToFace")} className={panelTable}>
 				<colgroup>
 					<col style={{ width: "28%" }} />
 				</colgroup>
@@ -109,7 +114,7 @@ export function FaceToFace({
 							</th>
 						))}
 					</tr>
-					<tr>
+					<tr className="text-[12px]">
 						{sides.map((side) => (
 							<Fragment key={side}>
 								{columns.map((column) => (
@@ -129,12 +134,12 @@ export function FaceToFace({
 						return (
 							<tr key={role}>
 								<th scope="row">
-									<span className="match-lane">
-										<span>
+									<span className="flex flex-col items-center gap-px">
+										<span className="inline-flex items-center gap-1.5">
 											<RoleIcon role={role} size={16} />
 											{t(`draft.roles.role.${role}`)}
 										</span>
-										<small>
+										<small className="font-normal text-[11px] text-muted leading-[1.2]">
 											<Ahead blue={blue} red={red} names={names} />
 										</small>
 									</span>

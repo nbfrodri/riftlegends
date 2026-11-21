@@ -75,6 +75,16 @@ test("replays a drafted game and continues to its result", async ({
 		).toBeVisible();
 		await page.getByRole("button", { name: "Saltar al final" }).click();
 		await expect(page.getByRole("timer")).toBeInViewport();
+		// Neither the window nor the main area scrolls at the minimum size.
+		const overflow = await page.evaluate(() => {
+			const main = document.querySelector("main");
+			return {
+				page: document.documentElement.scrollHeight - innerHeight,
+				main: main ? main.scrollHeight - main.clientHeight : 0,
+			};
+		});
+		expect(overflow.page).toBeLessThanOrEqual(0);
+		expect(overflow.main).toBeLessThanOrEqual(0);
 		await expect(page.getByRole("table", { name: "Objetivos" })).toBeInViewport(
 			{ ratio: 1 },
 		);

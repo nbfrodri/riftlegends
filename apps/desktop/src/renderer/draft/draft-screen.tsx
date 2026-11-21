@@ -9,7 +9,7 @@ function DraftFlow() {
 	const stage = stageOf(view, presentation);
 	const Stage = draftStages[stage];
 	return (
-		<section className="flex min-h-full flex-col gap-gap px-gutter py-[clamp(16px,2.5vh,26px)]">
+		<section className="flex min-h-full flex-col gap-gap px-gutter py-[clamp(16px,2.5vh,26px)] short:gap-3 short:py-3.5">
 			{stage !== "match" && (
 				<PageHeader stage={stage}>
 					{(stage === "side" || stage === "draft" || stage === "roles") && (

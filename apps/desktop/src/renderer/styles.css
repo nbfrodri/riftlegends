@@ -1,2 +1,5 @@
 @import "@rift-legends/ui-kit/styles.css";
 @source "./";
+
+/* Short windows (the 1280x720 minimum), as in the approved mockups. */
+@custom-variant short (@media (max-height: 740px));
