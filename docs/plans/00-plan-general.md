@@ -94,7 +94,9 @@ Cada fase termina con un hito verificable y un commit o PR fusionado en `main`. 
 
 ### Fase 6 — Jugadores, mercado y temporadas
 - Evolución por edad y forma, pools de campeones, contratos, renovaciones, agentes libres, academias, **regens**, offseason y bucle de varias temporadas.
-- **Salida:** 10 temporadas simuladas con distribuciones de edad, nivel y fichajes dentro de bandas Monte Carlo acordadas.
+- **Staff** (plan 29): head coach, assistant coach, analistas, coaches por posición y psicólogo, con mercado y contratos. El usuario es el manager: draftea él (con sugerencias del assistant coach) o delega en el head coach.
+- **Finanzas** (plan 30): ingresos, gastos, sueldos, primas, traspasos y buyouts, reglas salariales por liga y presupuesto de la directiva.
+- **Salida:** 10 temporadas simuladas con distribuciones de edad, nivel, fichajes **y saldo de los clubes** dentro de bandas Monte Carlo acordadas (ningún club IA se arruina ni acumula dinero sin límite).
 - **Propuesta del usuario para el plan 17 (21-11-2026):** ventanas de fichajes durante la temporada (entre fases) y en la offseason. En la lista del mercado, al pulsar un jugador su fila se despliega hacia abajo con la ficha (los 20 atributos), sus estadísticas y las acciones: hacer una oferta, seguirle o pedir un informe de scouting. Alternativa a valorar: un panel lateral fijo. Se decide al redactar el plan.
 
 ### Fase 7 — Profundidad de gestión
@@ -158,6 +160,8 @@ Cada plan se crea al empezar su fase con `to-spec` o `dev-workflow`, y se trocea
 | 26 | i18n ES/EN y accesibilidad (transversal) | 0–11 |
 | 27 | Historial: palmarés, partidos, Hall of Fame, récords y perfiles | 8 |
 | 28 | Gestor de carreras: múltiples partidas, autoguardado, ironman, backups y export/import | 5 |
+| 29 | Staff: contratación, roles y draft delegado | 6 |
+| 30 | Finanzas: ingresos, gastos, contratos y buyouts | 6 |
 
 ## Riesgos y dependencias clave
 
