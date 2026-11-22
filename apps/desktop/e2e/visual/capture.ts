@@ -24,6 +24,10 @@ export async function waitForCaptureAssets(page: Page) {
 			}
 		}
 	}, cajaFonts);
+	// The first screenshot of a cold app takes over a second on CI (software
+	// rendering). Take it now, outside the assertion, so toHaveScreenshot's
+	// stability loop compares fast frames instead of timing out (#317).
+	await page.screenshot({ animations: "disabled", caret: "hide" });
 }
 
 export async function captureScreen(
