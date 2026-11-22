@@ -1,22 +1,20 @@
 import { ROLES, type Role } from "@rift-legends/contracts";
 
 /**
- * The role each of a team's five pick slots shows: a pick takes the first of
- * its champion's roles still free; empty slots take the roles left, in order.
- * The real assignment happens in the roles stage.
+ * Which pick each player's row shows, as pick indexes in `ROLES` order (null
+ * for a free row). In pick order, a pick takes the first of its champion's
+ * roles still free, else the first free row. The real assignment happens in
+ * the roles stage.
  */
-export function slotRoles(
+export function pickRows(
 	picks: readonly string[],
 	rolesOf: (champion: string) => readonly Role[],
-): Role[] {
-	const taken = new Set<Role>();
-	const take = (wanted: readonly Role[]) => {
-		const role =
-			wanted.find((r) => !taken.has(r)) ?? ROLES.find((r) => !taken.has(r));
-		if (role) taken.add(role);
-		return role;
-	};
-	const picked = picks.map((champion) => take(rolesOf(champion)));
-	const rest = ROLES.filter((r) => !taken.has(r));
-	return [...picked, ...rest].filter((r): r is Role => r !== undefined);
+): (number | null)[] {
+	const rows: (number | null)[] = ROLES.map(() => null);
+	const free = (role: Role) => rows[ROLES.indexOf(role)] === null;
+	for (const [pick, champion] of picks.entries()) {
+		const role = rolesOf(champion).find(free) ?? ROLES.find(free);
+		if (role) rows[ROLES.indexOf(role)] = pick;
+	}
+	return rows;
 }
