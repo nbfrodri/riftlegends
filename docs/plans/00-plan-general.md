@@ -91,6 +91,10 @@ Cada fase termina con un hito verificable y un commit o PR fusionado en `main`. 
 - **Gestor de carreras:** carreras ilimitadas (un SQLite por carrera, cada una con su propio equipo), pantalla de cargar y crear carrera, autoguardado, modo ironman opcional, backups rotativos con restauración, y exportar e importar el fichero de una carrera.
 - Proyecciones: clasificación, estadísticas, palmarés y head-to-head.
 - Pantallas densas: plantilla, calendario, clasificación y perfil de jugador o equipo.
+- **Ficha de jugador en todas partes (petición del usuario, 22-11-2026):** cualquier sitio donde salga un jugador lleva a su ficha. Esto incluye el mercado, la plantilla, el draft, los roles, los resultados, las noticias y el historial.
+  - **Ficha rápida:** al pasar el ratón o con clic derecho, con nivel, rol, nacionalidad, los 20 atributos y sus campeones principales con su maestría.
+  - **Perfil completo:** con un clic, en su propia pantalla, con atributos, estadísticas, maestrías, contrato, trayectoria y palmarés.
+  - **Una sola pieza:** es el mismo componente en todas las pantallas, con la misma pista visible de que se puede abrir (como la ficha de campeón, #318).
 - **Salida:** jugar un split completo y playoffs; cerrar y reabrir la carrera con un resultado idéntico al de continuar sin cerrar.
 
 ### Fase 6 — Jugadores, mercado y temporadas
