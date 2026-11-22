@@ -140,7 +140,7 @@ Cada plan se crea al empezar su fase con `to-spec` o `dev-workflow`, y se trocea
 | 08 | [Simulación de partida v1 y timeline](../archive/plans/08-simulacion-de-partida.md) (hecho) | 2 |
 | 09 | [Draft rápido en la app: draft broadcast, partida y resultados](../archive/plans/09-draft-rapido-en-la-app.md) (hecho) | 2 |
 | 10 | [Contenido: dataset ficticio, iconos y caché de Data Dragon](../archive/plans/10-contenido.md) (hecho) | 2–3 |
-| 11 | Pipeline de datos de Leaguepedia y atributos de jugadores | 3 |
+| 11 | [Datos reales: Leaguepedia, campeones reales y atributos de jugadores](11-datos-reales.md) | 3 |
 | 12 | Formatos de competición y Swiss propio | 4 |
 | 13 | Persistencia, hechos, proyecciones y migraciones | 5 |
 | 14 | Carrera: calendario, bucle diario y directiva | 5 |

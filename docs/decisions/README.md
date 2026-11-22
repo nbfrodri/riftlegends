@@ -61,6 +61,7 @@ Resumen de las decisiones **vigentes**, para empezar cualquier sesión sin volve
 | 2026-11-22 | Plan 09 cerrado: el E2E de la Bo5 se juega **sin fearless** hasta que el plan 10 traiga 70 campeones (#233 lo pasa a hard) | [plan 09](../archive/plans/09-draft-rapido-en-la-app.md) |
 | 2026-11-22 | Contenido ficticio: **70 campeones** (14 por rol) y **8 equipos** con coach y sembrado, en JSON validado con Zod; Bo5 con fearless hard sin red | [plan 10](../archive/plans/10-contenido.md) |
 | 2026-11-22 | El juego usa los **assets reales** de LoL y de los equipos de esports: caché de Data Dragon y CommunityDragon con **descarga automática** al arrancar con red; iconos oficiales de rol y objetivos ya en el plan 10; campeones reales jugables, logos y todos los equipos de LCK, LPL, LEC, LCP, LCS y CBLOL en el plan 11 | [plan 10](../archive/plans/10-contenido.md#decisiones-del-usuario-22-11-2026) |
+| 2026-11-22 | Datos reales solo de **Leaguepedia** (CC BY-SA), temporada **2026 completa**, en un snapshot JSON en el repo; nombres de campeón desde la caché (sin texto de Riot en el repo); atributos no medibles estimados y marcados; personalidad del coach por estilo de draft; coeficientes de fuerza por liga editables | [plan 11](../plans/11-datos-reales.md) |
 
 ## Estilo visual
 
