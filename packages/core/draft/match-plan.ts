@@ -47,14 +47,20 @@ export function viewPlan(state: SeriesState): MatchPlan | QueryRejection {
 	}
 
 	const causes: MatchPlan["causes"] = [];
+	/** Sums a lever and keeps only the causes that push the same way as the result, strongest first. */
 	const score = (lever: string, factors: Record<string, number>) => {
-		let total = 0;
-		for (const [key, weight] of Object.entries(factors)) {
-			if (weight === 0) continue;
-			const points = weight * SCALE;
-			causes.push({ key: `${lever}.${key}`, points });
-			total += points;
-		}
+		const entries = Object.entries(factors)
+			.filter(([, weight]) => weight !== 0)
+			.map(([key, weight]) => ({
+				key: `${lever}.${key}`,
+				points: weight * SCALE,
+			}));
+		const total = entries.reduce((sum, entry) => sum + entry.points, 0);
+		causes.push(
+			...entries
+				.filter((entry) => entry.points * total > 0)
+				.sort((a, b) => (b.points - a.points) * (total > 0 ? 1 : -1)),
+		);
 		return total;
 	};
 	const engage = own.engage - rival.engage;
