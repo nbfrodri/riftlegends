@@ -5,6 +5,7 @@ import {
 	type RealSnapshot,
 	realSnapshotSchema,
 } from "@rift-legends/contracts/real-snapshot";
+import { mergeSamePlayers } from "./canonical-players.ts";
 import { Client, type ClientOptions } from "./client.ts";
 import { normalizeGames } from "./games.ts";
 import {
@@ -118,9 +119,8 @@ export async function snapshot(options: SnapshotOptions) {
 		dataDragonVersion,
 		queries,
 	};
-	const files = new Map<string, string>();
-	const totals = [];
 	let missingLogos = 0;
+	const built: RealSnapshot[] = [];
 	for (const league of scope) {
 		const selected = new Set(league.pages);
 		const leagueGames = games.filter((game) => selected.has(game.tournament));
@@ -158,13 +158,21 @@ export async function snapshot(options: SnapshotOptions) {
 			),
 			games: leagueGames,
 		});
-		const file = `${league.id.toLowerCase()}.json`;
+		built.push(validated);
+	}
+	const files = new Map<string, string>();
+	const totals = [];
+	for (const validated of mergeSamePlayers(built)) {
+		const file = `${validated.league.id.toLowerCase()}.json`;
 		files.set(
 			file,
-			await preserveUnchanged(join(options.outputDir, file), validated),
+			await preserveUnchanged(
+				join(options.outputDir, file),
+				realSnapshotSchema.parse(validated),
+			),
 		);
 		totals.push({
-			league: league.id,
+			league: validated.league.id,
 			teams: validated.teams.length,
 			players: validated.seasonPlayers.length,
 			coaches: new Set(
