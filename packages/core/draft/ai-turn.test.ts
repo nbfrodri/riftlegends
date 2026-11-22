@@ -3,6 +3,8 @@ import fc from "fast-check";
 import { describe, expect, it } from "vitest";
 import { fictionalContent } from "../ai/fixtures/content";
 import { fictionalMatchContent } from "../match/fixtures/content";
+import { SCOPES } from "../rng/scopes";
+import { deriveSeed } from "../rng/seeds";
 import { type Fact, openSession, type Session } from "../server/dispatcher";
 import { draftDispatcher, draftStateWith } from "./index";
 import type { SeriesState } from "./series";
@@ -26,7 +28,7 @@ const send = (s: Session<SeriesState>, kind: string, payload: object) =>
 	});
 
 const started = (
-	ai: [Ai | null, Ai | null],
+	ai: [Ai | "coach" | null, Ai | "coach" | null],
 	extra: object = {},
 ): Session<SeriesState> => {
 	const result = send(session(), "series.start", {
@@ -61,6 +63,61 @@ const playOut = (start: Session<SeriesState>) => {
 	}
 	return { session: s, facts };
 };
+
+it("C2: finishes every hard fearless Bo5 between packaged coaches with legal picks", () => {
+	const teams = fictionalMatchContent.teams;
+	let reachedDecider = false;
+	fc.assert(
+		fc.property(
+			fc.integer({ min: 0, max: 0xffffffff }),
+			fc.integer({ min: 0, max: teams.length - 1 }),
+			fc.integer({ min: 1, max: teams.length - 1 }),
+			(root, first, offset) => {
+				const second = (first + offset) % teams.length;
+				const a = teams[first];
+				const b = teams[second];
+				if (!a || !b) throw new Error("Missing team");
+				const { facts, session: end } = playOut(
+					started(["coach", "coach"], {
+						teams: [a.id, b.id],
+						seeds: [a.seed, b.seed],
+						format: "bo5",
+						seed: deriveSeed(root, SCOPES.draft, first, second),
+					}),
+				);
+				expect(end.state.phase).toBe("over");
+				expect(end.state.wins).toContain(3);
+				expect(facts.at(-1)?.type).toBe("series.finished");
+				const played = facts.filter((fact) => fact.type === "game.finished");
+				const picks = facts.filter((fact) => fact.type === "draft.picked");
+				expect(picks).toHaveLength(10 * played.length);
+				expect(new Set(picks.map((fact) => fact.champion)).size).toBe(
+					picks.length,
+				);
+				for (const { game } of played) {
+					const bans = facts
+						.filter(
+							(fact) => fact.type === "draft.banned" && fact.game === game,
+						)
+						.map((fact) => fact.champion);
+					const current = picks.filter((fact) => fact.game === game);
+					expect(current).toHaveLength(10);
+					if (game === 5) {
+						expect(new Set(bans).size).toBe(10);
+						for (const ban of bans) expect(POOL).toContain(ban);
+						reachedDecider = true;
+					}
+					for (const { champion } of current) {
+						expect(POOL).toContain(champion);
+						expect(bans).not.toContain(champion);
+					}
+				}
+			},
+		),
+		{ seed: 231, numRuns: 40 },
+	);
+	expect(reachedDecider).toBe(true);
+}, 60_000);
 
 describe("draft.ai (C1)", () => {
 	it("plays legal series to the end, whatever the settings", () => {

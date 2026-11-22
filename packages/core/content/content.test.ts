@@ -1,9 +1,45 @@
-import { aiContent, matchContent } from "@rift-legends/contracts";
+import { aiContent, matchContent, ROLES, TIERS } from "@rift-legends/contracts";
 import { expect, it } from "vitest";
 import { fictionalContent } from "../ai/fixtures/content";
 import { fictionalMatchContent } from "../match/fixtures/content";
 import { CONTENT_VERSION } from "../version";
 import { packagedDraftContent, packagedMatchContent } from "./index";
+
+it("C1: has 70 champions with at least 14 primary picks for every role", () => {
+	const { champions } = packagedDraftContent;
+	expect(champions).toHaveLength(70);
+	for (const role of ROLES) {
+		const primary = champions.filter((c) => c.positions[0]?.role === role);
+		expect(primary.length).toBeGreaterThanOrEqual(14);
+		const tiers = new Set(primary.map((c) => c.positions[0]?.tier));
+		expect(tiers).toEqual(new Set(TIERS));
+	}
+	const flex = champions.filter((c) => c.positions.length > 1);
+	expect(flex.length).toBeGreaterThanOrEqual(13);
+	expect(flex.length).toBeLessThanOrEqual(17);
+});
+
+it("has eight teams with a player and champion pools for every role", () => {
+	expect(packagedMatchContent.teams).toHaveLength(8);
+	expect(packagedDraftContent.players).toHaveLength(8 * ROLES.length);
+	for (const team of packagedMatchContent.teams) {
+		const roster = packagedDraftContent.players.filter(
+			(p) => p.team === team.id,
+		);
+		expect(roster.map((p) => p.role).sort()).toEqual([...ROLES].sort());
+		for (const player of roster) {
+			const profile = packagedMatchContent.players.find(
+				(p) => p.id === player.id,
+			);
+			for (const pool of [player.mains, player.secondary, player.weak]) {
+				expect(pool.length).toBeGreaterThan(0);
+				expect(profile?.mastery.map((entry) => entry.champion)).toEqual(
+					expect.arrayContaining(pool),
+				);
+			}
+		}
+	}
+});
 
 it("parses as draft and match content", () => {
 	expect(aiContent.parse(packagedDraftContent)).toEqual(packagedDraftContent);

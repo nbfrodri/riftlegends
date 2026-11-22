@@ -23,5 +23,85 @@
 		"a": "urnward",
 		"b": "ashmoth",
 		"value": 2
+	},
+	{
+		"a": "gravelspan",
+		"b": "sootplume",
+		"value": 5
+	},
+	{
+		"a": "knuckleridge",
+		"b": "seamseer",
+		"value": 4
+	},
+	{
+		"a": "varnishgraft",
+		"b": "lanternspool",
+		"value": 4
+	},
+	{
+		"a": "spindlehusk",
+		"b": "mercurypane",
+		"value": 5
+	},
+	{
+		"a": "brassburrow",
+		"b": "hingebloom",
+		"value": 4
+	},
+	{
+		"a": "shalefurrow",
+		"b": "dovetailmote",
+		"value": 3
+	},
+	{
+		"a": "rootthimble",
+		"b": "oxbloodink",
+		"value": 6
+	},
+	{
+		"a": "cleftmantle",
+		"b": "starlingflint",
+		"value": 4
+	},
+	{
+		"a": "gutterglen",
+		"b": "fumeledger",
+		"value": 3
+	},
+	{
+		"a": "tallowstalk",
+		"b": "gildedbrine",
+		"value": 5
+	},
+	{
+		"a": "kettlesheaf",
+		"b": "thistledial",
+		"value": 4
+	},
+	{
+		"a": "vellumkiln",
+		"b": "wickerhollow",
+		"value": 5
+	},
+	{
+		"a": "needlecurrent",
+		"b": "bronzehook",
+		"value": 4
+	},
+	{
+		"a": "marrowshuttle",
+		"b": "cirrusspindle",
+		"value": 6
+	},
+	{
+		"a": "pumicesong",
+		"b": "briarshot",
+		"value": 4
+	},
+	{
+		"a": "anvilskate",
+		"b": "sporebastion",
+		"value": 5
 	}
 ]

@@ -103,25 +103,16 @@ describe("series setup (U1)", () => {
 		expect(pool.length).toBeGreaterThanOrEqual(40);
 	});
 
-	test("stays on the setup and explains when the packaged pool is too small", async () => {
+	test("starts a Bo5 with hard fearless now that the packaged pool has 70 champions", async () => {
 		const user = userEvent.setup();
 		await renderWithDraftCore(<DraftScreen />);
 		await screen.findByRole("heading", { level: 1, name: "Set up series" });
 		await user.click(screen.getByRole("radio", { name: "Bo5" }));
 		await user.click(screen.getByRole("button", { name: "Start series" }));
-		expect((await screen.findByRole("alert")).textContent).toMatch(
-			/not enough champions/,
-		);
 		expect(
-			screen.getByRole("heading", { level: 1, name: "Set up series" }),
+			await screen.findByRole("heading", { level: 1, name: "Side choice" }),
 		).toBeTruthy();
-		expect(
-			(
-				screen.getByRole("button", {
-					name: "Start series",
-				}) as HTMLButtonElement
-			).disabled,
-		).toBe(false);
+		expect(screen.queryByRole("alert")).toBeNull();
 	});
 
 	test("is translated to Spanish", async () => {

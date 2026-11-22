@@ -39,7 +39,7 @@ export async function playQuickDraftBo5(
 
 	await expect(heading("Configurar serie")).toBeVisible();
 	await page.getByRole("radio", { name: "Bo5" }).check({ force: true });
-	// The bundled pool is too small for a Bo5 with Fearless enabled.
+	// Fearless off keeps the flow short.
 	await page
 		.getByRole("radio", { name: "Sin", exact: true })
 		.check({ force: true });

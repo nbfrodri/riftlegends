@@ -462,5 +462,1385 @@
 				"value": 35
 			}
 		]
+	},
+	{
+		"id": "breakwater-top",
+		"team": "breakwater",
+		"role": "top",
+		"level": 77,
+		"mains": ["gravelspan"],
+		"secondary": ["mosshelm"],
+		"weak": ["shalefurrow"],
+		"attributes": {
+			"lanes": 79,
+			"farming": 77,
+			"waves": 85,
+			"macro": 72,
+			"roaming": 75,
+			"vision": 78,
+			"anticipation": 86,
+			"objectiveControl": 73,
+			"teamfight": 76,
+			"mechanics": 82,
+			"positioning": 82,
+			"aggression": 74,
+			"composure": 77,
+			"resilience": 80,
+			"experience": 72,
+			"consistency": 75,
+			"focus": 78,
+			"shotcalling": 81,
+			"communication": 73,
+			"versatility": 81
+		},
+		"leader": false,
+		"mastery": [
+			{
+				"champion": "gravelspan",
+				"value": 92
+			},
+			{
+				"champion": "mosshelm",
+				"value": 72
+			},
+			{
+				"champion": "shalefurrow",
+				"value": 38
+			}
+		]
+	},
+	{
+		"id": "breakwater-jungle",
+		"team": "breakwater",
+		"role": "jungle",
+		"level": 81,
+		"mains": ["cleftmantle"],
+		"secondary": ["frostdrum"],
+		"weak": ["tallowstalk"],
+		"attributes": {
+			"lanes": 83,
+			"farming": 75,
+			"waves": 78,
+			"macro": 81,
+			"roaming": 89,
+			"vision": 76,
+			"anticipation": 87,
+			"objectiveControl": 88,
+			"teamfight": 74,
+			"mechanics": 77,
+			"positioning": 80,
+			"aggression": 83,
+			"composure": 75,
+			"resilience": 78,
+			"experience": 81,
+			"consistency": 84,
+			"focus": 76,
+			"shotcalling": 88,
+			"communication": 82,
+			"versatility": 79
+		},
+		"leader": true,
+		"mastery": [
+			{
+				"champion": "cleftmantle",
+				"value": 92
+			},
+			{
+				"champion": "frostdrum",
+				"value": 72
+			},
+			{
+				"champion": "tallowstalk",
+				"value": 38
+			}
+		]
+	},
+	{
+		"id": "breakwater-mid",
+		"team": "breakwater",
+		"role": "mid",
+		"level": 79,
+		"mains": ["seamseer"],
+		"secondary": ["varnishgraft"],
+		"weak": ["vellumkiln"],
+		"attributes": {
+			"lanes": 83,
+			"farming": 81,
+			"waves": 73,
+			"macro": 76,
+			"roaming": 83,
+			"vision": 82,
+			"anticipation": 79,
+			"objectiveControl": 77,
+			"teamfight": 80,
+			"mechanics": 88,
+			"positioning": 75,
+			"aggression": 78,
+			"composure": 81,
+			"resilience": 73,
+			"experience": 76,
+			"consistency": 79,
+			"focus": 82,
+			"shotcalling": 74,
+			"communication": 77,
+			"versatility": 85
+		},
+		"leader": false,
+		"mastery": [
+			{
+				"champion": "seamseer",
+				"value": 92
+			},
+			{
+				"champion": "varnishgraft",
+				"value": 72
+			},
+			{
+				"champion": "vellumkiln",
+				"value": 38
+			}
+		]
+	},
+	{
+		"id": "breakwater-bot",
+		"team": "breakwater",
+		"role": "bot",
+		"level": 76,
+		"mains": ["needlecurrent"],
+		"secondary": ["lanternspool"],
+		"weak": ["pumicesong"],
+		"attributes": {
+			"lanes": 72,
+			"farming": 81,
+			"waves": 78,
+			"macro": 81,
+			"roaming": 73,
+			"vision": 76,
+			"anticipation": 84,
+			"objectiveControl": 71,
+			"teamfight": 74,
+			"mechanics": 81,
+			"positioning": 85,
+			"aggression": 72,
+			"composure": 75,
+			"resilience": 78,
+			"experience": 81,
+			"consistency": 73,
+			"focus": 76,
+			"shotcalling": 79,
+			"communication": 71,
+			"versatility": 79
+		},
+		"leader": false,
+		"mastery": [
+			{
+				"champion": "needlecurrent",
+				"value": 92
+			},
+			{
+				"champion": "lanternspool",
+				"value": 72
+			},
+			{
+				"champion": "pumicesong",
+				"value": 38
+			}
+		]
+	},
+	{
+		"id": "breakwater-support",
+		"team": "breakwater",
+		"role": "support",
+		"level": 77,
+		"mains": ["sporebastion"],
+		"secondary": ["cirrusspindle"],
+		"weak": ["wickerhollow"],
+		"attributes": {
+			"lanes": 80,
+			"farming": 62,
+			"waves": 75,
+			"macro": 78,
+			"roaming": 81,
+			"vision": 81,
+			"anticipation": 81,
+			"objectiveControl": 79,
+			"teamfight": 82,
+			"mechanics": 74,
+			"positioning": 77,
+			"aggression": 80,
+			"composure": 72,
+			"resilience": 75,
+			"experience": 78,
+			"consistency": 81,
+			"focus": 73,
+			"shotcalling": 76,
+			"communication": 84,
+			"versatility": 87
+		},
+		"leader": false,
+		"mastery": [
+			{
+				"champion": "sporebastion",
+				"value": 92
+			},
+			{
+				"champion": "cirrusspindle",
+				"value": 72
+			},
+			{
+				"champion": "wickerhollow",
+				"value": 38
+			}
+		]
+	},
+	{
+		"id": "sunspoke-top",
+		"team": "sunspoke",
+		"role": "top",
+		"level": 76,
+		"mains": ["brassburrow"],
+		"secondary": ["varnishgraft"],
+		"weak": ["spindlehusk"],
+		"attributes": {
+			"lanes": 85,
+			"farming": 73,
+			"waves": 82,
+			"macro": 70,
+			"roaming": 79,
+			"vision": 78,
+			"anticipation": 71,
+			"objectiveControl": 75,
+			"teamfight": 79,
+			"mechanics": 75,
+			"positioning": 76,
+			"aggression": 85,
+			"composure": 73,
+			"resilience": 77,
+			"experience": 70,
+			"consistency": 74,
+			"focus": 78,
+			"shotcalling": 71,
+			"communication": 75,
+			"versatility": 79
+		},
+		"leader": false,
+		"mastery": [
+			{
+				"champion": "brassburrow",
+				"value": 91
+			},
+			{
+				"champion": "varnishgraft",
+				"value": 71
+			},
+			{
+				"champion": "spindlehusk",
+				"value": 37
+			}
+		]
+	},
+	{
+		"id": "sunspoke-jungle",
+		"team": "sunspoke",
+		"role": "jungle",
+		"level": 79,
+		"mains": ["gutterglen"],
+		"secondary": ["rootthimble"],
+		"weak": ["kettlesheaf"],
+		"attributes": {
+			"lanes": 77,
+			"farming": 81,
+			"waves": 74,
+			"macro": 78,
+			"roaming": 81,
+			"vision": 75,
+			"anticipation": 82,
+			"objectiveControl": 78,
+			"teamfight": 76,
+			"mechanics": 80,
+			"positioning": 73,
+			"aggression": 82,
+			"composure": 81,
+			"resilience": 74,
+			"experience": 78,
+			"consistency": 71,
+			"focus": 75,
+			"shotcalling": 79,
+			"communication": 72,
+			"versatility": 76
+		},
+		"leader": false,
+		"mastery": [
+			{
+				"champion": "gutterglen",
+				"value": 91
+			},
+			{
+				"champion": "rootthimble",
+				"value": 71
+			},
+			{
+				"champion": "kettlesheaf",
+				"value": 37
+			}
+		]
+	},
+	{
+		"id": "sunspoke-mid",
+		"team": "sunspoke",
+		"role": "mid",
+		"level": 78,
+		"mains": ["oxbloodink"],
+		"secondary": ["fumeledger"],
+		"weak": ["waxblade"],
+		"attributes": {
+			"lanes": 78,
+			"farming": 77,
+			"waves": 81,
+			"macro": 74,
+			"roaming": 87,
+			"vision": 71,
+			"anticipation": 75,
+			"objectiveControl": 79,
+			"teamfight": 72,
+			"mechanics": 81,
+			"positioning": 80,
+			"aggression": 78,
+			"composure": 77,
+			"resilience": 81,
+			"experience": 74,
+			"consistency": 78,
+			"focus": 71,
+			"shotcalling": 84,
+			"communication": 79,
+			"versatility": 72
+		},
+		"leader": true,
+		"mastery": [
+			{
+				"champion": "oxbloodink",
+				"value": 91
+			},
+			{
+				"champion": "fumeledger",
+				"value": 71
+			},
+			{
+				"champion": "waxblade",
+				"value": 37
+			}
+		]
+	},
+	{
+		"id": "sunspoke-bot",
+		"team": "sunspoke",
+		"role": "bot",
+		"level": 72,
+		"mains": ["starlingflint"],
+		"secondary": ["lanternspool"],
+		"weak": ["marrowshuttle"],
+		"attributes": {
+			"lanes": 77,
+			"farming": 76,
+			"waves": 74,
+			"macro": 78,
+			"roaming": 76,
+			"vision": 75,
+			"anticipation": 68,
+			"objectiveControl": 72,
+			"teamfight": 76,
+			"mechanics": 73,
+			"positioning": 78,
+			"aggression": 82,
+			"composure": 70,
+			"resilience": 74,
+			"experience": 78,
+			"consistency": 71,
+			"focus": 75,
+			"shotcalling": 68,
+			"communication": 72,
+			"versatility": 76
+		},
+		"leader": false,
+		"mastery": [
+			{
+				"champion": "starlingflint",
+				"value": 91
+			},
+			{
+				"champion": "lanternspool",
+				"value": 71
+			},
+			{
+				"champion": "marrowshuttle",
+				"value": 37
+			}
+		]
+	},
+	{
+		"id": "sunspoke-support",
+		"team": "sunspoke",
+		"role": "support",
+		"level": 72,
+		"mains": ["hingebloom"],
+		"secondary": ["gildedbrine"],
+		"weak": ["dovetailmote"],
+		"attributes": {
+			"lanes": 73,
+			"farming": 67,
+			"waves": 70,
+			"macro": 74,
+			"roaming": 83,
+			"vision": 79,
+			"anticipation": 75,
+			"objectiveControl": 68,
+			"teamfight": 72,
+			"mechanics": 76,
+			"positioning": 69,
+			"aggression": 78,
+			"composure": 77,
+			"resilience": 70,
+			"experience": 74,
+			"consistency": 78,
+			"focus": 71,
+			"shotcalling": 75,
+			"communication": 73,
+			"versatility": 72
+		},
+		"leader": false,
+		"mastery": [
+			{
+				"champion": "hingebloom",
+				"value": 91
+			},
+			{
+				"champion": "gildedbrine",
+				"value": 71
+			},
+			{
+				"champion": "dovetailmote",
+				"value": 37
+			}
+		]
+	},
+	{
+		"id": "nightjar-top",
+		"team": "nightjar",
+		"role": "top",
+		"level": 72,
+		"mains": ["spindlehusk"],
+		"secondary": ["knuckleridge"],
+		"weak": ["siltwing"],
+		"attributes": {
+			"lanes": 78,
+			"farming": 72,
+			"waves": 77,
+			"macro": 66,
+			"roaming": 71,
+			"vision": 76,
+			"anticipation": 70,
+			"objectiveControl": 75,
+			"teamfight": 69,
+			"mechanics": 77,
+			"positioning": 68,
+			"aggression": 73,
+			"composure": 67,
+			"resilience": 72,
+			"experience": 66,
+			"consistency": 71,
+			"focus": 81,
+			"shotcalling": 70,
+			"communication": 75,
+			"versatility": 69
+		},
+		"leader": false,
+		"mastery": [
+			{
+				"champion": "spindlehusk",
+				"value": 90
+			},
+			{
+				"champion": "knuckleridge",
+				"value": 70
+			},
+			{
+				"champion": "siltwing",
+				"value": 36
+			}
+		]
+	},
+	{
+		"id": "nightjar-jungle",
+		"team": "nightjar",
+		"role": "jungle",
+		"level": 73,
+		"mains": ["sootplume"],
+		"secondary": ["kettlesheaf"],
+		"weak": ["gutterglen"],
+		"attributes": {
+			"lanes": 70,
+			"farming": 80,
+			"waves": 69,
+			"macro": 74,
+			"roaming": 73,
+			"vision": 73,
+			"anticipation": 70,
+			"objectiveControl": 78,
+			"teamfight": 77,
+			"mechanics": 71,
+			"positioning": 76,
+			"aggression": 70,
+			"composure": 75,
+			"resilience": 69,
+			"experience": 74,
+			"consistency": 68,
+			"focus": 78,
+			"shotcalling": 67,
+			"communication": 72,
+			"versatility": 77
+		},
+		"leader": false,
+		"mastery": [
+			{
+				"champion": "sootplume",
+				"value": 90
+			},
+			{
+				"champion": "kettlesheaf",
+				"value": 70
+			},
+			{
+				"champion": "gutterglen",
+				"value": 36
+			}
+		]
+	},
+	{
+		"id": "nightjar-mid",
+		"team": "nightjar",
+		"role": "mid",
+		"level": 75,
+		"mains": ["mercurypane"],
+		"secondary": ["prismoth"],
+		"weak": ["oxbloodink"],
+		"attributes": {
+			"lanes": 83,
+			"farming": 77,
+			"waves": 77,
+			"macro": 71,
+			"roaming": 80,
+			"vision": 70,
+			"anticipation": 75,
+			"objectiveControl": 69,
+			"teamfight": 74,
+			"mechanics": 73,
+			"positioning": 73,
+			"aggression": 78,
+			"composure": 72,
+			"resilience": 77,
+			"experience": 71,
+			"consistency": 76,
+			"focus": 75,
+			"shotcalling": 75,
+			"communication": 69,
+			"versatility": 74
+		},
+		"leader": false,
+		"mastery": [
+			{
+				"champion": "mercurypane",
+				"value": 90
+			},
+			{
+				"champion": "prismoth",
+				"value": 70
+			},
+			{
+				"champion": "oxbloodink",
+				"value": 36
+			}
+		]
+	},
+	{
+		"id": "nightjar-bot",
+		"team": "nightjar",
+		"role": "bot",
+		"level": 76,
+		"mains": ["marrowshuttle"],
+		"secondary": ["anvilskate"],
+		"weak": ["starlingflint"],
+		"attributes": {
+			"lanes": 74,
+			"farming": 79,
+			"waves": 73,
+			"macro": 78,
+			"roaming": 72,
+			"vision": 77,
+			"anticipation": 71,
+			"objectiveControl": 76,
+			"teamfight": 70,
+			"mechanics": 79,
+			"positioning": 74,
+			"aggression": 74,
+			"composure": 68,
+			"resilience": 73,
+			"experience": 78,
+			"consistency": 72,
+			"focus": 82,
+			"shotcalling": 71,
+			"communication": 76,
+			"versatility": 70
+		},
+		"leader": false,
+		"mastery": [
+			{
+				"champion": "marrowshuttle",
+				"value": 90
+			},
+			{
+				"champion": "anvilskate",
+				"value": 70
+			},
+			{
+				"champion": "starlingflint",
+				"value": 36
+			}
+		]
+	},
+	{
+		"id": "nightjar-support",
+		"team": "nightjar",
+		"role": "support",
+		"level": 69,
+		"mains": ["cirrusspindle"],
+		"secondary": ["dovetailmote"],
+		"weak": ["hingebloom"],
+		"attributes": {
+			"lanes": 67,
+			"farming": 67,
+			"waves": 66,
+			"macro": 71,
+			"roaming": 65,
+			"vision": 78,
+			"anticipation": 75,
+			"objectiveControl": 69,
+			"teamfight": 74,
+			"mechanics": 68,
+			"positioning": 73,
+			"aggression": 67,
+			"composure": 72,
+			"resilience": 66,
+			"experience": 71,
+			"consistency": 65,
+			"focus": 75,
+			"shotcalling": 84,
+			"communication": 74,
+			"versatility": 74
+		},
+		"leader": true,
+		"mastery": [
+			{
+				"champion": "cirrusspindle",
+				"value": 90
+			},
+			{
+				"champion": "dovetailmote",
+				"value": 70
+			},
+			{
+				"champion": "hingebloom",
+				"value": 36
+			}
+		]
+	},
+	{
+		"id": "switchyard-top",
+		"team": "switchyard",
+		"role": "top",
+		"level": 68,
+		"mains": ["gravelspan"],
+		"secondary": ["cragbell"],
+		"weak": ["shalefurrow"],
+		"attributes": {
+			"lanes": 72,
+			"farming": 73,
+			"waves": 73,
+			"macro": 63,
+			"roaming": 69,
+			"vision": 64,
+			"anticipation": 70,
+			"objectiveControl": 65,
+			"teamfight": 76,
+			"mechanics": 69,
+			"positioning": 72,
+			"aggression": 67,
+			"composure": 73,
+			"resilience": 68,
+			"experience": 63,
+			"consistency": 69,
+			"focus": 64,
+			"shotcalling": 70,
+			"communication": 70,
+			"versatility": 71
+		},
+		"leader": false,
+		"mastery": [
+			{
+				"champion": "gravelspan",
+				"value": 89
+			},
+			{
+				"champion": "cragbell",
+				"value": 69
+			},
+			{
+				"champion": "shalefurrow",
+				"value": 35
+			}
+		]
+	},
+	{
+		"id": "switchyard-jungle",
+		"team": "switchyard",
+		"role": "jungle",
+		"level": 70,
+		"mains": ["rootthimble"],
+		"secondary": ["duskroot"],
+		"weak": ["sootplume"],
+		"attributes": {
+			"lanes": 64,
+			"farming": 70,
+			"waves": 65,
+			"macro": 71,
+			"roaming": 71,
+			"vision": 72,
+			"anticipation": 70,
+			"objectiveControl": 79,
+			"teamfight": 73,
+			"mechanics": 74,
+			"positioning": 69,
+			"aggression": 64,
+			"composure": 70,
+			"resilience": 65,
+			"experience": 71,
+			"consistency": 66,
+			"focus": 72,
+			"shotcalling": 67,
+			"communication": 78,
+			"versatility": 68
+		},
+		"leader": false,
+		"mastery": [
+			{
+				"champion": "rootthimble",
+				"value": 89
+			},
+			{
+				"champion": "duskroot",
+				"value": 69
+			},
+			{
+				"champion": "sootplume",
+				"value": 35
+			}
+		]
+	},
+	{
+		"id": "switchyard-mid",
+		"team": "switchyard",
+		"role": "mid",
+		"level": 67,
+		"mains": ["seamseer"],
+		"secondary": ["fumeledger"],
+		"weak": ["thistledial"],
+		"attributes": {
+			"lanes": 74,
+			"farming": 64,
+			"waves": 70,
+			"macro": 65,
+			"roaming": 75,
+			"vision": 66,
+			"anticipation": 72,
+			"objectiveControl": 67,
+			"teamfight": 67,
+			"mechanics": 73,
+			"positioning": 63,
+			"aggression": 69,
+			"composure": 64,
+			"resilience": 70,
+			"experience": 65,
+			"consistency": 71,
+			"focus": 66,
+			"shotcalling": 72,
+			"communication": 72,
+			"versatility": 62
+		},
+		"leader": false,
+		"mastery": [
+			{
+				"champion": "seamseer",
+				"value": 89
+			},
+			{
+				"champion": "fumeledger",
+				"value": 69
+			},
+			{
+				"champion": "thistledial",
+				"value": 35
+			}
+		]
+	},
+	{
+		"id": "switchyard-bot",
+		"team": "switchyard",
+		"role": "bot",
+		"level": 69,
+		"mains": ["pumicesong"],
+		"secondary": ["copperfin"],
+		"weak": ["anvilskate"],
+		"attributes": {
+			"lanes": 66,
+			"farming": 78,
+			"waves": 67,
+			"macro": 73,
+			"roaming": 68,
+			"vision": 63,
+			"anticipation": 69,
+			"objectiveControl": 64,
+			"teamfight": 75,
+			"mechanics": 69,
+			"positioning": 76,
+			"aggression": 66,
+			"composure": 72,
+			"resilience": 67,
+			"experience": 73,
+			"consistency": 68,
+			"focus": 63,
+			"shotcalling": 69,
+			"communication": 69,
+			"versatility": 70
+		},
+		"leader": false,
+		"mastery": [
+			{
+				"champion": "pumicesong",
+				"value": 89
+			},
+			{
+				"champion": "copperfin",
+				"value": 69
+			},
+			{
+				"champion": "anvilskate",
+				"value": 35
+			}
+		]
+	},
+	{
+		"id": "switchyard-support",
+		"team": "switchyard",
+		"role": "support",
+		"level": 73,
+		"mains": ["sporebastion"],
+		"secondary": ["wickerhollow"],
+		"weak": ["gildedbrine"],
+		"attributes": {
+			"lanes": 75,
+			"farming": 60,
+			"waves": 65,
+			"macro": 71,
+			"roaming": 66,
+			"vision": 80,
+			"anticipation": 67,
+			"objectiveControl": 73,
+			"teamfight": 73,
+			"mechanics": 74,
+			"positioning": 69,
+			"aggression": 75,
+			"composure": 70,
+			"resilience": 65,
+			"experience": 71,
+			"consistency": 66,
+			"focus": 72,
+			"shotcalling": 76,
+			"communication": 83,
+			"versatility": 68
+		},
+		"leader": true,
+		"mastery": [
+			{
+				"champion": "sporebastion",
+				"value": 89
+			},
+			{
+				"champion": "wickerhollow",
+				"value": 69
+			},
+			{
+				"champion": "gildedbrine",
+				"value": 35
+			}
+		]
+	},
+	{
+		"id": "longreach-top",
+		"team": "longreach",
+		"role": "top",
+		"level": 72,
+		"mains": ["knuckleridge"],
+		"secondary": ["thistledial"],
+		"weak": ["cragbell"],
+		"attributes": {
+			"lanes": 69,
+			"farming": 71,
+			"waves": 77,
+			"macro": 68,
+			"roaming": 70,
+			"vision": 66,
+			"anticipation": 73,
+			"objectiveControl": 69,
+			"teamfight": 65,
+			"mechanics": 75,
+			"positioning": 68,
+			"aggression": 64,
+			"composure": 71,
+			"resilience": 67,
+			"experience": 63,
+			"consistency": 70,
+			"focus": 66,
+			"shotcalling": 82,
+			"communication": 69,
+			"versatility": 65
+		},
+		"leader": true,
+		"mastery": [
+			{
+				"champion": "knuckleridge",
+				"value": 88
+			},
+			{
+				"champion": "thistledial",
+				"value": 68
+			},
+			{
+				"champion": "cragbell",
+				"value": 34
+			}
+		]
+	},
+	{
+		"id": "longreach-jungle",
+		"team": "longreach",
+		"role": "jungle",
+		"level": 65,
+		"mains": ["cleftmantle"],
+		"secondary": ["brassburrow"],
+		"weak": ["kettlesheaf"],
+		"attributes": {
+			"lanes": 68,
+			"farming": 64,
+			"waves": 65,
+			"macro": 72,
+			"roaming": 68,
+			"vision": 70,
+			"anticipation": 69,
+			"objectiveControl": 68,
+			"teamfight": 69,
+			"mechanics": 65,
+			"positioning": 61,
+			"aggression": 68,
+			"composure": 64,
+			"resilience": 60,
+			"experience": 67,
+			"consistency": 63,
+			"focus": 70,
+			"shotcalling": 66,
+			"communication": 62,
+			"versatility": 69
+		},
+		"leader": false,
+		"mastery": [
+			{
+				"champion": "cleftmantle",
+				"value": 88
+			},
+			{
+				"champion": "brassburrow",
+				"value": 68
+			},
+			{
+				"champion": "kettlesheaf",
+				"value": 34
+			}
+		]
+	},
+	{
+		"id": "longreach-mid",
+		"team": "longreach",
+		"role": "mid",
+		"level": 68,
+		"mains": ["thistledial"],
+		"secondary": ["rushquill"],
+		"weak": ["vellumkiln"],
+		"attributes": {
+			"lanes": 70,
+			"farming": 61,
+			"waves": 73,
+			"macro": 69,
+			"roaming": 75,
+			"vision": 67,
+			"anticipation": 63,
+			"objectiveControl": 70,
+			"teamfight": 66,
+			"mechanics": 67,
+			"positioning": 69,
+			"aggression": 65,
+			"composure": 61,
+			"resilience": 68,
+			"experience": 64,
+			"consistency": 71,
+			"focus": 67,
+			"shotcalling": 63,
+			"communication": 70,
+			"versatility": 66
+		},
+		"leader": false,
+		"mastery": [
+			{
+				"champion": "thistledial",
+				"value": 88
+			},
+			{
+				"champion": "rushquill",
+				"value": 68
+			},
+			{
+				"champion": "vellumkiln",
+				"value": 34
+			}
+		]
+	},
+	{
+		"id": "longreach-bot",
+		"team": "longreach",
+		"role": "bot",
+		"level": 63,
+		"mains": ["needlecurrent"],
+		"secondary": ["marrowshuttle"],
+		"weak": ["lanternspool"],
+		"attributes": {
+			"lanes": 59,
+			"farming": 72,
+			"waves": 67,
+			"macro": 74,
+			"roaming": 65,
+			"vision": 61,
+			"anticipation": 68,
+			"objectiveControl": 64,
+			"teamfight": 60,
+			"mechanics": 71,
+			"positioning": 68,
+			"aggression": 59,
+			"composure": 66,
+			"resilience": 62,
+			"experience": 69,
+			"consistency": 65,
+			"focus": 61,
+			"shotcalling": 68,
+			"communication": 64,
+			"versatility": 60
+		},
+		"leader": false,
+		"mastery": [
+			{
+				"champion": "needlecurrent",
+				"value": 88
+			},
+			{
+				"champion": "marrowshuttle",
+				"value": 68
+			},
+			{
+				"champion": "lanternspool",
+				"value": 34
+			}
+		]
+	},
+	{
+		"id": "longreach-support",
+		"team": "longreach",
+		"role": "support",
+		"level": 65,
+		"mains": ["cirrusspindle"],
+		"secondary": ["fenveil"],
+		"weak": ["wickerhollow"],
+		"attributes": {
+			"lanes": 67,
+			"farming": 53,
+			"waves": 75,
+			"macro": 71,
+			"roaming": 62,
+			"vision": 77,
+			"anticipation": 65,
+			"objectiveControl": 61,
+			"teamfight": 68,
+			"mechanics": 64,
+			"positioning": 60,
+			"aggression": 67,
+			"composure": 63,
+			"resilience": 70,
+			"experience": 66,
+			"consistency": 62,
+			"focus": 69,
+			"shotcalling": 65,
+			"communication": 66,
+			"versatility": 68
+		},
+		"leader": false,
+		"mastery": [
+			{
+				"champion": "cirrusspindle",
+				"value": 88
+			},
+			{
+				"champion": "fenveil",
+				"value": 68
+			},
+			{
+				"champion": "wickerhollow",
+				"value": 34
+			}
+		]
+	},
+	{
+		"id": "flintwake-top",
+		"team": "flintwake",
+		"role": "top",
+		"level": 62,
+		"mains": ["shalefurrow"],
+		"secondary": ["brassburrow"],
+		"weak": ["varnishgraft"],
+		"attributes": {
+			"lanes": 70,
+			"farming": 62,
+			"waves": 64,
+			"macro": 56,
+			"roaming": 64,
+			"vision": 61,
+			"anticipation": 58,
+			"objectiveControl": 66,
+			"teamfight": 63,
+			"mechanics": 68,
+			"positioning": 57,
+			"aggression": 70,
+			"composure": 62,
+			"resilience": 59,
+			"experience": 56,
+			"consistency": 64,
+			"focus": 61,
+			"shotcalling": 58,
+			"communication": 66,
+			"versatility": 63
+		},
+		"leader": false,
+		"mastery": [
+			{
+				"champion": "shalefurrow",
+				"value": 87
+			},
+			{
+				"champion": "brassburrow",
+				"value": 67
+			},
+			{
+				"champion": "varnishgraft",
+				"value": 33
+			}
+		]
+	},
+	{
+		"id": "flintwake-jungle",
+		"team": "flintwake",
+		"role": "jungle",
+		"level": 65,
+		"mains": ["tallowstalk"],
+		"secondary": ["gutterglen"],
+		"weak": ["rootthimble"],
+		"attributes": {
+			"lanes": 63,
+			"farming": 60,
+			"waves": 68,
+			"macro": 65,
+			"roaming": 67,
+			"vision": 59,
+			"anticipation": 70,
+			"objectiveControl": 70,
+			"teamfight": 61,
+			"mechanics": 63,
+			"positioning": 66,
+			"aggression": 68,
+			"composure": 60,
+			"resilience": 68,
+			"experience": 65,
+			"consistency": 62,
+			"focus": 59,
+			"shotcalling": 76,
+			"communication": 64,
+			"versatility": 61
+		},
+		"leader": true,
+		"mastery": [
+			{
+				"champion": "tallowstalk",
+				"value": 87
+			},
+			{
+				"champion": "gutterglen",
+				"value": 67
+			},
+			{
+				"champion": "rootthimble",
+				"value": 33
+			}
+		]
+	},
+	{
+		"id": "flintwake-mid",
+		"team": "flintwake",
+		"role": "mid",
+		"level": 61,
+		"mains": ["vellumkiln"],
+		"secondary": ["oxbloodink"],
+		"weak": ["fumeledger"],
+		"attributes": {
+			"lanes": 62,
+			"farming": 65,
+			"waves": 62,
+			"macro": 59,
+			"roaming": 60,
+			"vision": 64,
+			"anticipation": 61,
+			"objectiveControl": 58,
+			"teamfight": 66,
+			"mechanics": 73,
+			"positioning": 60,
+			"aggression": 62,
+			"composure": 65,
+			"resilience": 62,
+			"experience": 59,
+			"consistency": 56,
+			"focus": 64,
+			"shotcalling": 61,
+			"communication": 58,
+			"versatility": 66
+		},
+		"leader": false,
+		"mastery": [
+			{
+				"champion": "vellumkiln",
+				"value": 87
+			},
+			{
+				"champion": "oxbloodink",
+				"value": 67
+			},
+			{
+				"champion": "fumeledger",
+				"value": 33
+			}
+		]
+	},
+	{
+		"id": "flintwake-bot",
+		"team": "flintwake",
+		"role": "bot",
+		"level": 64,
+		"mains": ["anvilskate"],
+		"secondary": ["starlingflint"],
+		"weak": ["needlecurrent"],
+		"attributes": {
+			"lanes": 65,
+			"farming": 68,
+			"waves": 59,
+			"macro": 67,
+			"roaming": 64,
+			"vision": 61,
+			"anticipation": 58,
+			"objectiveControl": 66,
+			"teamfight": 63,
+			"mechanics": 69,
+			"positioning": 62,
+			"aggression": 70,
+			"composure": 62,
+			"resilience": 59,
+			"experience": 67,
+			"consistency": 64,
+			"focus": 61,
+			"shotcalling": 58,
+			"communication": 66,
+			"versatility": 63
+		},
+		"leader": false,
+		"mastery": [
+			{
+				"champion": "anvilskate",
+				"value": 87
+			},
+			{
+				"champion": "starlingflint",
+				"value": 67
+			},
+			{
+				"champion": "needlecurrent",
+				"value": 33
+			}
+		]
+	},
+	{
+		"id": "flintwake-support",
+		"team": "flintwake",
+		"role": "support",
+		"level": 60,
+		"mains": ["gildedbrine"],
+		"secondary": ["wickerhollow"],
+		"weak": ["dovetailmote"],
+		"attributes": {
+			"lanes": 59,
+			"farming": 46,
+			"waves": 64,
+			"macro": 61,
+			"roaming": 58,
+			"vision": 63,
+			"anticipation": 63,
+			"objectiveControl": 60,
+			"teamfight": 57,
+			"mechanics": 70,
+			"positioning": 62,
+			"aggression": 64,
+			"composure": 56,
+			"resilience": 64,
+			"experience": 61,
+			"consistency": 58,
+			"focus": 55,
+			"shotcalling": 63,
+			"communication": 65,
+			"versatility": 57
+		},
+		"leader": false,
+		"mastery": [
+			{
+				"champion": "gildedbrine",
+				"value": 87
+			},
+			{
+				"champion": "wickerhollow",
+				"value": 67
+			},
+			{
+				"champion": "dovetailmote",
+				"value": 33
+			}
+		]
 	}
 ]

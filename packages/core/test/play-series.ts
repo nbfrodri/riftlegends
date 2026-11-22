@@ -101,7 +101,7 @@ export const playSeries = (options: PlayOptions): Fact[] => {
 	}
 };
 
-/** An AI vs AI series over the fictional content, with simulated games. */
+/** The plan 07 golden keeps the original 40-pick pool as a simulation input. */
 export const playAiSeries = (seed: number): Fact[] => {
 	let session = openSession<SeriesState>(
 		1,
@@ -126,7 +126,7 @@ export const playAiSeries = (seed: number): Fact[] => {
 		format: "bo3",
 		fearless: "hard",
 		timer: false,
-		pool: fictionalContent.champions.map((c) => c.id),
+		pool: fictionalContent.champions.slice(0, 40).map((c) => c.id),
 		seed,
 		ai: [
 			{ personality: "architect", coachRating: 42 },

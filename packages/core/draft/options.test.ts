@@ -37,7 +37,9 @@ describe("series.options (plan 09, U1)", () => {
 		);
 		if (!result.ok) throw new Error(JSON.stringify(result));
 		const view = seriesOptions.parse(result.view);
-		expect(view.teams.map((t) => t.id)).toEqual(["forge", "shoal"]);
+		expect(view.teams.map((t) => t.id)).toEqual(
+			fictionalMatchContent.teams.map((t) => t.id),
+		);
 		expect(view.teams[0]).toMatchObject({
 			name: "Forge",
 			seed: 1,
