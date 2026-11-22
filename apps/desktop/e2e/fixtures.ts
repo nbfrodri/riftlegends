@@ -39,14 +39,20 @@ export function launchApp(
 
 export const test = base.extend<{
 	systemLocale: string;
+	appEnv: Record<string, string> | undefined;
 	electronApp: ElectronApplication;
 	appWindow: Page;
 }>({
 	systemLocale: ["en-US", { option: true }],
-	electronApp: async ({ playwright, systemLocale }, use, testInfo) => {
+	appEnv: [undefined, { option: true }],
+	electronApp: async ({ playwright, systemLocale, appEnv }, use, testInfo) => {
 		const app = await launchApp(
 			{ playwright },
-			{ profileDir: testInfo.outputPath("profile"), systemLocale },
+			{
+				profileDir: testInfo.outputPath("profile"),
+				systemLocale,
+				...(appEnv && { env: appEnv }),
+			},
 		);
 		// Keep a trace (screenshots and DOM snapshots) only when a test fails,
 		// to diagnose flaky failures in CI (#116).
