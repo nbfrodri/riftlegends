@@ -15,7 +15,7 @@ Issue #77 · 20-11-2026 · Rama desechable `spike/77-resumable-download`, sobre 
 | Comparar con descarga íntegra | Mismo resultado | Los 8 archivos de la caché activa de los 4 escenarios tienen el mismo SHA-256 que la descarga de referencia con `curl` (`identicalToReference: true` x4). Esa referencia coincide con el manifiesto fijado. | Pasa |
 | Caché reabre válida en otro arranque offline | La caché sobrevive al reinicio | Paso `4-verify-offline`: `cacheState` revalida tamaño y SHA-256 de los 8 archivos desde disco, sin red: válida 4/4. | Pasa |
 | Servidor sin `Range` | Reiniciar solo el archivo incompleto | S4 (proxy que oculta `Accept-Ranges` y descarta `Range`): respuesta 200, reinició solo `championFull.json` (restarted=1) y mantuvo los 4 completos. | Pasa |
-| T7 · NSIS en Windows | Misma prueba en el instalador | Escenario S1 en el NSIS instalado: corte a 1.500.000 bytes (`ECONNRESET`), arranque con salida bloqueada por el firewall (`EACCES`), sin puntero y solo con parciales en *staging*. Al reanudar se conservaron 4 archivos, se reanudó `championFull.json` y se bajaron 955.168 bytes. La caché quedó válida con 8 archivos, siguió válida en el arranque sin red y coincide con el manifiesto. El draft ficticio avanzó de 0 a 20 a lo largo de los cuatro arranques. [Muestras](s77-windows-samples.json) | Pasa |
+| T7 · NSIS en Windows | Misma prueba en el instalador | Escenario S1 en el NSIS instalado: corte a 1.500.000 bytes (`ECONNRESET`), arranque con salida bloqueada por el firewall (`EACCES`), sin puntero y solo con parciales en *staging*. Al reanudar se conservaron 4 archivos, se reanudó `championFull.json` y se bajaron 955.168 bytes. La caché quedó válida con 8 archivos, siguió válida en el arranque sin red y coincide con el manifiesto. El draft ficticio avanzó de 0 a 20 a lo largo de los cuatro arranques. [Muestras](https://github.com/nbfrodri/riftlegends/blob/b9cacab637026e481880578b6ccdb33941754fb7/docs/research/spikes-2026-11/s77-windows-samples.json) | Pasa |
 
 ## Entorno y protocolo
 
@@ -58,7 +58,7 @@ Data Dragon (S3 detrás de CloudFront) admite rangos:
 | S3 · parcial alterado | Como S1 | Igual | 206 reanudado, hash final incorrecto, se descartó el parcial y se rebajó el archivo completo (discarded=1, 2.455.168 bytes) | Idéntica |
 | S4 · sin `Range` | Como S1 | Igual | 200 completo de `championFull.json` (2.240.929 bytes), restarted=1, kept=4 | Idéntica |
 
-La app no tiene registros de tiempo propios; la medida es de corrección, no de rendimiento. Los números por paso, las peticiones con sus encabezados, los árboles de archivos y los hashes están en [s77-linux-samples.json](s77-linux-samples.json) y [s77-linux-samples.csv](s77-linux-samples.csv).
+La app no tiene registros de tiempo propios; la medida es de corrección, no de rendimiento. Los números por paso, las peticiones con sus encabezados, los árboles de archivos y los hashes están en [s77-linux-samples.json](https://github.com/nbfrodri/riftlegends/blob/b9cacab637026e481880578b6ccdb33941754fb7/docs/research/spikes-2026-11/s77-linux-samples.json) y [s77-linux-samples.csv](https://github.com/nbfrodri/riftlegends/blob/b9cacab637026e481880578b6ccdb33941754fb7/docs/research/spikes-2026-11/s77-linux-samples.csv).
 
 ## Reproducción en Arch
 

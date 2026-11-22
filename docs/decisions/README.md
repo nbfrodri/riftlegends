@@ -33,6 +33,7 @@ Resumen de las decisiones **vigentes**, para empezar cualquier sesión sin volve
 | 2026-11-20 | Driver de SQLite: **`node:sqlite`** dentro del `utilityProcess`, sin módulos nativos; AppImage con el runtime estático | [ADR 0003](0003-go-no-go-fase1.md) |
 | 2026-11-20 | La **`DataTable` se virtualiza** con TanStack Virtual (#91): sin virtualizar, 500 filas no cumplen el presupuesto | [S2](../research/spikes-2026-11/s2-dense-table.md) |
 | 2026-11-20 | El ritmo de cada escena animada se centraliza en un módulo de parámetros compartido con su medidor (T3 costó ≈90 s) | [ADR 0003](0003-go-no-go-fase1.md) |
+| 2026-11-22 | Los datos brutos de los spikes se consultan en el commit archivado (#296) | [Evidencias](https://github.com/nbfrodri/riftlegends/blob/b9cacab637026e481880578b6ccdb33941754fb7/docs/research/spikes-2026-11/) |
 
 ## Fase 2 · Draft rápido
 
