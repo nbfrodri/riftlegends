@@ -2,8 +2,10 @@ import { RouterProvider } from "@tanstack/react-router";
 import { cleanup, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, test } from "vitest";
+import { AssetsProvider } from "../src/renderer/assets";
 import { createAppRouter } from "../src/renderer/router";
 import { renderWithDraftCore } from "./draft-core";
+import { fakeAssets } from "./fake-assets";
 
 afterEach(cleanup);
 
@@ -26,7 +28,12 @@ const pendingEs = sectionsEs.filter(
 
 async function renderShell(path = "/mercado", locale = "es-ES") {
 	const router = createAppRouter(path);
-	await renderWithDraftCore(<RouterProvider router={router} />, locale);
+	await renderWithDraftCore(
+		<AssetsProvider api={fakeAssets().api}>
+			<RouterProvider router={router} />
+		</AssetsProvider>,
+		locale,
+	);
 	await screen.findByRole("heading", { level: 1 });
 	return { router, user: userEvent.setup() };
 }
