@@ -40,7 +40,9 @@ export async function playQuickDraftBo5(
 	await expect(heading("Configurar serie")).toBeVisible();
 	await page.getByRole("radio", { name: "Bo5" }).check({ force: true });
 	// Fearless hard is the default: champions played earlier are locked.
-	await expect(page.getByRole("radio", { name: "Hard", exact: true })).toBeChecked();
+	await expect(
+		page.getByRole("radio", { name: "Hard", exact: true }),
+	).toBeChecked();
 	await capture?.("setup");
 	await button("Empezar serie").click();
 
