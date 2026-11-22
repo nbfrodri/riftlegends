@@ -24,6 +24,9 @@ const SIDES = ["blue", "red"] as const;
 export const ROLES = ["top", "jungle", "mid", "bot", "support"] as const;
 const FORMATS = ["bo1", "bo3", "bo5"] as const;
 const FEARLESS = ["hard", "soft", "off"] as const;
+/** Packaged content sets: fictional (default, offline) and real LoL (plan 11). */
+export const CONTENT_SETS = ["fictional", "real"] as const;
+const contentSet = z.enum(CONTENT_SETS);
 const PHASES = [
 	"side",
 	"bans1",
@@ -65,6 +68,8 @@ export const draftCommands = defineCommands({
 		seed: uint32,
 		/** Which teams the AI plays (plan 07). */
 		ai: aiPerTeam.optional(),
+		/** Content the series is played with; `fictional` when absent. */
+		content: contentSet.optional(),
 	}),
 	"side.choose": z.strictObject({ team: teamId, side }),
 	"draft.ban": z.strictObject({
@@ -89,8 +94,11 @@ export const draftQueries = defineQueries({
 	"match.view": z.strictObject({ game: position }),
 	/** MVP of the series and the gap of each lane in each game (Q5). */
 	"series.summary": z.strictObject({}),
-	/** What the setup screen offers: the teams and the champion pool (plan 09, U1). */
-	"series.options": z.strictObject({}),
+	/**
+	 * What the setup screen offers: the teams and the champion pool (plan 09,
+	 * U1). Of `content` when given, else of the session's current content.
+	 */
+	"series.options": z.strictObject({ content: contentSet.optional() }),
 });
 
 export const draftFacts = defineFacts({
@@ -102,6 +110,7 @@ export const draftFacts = defineFacts({
 		pool: z.array(championId),
 		seed: uint32,
 		ai: aiPerTeam.optional(),
+		content: contentSet.optional(),
 	},
 	"side.chosen": {
 		game: position,
@@ -182,15 +191,18 @@ export const seriesOptions = z.strictObject({
 				name: true,
 				seed: true,
 				coach: true,
+				league: true,
 			})
 			.extend({
-				/** One per role, for the player card (U5). */
+				/** The starter of each role, for the player card (U5). */
 				players: z.array(
 					z.strictObject({
 						id,
 						role: z.enum(ROLES),
 						handle: aiContent.shape.players.element.shape.handle,
 						attributes: matchContent.shape.players.element.shape.attributes,
+						/** Attributes estimated rather than measured; the UI marks them. */
+						estimated: aiContent.shape.players.element.shape.estimated,
 					}),
 				),
 			}),
@@ -212,6 +224,7 @@ export const seriesOptions = z.strictObject({
 });
 
 export type SeriesOptions = z.infer<typeof seriesOptions>;
+export type ContentSet = (typeof CONTENT_SETS)[number];
 export type DraftView = z.infer<typeof draftView>;
 export type Role = (typeof ROLES)[number];
 export type Side = (typeof SIDES)[number];

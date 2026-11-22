@@ -10,6 +10,9 @@ function buildIndex(content: AiContent) {
 	const rosters = new Map<string, Map<Role, Player>>();
 	for (const player of content.players) {
 		const roster = rosters.get(player.team) ?? new Map<Role, Player>();
+		// The first starter of each role plays; a sub only fills an empty role.
+		const fielded = roster.get(player.role);
+		if (fielded && (player.sub || !fielded.sub)) continue;
 		const playable = (id: string) =>
 			champions.get(id)?.positions.some((p) => p.role === player.role);
 		roster.set(player.role, {
