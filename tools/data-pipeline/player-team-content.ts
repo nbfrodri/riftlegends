@@ -9,6 +9,14 @@ import { compare } from "./queries.ts";
 type Game = RealSnapshot["games"][number];
 type Team = RealSnapshot["teams"][number];
 
+/** Keeps what the handle schema allows; at most 24 characters. */
+const nick = (text: string) =>
+	text
+		.replace(/[^\p{L}\p{N} ._-]/gu, "")
+		.trim()
+		.slice(0, 24)
+		.trim() || "Player";
+
 const roles: readonly Role[] = ["top", "jungle", "mid", "bot", "support"];
 // On a tie the shotcaller is the player who usually calls the plays.
 const leaderOrder: readonly Role[] = ["mid", "jungle", "support", "top", "bot"];
@@ -133,7 +141,7 @@ function build(snapshot: RealSnapshot) {
 		id: string,
 		team: string,
 		role: Role,
-		extra: { name?: string; sub?: boolean; placeholder?: true },
+		extra: { handle: string; sub?: boolean; placeholder?: true },
 	) => {
 		const lines = (gamesBy.get(id) ?? []).filter((line) => line.role === role);
 		const champions = [
@@ -155,7 +163,7 @@ function build(snapshot: RealSnapshot) {
 				id,
 				team,
 				role,
-				...(extra.name ? { name: extra.name } : {}),
+				handle: nick(extra.handle),
 				...(extra.sub !== undefined ? { sub: extra.sub } : {}),
 				...(estimated.length ? { estimated } : {}),
 				...(extra.placeholder ? { placeholder: true as const } : {}),
@@ -177,7 +185,7 @@ function build(snapshot: RealSnapshot) {
 					{
 						team: player.team,
 						...make(player.id, player.team, role, {
-							name: player.name,
+							handle: player.name,
 							sub: player.sub,
 						}),
 					},
@@ -195,7 +203,10 @@ function build(snapshot: RealSnapshot) {
 			if (!roster.some((member) => member.row.role === role))
 				roster.push({
 					team: team.id,
-					...make(`${team.id}-${role}`, team.id, role, { placeholder: true }),
+					...make(`${team.id}-${role}`, team.id, role, {
+						handle: `${team.short ?? team.id} ${role}`,
+						placeholder: true,
+					}),
 				});
 		}
 		roster.sort(
@@ -265,6 +276,47 @@ function build(snapshot: RealSnapshot) {
 	return teams;
 }
 
+/**
+ * Handles are unique without regard to case. Players who share one get their
+ * team (and, if still equal, their role) appended, so the result does not
+ * depend on input order.
+ */
+function uniqueHandles<
+	T extends { handle: string; team: string; role: string; id: string },
+>(rows: T[], teamNames: ReadonlyMap<string, string>): T[] {
+	const groups = groupBy(rows, (row) => row.handle.toLowerCase());
+	const taken = new Set(
+		[...groups].filter(([, group]) => group.length === 1).map(([name]) => name),
+	);
+	const renamed = new Map<string, string>();
+	for (const group of groups.values()) {
+		if (group.length === 1) continue;
+		for (const row of group) {
+			const team = nick(teamNames.get(row.team) ?? row.team);
+			let handle = `${nick(row.handle).slice(0, 24 - team.length - 1)}.${team}`;
+			const same = group
+				.filter((other) => other.team === row.team)
+				.sort((a, b) => compare(a.id, b.id));
+			if (same.length > 1)
+				handle = `${handle.slice(0, 24 - row.role.length - 1)}.${row.role}`;
+			const twins = same.filter((other) => other.role === row.role);
+			if (twins.length > 1)
+				handle = `${handle.slice(0, 20)}.${twins.indexOf(row) + 1}`;
+			renamed.set(row.id, handle);
+		}
+	}
+	const seen = new Set(taken);
+	for (const handle of renamed.values()) {
+		if (seen.has(handle.toLowerCase()))
+			throw new Error(`Cannot make the handle unique: ${handle}`);
+		seen.add(handle.toLowerCase());
+	}
+	return rows.map((row) => ({
+		...row,
+		handle: renamed.get(row.id) ?? row.handle,
+	}));
+}
+
 export function buildPlayerTeamContent(snapshots: readonly RealSnapshot[]) {
 	const built = snapshots.flatMap(build);
 	const ids = new Set<string>();
@@ -277,7 +329,10 @@ export function buildPlayerTeamContent(snapshots: readonly RealSnapshot[]) {
 	// One global order: win rate (smoothed) weighted by league strength.
 	built.sort((a, b) => b.score - a.score || compare(a.team.id, b.team.id));
 	const teams = built.map(({ team }, index) => ({ ...team, seed: index + 1 }));
-	const players = built.flatMap(({ players: rows }) => rows);
+	const players = uniqueHandles(
+		built.flatMap(({ players: rows }) => rows),
+		new Map(teams.map((team) => [team.id, team.short ?? team.id])),
+	);
 	const firstSnapshot = snapshots[0];
 	return {
 		players,

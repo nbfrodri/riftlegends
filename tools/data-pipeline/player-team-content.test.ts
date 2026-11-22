@@ -232,3 +232,32 @@ test("input row order does not change the serialized output", () => {
 		),
 	);
 });
+
+test("players who share a handle get their team appended, whatever the input order", () => {
+	const source = snapshot(season());
+	const twin = {
+		...source,
+		seasonPlayers: [
+			...source.seasonPlayers,
+			{
+				id: "Starter (2)",
+				name: "starter",
+				team: "Beta",
+				role: "top" as const,
+				sub: false,
+			},
+		],
+	};
+	const handles = (s: RealSnapshot) =>
+		buildPlayerTeamContent([s])
+			.players.filter((p) => /starter/i.test(p.handle))
+			.map((p) => p.handle);
+	expect(handles(twin).sort()).toEqual(["Starter.AE", "starter.BE"]);
+	expect(
+		handles({
+			...twin,
+			seasonPlayers: [...twin.seasonPlayers].reverse(),
+		}).sort(),
+	).toEqual(["Starter.AE", "starter.BE"]);
+	expect(profile(source, "Starter").handle).toBe("Starter");
+});
