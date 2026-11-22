@@ -1,4 +1,4 @@
-import { packagedMatchContent } from "@rift-legends/core";
+import { packagedDraftContent, packagedMatchContent } from "@rift-legends/core";
 import {
 	act,
 	cleanup,
@@ -116,7 +116,7 @@ describe("draft board (U3)", () => {
 		const core = await renderWithDraftCore(<DraftScreen />);
 		await toFirstPick(user);
 		const free = firstAvailable();
-		const name = free.querySelector("b")?.textContent ?? "";
+		const name = free.getAttribute("aria-label") ?? "";
 		await user.click(free);
 		await user.click(confirm());
 
@@ -192,26 +192,53 @@ describe("draft board (U3)", () => {
 		const banned = await waitFor(() => tile("Cragbell. Banned in this game"));
 		expect(banned.getAttribute("aria-disabled")).toBe("true");
 		expect(banned.getAttribute("title")).toBe("Banned in this game");
-		expect(banned.textContent).toBe("CRCragbell");
+		expect(banned.textContent).toBe("CR");
 		await user.click(banned);
 		expect(banned.getAttribute("aria-pressed")).toBe("false");
 		expect(confirm().hasAttribute("disabled")).toBe(true);
 	});
 
-	test("filters by role and searches by name", async () => {
+	test("filters by role with icon buttons and searches by name", async () => {
 		const user = userEvent.setup();
 		await renderWithDraftCore(<DraftScreen />);
 		await toBoard(user);
 		const grid = screen.getByRole("group", { name: "Champions" });
 		expect(within(grid).getAllByRole("button")).toHaveLength(70);
 		expect(screen.getByText("70 champions")).toBeTruthy();
+		const filter = within(
+			screen.getByRole("group", { name: "Filter by role" }),
+		);
+		const all = filter.getByRole("button", {
+			name: "All roles",
+			pressed: true,
+		});
+		for (const [role, name] of Object.entries({
+			top: "Top",
+			jungle: "Jungle",
+			mid: "Mid",
+			bot: "ADC",
+			support: "Support",
+		})) {
+			const button = filter.getByRole("button", { name, pressed: false });
+			expect(button.querySelector("svg, img")).toBeTruthy();
+			await user.click(button);
+			expect(filter.getAllByRole("button", { pressed: true })).toEqual([
+				button,
+			]);
+			const expected = packagedDraftContent.champions
+				.filter((champion) => champion.positions.some((p) => p.role === role))
+				.map((champion) => champion.name);
+			const shown = within(grid).getAllByRole("button");
+			expect(
+				shown.map((tile) => tile.getAttribute("aria-label")).sort(),
+			).toEqual(expected.sort());
+		}
 
-		await user.click(screen.getByRole("combobox", { name: "Filter by role" }));
-		await user.click(await screen.findByRole("option", { name: "Jungle" }));
-		const jungle = within(grid).getAllByRole("button");
-		expect(jungle.map((b) => b.textContent)).toContain("FRFrostdrum");
-		expect(jungle.map((b) => b.textContent)).not.toContain("CRCragbell");
+		await user.click(all);
+		expect(filter.getAllByRole("button", { pressed: true })).toEqual([all]);
+		expect(within(grid).getAllByRole("button")).toHaveLength(70);
 
+		await user.click(filter.getByRole("button", { name: "Jungle" }));
 		await user.type(screen.getByRole("searchbox"), "dusk");
 		expect(within(grid).getAllByRole("button")).toHaveLength(1);
 		expect(screen.getByText("1 of 70")).toBeTruthy();
@@ -219,6 +246,15 @@ describe("draft board (U3)", () => {
 		await user.type(screen.getByRole("searchbox"), "zzz");
 		expect(within(grid).queryAllByRole("button")).toHaveLength(0);
 		expect(screen.getByText("No matches")).toBeTruthy();
+	});
+
+	test("a champion tile shows only its portrait; the name is its accessible name", async () => {
+		const user = userEvent.setup();
+		await renderWithDraftCore(<DraftScreen />);
+		await toBoard(user);
+		const cragbell = tile("Cragbell");
+		expect(cragbell.textContent).toBe("CR");
+		expect(within(cragbell).getByRole("img", { hidden: true })).toBeTruthy();
 	});
 
 	test("the keyboard moves through the grid with arrows, selects with Enter and confirms", async () => {

@@ -91,7 +91,7 @@ async function playDraft(page: Page) {
 			page.getByRole("heading", { name: "Choose a champion" }),
 		).toBeVisible();
 		const tile = grid.getByRole("button", { disabled: false }).first();
-		const champion = await tile.locator("b").textContent();
+		const champion = await tile.getAttribute("aria-label");
 		if (!champion) throw new Error("The selected tile needs a champion name");
 		await tile.click();
 		samples.push(
