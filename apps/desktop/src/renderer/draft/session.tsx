@@ -80,6 +80,12 @@ export function useDraftSession() {
 export const teamName = (options: SeriesOptions, id: string) =>
 	options.teams.find((team) => team.id === id)?.name ?? id;
 
+/** A player's handle; the ID if the player is unknown. */
+export const playerHandle = (options: SeriesOptions, id: string) =>
+	options.teams
+		.flatMap((team) => team.players)
+		.find((player) => player.id === id)?.handle ?? id;
+
 export const championLabel = (options: SeriesOptions, id: string) =>
 	options.champions.find((champion) => champion.id === id)?.name ?? id;
 

@@ -9,11 +9,13 @@ import type { SeriesState } from "./series";
 export const viewOptions = (state: SeriesState): SeriesOptions => {
 	const champions = state.content?.champions ?? [];
 	const players = (team: string) =>
-		(state.content?.players ?? []).flatMap(({ id, team: of, role }) => {
+		(state.content?.players ?? []).flatMap(({ id, team: of, role, handle }) => {
 			const attributes = state.match?.players.find(
 				(p) => p.id === id,
 			)?.attributes;
-			return of === team && attributes ? [{ id, role, attributes }] : [];
+			return of === team && attributes
+				? [{ id, role, handle, attributes }]
+				: [];
 		});
 	return {
 		teams: (state.match?.teams ?? []).map(({ id, name, seed, coach }) => ({
