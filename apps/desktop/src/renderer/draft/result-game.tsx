@@ -10,7 +10,12 @@ import {
 	topCauses,
 } from "./result-data";
 import { GapsTable } from "./result-gaps";
-import { championLabel, teamName, useDraftSession } from "./session";
+import {
+	championLabel,
+	playerHandle,
+	teamName,
+	useDraftSession,
+} from "./session";
 
 /** Banner with the winner's name, as in the approved mockup. */
 export function Victory(props: {
@@ -106,10 +111,9 @@ function Stats({
 									className={`flex items-center gap-1.5 whitespace-nowrap ${line.side === "blue" ? "text-side-blue" : "text-side-red"}`}
 								>
 									<GameRoleIcon role={line.role} size={16} />
-									{t("draft.result.stats.playerName", {
-										team: teamName(options, line.team),
-										role: t(`draft.roles.role.${line.role}`),
-									})}
+									<span title={t(`draft.roles.role.${line.role}`)}>
+										{playerHandle(options, line.player)}
+									</span>
 								</span>
 							</th>
 							<td className="w-1/4 max-w-0 px-1.5 py-1 text-left">

@@ -189,9 +189,9 @@ const Inspection = memo(function Inspection(props: {
 	const { t } = useTranslation();
 	const { options, view } = useDraftSession();
 	const { player } = props;
-	const attributes = options.teams
+	const rated = options.teams
 		.find((team) => team.id === player?.team)
-		?.players.find((p) => p.role === player?.role)?.attributes;
+		?.players.find((p) => p.role === player?.role);
 	return (
 		<div className="grid grid-cols-[minmax(0,1.72fr)_minmax(0,1fr)] items-start gap-3">
 			<InspectionPanel
@@ -200,6 +200,7 @@ const Inspection = memo(function Inspection(props: {
 				note={
 					player
 						? t("draft.board.player", {
+								handle: rated?.handle ?? "",
 								team: teamName(options, player.team),
 								role: t(`market.role.${player.role}`),
 							})
@@ -211,8 +212,8 @@ const Inspection = memo(function Inspection(props: {
 					player?.team === props.red ? "border-side-red" : "border-side-blue"
 				}
 			>
-				{attributes ? (
-					<PlayerAttributes attributes={attributes} />
+				{rated ? (
+					<PlayerAttributes attributes={rated.attributes} />
 				) : (
 					<p className="mt-2 text-[13px] text-muted">
 						{t("draft.board.playerHint")}

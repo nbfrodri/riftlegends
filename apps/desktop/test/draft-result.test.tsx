@@ -3,6 +3,7 @@ import {
 	type MatchView,
 	type SeriesSummary,
 } from "@rift-legends/contracts";
+import { packagedDraftContent } from "@rift-legends/core";
 import {
 	cleanup,
 	configure,
@@ -113,6 +114,8 @@ const ask = async <T,>(core: Core, kind: string, params: object) => {
 };
 
 const ROLES = ["Top", "Jungle", "Mid", "ADC", "Support"];
+const handleOf = (id: string) =>
+	packagedDraftContent.players.find((p) => p.id === id)?.handle;
 const capital = (id: string) => id.charAt(0).toUpperCase() + id.slice(1);
 const grouped = (n: number) => n.toLocaleString("en-US");
 
@@ -132,7 +135,7 @@ describe("game result (U9)", () => {
 		ended.players.forEach((p, i) => {
 			const row = rows[i] as HTMLElement;
 			expect(within(row).getByRole("rowheader").textContent).toBe(
-				`${capital(p.team)} ${ROLES[i % 5]}`,
+				handleOf(p.player),
 			);
 			const name = namedDraft.champions.find((c) => c.id === p.champion)?.name;
 			if (!name) throw new Error(`Unknown champion: ${p.champion}`);
@@ -284,6 +287,7 @@ describe("series result (U10)", () => {
 			);
 		}
 		expect(panel.textContent).toContain(capital(mvp.team));
+		expect(panel.textContent).toContain(handleOf(mvp.player));
 		expect(panel.textContent).toContain(String(mvp.rating / 10));
 		expect(panel.textContent).toContain(
 			`${mvp.kills}/${mvp.deaths}/${mvp.assists}`,

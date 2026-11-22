@@ -41,6 +41,23 @@ it("has eight teams with a player and champion pools for every role", () => {
 	}
 });
 
+it("gives every player a unique handle of 2 to 16 letters or digits", () => {
+	const handles = packagedDraftContent.players.map((p) => p.handle);
+	expect(new Set(handles.map((h) => h.toLowerCase())).size).toBe(
+		handles.length,
+	);
+	for (const handle of handles) expect(handle).toMatch(/^[A-Za-z0-9]{2,16}$/);
+	const [first, ...rest] = packagedDraftContent.players;
+	const clash = [
+		first,
+		{ ...rest[0], handle: first?.handle },
+		...rest.slice(1),
+	];
+	expect(
+		aiContent.safeParse({ ...packagedDraftContent, players: clash }).success,
+	).toBe(false);
+});
+
 it("parses as draft and match content", () => {
 	expect(aiContent.parse(packagedDraftContent)).toEqual(packagedDraftContent);
 	expect(matchContent.parse(packagedMatchContent)).toEqual(

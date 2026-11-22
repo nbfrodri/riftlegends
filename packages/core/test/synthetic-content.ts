@@ -36,6 +36,7 @@ export function syntheticContent(
 			identities: [{ id: "any", archetypes: ["carry"], threshold: 1 }],
 			players: players.map((p) => ({
 				...p,
+				handle: p.id.replace(/[^A-Za-z0-9]/g, ""),
 				level: 70,
 				mains: pool.slice(0, 1),
 				secondary: [],

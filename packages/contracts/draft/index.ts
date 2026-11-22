@@ -189,6 +189,7 @@ export const seriesOptions = z.strictObject({
 					z.strictObject({
 						id,
 						role: z.enum(ROLES),
+						handle: aiContent.shape.players.element.shape.handle,
 						attributes: matchContent.shape.players.element.shape.attributes,
 					}),
 				),

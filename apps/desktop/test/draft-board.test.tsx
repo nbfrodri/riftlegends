@@ -120,7 +120,7 @@ describe("draft board (U3)", () => {
 		expect(core.sent.at(-1)).toMatchObject({ kind: "draft.pick" });
 		const blue = screen.getByRole("region", { name: "Blue side Forge" });
 		const first = await within(blue).findByRole("button", {
-			name: new RegExp(`^B1 ${name} Forge`),
+			name: new RegExp(`^B1 ${name} Emberjaw`),
 		});
 		expect(first.querySelector("svg")).toBeTruthy();
 		expect(tile(`${name}. Already picked in this game`)).toBeTruthy();
@@ -234,11 +234,11 @@ describe("player card (U5)", () => {
 		await renderWithDraftCore(<DraftScreen />);
 		await toBoard(user);
 		const blue = screen.getByRole("region", { name: "Blue side Forge" });
-		await user.hover(within(blue).getByRole("button", { name: /Forge Mid/ }));
+		await user.hover(within(blue).getByRole("button", { name: /Kilnara/ }));
 
 		const card = screen.getByRole("group", { name: /Player card/ });
 		expect(card.hasAttribute("open")).toBe(true);
-		expect(within(card).getByText("Forge Mid")).toBeTruthy();
+		expect(within(card).getByText(/Forge Mid$/)).toBeTruthy();
 		for (const area of ["Lane", "Map", "Fight", "Mental", "Team"]) {
 			expect(within(card).getByRole("heading", { name: area })).toBeTruthy();
 		}
@@ -252,10 +252,10 @@ describe("player card (U5)", () => {
 		await renderWithDraftCore(<DraftScreen />);
 		await toBoard(user);
 		const red = screen.getByRole("region", { name: "Red side Shoal" });
-		fireEvent.focus(within(red).getByRole("button", { name: /Shoal ADC/ }));
+		fireEvent.focus(within(red).getByRole("button", { name: /Gullix/ }));
 
 		const card = screen.getByRole("group", { name: /Player card/ });
-		expect(within(card).getByText("Shoal ADC")).toBeTruthy();
+		expect(within(card).getByText(/Shoal ADC$/)).toBeTruthy();
 		expect(within(card).getByText("Mechanics").nextSibling?.textContent).toBe(
 			"99",
 		);

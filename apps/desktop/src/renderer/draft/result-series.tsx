@@ -2,9 +2,15 @@ import type { SeriesSummary } from "@rift-legends/contracts";
 import { IconButton } from "@rift-legends/ui-kit/components/icon-button";
 import { ArrowUpRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { GameRoleIcon } from "../assets/game-role-icon";
 import { clock, type GameResult, gapsOfSeries, percent } from "./result-data";
 import { GapsTable } from "./result-gaps";
-import { championLabel, teamName, useDraftSession } from "./session";
+import {
+	championLabel,
+	playerHandle,
+	teamName,
+	useDraftSession,
+} from "./session";
 
 function Mvp(props: {
 	mvp: NonNullable<SeriesSummary["mvp"]>;
@@ -46,11 +52,9 @@ function Mvp(props: {
 				<p className="font-semibold text-[12px] text-muted uppercase tracking-[0.055em]">
 					{t("draft.result.mvp.label", { team: name })}
 				</p>
-				<h2 className="mt-2 font-bold font-display text-[28px] leading-none tracking-heading">
-					{t("draft.result.stats.playerName", {
-						team: name,
-						role: role ? t(`draft.roles.role.${role}`) : "",
-					})}
+				<h2 className="mt-2 flex items-center gap-2.5 font-bold font-display text-[28px] leading-none tracking-heading">
+					{role && <GameRoleIcon role={role} size={24} />}
+					{playerHandle(options, mvp.player)}
 				</h2>
 				<p className="mt-1 text-[14px] text-muted">
 					{new Intl.ListFormat(i18n.language, {

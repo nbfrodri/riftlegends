@@ -135,6 +135,7 @@ describe("AiContent", () => {
 				id: "faker",
 				team: "t1",
 				role: "mid",
+				handle: "Azure",
 				level: 95,
 				mains: ["azir"],
 				secondary: [],

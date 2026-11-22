@@ -120,6 +120,8 @@ export const aiContent = z
 				id,
 				team: id,
 				role: roles,
+				/** Esports-style nickname shown instead of team and role. */
+				handle: z.string().regex(/^[A-Za-z0-9]{2,16}$/),
 				level: z.int().min(0).max(100),
 				mains: z.array(id),
 				secondary: z.array(id),
@@ -130,6 +132,13 @@ export const aiContent = z
 	.superRefine((content, ctx) => {
 		checkDuplicates(ctx, "champions", content.champions, (row) => row.id, "id");
 		checkDuplicates(ctx, "players", content.players, (row) => row.id, "id");
+		checkDuplicates(
+			ctx,
+			"players",
+			content.players,
+			(row) => row.handle.toLowerCase(),
+			"handle",
+		);
 		checkDuplicates(
 			ctx,
 			"matchups",

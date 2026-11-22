@@ -93,10 +93,11 @@ export function TeamColumn(props: {
 												: t("draft.board.pending")}
 									</strong>
 									<small className="block text-[12px] text-muted">
-										{t("draft.board.player", {
-											team: props.team.name,
-											role: t(`market.role.${role}`),
-										})}
+										{
+											options.teams
+												.find((team) => team.id === props.team.id)
+												?.players.find((p) => p.role === role)?.handle
+										}
 									</small>
 								</span>
 							</button>
