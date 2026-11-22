@@ -82,6 +82,7 @@ Cada fase termina con un hito verificable y un commit o PR fusionado en `main`. 
 
 ### Fase 4 — Competición
 - Formatos: liga, grupos, Swiss propio (restricciones de región, sin revanchas) y eliminatorias simple y doble; calendario y ligas top; First Stand, MSI y Worlds.
+- **Formatos como datos, configurables al crear la carrera** (decisión del 22-11-2026): por defecto, el formato real de la temporada de cada competición (p. ej. tres splits con round robin y playoffs de doble eliminación; Swiss en Worlds). Al crear la carrera, el usuario puede cambiar por competición: número de splits, vueltas del round robin, Bo1/Bo3/Bo5 por fase, grupos o Swiss, eliminación simple o doble y plazas internacionales por región. Queda fijo durante la carrera salvo para temporadas futuras. Los mismos bloques sirven al modo Torneo.
 - Modo **Torneo** (IDEA §6) como primer consumidor.
 - **Salida:** simular un año competitivo completo IA contra IA de forma determinista y en un tiempo acotado (presupuesto a fijar en su plan).
 
