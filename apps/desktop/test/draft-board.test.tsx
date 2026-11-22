@@ -67,7 +67,7 @@ async function toFirstPick(user: User) {
 }
 
 describe("draft board (U3)", () => {
-	test("on my ban turn, selecting and confirming sends draft.ban; the ban shows struck", async () => {
+	test("on my ban turn, selecting and confirming sends draft.ban; the ban shows its greyed portrait", async () => {
 		const user = userEvent.setup();
 		const core = await renderWithDraftCore(
 			<DraftScreen />,
@@ -93,12 +93,11 @@ describe("draft board (U3)", () => {
 			payload: { team: "forge", champion: "cragbell" },
 		});
 		const blue = screen.getByRole("region", { name: "Blue side Forge" });
-		await waitFor(() =>
-			expect(
-				within(blue).getByRole("list", { name: "Bans" }).textContent,
-			).toContain(name),
-		);
-		expect(within(blue).getByText(name).tagName).toBe("S");
+		const bans = within(blue).getByRole("list", { name: "Bans" });
+		const ban = await within(bans).findByRole("img", { name });
+		expect(ban.className).toContain("after:bg-[linear-gradient");
+		expect(within(bans).getByRole("listitem").getAttribute("title")).toBe(name);
+		expect(bans.querySelector("s")).toBeNull();
 	});
 
 	test("the user cannot confirm while the rival is choosing", async () => {

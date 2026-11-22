@@ -24,7 +24,7 @@ const SIDE = {
 
 /**
  * A side of the draft: its five picks (with the role and player each slot
- * shows) and its bans, struck. Hovering or focusing a slot shows its player.
+ * shows) and its bans as greyed portraits. Hovering or focusing a slot shows its player.
  */
 export const TeamColumn = memo(function TeamColumn(props: {
 	side: Side;
@@ -126,21 +126,24 @@ export const TeamColumn = memo(function TeamColumn(props: {
 			</p>
 			<ul
 				aria-labelledby={`${id}-bans`}
-				className="mt-[3px] flex min-h-[1.45em] flex-wrap gap-x-2.5 text-[13px] text-muted leading-[1.45]"
+				className="mt-[3px] flex min-h-8 flex-wrap items-center gap-1.5 text-[13px] text-muted leading-[1.45]"
 			>
-				{team.bans.map((ban, index) =>
-					ban ? (
+				{team.bans.map((ban, index) => {
+					if (!ban)
+						return (
+							// biome-ignore lint/suspicious/noArrayIndexKey: bans only grow, in order.
+							<li key={index} className="italic">
+								{t("draft.board.noBan")}
+							</li>
+						);
+					const label = championLabel(options, ban);
+					return (
 						// biome-ignore lint/suspicious/noArrayIndexKey: bans only grow, in order.
-						<li key={index} className="max-w-full truncate">
-							<s>{championLabel(options, ban)}</s>
+						<li key={index} title={label} className="flex">
+							<ChampionPortrait id={ban} label={label} size="ban" unavailable />
 						</li>
-					) : (
-						// biome-ignore lint/suspicious/noArrayIndexKey: bans only grow, in order.
-						<li key={index} className="italic">
-							{t("draft.board.noBan")}
-						</li>
-					),
-				)}
+					);
+				})}
 			</ul>
 		</section>
 	);
