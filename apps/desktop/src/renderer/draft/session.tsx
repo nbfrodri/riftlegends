@@ -82,6 +82,9 @@ interface DraftSession {
 }
 
 const Context = createContext<DraftSession | null>(null);
+// Apart from the session: its value changes with every fact, and a reader of
+// only the content set (every champion portrait) must not re-render for that.
+const ContentContext = createContext<ContentSet | null>(null);
 
 /** The state of the quick-draft flow, for every sub-screen. */
 export function useDraftSession() {
@@ -92,7 +95,7 @@ export function useDraftSession() {
 
 /** The session's content set; fictional outside a session (e.g. a lone board column). */
 export function useDraftContent(): ContentSet {
-	return use(Context)?.content ?? "fictional";
+	return use(ContentContext) ?? "fictional";
 }
 
 export const teamName = (options: SeriesOptions, id: string) =>
@@ -257,7 +260,11 @@ function LoadedSession(props: {
 	const failure = options.error ?? view.error ?? error;
 	return (
 		<>
-			{value && <Context value={value}>{props.children}</Context>}
+			{value && (
+				<ContentContext value={content}>
+					<Context value={value}>{props.children}</Context>
+				</ContentContext>
+			)}
 			{failure && <CoreErrorMessage error={failure} />}
 		</>
 	);
