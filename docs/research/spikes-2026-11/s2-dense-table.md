@@ -121,15 +121,15 @@ La fila activa (el único tab stop del `tbody`) se mantiene siempre montada: el 
 
 ## Archivos de evidencia
 
-CSV y JSON junto a este informe (muestras en bruto; la tanda 0 es el calentamiento y no cuenta):
+CSV y JSON archivados en Git. La tanda 0 corresponde al calentamiento y se excluye de la medición.
 
 | Archivo | Contenido |
 | --- | --- |
-| `s2-plain-latency.csv`, `s2-virtual-latency.csv` | Una fila por tecla: `run,phase,kind,key,t0_ms,tFrame_ms,latency_ms,id,inView,outline,hasFocus`. `kind=focus` son movimientos de fila; `kind=action` son ordenar/filtrar/limpiar. `t0_ms` es el `event.timeStamp` y `tFrame_ms`, la primera tarea tras el `requestAnimationFrame` siguiente |
-| `s2-plain-frames.csv`, `s2-virtual-frames.csv` | Intervalo entre fotogramas por fase: `run,phase,t_ms,interval_ms` |
-| `s2-plain-eventtiming.csv`, `s2-virtual-eventtiming.csv` | Event Timing de los `keydown` (≥ 16 ms): `run,startTime,duration` |
-| `s2-plain-summary.json`, `s2-virtual-summary.json` | Entorno (ventana, GPU, versiones), comprobaciones de corrección y agregados por tanda |
-| `s2-plain-bare.json`, `s2-virtual-bare.json` | Control sin instrumentación: FPS, p95 e intervalo máximo con ↓ mantenida, 4 repeticiones |
+| [`s2-plain-latency.csv`](https://github.com/nbfrodri/riftlegends/blob/b9cacab637026e481880578b6ccdb33941754fb7/docs/research/spikes-2026-11/s2-plain-latency.csv), [`s2-virtual-latency.csv`](https://github.com/nbfrodri/riftlegends/blob/b9cacab637026e481880578b6ccdb33941754fb7/docs/research/spikes-2026-11/s2-virtual-latency.csv) | Una fila por tecla: `run,phase,kind,key,t0_ms,tFrame_ms,latency_ms,id,inView,outline,hasFocus`. `kind=focus` son movimientos de fila; `kind=action` son ordenar/filtrar/limpiar. `t0_ms` es el `event.timeStamp` y `tFrame_ms`, la primera tarea tras el `requestAnimationFrame` siguiente |
+| [`s2-plain-frames.csv`](https://github.com/nbfrodri/riftlegends/blob/b9cacab637026e481880578b6ccdb33941754fb7/docs/research/spikes-2026-11/s2-plain-frames.csv), [`s2-virtual-frames.csv`](https://github.com/nbfrodri/riftlegends/blob/b9cacab637026e481880578b6ccdb33941754fb7/docs/research/spikes-2026-11/s2-virtual-frames.csv) | Intervalo entre fotogramas por fase: `run,phase,t_ms,interval_ms` |
+| [`s2-plain-eventtiming.csv`](https://github.com/nbfrodri/riftlegends/blob/b9cacab637026e481880578b6ccdb33941754fb7/docs/research/spikes-2026-11/s2-plain-eventtiming.csv), [`s2-virtual-eventtiming.csv`](https://github.com/nbfrodri/riftlegends/blob/b9cacab637026e481880578b6ccdb33941754fb7/docs/research/spikes-2026-11/s2-virtual-eventtiming.csv) | Event Timing de los `keydown` (≥ 16 ms): `run,startTime,duration` |
+| [`s2-plain-summary.json`](https://github.com/nbfrodri/riftlegends/blob/b9cacab637026e481880578b6ccdb33941754fb7/docs/research/spikes-2026-11/s2-plain-summary.json), [`s2-virtual-summary.json`](https://github.com/nbfrodri/riftlegends/blob/b9cacab637026e481880578b6ccdb33941754fb7/docs/research/spikes-2026-11/s2-virtual-summary.json) | Entorno (ventana, GPU, versiones), comprobaciones de corrección y agregados por tanda |
+| [`s2-plain-bare.json`](https://github.com/nbfrodri/riftlegends/blob/b9cacab637026e481880578b6ccdb33941754fb7/docs/research/spikes-2026-11/s2-plain-bare.json), [`s2-virtual-bare.json`](https://github.com/nbfrodri/riftlegends/blob/b9cacab637026e481880578b6ccdb33941754fb7/docs/research/spikes-2026-11/s2-virtual-bare.json) | Control sin instrumentación: FPS, p95 e intervalo máximo con ↓ mantenida, 4 repeticiones |
 
 Reproducir: `mise exec -- pnpm --filter @rift-legends/desktop build` (con `VITE_S2_VIRTUAL=1` para la variante virtual) y, desde `apps/desktop`, `S2_VARIANT=plain|virtual S2_OUT=<dir> pnpm exec playwright test -c spike/playwright.config.ts`. El script flota y fija la ventana a 1366×768 con `hyprctl dispatch` (Hyprland 0.56 usa Lua: `hl.dsp.window.float({ ... window = "address:0x…" })`; **nunca** sin `window`, porque actúa sobre la ventana activa).
 
