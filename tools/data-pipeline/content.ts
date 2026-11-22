@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { realSnapshotSchema } from "@rift-legends/contracts/real-snapshot";
 import { parseHistory } from "./history.ts";
+import { parseNationalities } from "./nationality.ts";
 import { buildPlayerTeamContent } from "./player-team-content.ts";
 import { leagues } from "./scope.ts";
 
@@ -30,9 +31,18 @@ export async function buildContent(inputDir = dir) {
 			await readFile(join(inputDir, "history.json"), "utf8"),
 		).players.map(({ id, seasons }) => [id, seasons]),
 	);
+	const countryData = await readFile(
+		join(inputDir, "nationalities.json"),
+		"utf8",
+	).catch((error: NodeJS.ErrnoException) => {
+		if (error.code !== "ENOENT") throw error;
+	});
+	const nationalities =
+		countryData === undefined ? [] : parseNationalities(countryData).players;
 	const { players, teams, provenance } = buildPlayerTeamContent(
 		snapshots,
 		careers,
+		new Map(nationalities.map(({ id, country }) => [id, country])),
 	);
 	return {
 		"players.json": serializeRows(players),

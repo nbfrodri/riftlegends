@@ -1,4 +1,4 @@
-# sim_version=2 content_version=2184717040
+# sim_version=2 content_version=867563721
 {"ai":[{"coachRating":42,"personality":"architect"},{"coachRating":30,"personality":"counterpick"}],"fearless":"hard","format":"bo3","pool":["cragbell","rimefoil","saltspire","mosshelm","siltwing","quillforge","urnward","fallowhorn","coalstride","duskroot","reedclaw","bellwisp","nettleguard","chalkmaw","frostdrum","ashmoth","prismoth","glasswake","waxblade","tideglass","cinderlens","rushquill","mistloom","silkflare","suncord","copperfin","briarshot","spraylark","rillbow","starloom","whetstone","hushwire","shellward","bronzehook","riftchime","fenveil","amberwall","mirethorn","dewshroud","rushbell"],"position":0,"seed":7,"teams":["forge","shoal"],"timer":false,"type":"series.started"}
 {"by":"seed","game":1,"position":1,"side":"blue","team":"forge","type":"side.chosen"}
 {"blue":"forge","game":1,"position":2,"red":"shoal","type":"game.started"}

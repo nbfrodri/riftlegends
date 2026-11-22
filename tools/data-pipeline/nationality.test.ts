@@ -3,7 +3,6 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { Client } from "./client.ts";
-import { person } from "./normalization.ts";
 import {
 	acquireNationalities,
 	buildNationalities,
@@ -12,6 +11,7 @@ import {
 	preserveNationalities,
 	serializeNationalities,
 } from "./nationality.ts";
+import { person } from "./normalization.ts";
 
 let dir: string;
 beforeEach(async () => {
@@ -36,6 +36,10 @@ test("country names become ISO 3166-1 alpha-2 codes", () => {
 	expect(countryCode("Taiwan")).toBe("TW");
 	expect(countryCode("Hong Kong")).toBe("HK");
 	expect(countryCode("France")).toBe("FR");
+	expect(countryCode("Vietnam")).toBe("VN");
+	expect(countryCode("Germany")).toBe("DE");
+	expect(countryCode("vn")).toBe("VN");
+	expect(countryCode("European Union")).toBeUndefined();
 	expect(countryCode("Serbia")).toBe("RS");
 	expect(countryCode("  Denmark ")).toBe("DK");
 	expect(countryCode("Atlantis")).toBeUndefined();
@@ -64,6 +68,21 @@ test("each player gets one code; the primary nationality wins over the country",
 	expect(result.unmapped).toEqual(["Atlantis"]);
 	// Disambiguators can hold real names: only a fingerprint is stored.
 	expect(JSON.stringify(result)).not.toContain("Disambiguator");
+});
+
+test("a valid primary nationality wins across duplicated rows", () => {
+	const result = buildNationalities(
+		[
+			{ Link: "Player", NationalityPrimary: "Denmark", Country: "France" },
+			{ Link: "Player", NationalityPrimary: "", Country: "France" },
+			{ Link: "Other", NationalityPrimary: "Unknown", Country: "France" },
+		],
+		["Player", "Other"],
+	);
+	expect(result.players).toEqual([
+		{ id: "Other", country: "FR" },
+		{ id: "Player", country: "DK" },
+	]);
 });
 
 test("ids outside the snapshot are dropped", () => {
@@ -130,7 +149,7 @@ test("the file round-trips and only retrieval dates are ignored", async () => {
 
 test("a malformed file or a bad country code is rejected", () => {
 	expect(() => parseNationalities("{}")).toThrow();
-	expect(() =>
-		parseNationalities(serializeNationalities(file("Korea"))),
-	).toThrow(/country/i);
+	expect(() => parseNationalities(serializeNationalities(file("VD")))).toThrow(
+		/country/i,
+	);
 });

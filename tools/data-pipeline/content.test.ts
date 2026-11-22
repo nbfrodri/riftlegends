@@ -1,4 +1,6 @@
-import { readFile } from "node:fs/promises";
+import { copyFile, mkdtemp, readFile, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { aiContent, matchContent } from "@rift-legends/contracts";
 import { realSnapshotSchema } from "@rift-legends/contracts/real-snapshot";
@@ -39,7 +41,14 @@ test("career history improves ratings and leaves players without history unchang
 			players.find(({ handle }) => handle === "Faker")?.level,
 		).toBeGreaterThanOrEqual(80);
 	const withoutHistory = baseline.filter(({ id }) => !careers.has(id));
-	expect(players.filter(({ id }) => !careers.has(id))).toEqual(withoutHistory);
+	expect(withoutHistory.length).toBeGreaterThan(0);
+	expect(
+		players
+			.filter(({ id }) => !careers.has(id))
+			.map(({ nationality: _nationality, ...player }) => player),
+	).toEqual(
+		withoutHistory.map(({ nationality: _nationality, ...player }) => player),
+	);
 });
 
 test("no real player with a career is rated above 94", async () => {
@@ -64,6 +73,32 @@ test("no real player with a career is rated above 94", async () => {
 test("the committed players and teams are what the snapshot produces", async () => {
 	for (const [file, body] of Object.entries(await buildContent()))
 		expect(body, file).toBe(await readFile(`${dir}${file}`, "utf8"));
+});
+
+test("the cached Leaguepedia nationality reaches real player content", async () => {
+	const files = await buildContent();
+	const players = JSON.parse(files["players.json"]);
+	expect(
+		players.find(({ id }: { id: string }) => id === "Faker"),
+	).toHaveProperty("nationality", "KR");
+});
+
+test("older snapshots without nationality data still produce player content", async () => {
+	const legacy = await mkdtemp(join(tmpdir(), "rift-legacy-content-"));
+	try {
+		const files = [
+			...season2026.map(({ id }) => `${id.toLowerCase()}.json`),
+			"history.json",
+		];
+		await Promise.all(
+			files.map((file) => copyFile(join(dir, file), join(legacy, file))),
+		);
+		const content = await buildContent(legacy);
+		expect(content["players.json"]).toContain('"id":"Faker"');
+		expect(content["players.json"]).not.toContain('"nationality"');
+	} finally {
+		await rm(legacy, { recursive: true, force: true });
+	}
 });
 
 test("real players and teams have the shape of the fictional content", async () => {

@@ -1,5 +1,6 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
+import { COUNTRY_CODES } from "@rift-legends/contracts/country-codes";
 import { realSnapshotSchema } from "@rift-legends/contracts/real-snapshot";
 import { mergeSamePlayers } from "./canonical-players.ts";
 import { type CargoRow, Client, type ClientOptions } from "./client.ts";
@@ -9,55 +10,57 @@ import { compare } from "./queries.ts";
 import { season2026 } from "./scope.ts";
 
 /** Leaguepedia names that `Intl.DisplayNames` writes differently. */
-const aliases: Record<string, string> = {
-	"Czech Republic": "CZ",
-	Turkey: "TR",
-	Macedonia: "MK",
-	"North Macedonia": "MK",
-	Russia: "RU",
-	"Hong Kong": "HK",
-	"Ivory Coast": "CI",
-	"Republic of Ireland": "IE",
-	Ireland: "IE",
-	"United Kingdom": "GB",
-	England: "GB",
-	Scotland: "GB",
-	Wales: "GB",
-	"Northern Ireland": "GB",
-	Palestine: "PS",
-	"Democratic Republic of the Congo": "CD",
-	"Republic of the Congo": "CG",
-	Swaziland: "SZ",
-	Burma: "MM",
-	Serbia: "RS",
-	"East Timor": "TL",
-	"Cape Verde": "CV",
-};
+const aliases = new Map(
+	Object.entries({
+		"Czech Republic": "CZ",
+		Turkey: "TR",
+		Macedonia: "MK",
+		"North Macedonia": "MK",
+		Russia: "RU",
+		"Hong Kong": "HK",
+		"Ivory Coast": "CI",
+		"Republic of Ireland": "IE",
+		Ireland: "IE",
+		"United Kingdom": "GB",
+		England: "GB",
+		Scotland: "GB",
+		Wales: "GB",
+		"Northern Ireland": "GB",
+		Palestine: "PS",
+		"Democratic Republic of the Congo": "CD",
+		"Republic of the Congo": "CG",
+		Swaziland: "SZ",
+		Burma: "MM",
+		Serbia: "RS",
+		"East Timor": "TL",
+		"Cape Verde": "CV",
+	}).map(([name, code]) => [name.toLowerCase(), code] as const),
+);
 
-let byName: Map<string, string> | undefined;
+const displayNames = new Intl.DisplayNames("en", {
+	type: "region",
+	fallback: "none",
+});
+const byName = new Map(
+	[...COUNTRY_CODES].flatMap((code) => {
+		const name = displayNames.of(code);
+		return name ? [[name.toLowerCase(), code] as const] : [];
+	}),
+);
 
 /** ISO 3166-1 alpha-2 code for an English country name, if it is a known one. */
 export function countryCode(name: string | null | undefined) {
 	const value = name?.trim();
 	if (!value) return undefined;
-	if (!byName) {
-		const names = new Intl.DisplayNames("en", { type: "region" });
-		byName = new Map();
-		for (const a of "ABCDEFGHIJKLMNOPQRSTUVWXYZ") {
-			for (const b of "ABCDEFGHIJKLMNOPQRSTUVWXYZ") {
-				const code = `${a}${b}`;
-				const label = names.of(code);
-				if (label && label !== code && !byName.has(label.toLowerCase()))
-					byName.set(label.toLowerCase(), code);
-			}
-		}
-	}
-	return aliases[value] ?? byName.get(value.toLowerCase());
+	const code = value.toUpperCase();
+	if (COUNTRY_CODES.has(code)) return code;
+	return aliases.get(value.toLowerCase()) ?? byName.get(value.toLowerCase());
 }
 
 const cacheRow = (row: CargoRow) => ({
-	...row,
 	Link: row.Link ? person(row.Link).id : null,
+	Country: row.Country ?? null,
+	NationalityPrimary: row.NationalityPrimary ?? null,
 });
 const quote = (values: readonly string[]) =>
 	values.map((value) => `'${value.replaceAll("'", "''")}'`).join(",");
@@ -95,7 +98,7 @@ export async function acquireNationalities(
 	return rows;
 }
 
-export interface PlayerNationality {
+interface PlayerNationality {
 	id: string;
 	country: string;
 }
@@ -110,20 +113,25 @@ export function buildNationalities(
 	ids: Iterable<string>,
 ) {
 	const resolve = idResolver(ids);
-	const found = new Map<string, string>();
+	const found = new Map<string, { country: string; primary: boolean }>();
 	const unmapped = new Set<string>();
 	for (const row of rows) {
 		const id = row.Link ? resolve(row.Link) : undefined;
 		if (!id) continue;
-		const name = row.NationalityPrimary?.trim() || row.Country?.trim();
-		if (!name) continue;
-		const code = countryCode(name);
-		if (code) found.set(id, code);
-		else unmapped.add(name);
+		const primary = countryCode(row.NationalityPrimary);
+		const country = primary ?? countryCode(row.Country);
+		if (country) {
+			const previous = found.get(id);
+			if (!previous || (primary && !previous.primary))
+				found.set(id, { country, primary: primary !== undefined });
+		} else {
+			const name = row.NationalityPrimary?.trim() || row.Country?.trim();
+			if (name) unmapped.add(name);
+		}
 	}
 	return {
 		players: [...found]
-			.map(([id, country]) => ({ id, country }))
+			.map(([id, { country }]) => ({ id, country }))
 			.sort((a, b) => compare(a.id, b.id)),
 		unmapped: [...unmapped].sort(compare),
 	};
@@ -156,7 +164,7 @@ export function parseNationalities(text: string): NationalitiesFile {
 			throw new Error("Invalid nationality player");
 		if (
 			typeof player.country !== "string" ||
-			!/^[A-Z]{2}$/.test(player.country)
+			!COUNTRY_CODES.has(player.country)
 		)
 			throw new Error(`Invalid country code for ${player.id}`);
 	}

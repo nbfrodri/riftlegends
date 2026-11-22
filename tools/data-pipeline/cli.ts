@@ -93,7 +93,10 @@ try {
 			console.error(
 				`Career history: ${career.players} players, seasons ${career.years[0]}-${career.years.at(-1)}`,
 			);
-			const countries = await nationalities(options, client);
+			const countries = await nationalities(
+				options,
+				client.withCache(options.cacheDir),
+			);
 			console.error(
 				`Nationalities: ${countries.players} players${countries.unmapped.length ? `, unmapped: ${countries.unmapped.join(", ")}` : ""}`,
 			);

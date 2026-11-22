@@ -3,11 +3,12 @@ import { IconButton } from "@rift-legends/ui-kit/components/icon-button";
 import { ArrowUpRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { GameRoleIcon } from "../assets/game-role-icon";
+import { CountryFlag } from "./country-flag";
 import { clock, type GameResult, gapsOfSeries, percent } from "./result-data";
 import { GapsTable } from "./result-gaps";
 import {
 	championLabel,
-	playerHandle,
+	playerProfile,
 	teamName,
 	useDraftSession,
 } from "./session";
@@ -20,6 +21,7 @@ function Mvp(props: {
 	const { t, i18n } = useTranslation();
 	const { options } = useDraftSession();
 	const { mvp } = props;
+	const player = playerProfile(options, mvp.player);
 	const role = props.games[0]?.lines.find((l) => l.player === mvp.player)?.role;
 	const name = teamName(options, mvp.team);
 	const stats = [
@@ -54,7 +56,8 @@ function Mvp(props: {
 				</p>
 				<h2 className="mt-2 flex items-center gap-2.5 font-bold font-display text-[28px] leading-none tracking-heading">
 					{role && <GameRoleIcon role={role} size={24} />}
-					{playerHandle(options, mvp.player)}
+					<CountryFlag country={player?.nationality} />
+					{player?.handle ?? mvp.player}
 				</h2>
 				<p className="mt-1 text-[14px] text-muted">
 					{new Intl.ListFormat(i18n.language, {

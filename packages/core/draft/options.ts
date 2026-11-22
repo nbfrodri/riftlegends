@@ -9,7 +9,7 @@ function lineups({ content, match }: Partial<LoadedContent>) {
 	const attributes = new Map(match?.players.map((p) => [p.id, p.attributes]));
 	return (team: string) =>
 		(content?.players ?? []).flatMap(
-			({ id, team: of, role, handle, estimated }) => {
+			({ id, team: of, role, handle, nationality, estimated }) => {
 				const rated = attributes.get(id);
 				return of === team && rated && rosters?.get(team)?.get(role)?.id === id
 					? [
@@ -17,6 +17,7 @@ function lineups({ content, match }: Partial<LoadedContent>) {
 								id,
 								role,
 								handle,
+								...(nationality && { nationality }),
 								attributes: rated,
 								...(estimated && { estimated }),
 							},

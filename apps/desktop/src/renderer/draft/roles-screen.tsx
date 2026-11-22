@@ -12,6 +12,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { GameRoleIcon } from "../assets/game-role-icon";
 import { ChampionPortrait } from "./champion-portrait";
+import { CountryFlag } from "./country-flag";
 import { type Lineup, suggestRoles } from "./roles-proposal";
 import { championLabel, teamName, useDraftSession } from "./session";
 
@@ -36,6 +37,7 @@ function LineupEditor(props: { picks: string[]; sideColor: string }) {
 	const [order] = useState(() => ROLES.map((role) => suggestion[role]));
 	const [pending, setPending] = useState<string | null>(null);
 	const [sending, setSending] = useState(false);
+	const starters = options.teams.find((team) => team.id === mine)?.players;
 
 	const roleLabel = (role: Role) => t(`draft.roles.role.${role}`);
 	const items = ROLES.map((role) => ({ value: role, label: roleLabel(role) }));
@@ -110,6 +112,7 @@ function LineupEditor(props: { picks: string[]; sideColor: string }) {
 						const role = assignment[champion] as Role;
 						const conflict = repeated.includes(role);
 						const name = championLabel(options, champion);
+						const player = starters?.find((starter) => starter.role === role);
 						return (
 							<article
 								key={champion}
@@ -124,6 +127,14 @@ function LineupEditor(props: { picks: string[]; sideColor: string }) {
 								<h3 className="truncate font-bold font-display text-[clamp(13px,1.15vw,18px)] tracking-[-0.04em]">
 									{name}
 								</h3>
+								{player && (
+									<p className="flex min-w-0 items-center gap-1.5 text-[13px] text-muted">
+										<CountryFlag country={player.nationality} />
+										<span className="truncate" title={player.handle}>
+											{player.handle}
+										</span>
+									</p>
+								)}
 								<div className="mt-[10px] flex flex-col gap-[7px]">
 									<Select
 										items={items}

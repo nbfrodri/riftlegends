@@ -4,6 +4,7 @@ import { GameRoleIcon } from "../assets/game-role-icon";
 import { isObjectiveKind, MapIcon } from "../assets/map-icon";
 import { type Stat, StatIcon } from "../assets/stat-icon";
 import { ChampionPortrait } from "./champion-portrait";
+import { CountryFlag } from "./country-flag";
 import {
 	clock,
 	type GameResult,
@@ -14,7 +15,7 @@ import {
 import { GapsTable } from "./result-gaps";
 import {
 	championLabel,
-	playerHandle,
+	playerProfile,
 	teamName,
 	useDraftSession,
 } from "./session";
@@ -117,48 +118,54 @@ function Stats({
 					</tr>
 				</thead>
 				<tbody>
-					{game.lines.map((line, i) => (
-						<tr
-							key={line.player}
-							className={`border-line border-b ${i === 5 ? "border-t-2 border-t-muted" : ""}`}
-						>
-							<th scope="row" className="px-1.5 py-1 text-left font-semibold">
-								<span
-									className={`flex items-center gap-1.5 whitespace-nowrap ${line.side === "blue" ? "text-side-blue" : "text-side-red"}`}
-								>
-									<GameRoleIcon role={line.role} size={16} />
-									<span title={t(`draft.roles.role.${line.role}`)}>
-										{playerHandle(options, line.player)}
+					{game.lines.map((line, i) => {
+						const player = playerProfile(options, line.player);
+						return (
+							<tr
+								key={line.player}
+								className={`border-line border-b ${i === 5 ? "border-t-2 border-t-muted" : ""}`}
+							>
+								<th scope="row" className="px-1.5 py-1 text-left font-semibold">
+									<span
+										className={`flex items-center gap-1.5 whitespace-nowrap ${line.side === "blue" ? "text-side-blue" : "text-side-red"}`}
+									>
+										<GameRoleIcon role={line.role} size={16} />
+										<span className="flex w-[18px] shrink-0">
+											<CountryFlag country={player?.nationality} />
+										</span>
+										<span title={t(`draft.roles.role.${line.role}`)}>
+											{player?.handle ?? line.player}
+										</span>
 									</span>
-								</span>
-							</th>
-							<td className="w-1/4 max-w-0 px-1.5 py-1 text-left">
-								<span className="flex items-center gap-1.5">
-									<ChampionPortrait id={line.champion} size="compact" />
-									<span className="truncate">
-										{championLabel(options, line.champion)}
+								</th>
+								<td className="w-1/4 max-w-0 px-1.5 py-1 text-left">
+									<span className="flex items-center gap-1.5">
+										<ChampionPortrait id={line.champion} size="compact" />
+										<span className="truncate">
+											{championLabel(options, line.champion)}
+										</span>
 									</span>
-								</span>
-							</td>
-							<td className="px-1.5 py-1 text-right">
-								{line.kills}/{line.deaths}/{line.assists}
-							</td>
-							<td className="px-1.5 py-1 text-right">
-								{grouped.format(line.gold)}
-							</td>
-							<td className="px-1.5 py-1 text-right">
-								{grouped.format(line.damage)}
-							</td>
-							<td className="px-1.5 py-1 text-right">
-								{t("draft.result.percent", {
-									value: percent(line.participation),
-								})}
-							</td>
-							<td className="px-1.5 py-1 text-right font-bold">
-								{line.rating}
-							</td>
-						</tr>
-					))}
+								</td>
+								<td className="px-1.5 py-1 text-right">
+									{line.kills}/{line.deaths}/{line.assists}
+								</td>
+								<td className="px-1.5 py-1 text-right">
+									{grouped.format(line.gold)}
+								</td>
+								<td className="px-1.5 py-1 text-right">
+									{grouped.format(line.damage)}
+								</td>
+								<td className="px-1.5 py-1 text-right">
+									{t("draft.result.percent", {
+										value: percent(line.participation),
+									})}
+								</td>
+								<td className="px-1.5 py-1 text-right font-bold">
+									{line.rating}
+								</td>
+							</tr>
+						);
+					})}
 				</tbody>
 			</table>
 			<p className="mt-1.5 text-[12px] text-muted">

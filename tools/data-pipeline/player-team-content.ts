@@ -333,6 +333,7 @@ function uniqueHandles<
 export function buildPlayerTeamContent(
 	snapshots: readonly RealSnapshot[],
 	careers: CareerHistory = new Map(),
+	nationalities: ReadonlyMap<string, string> = new Map(),
 ) {
 	const season = seasonOf(snapshots);
 	const built =
@@ -350,7 +351,12 @@ export function buildPlayerTeamContent(
 	built.sort((a, b) => b.score - a.score || compare(a.team.id, b.team.id));
 	const teams = built.map(({ team }, index) => ({ ...team, seed: index + 1 }));
 	const players = uniqueHandles(
-		built.flatMap(({ players: rows }) => rows),
+		built.flatMap(({ players: rows }) =>
+			rows.map((row) => {
+				const nationality = nationalities.get(row.id);
+				return { ...row, ...(nationality && { nationality }) };
+			}),
+		),
 		new Map(teams.map((team) => [team.id, team.short ?? team.id])),
 	);
 	const firstSnapshot = snapshots[0];

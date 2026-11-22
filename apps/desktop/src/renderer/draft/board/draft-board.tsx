@@ -3,6 +3,7 @@ import { Button } from "@rift-legends/ui-kit/components/button";
 import { Check } from "lucide-react";
 import { memo, useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { CountryFlag } from "../country-flag";
 import { teamName, useDraftSession } from "../session";
 import { AiDecisionPanel } from "./ai-decision-panel";
 import { ChampionPool, type PoolChampion } from "./champion-pool";
@@ -201,13 +202,16 @@ const Inspection = memo(function Inspection(props: {
 				id="player-card"
 				title={t("draft.board.playerCard")}
 				note={
-					player
-						? t("draft.board.player", {
+					player && (
+						<>
+							<CountryFlag country={rated?.nationality} />
+							{t("draft.board.player", {
 								handle: rated?.handle ?? "",
 								team: teamName(options, player.team),
 								role: t(`market.role.${player.role}`),
-							})
-						: undefined
+							})}
+						</>
+					)
 				}
 				open={props.cardOpen}
 				onOpenChange={props.onCardOpen}

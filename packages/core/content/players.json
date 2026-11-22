@@ -1,6 +1,7 @@
 [
 	{
 		"id": "forge-top",
+		"nationality": "GB",
 		"team": "forge",
 		"role": "top",
 		"handle": "Emberjaw",
@@ -52,6 +53,7 @@
 	},
 	{
 		"id": "forge-jungle",
+		"nationality": "GB",
 		"team": "forge",
 		"role": "jungle",
 		"handle": "Slagwick",
@@ -99,6 +101,7 @@
 	},
 	{
 		"id": "forge-mid",
+		"nationality": "GB",
 		"team": "forge",
 		"role": "mid",
 		"handle": "Kilnara",
@@ -146,6 +149,7 @@
 	},
 	{
 		"id": "forge-bot",
+		"nationality": "IE",
 		"team": "forge",
 		"role": "bot",
 		"handle": "Ruvo",
@@ -193,6 +197,7 @@
 	},
 	{
 		"id": "forge-support",
+		"nationality": "GB",
 		"team": "forge",
 		"role": "support",
 		"handle": "Temperin",
@@ -240,6 +245,7 @@
 	},
 	{
 		"id": "shoal-top",
+		"nationality": "JP",
 		"team": "shoal",
 		"role": "top",
 		"handle": "Brinejack",
@@ -287,6 +293,7 @@
 	},
 	{
 		"id": "shoal-jungle",
+		"nationality": "JP",
 		"team": "shoal",
 		"role": "jungle",
 		"handle": "Kelpo",
@@ -334,6 +341,7 @@
 	},
 	{
 		"id": "shoal-mid",
+		"nationality": "KR",
 		"team": "shoal",
 		"role": "mid",
 		"handle": "Tidewren",
@@ -381,6 +389,7 @@
 	},
 	{
 		"id": "shoal-bot",
+		"nationality": "JP",
 		"team": "shoal",
 		"role": "bot",
 		"handle": "Gullix",
@@ -428,6 +437,7 @@
 	},
 	{
 		"id": "shoal-support",
+		"nationality": "JP",
 		"team": "shoal",
 		"role": "support",
 		"handle": "Pearlin",
@@ -475,6 +485,7 @@
 	},
 	{
 		"id": "breakwater-top",
+		"nationality": "NO",
 		"team": "breakwater",
 		"role": "top",
 		"handle": "Mooro",
@@ -522,6 +533,7 @@
 	},
 	{
 		"id": "breakwater-jungle",
+		"nationality": "DK",
 		"team": "breakwater",
 		"role": "jungle",
 		"handle": "Jettik",
@@ -569,6 +581,7 @@
 	},
 	{
 		"id": "breakwater-mid",
+		"nationality": "SE",
 		"team": "breakwater",
 		"role": "mid",
 		"handle": "Quaybo",
@@ -616,6 +629,7 @@
 	},
 	{
 		"id": "breakwater-bot",
+		"nationality": "NO",
 		"team": "breakwater",
 		"role": "bot",
 		"handle": "Groyo",
@@ -663,6 +677,7 @@
 	},
 	{
 		"id": "breakwater-support",
+		"nationality": "DK",
 		"team": "breakwater",
 		"role": "support",
 		"handle": "Pilox",
@@ -710,6 +725,7 @@
 	},
 	{
 		"id": "sunspoke-top",
+		"nationality": "ES",
 		"team": "sunspoke",
 		"role": "top",
 		"handle": "Solvane",
@@ -757,6 +773,7 @@
 	},
 	{
 		"id": "sunspoke-jungle",
+		"nationality": "PT",
 		"team": "sunspoke",
 		"role": "jungle",
 		"handle": "Spokio",
@@ -804,6 +821,7 @@
 	},
 	{
 		"id": "sunspoke-mid",
+		"nationality": "ES",
 		"team": "sunspoke",
 		"role": "mid",
 		"handle": "Dayra",
@@ -851,6 +869,7 @@
 	},
 	{
 		"id": "sunspoke-bot",
+		"nationality": "IT",
 		"team": "sunspoke",
 		"role": "bot",
 		"handle": "Lumeno",
@@ -898,6 +917,7 @@
 	},
 	{
 		"id": "sunspoke-support",
+		"nationality": "ES",
 		"team": "sunspoke",
 		"role": "support",
 		"handle": "Hubbo",
@@ -945,6 +965,7 @@
 	},
 	{
 		"id": "nightjar-top",
+		"nationality": "PL",
 		"team": "nightjar",
 		"role": "top",
 		"handle": "Nocto",
@@ -992,6 +1013,7 @@
 	},
 	{
 		"id": "nightjar-jungle",
+		"nationality": "CZ",
 		"team": "nightjar",
 		"role": "jungle",
 		"handle": "Duskin",
@@ -1039,6 +1061,7 @@
 	},
 	{
 		"id": "nightjar-mid",
+		"nationality": "PL",
 		"team": "nightjar",
 		"role": "mid",
 		"handle": "Vespo",
@@ -1086,6 +1109,7 @@
 	},
 	{
 		"id": "nightjar-bot",
+		"nationality": "DE",
 		"team": "nightjar",
 		"role": "bot",
 		"handle": "Mothel",
@@ -1133,6 +1157,7 @@
 	},
 	{
 		"id": "nightjar-support",
+		"nationality": "PL",
 		"team": "nightjar",
 		"role": "support",
 		"handle": "Churn",
@@ -1180,6 +1205,7 @@
 	},
 	{
 		"id": "switchyard-top",
+		"nationality": "US",
 		"team": "switchyard",
 		"role": "top",
 		"handle": "Railo",
@@ -1227,6 +1253,7 @@
 	},
 	{
 		"id": "switchyard-jungle",
+		"nationality": "CA",
 		"team": "switchyard",
 		"role": "jungle",
 		"handle": "Pointo",
@@ -1274,6 +1301,7 @@
 	},
 	{
 		"id": "switchyard-mid",
+		"nationality": "US",
 		"team": "switchyard",
 		"role": "mid",
 		"handle": "Sidlo",
@@ -1321,6 +1349,7 @@
 	},
 	{
 		"id": "switchyard-bot",
+		"nationality": "CA",
 		"team": "switchyard",
 		"role": "bot",
 		"handle": "Gaugo",
@@ -1368,6 +1397,7 @@
 	},
 	{
 		"id": "switchyard-support",
+		"nationality": "US",
 		"team": "switchyard",
 		"role": "support",
 		"handle": "Yardle",
@@ -1415,6 +1445,7 @@
 	},
 	{
 		"id": "longreach-top",
+		"nationality": "AU",
 		"team": "longreach",
 		"role": "top",
 		"handle": "Farro",
@@ -1462,6 +1493,7 @@
 	},
 	{
 		"id": "longreach-jungle",
+		"nationality": "AU",
 		"team": "longreach",
 		"role": "jungle",
 		"handle": "Tallis",
@@ -1509,6 +1541,7 @@
 	},
 	{
 		"id": "longreach-mid",
+		"nationality": "NZ",
 		"team": "longreach",
 		"role": "mid",
 		"handle": "Reacho",
@@ -1556,6 +1589,7 @@
 	},
 	{
 		"id": "longreach-bot",
+		"nationality": "AU",
 		"team": "longreach",
 		"role": "bot",
 		"handle": "Spano",
@@ -1603,6 +1637,7 @@
 	},
 	{
 		"id": "longreach-support",
+		"nationality": "NZ",
 		"team": "longreach",
 		"role": "support",
 		"handle": "Boomik",
@@ -1650,6 +1685,7 @@
 	},
 	{
 		"id": "flintwake-top",
+		"nationality": "BR",
 		"team": "flintwake",
 		"role": "top",
 		"handle": "Flinto",
@@ -1697,6 +1733,7 @@
 	},
 	{
 		"id": "flintwake-jungle",
+		"nationality": "BR",
 		"team": "flintwake",
 		"role": "jungle",
 		"handle": "Sparko",
@@ -1744,6 +1781,7 @@
 	},
 	{
 		"id": "flintwake-mid",
+		"nationality": "BR",
 		"team": "flintwake",
 		"role": "mid",
 		"handle": "Kindo",
@@ -1791,6 +1829,7 @@
 	},
 	{
 		"id": "flintwake-bot",
+		"nationality": "AR",
 		"team": "flintwake",
 		"role": "bot",
 		"handle": "Tindra",
@@ -1838,6 +1877,7 @@
 	},
 	{
 		"id": "flintwake-support",
+		"nationality": "BR",
 		"team": "flintwake",
 		"role": "support",
 		"handle": "Wakis",
