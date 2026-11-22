@@ -217,8 +217,10 @@ describe("draft board (U3)", () => {
 		await user.click(confirm());
 		await waitFor(() => tile("Cragbell. Banned in this game"));
 		expect(core.sent.at(-1)?.kind).toBe("draft.ban");
-		// The Electron E2E measures the actual S1 frame budget.
-		expect(Math.max(...commits)).toBeLessThan(mount / 3);
+		// Re-rendering the whole board would cost about a mount; half a mount
+		// still catches that without failing on CI timing noise (Windows hit
+		// 0.36 × mount). The Electron E2E measures the actual S1 frame budget.
+		expect(Math.max(...commits)).toBeLessThan(mount / 2);
 	});
 });
 
