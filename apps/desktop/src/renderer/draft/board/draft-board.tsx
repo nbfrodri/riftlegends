@@ -1,4 +1,4 @@
-import type { DraftView, Role, SeriesOptions } from "@rift-legends/contracts";
+import type { DraftView, SeriesOptions, Side } from "@rift-legends/contracts";
 import { Button } from "@rift-legends/ui-kit/components/button";
 import { Check } from "lucide-react";
 import { memo, useCallback, useMemo, useState } from "react";
@@ -6,7 +6,6 @@ import { useTranslation } from "react-i18next";
 import { teamName, useDraftSession } from "../session";
 import { AiDecisionPanel } from "./ai-decision-panel";
 import { ChampionPool, type PoolChampion } from "./champion-pool";
-import { slotRoles } from "./champions";
 import { InspectionPanel, PlayerAttributes } from "./player-card";
 import { type PlayerRef, TeamColumn } from "./team-column";
 
@@ -23,14 +22,12 @@ const draftTurn = (view: DraftView): Turn | null =>
 function usePool(view: DraftView, options: SeriesOptions) {
 	return useMemo(() => {
 		const byId = new Map(options.champions.map((c) => [c.id, c]));
-		const champions: PoolChampion[] = view.availability.map((entry) => ({
+		return view.availability.map<PoolChampion>((entry) => ({
 			id: entry.champion,
 			name: byId.get(entry.champion)?.name ?? entry.champion,
 			roles: byId.get(entry.champion)?.roles ?? [],
 			unavailable: entry.status === "free" ? null : entry.status,
 		}));
-		const rolesOf = (id: string): readonly Role[] => byId.get(id)?.roles ?? [];
-		return { champions, rolesOf };
 	}, [view.availability, options.champions]);
 }
 
@@ -40,12 +37,20 @@ function TurnBar(props: {
 	view: DraftView;
 	mine: boolean;
 	selectedName: string | null;
-	busy: boolean;
-	onConfirm: () => void;
+	onConfirm: () => Promise<boolean>;
 }) {
 	const { t } = useTranslation();
 	const { options } = useDraftSession();
 	const { turn, view } = props;
+	const [confirmedView, setConfirmedView] = useState<DraftView | null>(null);
+	const busy = confirmedView === view;
+	const confirm = async () => {
+		setConfirmedView(view);
+		// Keep this turn disabled until its new view arrives, or allow a retry on rejection.
+		if (!(await props.onConfirm())) {
+			setConfirmedView((previous) => (previous === view ? null : previous));
+		}
+	};
 	const team = teamName(options, turn.team);
 	const side = view[turn.side];
 	const label =
@@ -75,8 +80,8 @@ function TurnBar(props: {
 				)}
 			</div>
 			<Button
-				disabled={!props.mine || !props.selectedName || props.busy}
-				onClick={props.onConfirm}
+				disabled={!props.mine || !props.selectedName || busy}
+				onClick={() => void confirm()}
 			>
 				<Check aria-hidden="true" className="size-4" />
 				{t(`draft.board.confirm.${turn.action === "ban" ? "ban" : "pick"}`)}
@@ -93,7 +98,6 @@ function TurnBar(props: {
 export function DraftBoard() {
 	const { view, options, mine, send } = useDraftSession();
 	const [selected, setSelected] = useState<string | null>(null);
-	const [busy, setBusy] = useState(false);
 	const [player, setPlayer] = useState<PlayerRef | null>(null);
 	const [cardOpen, setCardOpen] = useState(false);
 	const myMid = useMemo<PlayerRef | null>(
@@ -110,33 +114,26 @@ export function DraftBoard() {
 
 	const turn = draftTurn(view);
 	const myTurn = turn !== null && turn.team === mine;
-	const choice = pool.champions.find(
-		(c) => c.id === selected && c.unavailable === null,
-	);
+	const choice = pool.find((c) => c.id === selected && c.unavailable === null);
 
-	const confirm = async () => {
-		if (!turn || !myTurn || !choice) return;
-		setBusy(true);
+	const confirm = () => {
+		if (!turn || !myTurn || !choice) return Promise.resolve(false);
 		const kind = turn.action === "ban" ? "draft.ban" : "draft.pick";
-		if (await send(kind, { team: turn.team, champion: choice.id })) {
-			setSelected(null);
-		}
-		setBusy(false);
+		// The refreshed availability clears the selection in the same render as the lockout.
+		return send(kind, { team: turn.team, champion: choice.id });
 	};
 
-	const column = (side: "blue" | "red") => {
-		const { team, picks, bans } = view[side];
+	const column = (side: Side) => {
+		const team = view[side];
 		const picking =
 			myTurn && turn.action === "pick" && turn.side === side
-				? picks.length
+				? team.picks.length
 				: null;
 		return (
 			<TeamColumn
 				side={side}
-				team={{ id: team, name: teamName(options, team) }}
-				picks={picks}
-				bans={bans}
-				roles={slotRoles(picks, pool.rolesOf)}
+				team={team}
+				options={options}
 				current={picking}
 				onPlayer={showPlayer}
 			/>
@@ -152,7 +149,7 @@ export function DraftBoard() {
 					className="flex min-h-0 min-w-0 flex-col bg-panel px-[15px] pt-[13px]"
 				>
 					<ChampionPool
-						champions={pool.champions}
+						champions={pool}
 						selected={choice?.id ?? null}
 						onSelect={setSelected}
 					/>
@@ -162,8 +159,7 @@ export function DraftBoard() {
 							view={view}
 							mine={myTurn}
 							selectedName={choice?.name ?? null}
-							busy={busy}
-							onConfirm={() => void confirm()}
+							onConfirm={confirm}
 						/>
 					)}
 				</section>
@@ -172,6 +168,10 @@ export function DraftBoard() {
 			<Inspection
 				player={player ?? myMid}
 				red={view.red.team}
+				rivalSide={mine ? (mine === view.blue.team ? "red" : "blue") : null}
+				rival={mine === view.blue.team ? view.red.team : view.blue.team}
+				game={view.game}
+				options={options}
 				cardOpen={cardOpen}
 				onCardOpen={setCardOpen}
 			/>
@@ -183,12 +183,15 @@ export function DraftBoard() {
 const Inspection = memo(function Inspection(props: {
 	player: PlayerRef | null;
 	red: string;
+	rivalSide: Side | null;
+	rival: string;
+	game: number;
+	options: SeriesOptions;
 	cardOpen: boolean;
 	onCardOpen: (open: boolean) => void;
 }) {
 	const { t } = useTranslation();
-	const { options, view } = useDraftSession();
-	const { player } = props;
+	const { options, player } = props;
 	const rated = options.teams
 		.find((team) => team.id === player?.team)
 		?.players.find((p) => p.role === player?.role);
@@ -220,7 +223,13 @@ const Inspection = memo(function Inspection(props: {
 					</p>
 				)}
 			</InspectionPanel>
-			<AiDecisionPanel key={view?.game} />
+			<AiDecisionPanel
+				key={props.game}
+				game={props.game}
+				options={options}
+				rival={props.rivalSide ? props.rival : null}
+				side={props.rivalSide}
+			/>
 		</div>
 	);
 });

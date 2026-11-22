@@ -1,10 +1,16 @@
-import type { Role, Side } from "@rift-legends/contracts";
+import type {
+	DraftView,
+	Role,
+	SeriesOptions,
+	Side,
+} from "@rift-legends/contracts";
 import { ChampionFace } from "@rift-legends/ui-kit/components/champion-face";
-import { useId } from "react";
+import { memo, useId } from "react";
 import { useTranslation } from "react-i18next";
 import { GameRoleIcon } from "../../assets/game-role-icon";
-import { championLabel, useDraftSession } from "../session";
+import { championLabel, teamName } from "../session";
 import { TeamCrest } from "../team-crest";
+import { slotRoles } from "./champions";
 
 export interface PlayerRef {
 	team: string;
@@ -20,18 +26,23 @@ const SIDE = {
  * A side of the draft: its five picks (with the role and player each slot
  * shows) and its bans, struck. Hovering or focusing a slot shows its player.
  */
-export function TeamColumn(props: {
+export const TeamColumn = memo(function TeamColumn(props: {
 	side: Side;
-	team: { id: string; name: string };
-	picks: readonly string[];
-	bans: readonly (string | null)[];
-	roles: readonly Role[];
+	team: DraftView[Side];
+	options: SeriesOptions;
 	/** Index of the slot the user is picking now, if any. */
 	current: number | null;
 	onPlayer: (player: PlayerRef) => void;
 }) {
 	const { t } = useTranslation();
-	const { options } = useDraftSession();
+	const { options, team } = props;
+	const name = teamName(options, team.team);
+	const players = options.teams.find(({ id }) => id === team.team)?.players;
+	const roles = slotRoles(
+		team.picks,
+		(id) =>
+			options.champions.find((champion) => champion.id === id)?.roles ?? [],
+	);
 	const id = useId();
 	const style = SIDE[props.side];
 	return (
@@ -53,18 +64,18 @@ export function TeamColumn(props: {
 						id={`${id}-team`}
 						className="font-bold font-display text-[29px] text-text leading-tight tracking-heading"
 					>
-						{props.team.name}
+						{name}
 					</h2>
 				</div>
 				<span className="[&_svg]:h-12 [&_svg]:w-16">
-					<TeamCrest id={props.team.id} name={props.team.name} />
+					<TeamCrest id={team.team} name={name} />
 				</span>
 			</header>
 			<ol className="my-[7px] grid flex-1 auto-rows-fr">
-				{props.roles.map((role, index) => {
-					const champion = props.picks[index];
+				{roles.map((role, index) => {
+					const champion = team.picks[index];
 					const current = index === props.current;
-					const player = { team: props.team.id, role };
+					const player = { team: team.team, role };
 					const show = () => props.onPlayer(player);
 					return (
 						<li key={role} className="flex">
@@ -93,11 +104,7 @@ export function TeamColumn(props: {
 												: t("draft.board.pending")}
 									</strong>
 									<small className="block text-[12px] text-muted">
-										{
-											options.teams
-												.find((team) => team.id === props.team.id)
-												?.players.find((p) => p.role === role)?.handle
-										}
+										{players?.find((p) => p.role === role)?.handle}
 									</small>
 								</span>
 							</button>
@@ -115,7 +122,7 @@ export function TeamColumn(props: {
 				aria-labelledby={`${id}-bans`}
 				className="mt-[3px] flex min-h-[1.45em] flex-wrap gap-x-2.5 text-[13px] text-muted leading-[1.45]"
 			>
-				{props.bans.map((ban, index) =>
+				{team.bans.map((ban, index) =>
 					ban ? (
 						// biome-ignore lint/suspicious/noArrayIndexKey: bans only grow, in order.
 						<li key={index} className="max-w-full truncate">
@@ -131,4 +138,4 @@ export function TeamColumn(props: {
 			</ul>
 		</section>
 	);
-}
+});

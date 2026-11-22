@@ -113,5 +113,5 @@ export async function renderWithDraftCore(
 			</QueryClientProvider>
 		</I18nextProvider>,
 	);
-	return { ...view, ...core };
+	return { ...view, ...core, i18n };
 }
