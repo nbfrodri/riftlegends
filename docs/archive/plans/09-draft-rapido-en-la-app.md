@@ -1,14 +1,14 @@
 # Plan 09 — Draft rápido en la app: draft broadcast, partida y resultados
 
-- **Estado:** aprobado (21-11-2026). Redactado por Claude con las decisiones del usuario (al final).
-- **Fase:** 2 · Draft rápido completo ([plan general](00-plan-general.md)).
+- **Estado:** hecho (22-11-2026). Aprobado el 21-11-2026. Redactado por Claude con las decisiones del usuario (al final).
+- **Fase:** 2 · Draft rápido completo ([plan general](../../plans/00-plan-general.md)).
 - **Objetivo:** jugar en la app una serie contra la IA de principio a fin. Incluye configurar la serie, elegir lado, el draft broadcast, los roles, ver la partida en un timeline animado y el resultado del game y de la serie. Cierra la salida de la Fase 2: una Bo5 fearless contra la IA, con un E2E del flujo.
 
 ## Contexto
 
 - **Núcleo listo:** reglas y series (plan 06), IA explicable (plan 07) y simulación con `match.play` (plan 08). La UI solo envía comandos y lee vistas y hechos; nunca decide ni simula.
 - **IPC (plan 04):** el `core-host` usa hoy el catálogo de depuración. Este plan lo pasa al catálogo del draft, con el contenido cargado en la sesión.
-- **Estilo Caja y spike S1:** el draft broadcast ya se midió (≤ 100 ms p95 al confirmar, ≥ 55 FPS, movimiento reducido). Se reutilizan su escena y sus umbrales. Los parámetros de ritmo van en un módulo compartido ([ADR 0003](../decisions/0003-go-no-go-fase1.md)).
+- **Estilo Caja y spike S1:** el draft broadcast ya se midió (≤ 100 ms p95 al confirmar, ≥ 55 FPS, movimiento reducido). Se reutilizan su escena y sus umbrales. Los parámetros de ritmo van en un módulo compartido ([ADR 0003](../../decisions/0003-go-no-go-fase1.md)).
 - **Contenido (plan 10):** el dataset ficticio de 60+ campeones, los nombres, el coach de cada equipo y la caché de Data Dragon llegan con el plan 10. Hasta entonces se empaqueta el fixture ficticio actual (40 campeones, 2 equipos) como contenido de producción mínimo.
 - **La partida animada es presentación:** la UI reproduce los `match.event` que devuelve `match.play`, a la velocidad elegida. No vuelve a simular.
 
@@ -47,7 +47,7 @@
 
 | # | Comportamiento |
 | --- | --- |
-| E1 | E2E con Playwright `_electron`: una Bo5 fearless contra la IA de principio a fin, saltando las partidas |
+| E1 | E2E con Playwright `_electron`: una Bo5 contra la IA de principio a fin, saltando las partidas (sin fearless hasta el plan 10; hecho en #198) |
 | E2 | Capturas de regresión visual de configuración, draft, roles, partida y resultado (CI de Linux) |
 | E3 | El draft cumple los umbrales del S1 al confirmar un pick (≤ 100 ms p95, ≥ 55 FPS) |
 | E4 | Todos los textos están en ES y EN; ningún texto fijo en los componentes |
@@ -87,7 +87,7 @@ Una sola ruta, `/draft`, con sub-pantallas según la fase de `draft.view` (`side
 
 **Base del flujo** (`renderer/draft/`, issue 2): `DraftScreen` abre la sesión y elige la sub-pantalla con `stageOf(view, presentation)`. Cada etapa (`setup`, `side`, `draft`, `roles`, `match`, `result`) es una entrada de `draftStages` en `stages.tsx`: para sustituir un marcador de posición se cambia su entrada por un componente sin props que lee el flujo con `useDraftSession()` (`view`, `options`, `mine`, `send`, `present`). Las etapas comparten `PageHeader`. La partida conserva el marcador previo y añade el reloj. El estado de presentación (`present("side" | "match" | "result" | null)`) cubre lo que el núcleo no sabe: el lado que tomó la IA, la partida en reproducción y el resultado visto. La query `series.options` da equipos (nombre, coach y atributos de sus jugadores) y el pool con los roles de cada campeón. Mientras no haya clasificación (plan 10), el orden del contenido es el sembrado. Componentes nuevos en `ui-kit`: `IconButton` y `SegmentedControl`.
 
-En el draft (U4), la IA elige lado, veta, selecciona y asigna roles tras una pausa. El temporizador opcional limita cada veto y elección del usuario. La escena muestra el hecho confirmado por el núcleo. Con movimiento reducido, el resultado se muestra y se anuncia de inmediato. El [módulo de ritmo](../../apps/desktop/src/renderer/draft/broadcast/pacing.ts) fija los tiempos de la escena y del [medidor de Electron](../../apps/desktop/e2e/draft-broadcast.spec.ts).
+En el draft (U4), la IA elige lado, veta, selecciona y asigna roles tras una pausa. El temporizador opcional limita cada veto y elección del usuario. La escena muestra el hecho confirmado por el núcleo. Con movimiento reducido, el resultado se muestra y se anuncia de inmediato. El [módulo de ritmo](../../../apps/desktop/src/renderer/draft/broadcast/pacing.ts) fija los tiempos de la escena y del [medidor de Electron](../../../apps/desktop/e2e/draft-broadcast.spec.ts).
 
 En la partida (U8), un minuto de juego dura 5 segundos reales a ×1, 1,25 a ×4 y 0,3125 a ×16. El reloj se actualiza cuatro veces por segundo. El feed revela cada evento al llegar a su segundo. El marcador y el mapa muestran el último minuto completo y pasan a la última instantánea al caer el nexo.
 
@@ -110,11 +110,11 @@ Sin imágenes de Riot: en el modo ficticio, los campeones se muestran con inicia
 | 11 | Núcleo: estrategia del usuario en `match.play` y sugerencia según el draft (#216) | Q7 |
 | 12 | Pantalla «Plan de partida» entre roles y partida | U12 |
 
-1 primero; 2, 3, 6 y 10 en paralelo tras 1; 7 y 8 tras 10; 4 y 5 tras 3; 9 cierra el plan. Las maquetas aprobadas están en [design/visual-style/quick-draft/](../../design/visual-style/quick-draft/index.html).
+1 primero; 2, 3, 6 y 10 en paralelo tras 1; 7 y 8 tras 10; 4 y 5 tras 3; 9 cierra el plan. Las maquetas aprobadas están en [design/visual-style/quick-draft/](../../../design/visual-style/quick-draft/index.html).
 
 ## Riesgos
 
-- **Contenido mínimo:** 40 campeones no bastan para una Bo5 con fearless hard (60 picks). El E1 usa **fearless soft** y pasará a hard cuando el plan 10 traiga 60+ campeones.
+- **Contenido mínimo:** 40 campeones no bastan para una Bo5 con fearless hard (60 picks). El E1 se juega **sin fearless** (el pool de 40 tampoco alcanza para soft en Bo5) y pasará a hard con el plan 10 (#233).
 - **Rendimiento del broadcast:** la escena real es más rica que la del spike. E3 lo vigila en el CI y en el Arch del usuario.
 - **Pantallas en paralelo:** comparten `ui-kit` y los catálogos i18n. Cada issue declara qué ficheros toca.
 
