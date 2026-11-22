@@ -14,14 +14,16 @@ export interface Season {
 }
 
 /** Seasons count 15 % less for every year they are further away. */
-export const careerDecay = 0.85;
+const careerDecay = 0.85;
 /** Games of a full league season; more does not add anything. */
 const fullSeasonGames = 80;
 const points = { event: 0.5, title: 1, internationalTitle: 2 } as const;
 /** A career score of this value earns half of the maximum. */
 const halfScore = 4;
-/** Most points the career adds to the level. */
-export const careerLevelCap = 8;
+/** No player with a career is rated above this level. */
+export const levelCeiling = 94;
+/** Share of the distance to `levelCeiling` that a full career closes. */
+export const careerLevelShare = 0.5;
 
 /**
  * Career strength between 0 (no top-level history) and 1 (never reached).

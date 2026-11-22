@@ -9,7 +9,7 @@ import { compare } from "./queries.ts";
 import { historySpan, season2026, snapshotSeason } from "./scope.ts";
 
 /** Main leagues, as they were called each year (LTA, PCS, VCS and LJL included). */
-export const domesticLeagues = [
+const domesticLeagues = [
 	"LoL Champions Korea",
 	"Tencent LoL Pro League",
 	"LoL EMEA Championship",
@@ -23,7 +23,7 @@ export const domesticLeagues = [
 	"League of Legends Championship of The Americas North",
 	"League of Legends Championship of The Americas South",
 ] as const;
-export const internationalLeagues = [
+const internationalLeagues = [
 	"World Championship",
 	"Mid-Season Invitational",
 	"First Stand",

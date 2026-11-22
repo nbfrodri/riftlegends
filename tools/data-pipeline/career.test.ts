@@ -1,7 +1,12 @@
 import { expect, test } from "vitest";
 import { PLAYER_ATTRIBUTES } from "../../packages/contracts/draft/player-attributes.ts";
 import { playerLevel } from "./attributes.ts";
-import { careerLevelCap, careerStrength, type Season } from "./career.ts";
+import {
+	careerLevelShare,
+	careerStrength,
+	levelCeiling,
+	type Season,
+} from "./career.ts";
 
 const season = (year: number, fields: Partial<Season> = {}): Season => ({
 	year,
@@ -64,14 +69,21 @@ test("the window moves with the season", () => {
 	);
 });
 
-test("the level bonus is capped", () => {
+test("the level bonus closes part of the gap to the ceiling", () => {
 	const flat = Object.fromEntries(
 		PLAYER_ATTRIBUTES.map((key) => [key, 70]),
 	) as Record<(typeof PLAYER_ATTRIBUTES)[number], number>;
 	expect(playerLevel(flat, "mid", 0)).toBe(70);
-	expect(playerLevel(flat, "mid", 1)).toBe(70 + careerLevelCap);
+	expect(playerLevel(flat, "mid", 1)).toBe(
+		Math.round(70 + careerLevelShare * (levelCeiling - 70)),
+	);
 	expect(playerLevel(flat, "mid", 0.5)).toBeGreaterThan(70);
-	expect(playerLevel(flat, "mid", 0.5)).toBeLessThan(70 + careerLevelCap);
+	expect(playerLevel(flat, "mid", 0.5)).toBeLessThan(
+		playerLevel(flat, "mid", 1),
+	);
+	const star = { ...flat, lanes: 99, macro: 99 };
+	for (const key of PLAYER_ATTRIBUTES) star[key] = 99;
+	expect(playerLevel(star, "mid", 1)).toBeLessThanOrEqual(levelCeiling);
 });
 
 test("the career ignores seasons outside the history window", () => {

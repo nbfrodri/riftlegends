@@ -35,6 +35,25 @@ test("real career history raises Faker to 80 and leaves players without history 
 	expect(players.filter(({ id }) => !careers.has(id))).toEqual(withoutHistory);
 });
 
+test("no real player with a career is rated above 94", async () => {
+	const careers = new Set(
+		parseHistory(await readFile(`${dir}history.json`, "utf8")).players.map(
+			({ id }) => id,
+		),
+	);
+	const players: {
+		id: string;
+		level: number;
+		attributes: Record<string, number>;
+	}[] = await read("players.json");
+	for (const { id, level, attributes } of players.filter((p) =>
+		careers.has(p.id),
+	)) {
+		expect(level, id).toBeLessThanOrEqual(94);
+		expect(Math.max(...Object.values(attributes)), id).toBeLessThanOrEqual(95);
+	}
+});
+
 test("the committed players and teams are what the snapshot produces", async () => {
 	for (const [file, body] of Object.entries(await buildContent()))
 		expect(body, file).toBe(await readFile(`${dir}${file}`, "utf8"));
@@ -93,9 +112,9 @@ test("credible real attributes, levels and seeds (#280)", async () => {
 		const { attributes, level } = star(handle);
 		const values = Object.values(attributes);
 		expect(Math.min(...values), handle).toBeGreaterThanOrEqual(55);
-		expect(Math.max(...values), handle).toBeLessThanOrEqual(97);
+		expect(Math.max(...values), handle).toBeLessThanOrEqual(95);
 		expect(level, handle).toBeGreaterThanOrEqual(70);
-		expect(level, handle).toBeLessThanOrEqual(99);
+		expect(level, handle).toBeLessThanOrEqual(94);
 	}
 	expect(star("Chovy").level).toBeGreaterThanOrEqual(85);
 	// Nobody is near the extremes in most attributes.
