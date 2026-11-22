@@ -1,0 +1,31 @@
+{
+	"source": "Leaguepedia",
+	"licence": "CC BY-SA 3.0",
+	"attribution": "Datos normalizados de los colaboradores de Leaguepedia (https://lol.fandom.com/wiki/Leaguepedia), CC BY-SA 3.0 Unported.",
+	"leagues": [
+		{
+			"id": "CBLOL",
+			"retrievedAt": "2026-11-22T12:15:53.772Z"
+		},
+		{
+			"id": "LCK",
+			"retrievedAt": "2026-11-22T12:15:53.772Z"
+		},
+		{
+			"id": "LCP",
+			"retrievedAt": "2026-11-22T12:15:53.772Z"
+		},
+		{
+			"id": "LCS",
+			"retrievedAt": "2026-11-22T12:15:53.772Z"
+		},
+		{
+			"id": "LEC",
+			"retrievedAt": "2026-11-22T12:15:53.772Z"
+		},
+		{
+			"id": "LPL",
+			"retrievedAt": "2026-11-22T12:15:53.772Z"
+		}
+	]
+}
