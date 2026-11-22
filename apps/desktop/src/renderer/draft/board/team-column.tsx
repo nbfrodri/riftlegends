@@ -1,8 +1,9 @@
-import type {
-	DraftView,
-	Role,
-	SeriesOptions,
-	Side,
+import {
+	type DraftView,
+	ROLES,
+	type Role,
+	type SeriesOptions,
+	type Side,
 } from "@rift-legends/contracts";
 import { memo, useId } from "react";
 import { useTranslation } from "react-i18next";
@@ -10,7 +11,7 @@ import { GameRoleIcon } from "../../assets/game-role-icon";
 import { ChampionPortrait } from "../champion-portrait";
 import { championLabel, teamName } from "../session";
 import { TeamCrest } from "../team-crest";
-import { slotRoles } from "./champions";
+import { pickRows } from "./champions";
 
 export interface PlayerRef {
 	team: string;
@@ -23,14 +24,15 @@ const SIDE = {
 } as const;
 
 /**
- * A side of the draft: its five picks (with the role and player each slot
- * shows) and its bans as greyed portraits. Hovering or focusing a slot shows its player.
+ * A side of the draft: a fixed row per player, top to support, with the pick
+ * placed in it, and its bans as greyed portraits. Hovering or focusing a row
+ * shows its player.
  */
 export const TeamColumn = memo(function TeamColumn(props: {
 	side: Side;
 	team: DraftView[Side];
 	options: SeriesOptions;
-	/** Index of the slot the user is picking now, if any. */
+	/** Index of the pick the user is choosing now, if any; it shows in the first free row. */
 	current: number | null;
 	onPlayer: (player: PlayerRef) => void;
 }) {
@@ -38,11 +40,13 @@ export const TeamColumn = memo(function TeamColumn(props: {
 	const { options, team } = props;
 	const name = teamName(options, team.team);
 	const players = options.teams.find(({ id }) => id === team.team)?.players;
-	const roles = slotRoles(
+	const rows = pickRows(
 		team.picks,
 		(id) =>
 			options.champions.find((champion) => champion.id === id)?.roles ?? [],
 	);
+	const choosing =
+		props.current === null ? -1 : rows.findIndex((pick) => pick === null);
 	const id = useId();
 	const style = SIDE[props.side];
 	return (
@@ -73,9 +77,10 @@ export const TeamColumn = memo(function TeamColumn(props: {
 				</span>
 			</header>
 			<ol className="my-[7px] grid flex-1 auto-rows-fr">
-				{roles.map((role, index) => {
-					const champion = team.picks[index];
-					const current = index === props.current;
+				{ROLES.map((role, row) => {
+					const current = row === choosing;
+					const pick = current ? props.current : rows[row];
+					const champion = pick == null ? undefined : team.picks[pick];
 					const player = { team: team.team, role };
 					const show = () => props.onPlayer(player);
 					const label = champion
@@ -95,8 +100,7 @@ export const TeamColumn = memo(function TeamColumn(props: {
 								className={`flex w-full items-center gap-2.5 border-line border-b px-1 py-[3px] text-left hover:bg-surface ${current ? `bg-surface shadow-[inset_2px_0_currentColor] ${style.text}` : ""}`}
 							>
 								<span className="w-6 text-[12px] text-muted">
-									{style.letter}
-									{index + 1}
+									{pick != null && `${style.letter}${pick + 1}`}
 								</span>
 								<span className={style.text}>
 									<GameRoleIcon role={role} />
