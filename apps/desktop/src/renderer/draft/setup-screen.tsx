@@ -125,13 +125,9 @@ export function SetupScreen() {
 	async function start() {
 		if (!mine || !rival) return;
 		setStarting(true);
-		// Until plan 10 brings rankings, the order of the content is the seeding.
-		const seed = (id: string) =>
-			options.teams.findIndex((team) => team.id === id);
-		const seeds = [seed(mine.id), seed(rival.id)];
 		const ok = await send("series.start", {
 			teams: [mine.id, rival.id],
-			seeds,
+			seeds: [mine.seed, rival.seed],
 			format,
 			fearless,
 			timer: timer === "on",

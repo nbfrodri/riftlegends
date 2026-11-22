@@ -25,6 +25,7 @@ export function syntheticContent(
 		draft: {
 			champions: pool.map((id, i) => ({
 				id,
+				name: id,
 				positions: ROLES.map((role) => ({ role, tier: "B" as const })),
 				damage: i % 2 === 0 ? ("physical" as const) : ("magic" as const),
 				archetypes: ["carry" as const],
@@ -48,8 +49,11 @@ export function syntheticContent(
 				leader: id.endsWith("-jungle"),
 				mastery: [],
 			})),
-			teams: teams.map((id) => ({
+			teams: teams.map((id, index) => ({
 				id,
+				name: id,
+				seed: index + 1,
+				coach: { name: `${id} coach`, personality: "balanced", rating: 25 },
 				chemistry: [],
 				strategy: {
 					tempo: "balanced" as const,

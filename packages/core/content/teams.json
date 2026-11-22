@@ -1,0 +1,68 @@
+[
+	{
+		"id": "forge",
+		"name": "Forge",
+		"seed": 1,
+		"coach": {
+			"name": "Marlen Voss",
+			"personality": "comfort",
+			"rating": 38
+		},
+		"chemistry": [
+			{
+				"a": "forge-mid",
+				"b": "forge-jungle",
+				"value": 85
+			},
+			{
+				"a": "forge-bot",
+				"b": "forge-support",
+				"value": 60
+			},
+			{
+				"a": "forge-top",
+				"b": "forge-jungle",
+				"value": 70
+			}
+		],
+		"strategy": {
+			"tempo": "balanced",
+			"objectives": "baron",
+			"risk": "safe"
+		},
+		"adaptation": 80
+	},
+	{
+		"id": "shoal",
+		"name": "Shoal",
+		"seed": 2,
+		"coach": {
+			"name": "Iko Rhane",
+			"personality": "counterpick",
+			"rating": 22
+		},
+		"chemistry": [
+			{
+				"a": "shoal-bot",
+				"b": "shoal-support",
+				"value": 90
+			},
+			{
+				"a": "shoal-jungle",
+				"b": "shoal-mid",
+				"value": 55
+			},
+			{
+				"a": "shoal-top",
+				"b": "shoal-jungle",
+				"value": 45
+			}
+		],
+		"strategy": {
+			"tempo": "fast",
+			"objectives": "dragon",
+			"risk": "risky"
+		},
+		"adaptation": 55
+	}
+]

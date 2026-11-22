@@ -1,0 +1,51 @@
+{
+	"objectives": {
+		"dragon": {
+			"first": 300,
+			"respawn": 300
+		},
+		"herald": {
+			"first": 840,
+			"respawn": 360
+		},
+		"baron": {
+			"first": 1200,
+			"respawn": 360
+		},
+		"elder": {
+			"first": 2100,
+			"respawn": 360
+		}
+	},
+	"inhibitorRespawn": 300,
+	"economy": {
+		"passive": 2000,
+		"kill": 300,
+		"assist": 150,
+		"tower": 550,
+		"inhibitor": 50,
+		"dragon": 200,
+		"herald": 300,
+		"baron": 1500,
+		"elder": 250
+	},
+	"goldWeight": [
+		{
+			"minute": 0,
+			"weight": 10000
+		},
+		{
+			"minute": 15,
+			"weight": 8500
+		},
+		{
+			"minute": 25,
+			"weight": 7000
+		},
+		{
+			"minute": 35,
+			"weight": 5500
+		}
+	],
+	"blueSide": 60000
+}

@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { defineCommands, defineQueries, position } from "../envelope";
 import { defineFacts } from "../facts";
-import { aiDecidedFact, aiPerTeam, PERSONALITIES, TIERS } from "./ai";
+import { aiDecidedFact, aiPerTeam, TIERS } from "./ai";
 import {
 	matchContent,
 	matchEndedFact,
@@ -176,27 +176,23 @@ export const draftView = z.strictObject({
 /** What `series.options` answers. Teams follow the content order. */
 export const seriesOptions = z.strictObject({
 	teams: z.array(
-		z.strictObject({
-			id: teamId,
-			/** Proper name; the id when the content gives none. */
-			name: z.string().min(1).max(64),
-			coach: z
-				.strictObject({
-					name: z.string().min(1).max(64),
-					personality: z.enum(PERSONALITIES),
-					/** In tenths: 0 to 50. */
-					rating: z.int().min(0).max(50),
-				})
-				.optional(),
-			/** One per role, for the player card (U5). */
-			players: z.array(
-				z.strictObject({
-					id,
-					role: z.enum(ROLES),
-					attributes: matchContent.shape.players.element.shape.attributes,
-				}),
-			),
-		}),
+		matchContent.shape.teams.element
+			.pick({
+				id: true,
+				name: true,
+				seed: true,
+				coach: true,
+			})
+			.extend({
+				/** One per role, for the player card (U5). */
+				players: z.array(
+					z.strictObject({
+						id,
+						role: z.enum(ROLES),
+						attributes: matchContent.shape.players.element.shape.attributes,
+					}),
+				),
+			}),
 	),
 	pool: z.array(championId),
 	/** Roles each champion plays, with their tier; for the roles screen's suggestion. */

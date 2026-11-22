@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { position } from "../envelope";
 import { PERSONALITIES } from "./ai";
+import { checkChampionReference, checkDuplicates } from "./content-validation";
 import { teamStrategy } from "./plan";
 
 // Match simulation of plan 08: its facts and the content it reads. Points
@@ -142,72 +143,92 @@ const seconds = position;
 const timer = z.strictObject({ first: seconds, respawn: seconds });
 
 /** Everything the simulation reads besides the draft content (plan 07). */
-export const matchContent = z.strictObject({
-	players: z.array(
-		z.strictObject({
-			id,
-			attributes: z.strictObject(
-				Object.fromEntries(
-					PLAYER_ATTRIBUTES.map((key) => [key, rating]),
-				) as Record<PlayerAttribute, typeof rating>,
-			),
-			/** Calls the plays in game. */
-			leader: z.boolean(),
-			mastery: z.array(z.strictObject({ champion: id, value: rating })),
-		}),
-	),
-	teams: z.array(
-		z.strictObject({
-			id,
-			/** Proper name shown in the UI; it is not translated. */
-			name: z.string().min(1).max(64).optional(),
-			/** Decides the team's draft AI; without one, a default (plan 09, Q2). */
-			coach: z
-				.strictObject({
+export const matchContent = z
+	.strictObject({
+		players: z.array(
+			z.strictObject({
+				id,
+				attributes: z.strictObject(
+					Object.fromEntries(
+						PLAYER_ATTRIBUTES.map((key) => [key, rating]),
+					) as Record<PlayerAttribute, typeof rating>,
+				),
+				/** Calls the plays in game. */
+				leader: z.boolean(),
+				mastery: z.array(z.strictObject({ champion: id, value: rating })),
+			}),
+		),
+		teams: z.array(
+			z.strictObject({
+				id,
+				/** Proper name shown in the UI; it is not translated. */
+				name: z.string().min(1).max(64),
+				/** Seeding order, with 1 as the best seed. */
+				seed: z.int().positive(),
+				/** Decides the team's draft AI. */
+				coach: z.strictObject({
 					name: z.string().min(1).max(64),
 					personality: z.enum(PERSONALITIES),
 					/** In tenths: 0 to 50 (0.0 to 5.0), as `coachRating` of the AI. */
 					rating: z.int().min(0).max(50),
-				})
-				.optional(),
-			/** Between two players of the team. */
-			chemistry: z.array(z.strictObject({ a: id, b: id, value: rating })),
-			strategy: teamStrategy,
-			/** How well the coach adapts between games. */
-			adaptation: rating,
+				}),
+				/** Between two players of the team. */
+				chemistry: z.array(z.strictObject({ a: id, b: id, value: rating })),
+				strategy: teamStrategy,
+				/** How well the coach adapts between games. */
+				adaptation: rating,
+			}),
+		),
+		champions: z.array(
+			z.strictObject({ id, cc: stat, mobility: stat, frontline: stat }),
+		),
+		rules: z.strictObject({
+			objectives: z.strictObject({
+				dragon: timer,
+				herald: timer,
+				baron: timer,
+				elder: timer,
+			}),
+			inhibitorRespawn: seconds,
+			economy: z.strictObject({
+				/** Per team and minute. */
+				passive: position,
+				kill: position,
+				assist: position,
+				tower: position,
+				inhibitor: position,
+				dragon: position,
+				herald: position,
+				baron: position,
+				elder: position,
+			}),
+			/** How much gold counts from each minute on; it falls as games go on. */
+			goldWeight: z
+				.array(z.strictObject({ minute: position, weight: share }))
+				.min(1),
+			/** Edge of the blue side, in fixed-point points (30,000 = 3 points). */
+			blueSide: points,
 		}),
-	),
-	champions: z.array(
-		z.strictObject({ id, cc: stat, mobility: stat, frontline: stat }),
-	),
-	rules: z.strictObject({
-		objectives: z.strictObject({
-			dragon: timer,
-			herald: timer,
-			baron: timer,
-			elder: timer,
-		}),
-		inhibitorRespawn: seconds,
-		economy: z.strictObject({
-			/** Per team and minute. */
-			passive: position,
-			kill: position,
-			assist: position,
-			tower: position,
-			inhibitor: position,
-			dragon: position,
-			herald: position,
-			baron: position,
-			elder: position,
-		}),
-		/** How much gold counts from each minute on; it falls as games go on. */
-		goldWeight: z
-			.array(z.strictObject({ minute: position, weight: share }))
-			.min(1),
-		/** Edge of the blue side, in fixed-point points (30,000 = 3 points). */
-		blueSide: points,
-	}),
-});
+	})
+	.superRefine((content, ctx) => {
+		checkDuplicates(ctx, "champions", content.champions, (row) => row.id, "id");
+		checkDuplicates(ctx, "players", content.players, (row) => row.id, "id");
+		checkDuplicates(ctx, "teams", content.teams, (row) => row.id, "id");
+		checkDuplicates(ctx, "teams", content.teams, (row) => row.seed, "seed");
+
+		const champions = new Set(content.champions.map((row) => row.id));
+		content.players.forEach(({ mastery }, index) => {
+			mastery.forEach(({ champion }, slot) => {
+				checkChampionReference(ctx, champions, champion, [
+					"players",
+					index,
+					"mastery",
+					slot,
+					"champion",
+				]);
+			});
+		});
+	});
 
 export type MatchContent = z.infer<typeof matchContent>;
 export type MatchEvent = z.infer<z.ZodObject<typeof matchEventFact>>;

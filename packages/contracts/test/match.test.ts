@@ -239,6 +239,7 @@ describe("MatchContent", () => {
 		communication: 90,
 		versatility: 98,
 	};
+	const coach = { name: "Kuro", personality: "meta", rating: 35 };
 	const content = {
 		players: [
 			{
@@ -251,6 +252,9 @@ describe("MatchContent", () => {
 		teams: [
 			{
 				id: "t1",
+				name: "Team One",
+				seed: 1,
+				coach,
 				chemistry: [{ a: "faker", b: "keria", value: 80 }],
 				strategy: { tempo: "fast", objectives: "dragon", risk: "balanced" },
 				adaptation: 70,
@@ -343,59 +347,20 @@ describe("MatchContent", () => {
 	])("rejects %s", (_, bad) => {
 		expect(matchContent.safeParse(bad).success).toBe(false);
 	});
-});
 
-describe("team name and coach", () => {
-	const rules = {
-		objectives: {
-			dragon: { first: 300, respawn: 300 },
-			herald: { first: 840, respawn: 360 },
-			baron: { first: 1200, respawn: 360 },
-			elder: { first: 2100, respawn: 360 },
-		},
-		inhibitorRespawn: 300,
-		economy: {
-			passive: 2000,
-			kill: 300,
-			assist: 150,
-			tower: 550,
-			inhibitor: 50,
-			dragon: 200,
-			herald: 300,
-			baron: 1500,
-			elder: 250,
-		},
-		goldWeight: [{ minute: 0, weight: 10000 }],
-		blueSide: 60000,
-	};
-	const team = {
-		id: "t1",
-		chemistry: [],
-		strategy: { tempo: "fast", objectives: "dragon", risk: "risky" },
-		adaptation: 55,
-	};
-	const content = (extra: object) => ({
-		players: [],
-		champions: [],
-		rules,
-		teams: [{ ...team, ...extra }],
-	});
-	const coach = { name: "Kuro", personality: "meta", rating: 35 };
-
-	it("are optional and checked when present", () => {
-		expect(matchContent.safeParse(content({})).success).toBe(true);
-		expect(
-			matchContent.safeParse(content({ name: "Forge", coach })).success,
-		).toBe(true);
-		for (const bad of [
-			{ ...coach, personality: "chaos" },
-			{ ...coach, rating: 51 },
-			{ name: "Kuro", personality: "meta" },
-		]) {
-			expect(matchContent.safeParse(content({ coach: bad })).success).toBe(
-				false,
-			);
-		}
+	it.each([
+		[{ seed: 0 }, ["seed"]],
+		[{ coach: { ...coach, personality: "chaos" } }, ["coach", "personality"]],
+		[{ coach: { ...coach, rating: 51 } }, ["coach", "rating"]],
+		[{ coach: { name: "Kuro", personality: "meta" } }, ["coach", "rating"]],
+	])("validates the team's seed and coach (%j)", (change, path) => {
+		const result = matchContent.safeParse({
+			...content,
+			teams: content.teams.map((team) => ({ ...team, ...change })),
+		});
+		expect(result.error?.issues).toContainEqual(
+			expect.objectContaining({ path: ["teams", 0, ...path] }),
+		);
 	});
 });
 

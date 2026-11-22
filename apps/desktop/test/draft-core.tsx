@@ -22,7 +22,7 @@ import { CoreProvider } from "../src/renderer/core";
 import type { CoreApi, CoreCommand, CoreFact } from "../src/shared/bridge";
 
 /** The real draft dispatcher with the packaged content, behind the renderer's `CoreApi`. */
-function draftCore() {
+function draftCore(match = packagedMatchContent) {
 	const listeners = new Set<(facts: readonly CoreFact[]) => void>();
 	const sent: CoreCommand[] = [];
 	let session: Session<SeriesState> | null = null;
@@ -33,10 +33,7 @@ function draftCore() {
 	};
 	const api = {
 		open: vi.fn(async () => {
-			session = openSession(
-				1,
-				draftStateWith(packagedDraftContent, packagedMatchContent),
-			);
+			session = openSession(1, draftStateWith(packagedDraftContent, match));
 			return { ok: true as const, sessionId: 1 };
 		}),
 		send: vi.fn(async (command: CoreCommand) => {
@@ -89,8 +86,12 @@ function draftCore() {
 }
 
 /** Renders `ui` against a real draft core, in a locale (English by default). */
-export async function renderWithDraftCore(ui: ReactElement, locale = "en-US") {
-	const core = draftCore();
+export async function renderWithDraftCore(
+	ui: ReactElement,
+	locale = "en-US",
+	match = packagedMatchContent,
+) {
+	const core = draftCore(match);
 	const i18n = await createI18n(locale);
 	const client = new QueryClient({
 		defaultOptions: { queries: { retry: false }, mutations: { retry: false } },

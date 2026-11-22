@@ -1,0 +1,658 @@
+[
+	{
+		"id": "cragbell",
+		"name": "Cragbell",
+		"positions": [
+			{
+				"role": "top",
+				"tier": "S"
+			}
+		],
+		"damage": "physical",
+		"power": "mid",
+		"archetypes": ["tank", "engage"],
+		"cc": 8,
+		"mobility": 5,
+		"frontline": 9
+	},
+	{
+		"id": "rimefoil",
+		"name": "Rimefoil",
+		"positions": [
+			{
+				"role": "top",
+				"tier": "B"
+			},
+			{
+				"role": "mid",
+				"tier": "A"
+			}
+		],
+		"damage": "magic",
+		"power": "early",
+		"archetypes": ["poke"],
+		"cc": 2,
+		"mobility": 3,
+		"frontline": 1
+	},
+	{
+		"id": "saltspire",
+		"name": "Saltspire",
+		"positions": [
+			{
+				"role": "top",
+				"tier": "A"
+			}
+		],
+		"damage": "physical",
+		"power": "late",
+		"archetypes": ["splitpush"],
+		"cc": 2,
+		"mobility": 6,
+		"frontline": 4
+	},
+	{
+		"id": "mosshelm",
+		"name": "Mosshelm",
+		"positions": [
+			{
+				"role": "top",
+				"tier": "B"
+			}
+		],
+		"damage": "mixed",
+		"power": "late",
+		"archetypes": ["tank", "peel"],
+		"cc": 6,
+		"mobility": 3,
+		"frontline": 9
+	},
+	{
+		"id": "siltwing",
+		"name": "Siltwing",
+		"positions": [
+			{
+				"role": "top",
+				"tier": "C"
+			}
+		],
+		"damage": "physical",
+		"power": "early",
+		"archetypes": ["dive"],
+		"cc": 4,
+		"mobility": 8,
+		"frontline": 4
+	},
+	{
+		"id": "quillforge",
+		"name": "Quillforge",
+		"positions": [
+			{
+				"role": "top",
+				"tier": "D"
+			}
+		],
+		"damage": "magic",
+		"power": "mid",
+		"archetypes": ["poke"],
+		"cc": 2,
+		"mobility": 3,
+		"frontline": 1
+	},
+	{
+		"id": "urnward",
+		"name": "Urnward",
+		"positions": [
+			{
+				"role": "top",
+				"tier": "B"
+			},
+			{
+				"role": "support",
+				"tier": "C"
+			}
+		],
+		"damage": "utility",
+		"power": "mid",
+		"archetypes": ["peel"],
+		"cc": 6,
+		"mobility": 3,
+		"frontline": 3
+	},
+	{
+		"id": "fallowhorn",
+		"name": "Fallowhorn",
+		"positions": [
+			{
+				"role": "top",
+				"tier": "A"
+			}
+		],
+		"damage": "mixed",
+		"power": "early",
+		"archetypes": ["skirmish"],
+		"cc": 3,
+		"mobility": 7,
+		"frontline": 3
+	},
+	{
+		"id": "coalstride",
+		"name": "Coalstride",
+		"positions": [
+			{
+				"role": "jungle",
+				"tier": "S+"
+			}
+		],
+		"damage": "physical",
+		"power": "early",
+		"archetypes": ["dive"],
+		"cc": 4,
+		"mobility": 8,
+		"frontline": 4
+	},
+	{
+		"id": "duskroot",
+		"name": "Duskroot",
+		"positions": [
+			{
+				"role": "jungle",
+				"tier": "A"
+			}
+		],
+		"damage": "magic",
+		"power": "mid",
+		"archetypes": ["pick"],
+		"cc": 7,
+		"mobility": 5,
+		"frontline": 1
+	},
+	{
+		"id": "reedclaw",
+		"name": "Reedclaw",
+		"positions": [
+			{
+				"role": "jungle",
+				"tier": "B"
+			}
+		],
+		"damage": "physical",
+		"power": "early",
+		"archetypes": ["skirmish"],
+		"cc": 3,
+		"mobility": 7,
+		"frontline": 3
+	},
+	{
+		"id": "bellwisp",
+		"name": "Bellwisp",
+		"positions": [
+			{
+				"role": "jungle",
+				"tier": "C"
+			}
+		],
+		"damage": "magic",
+		"power": "late",
+		"archetypes": ["poke"],
+		"cc": 2,
+		"mobility": 3,
+		"frontline": 1
+	},
+	{
+		"id": "nettleguard",
+		"name": "Nettleguard",
+		"positions": [
+			{
+				"role": "jungle",
+				"tier": "B"
+			}
+		],
+		"damage": "utility",
+		"power": "mid",
+		"archetypes": ["peel"],
+		"cc": 6,
+		"mobility": 3,
+		"frontline": 3
+	},
+	{
+		"id": "chalkmaw",
+		"name": "Chalkmaw",
+		"positions": [
+			{
+				"role": "jungle",
+				"tier": "D"
+			}
+		],
+		"damage": "physical",
+		"power": "mid",
+		"archetypes": ["tank"],
+		"cc": 6,
+		"mobility": 2,
+		"frontline": 9
+	},
+	{
+		"id": "frostdrum",
+		"name": "Frostdrum",
+		"positions": [
+			{
+				"role": "jungle",
+				"tier": "A"
+			},
+			{
+				"role": "top",
+				"tier": "B"
+			}
+		],
+		"damage": "mixed",
+		"power": "early",
+		"archetypes": ["engage"],
+		"cc": 8,
+		"mobility": 5,
+		"frontline": 6
+	},
+	{
+		"id": "ashmoth",
+		"name": "Ashmoth",
+		"positions": [
+			{
+				"role": "jungle",
+				"tier": "B"
+			}
+		],
+		"damage": "magic",
+		"power": "late",
+		"archetypes": ["carry"],
+		"cc": 1,
+		"mobility": 4,
+		"frontline": 1
+	},
+	{
+		"id": "prismoth",
+		"name": "Prismoth",
+		"positions": [
+			{
+				"role": "mid",
+				"tier": "S"
+			}
+		],
+		"damage": "magic",
+		"power": "late",
+		"archetypes": ["poke"],
+		"cc": 2,
+		"mobility": 3,
+		"frontline": 1
+	},
+	{
+		"id": "glasswake",
+		"name": "Glasswake",
+		"positions": [
+			{
+				"role": "mid",
+				"tier": "A"
+			}
+		],
+		"damage": "magic",
+		"power": "mid",
+		"archetypes": ["poke"],
+		"cc": 2,
+		"mobility": 3,
+		"frontline": 1
+	},
+	{
+		"id": "waxblade",
+		"name": "Waxblade",
+		"positions": [
+			{
+				"role": "mid",
+				"tier": "B"
+			}
+		],
+		"damage": "physical",
+		"power": "early",
+		"archetypes": ["dive"],
+		"cc": 4,
+		"mobility": 8,
+		"frontline": 4
+	},
+	{
+		"id": "tideglass",
+		"name": "Tideglass",
+		"positions": [
+			{
+				"role": "mid",
+				"tier": "B"
+			},
+			{
+				"role": "bot",
+				"tier": "C"
+			}
+		],
+		"damage": "magic",
+		"power": "mid",
+		"archetypes": ["carry"],
+		"cc": 1,
+		"mobility": 4,
+		"frontline": 1
+	},
+	{
+		"id": "cinderlens",
+		"name": "Cinderlens",
+		"positions": [
+			{
+				"role": "mid",
+				"tier": "C"
+			}
+		],
+		"damage": "mixed",
+		"power": "early",
+		"archetypes": ["pick"],
+		"cc": 7,
+		"mobility": 5,
+		"frontline": 1
+	},
+	{
+		"id": "rushquill",
+		"name": "Rushquill",
+		"positions": [
+			{
+				"role": "mid",
+				"tier": "D"
+			}
+		],
+		"damage": "physical",
+		"power": "mid",
+		"archetypes": ["splitpush"],
+		"cc": 2,
+		"mobility": 6,
+		"frontline": 4
+	},
+	{
+		"id": "mistloom",
+		"name": "Mistloom",
+		"positions": [
+			{
+				"role": "mid",
+				"tier": "B"
+			}
+		],
+		"damage": "utility",
+		"power": "late",
+		"archetypes": ["peel"],
+		"cc": 6,
+		"mobility": 3,
+		"frontline": 3
+	},
+	{
+		"id": "silkflare",
+		"name": "Silkflare",
+		"positions": [
+			{
+				"role": "mid",
+				"tier": "A"
+			}
+		],
+		"damage": "magic",
+		"power": "late",
+		"archetypes": ["hypercarry"],
+		"cc": 1,
+		"mobility": 3,
+		"frontline": 0
+	},
+	{
+		"id": "suncord",
+		"name": "Suncord",
+		"positions": [
+			{
+				"role": "bot",
+				"tier": "S+"
+			}
+		],
+		"damage": "physical",
+		"power": "late",
+		"archetypes": ["hypercarry"],
+		"cc": 1,
+		"mobility": 3,
+		"frontline": 0
+	},
+	{
+		"id": "copperfin",
+		"name": "Copperfin",
+		"positions": [
+			{
+				"role": "bot",
+				"tier": "A"
+			}
+		],
+		"damage": "physical",
+		"power": "mid",
+		"archetypes": ["carry"],
+		"cc": 1,
+		"mobility": 4,
+		"frontline": 1
+	},
+	{
+		"id": "briarshot",
+		"name": "Briarshot",
+		"positions": [
+			{
+				"role": "bot",
+				"tier": "B"
+			}
+		],
+		"damage": "physical",
+		"power": "early",
+		"archetypes": ["poke"],
+		"cc": 2,
+		"mobility": 3,
+		"frontline": 1
+	},
+	{
+		"id": "spraylark",
+		"name": "Spraylark",
+		"positions": [
+			{
+				"role": "bot",
+				"tier": "C"
+			}
+		],
+		"damage": "mixed",
+		"power": "mid",
+		"archetypes": ["carry"],
+		"cc": 1,
+		"mobility": 4,
+		"frontline": 1
+	},
+	{
+		"id": "rillbow",
+		"name": "Rillbow",
+		"positions": [
+			{
+				"role": "bot",
+				"tier": "D"
+			}
+		],
+		"damage": "physical",
+		"power": "late",
+		"archetypes": ["carry"],
+		"cc": 1,
+		"mobility": 4,
+		"frontline": 1
+	},
+	{
+		"id": "starloom",
+		"name": "Starloom",
+		"positions": [
+			{
+				"role": "bot",
+				"tier": "A"
+			}
+		],
+		"damage": "magic",
+		"power": "late",
+		"archetypes": ["poke"],
+		"cc": 2,
+		"mobility": 3,
+		"frontline": 1
+	},
+	{
+		"id": "whetstone",
+		"name": "Whetstone",
+		"positions": [
+			{
+				"role": "bot",
+				"tier": "B"
+			}
+		],
+		"damage": "physical",
+		"power": "early",
+		"archetypes": ["skirmish"],
+		"cc": 3,
+		"mobility": 7,
+		"frontline": 3
+	},
+	{
+		"id": "hushwire",
+		"name": "Hushwire",
+		"positions": [
+			{
+				"role": "bot",
+				"tier": "B"
+			}
+		],
+		"damage": "mixed",
+		"power": "mid",
+		"archetypes": ["pick"],
+		"cc": 7,
+		"mobility": 5,
+		"frontline": 1
+	},
+	{
+		"id": "shellward",
+		"name": "Shellward",
+		"positions": [
+			{
+				"role": "support",
+				"tier": "S"
+			}
+		],
+		"damage": "utility",
+		"power": "mid",
+		"archetypes": ["peel"],
+		"cc": 6,
+		"mobility": 3,
+		"frontline": 3
+	},
+	{
+		"id": "bronzehook",
+		"name": "Bronzehook",
+		"positions": [
+			{
+				"role": "support",
+				"tier": "A"
+			}
+		],
+		"damage": "physical",
+		"power": "early",
+		"archetypes": ["engage"],
+		"cc": 8,
+		"mobility": 5,
+		"frontline": 6
+	},
+	{
+		"id": "riftchime",
+		"name": "Riftchime",
+		"positions": [
+			{
+				"role": "support",
+				"tier": "B"
+			}
+		],
+		"damage": "magic",
+		"power": "early",
+		"archetypes": ["poke"],
+		"cc": 2,
+		"mobility": 3,
+		"frontline": 1
+	},
+	{
+		"id": "fenveil",
+		"name": "Fenveil",
+		"positions": [
+			{
+				"role": "support",
+				"tier": "C"
+			}
+		],
+		"damage": "utility",
+		"power": "late",
+		"archetypes": ["utility"],
+		"cc": 5,
+		"mobility": 3,
+		"frontline": 2
+	},
+	{
+		"id": "amberwall",
+		"name": "Amberwall",
+		"positions": [
+			{
+				"role": "support",
+				"tier": "B"
+			}
+		],
+		"damage": "utility",
+		"power": "mid",
+		"archetypes": ["tank"],
+		"cc": 6,
+		"mobility": 2,
+		"frontline": 9
+	},
+	{
+		"id": "mirethorn",
+		"name": "Mirethorn",
+		"positions": [
+			{
+				"role": "support",
+				"tier": "D"
+			}
+		],
+		"damage": "mixed",
+		"power": "early",
+		"archetypes": ["pick"],
+		"cc": 7,
+		"mobility": 5,
+		"frontline": 1
+	},
+	{
+		"id": "dewshroud",
+		"name": "Dewshroud",
+		"positions": [
+			{
+				"role": "support",
+				"tier": "A"
+			}
+		],
+		"damage": "utility",
+		"power": "late",
+		"archetypes": ["peel"],
+		"cc": 6,
+		"mobility": 3,
+		"frontline": 3
+	},
+	{
+		"id": "rushbell",
+		"name": "Rushbell",
+		"positions": [
+			{
+				"role": "support",
+				"tier": "B"
+			}
+		],
+		"damage": "physical",
+		"power": "early",
+		"archetypes": ["dive"],
+		"cc": 4,
+		"mobility": 8,
+		"frontline": 4
+	}
+]
