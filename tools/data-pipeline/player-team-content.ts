@@ -1,9 +1,11 @@
 import type { RealSnapshot } from "@rift-legends/contracts/real-snapshot";
 import { attributeProfiles, playerLevel, type Role } from "./attributes.ts";
+import { careerStrength, type Season } from "./career.ts";
 import { coachStyles } from "./coach-style.ts";
 import { eloOf, leagueRating } from "./league-strength.ts";
 import { groupBy } from "./normalization.ts";
 import { compare } from "./queries.ts";
+import { snapshotSeason } from "./scope.ts";
 
 type Game = RealSnapshot["games"][number];
 type Team = RealSnapshot["teams"][number];
@@ -121,7 +123,9 @@ function together(games: readonly Game[]) {
 		counts.get(JSON.stringify([a, b].sort(compare))) ?? 0;
 }
 
-function build(snapshot: RealSnapshot) {
+export type CareerHistory = ReadonlyMap<string, readonly Season[]>;
+
+function build(snapshot: RealSnapshot, careers: CareerHistory, season: number) {
 	const profileOf = attributeProfiles(snapshot);
 	const styleOf = coachStyles(snapshot.games);
 	const pools = rolePools(snapshot.games);
@@ -150,8 +154,9 @@ function build(snapshot: RealSnapshot) {
 		]
 			.map(([champion, rows]): [string, number] => [champion, rows.length])
 			.sort(byGames);
-		const { attributes, estimated } = profileOf(id, role);
-		const level = playerLevel(attributes, role);
+		const career = careerStrength(careers.get(id) ?? [], season);
+		const { attributes, estimated } = profileOf(id, role, career);
+		const level = playerLevel(attributes, role, career);
 		return {
 			games: lines.length,
 			row: {
@@ -325,8 +330,14 @@ function uniqueHandles<
 	}));
 }
 
-export function buildPlayerTeamContent(snapshots: readonly RealSnapshot[]) {
-	const built = snapshots.flatMap(build);
+export function buildPlayerTeamContent(
+	snapshots: readonly RealSnapshot[],
+	careers: CareerHistory = new Map(),
+	season = snapshotSeason,
+) {
+	const built = snapshots.flatMap((snapshot) =>
+		build(snapshot, careers, season),
+	);
 	const ids = new Set<string>();
 	for (const { team, players } of built) {
 		for (const id of [team.id, ...players.map((p) => p.id)]) {

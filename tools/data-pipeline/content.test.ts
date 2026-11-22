@@ -1,14 +1,58 @@
 import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { aiContent, matchContent } from "@rift-legends/contracts";
+import { realSnapshotSchema } from "@rift-legends/contracts/real-snapshot";
 import { expect, test } from "vitest";
 import { buildContent } from "./content.ts";
+import { parseHistory } from "./history.ts";
+import { buildPlayerTeamContent } from "./player-team-content.ts";
+import { season2026 } from "./scope.ts";
 
 const dir = fileURLToPath(
 	new URL("../../packages/core/content/real/", import.meta.url),
 );
 const read = async (file: string) =>
 	JSON.parse(await readFile(`${dir}${file}`, "utf8"));
+
+test("real career history raises Faker to 80 and leaves players without history unchanged", async () => {
+	const snapshots = await Promise.all(
+		season2026.map(async ({ id }) =>
+			realSnapshotSchema.parse(await read(`${id.toLowerCase()}.json`)),
+		),
+	);
+	const { players: baseline } = buildPlayerTeamContent(snapshots);
+	const careers = new Set(
+		parseHistory(await readFile(`${dir}history.json`, "utf8")).players.map(
+			({ id }) => id,
+		),
+	);
+	const players: typeof baseline = await read("players.json");
+	expect(
+		players.find(({ handle }) => handle === "Faker")?.level,
+	).toBeGreaterThanOrEqual(80);
+	const withoutHistory = baseline.filter(({ id }) => !careers.has(id));
+	expect(withoutHistory.length).toBeGreaterThan(0);
+	expect(players.filter(({ id }) => !careers.has(id))).toEqual(withoutHistory);
+});
+
+test("no real player with a career is rated above 94", async () => {
+	const careers = new Set(
+		parseHistory(await readFile(`${dir}history.json`, "utf8")).players.map(
+			({ id }) => id,
+		),
+	);
+	const players: {
+		id: string;
+		level: number;
+		attributes: Record<string, number>;
+	}[] = await read("players.json");
+	for (const { id, level, attributes } of players.filter((p) =>
+		careers.has(p.id),
+	)) {
+		expect(level, id).toBeLessThanOrEqual(94);
+		expect(Math.max(...Object.values(attributes)), id).toBeLessThanOrEqual(95);
+	}
+});
 
 test("the committed players and teams are what the snapshot produces", async () => {
 	for (const [file, body] of Object.entries(await buildContent()))
@@ -70,7 +114,7 @@ test("credible real attributes, levels and seeds (#280)", async () => {
 		expect(Math.min(...values), handle).toBeGreaterThanOrEqual(55);
 		expect(Math.max(...values), handle).toBeLessThanOrEqual(95);
 		expect(level, handle).toBeGreaterThanOrEqual(70);
-		expect(level, handle).toBeLessThanOrEqual(93);
+		expect(level, handle).toBeLessThanOrEqual(94);
 	}
 	expect(star("Chovy").level).toBeGreaterThanOrEqual(85);
 	// Nobody is near the extremes in most attributes.

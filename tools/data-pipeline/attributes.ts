@@ -3,6 +3,7 @@ import {
 	PLAYER_ATTRIBUTES,
 	type PlayerAttribute,
 } from "../../packages/contracts/draft/player-attributes.ts";
+import { careerLevelShare, levelCeiling } from "./career.ts";
 import { leagueOffset } from "./league-strength.ts";
 import { groupBy } from "./normalization.ts";
 
@@ -130,6 +131,15 @@ const mental = {
 	communication: [6, 3],
 } as const;
 
+// Puntos que suma la trayectoria completa (careerStrength = 1) a los atributos
+// que dependen de haber vivido muchas temporadas y finales.
+const careerPoints: Partial<Record<PlayerAttribute, number>> = {
+	experience: 20,
+	composure: 6,
+	resilience: 5,
+	consistency: 4,
+};
+
 const average = (values: number[]) =>
 	values.reduce((total, value) => total + value, 0) / values.length;
 
@@ -240,9 +250,14 @@ const focusWeight = 3;
 /**
  * Nivel: media ponderada de los 20 atributos (peso 3 en los seis del rol, 1 en
  * el resto), estirada 1,25 sobre el centro de la banda. La liga ya está en los
- * atributos.
+ * atributos. La trayectoria (0–1, ver `careerStrength`) cierra hasta
+ * la mitad de la distancia al techo `levelCeiling` (94).
  */
-export function playerLevel(attributes: AttributeScores, role: Role) {
+export function playerLevel(
+	attributes: AttributeScores,
+	role: Role,
+	career = 0,
+) {
 	let total = 0;
 	let weights = 0;
 	for (const key of PLAYER_ATTRIBUTES) {
@@ -251,8 +266,12 @@ export function playerLevel(attributes: AttributeScores, role: Role) {
 		weights += weight;
 	}
 	const center = bandValue(0.5);
+	const raw = center + 1.25 * (total / weights - center);
+	// The career closes part of the gap to the ceiling, so stars barely move.
+	const level =
+		raw + careerLevelShare * career * Math.max(0, levelCeiling - raw);
 	return Math.round(
-		Math.max(30, Math.min(99, center + 1.25 * (total / weights - center))),
+		Math.max(30, Math.min(career > 0 ? levelCeiling : 99, level)),
 	);
 }
 
@@ -297,7 +316,7 @@ export function attributeProfiles(snapshot: RealSnapshot) {
 	}
 
 	const offset = leagueOffset[snapshot.league.id] ?? 0;
-	return (player: string, role: Role) => {
+	return (player: string, role: Role, career = 0) => {
 		const cohort = cohorts.get(role);
 		const profile = cohort?.get(player);
 		const estimated: PlayerAttribute[] = [];
@@ -339,10 +358,13 @@ export function attributeProfiles(snapshot: RealSnapshot) {
 					mental[attribute as keyof typeof mental];
 				value += experienceWeight * experience + resultWeight * result;
 			}
+			const base = Math.round(Math.max(40, Math.min(97, value + offset)));
+			const boosted = value + offset + (careerPoints[attribute] ?? 0) * career;
 			if (!measured || proxies.has(attribute)) estimated.push(attribute);
+			// With a career the attribute stops at 95, but never drops below its base.
 			return [
 				attribute,
-				Math.round(Math.max(40, Math.min(97, value + offset))),
+				career > 0 ? Math.max(base, Math.round(Math.min(95, boosted))) : base,
 			] as const;
 		});
 		return {

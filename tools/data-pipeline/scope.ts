@@ -4,6 +4,11 @@ export interface LeagueScope {
 	pages: readonly string[];
 }
 
+/** Season the snapshot covers. Rolling it forward moves the old one into the career history. */
+export const snapshotSeason = 2026;
+/** Seasons before `snapshotSeason` that feed the career history. */
+export const historySpan = 7;
+
 // Main competition only. Excludes showmatches, the 2025 promotions, LCK Season
 // Opening and LPL Regional Finals. See docs/research/leaguepedia-2026-11.md.
 const leagues = [
@@ -70,7 +75,7 @@ export const season2026: readonly LeagueScope[] = leagues.map(
 	([id, name, suffixes]) => ({
 		id,
 		name,
-		pages: suffixes.map((suffix) => `${id}/2026 Season/${suffix}`),
+		pages: suffixes.map((suffix) => `${id}/${snapshotSeason} Season/${suffix}`),
 	}),
 );
 

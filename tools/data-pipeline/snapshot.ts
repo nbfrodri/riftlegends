@@ -79,9 +79,11 @@ async function publish(outputDir: string, files: ReadonlyMap<string, string>) {
 	}
 }
 
-export async function snapshot(options: SnapshotOptions) {
+export async function snapshot(
+	options: SnapshotOptions,
+	client = new Client(options),
+) {
 	const scope = options.scope ?? season2026;
-	const client = new Client(options);
 	const source = await acquire(client, scope);
 	const { pages, resolve } = teamResolver(source);
 	const champions = championResolver(source);
