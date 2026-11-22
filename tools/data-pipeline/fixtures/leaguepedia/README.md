@@ -18,3 +18,7 @@ Consulta [LICENSE](LICENSE) para la licencia, la atribución y el alcance de los
 | [draft.json](draft.json) | Orden de selección de las mismas partidas. | [Consulta](<https://lol.fandom.com/api.php?format=json&maxlag=5&action=cargoquery&tables=PicksAndBansS7&fields=OverviewPage%2CGameId%2CMatchId%2CTeam1%2CTeam2%2CTeam1Pick1%2CTeam1Pick2%2CTeam1Pick3%2CTeam1Pick4%2CTeam1Pick5%2CTeam2Pick1%2CTeam2Pick2%2CTeam2Pick3%2CTeam2Pick4%2CTeam2Pick5%2CSwitchedSides&where=GameId+IN+%28%27LCK%2F2026+Season%2FRounds+1-2_Week+1_1_1%27%2C%27LCK%2F2026+Season%2FRounds+1-2_Week+1_1_2%27%2C%27LCK%2F2026+Season%2FRounds+1-2_Week+1_2_1%27%29&order_by=GameId&limit=5>) |
 | [logo-imageinfo.json](logo-imageinfo.json) | Metadatos y URL del logo de T1. | [Consulta](<https://lol.fandom.com/api.php?format=json&maxlag=5&action=query&titles=File%3AT1logo+profile.png&prop=imageinfo&iiprop=url%7Cmime%7Cextmetadata&iiextmetadatafilter=LicenseShortName%7CUsageTerms%7CRestrictions&redirects=1>) |
 | [ratelimited.json](ratelimited.json) | Error `ratelimited` observado con HTTP 200. | [Consulta](<https://lol.fandom.com/api.php?format=json&maxlag=5&action=cargoquery&tables=ScoreboardGames&fields=OverviewPage%2CGameId%2CTeam1%2CTeam2%2CWinner&order_by=DateTime_UTC+DESC%2CGameId&limit=3>) |
+
+## Nacionalidades
+
+[nationalities.json](nationalities.json) usa el formato de `ScoreboardPlayers` unido a `Players` (campos `Country` y `NationalityPrimary`). Faker y Kiin son filas reales del 22-11-2026 (sin desambiguador); las filas `Synthetic …` son sintéticas.

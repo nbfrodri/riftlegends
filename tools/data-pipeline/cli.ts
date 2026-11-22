@@ -5,6 +5,7 @@ import { parseArgs } from "node:util";
 import { Client } from "./client.ts";
 import { history } from "./history.ts";
 import { writeLogos } from "./logos.ts";
+import { nationalities } from "./nationality.ts";
 import { snapshot } from "./snapshot.ts";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
@@ -91,6 +92,10 @@ try {
 			);
 			console.error(
 				`Career history: ${career.players} players, seasons ${career.years[0]}-${career.years.at(-1)}`,
+			);
+			const countries = await nationalities(options, client);
+			console.error(
+				`Nationalities: ${countries.players} players${countries.unmapped.length ? `, unmapped: ${countries.unmapped.join(", ")}` : ""}`,
 			);
 			console.table(result.totals);
 			console.log(JSON.stringify({ bytes: result.bytes, ...result.oddities }));
