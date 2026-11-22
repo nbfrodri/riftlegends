@@ -1,8 +1,7 @@
 import type { RealSnapshot } from "@rift-legends/contracts/real-snapshot";
-import { PLAYER_ATTRIBUTES } from "../../packages/contracts/draft/player-attributes.ts";
-import { attributeProfiles, type Role } from "./attributes.ts";
+import { attributeProfiles, playerLevel, type Role } from "./attributes.ts";
 import { coachStyles } from "./coach-style.ts";
-import { leagueStrength } from "./league-strength.ts";
+import { eloOf, leagueRating } from "./league-strength.ts";
 import { groupBy } from "./normalization.ts";
 import { compare } from "./queries.ts";
 
@@ -135,7 +134,6 @@ function build(snapshot: RealSnapshot) {
 		snapshot.games.flatMap((game) => game.lines),
 		(line) => line.player,
 	);
-	const strength = leagueStrength[snapshot.league.id] ?? 1;
 
 	const make = (
 		id: string,
@@ -153,10 +151,7 @@ function build(snapshot: RealSnapshot) {
 			.map(([champion, rows]): [string, number] => [champion, rows.length])
 			.sort(byGames);
 		const { attributes, estimated } = profileOf(id, role);
-		const level = Math.round(
-			PLAYER_ATTRIBUTES.reduce((sum, key) => sum + attributes[key], 0) /
-				PLAYER_ATTRIBUTES.length,
-		);
+		const level = playerLevel(attributes, role);
 		return {
 			games: lines.length,
 			row: {
@@ -193,11 +188,15 @@ function build(snapshot: RealSnapshot) {
 			: [];
 	});
 
+	const playoffs = new Set(
+		snapshot.tournaments
+			.filter((tournament) => /playoff/i.test(tournament.name))
+			.map((tournament) => tournament.id),
+	);
 	const games = (id: string) =>
 		snapshot.games.filter((game) => game.teams.some((t) => t.id === id));
 	const teams = snapshot.teams.map((team: Team) => {
 		const played = games(team.id);
-		const wins = played.filter((game) => game.winner === team.id).length;
 		const roster = members.filter((member) => member.team === team.id);
 		for (const role of roles) {
 			if (!roster.some((member) => member.row.role === role))
@@ -241,9 +240,18 @@ function build(snapshot: RealSnapshot) {
 			),
 		});
 		const coach = coachOf(snapshot, team.id);
-		const rate = Math.round(((wins + 6) * 10_000) / (played.length + 12));
+		// Elo-like rating: league prior plus the smoothed win rate (12 prior
+		// games at 50 %, playoff games count double), rounded to whole points.
+		const weight = (game: Game) => (playoffs.has(game.tournament) ? 2 : 1);
+		const total = played.reduce((sum, game) => sum + weight(game), 0);
+		const won = played
+			.filter((game) => game.winner === team.id)
+			.reduce((sum, game) => sum + weight(game), 0);
+		const rating = Math.round(
+			(leagueRating[snapshot.league.id] ?? 0) + eloOf((won + 6) / (total + 12)),
+		);
 		return {
-			score: rate * Math.round(strength * 100),
+			score: rating,
 			players: roster.map((member) => member.row),
 			team: {
 				id: team.id,
@@ -326,7 +334,7 @@ export function buildPlayerTeamContent(snapshots: readonly RealSnapshot[]) {
 			ids.add(id);
 		}
 	}
-	// One global order: win rate (smoothed) weighted by league strength.
+	// One global order: league prior + smoothed win rate as an Elo-like rating.
 	built.sort((a, b) => b.score - a.score || compare(a.team.id, b.team.id));
 	const teams = built.map(({ team }, index) => ({ ...team, seed: index + 1 }));
 	const players = uniqueHandles(
