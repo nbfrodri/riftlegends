@@ -117,6 +117,7 @@ Cada fase termina con un hito verificable y un commit o PR fusionado en `main`. 
 ### Fase 9 — Presentación avanzada
 - Minimapa animado 2D (PixiJS) que reproduce los hechos de partida, celebraciones, pulido broadcast del draft y sonido.
 - **Propuesta del usuario para el plan 23 (21-11-2026):** inventario de objetos **visual** en el timeline, el minimapa y el resultado. Cada jugador acumula oro durante la partida y compra componentes, objetos y botas según su campeón; la build sale de un flujo de RNG propio y **no cambia la simulación**. Requisitos: oro por jugador durante la partida (en eventos o snapshots), objetos de Data Dragon en el modo real y objetos inventados en el ficticio. Los objetos como mecánica quedan descartados; solo se valorarían «picos de objeto» abstractos si la calibración o los playtests lo piden.
+- **Petición del usuario (22-11-2026):** el minimapa refleja el estado del mapa por equipo (torres, inhibidores, nexo y objetivos), el mismo que muestra el panel por equipo de «Partida en curso» (#310).
 - **Salida:** presupuestos de fluidez (60 fps en el PC gaming medio) en Windows y Arch Wayland.
 
 ### Fase 10 — Expansión de alcance
