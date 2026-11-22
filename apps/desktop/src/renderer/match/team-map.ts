@@ -3,15 +3,15 @@ import type { MapSnapshot, Side } from "@rift-legends/contracts";
 // One team's base and objectives, read from a map snapshot. Pure, so the match
 // panels and the minimap (plan 23) share the same reading of the map.
 
-export const LANES = ["top", "mid", "bot"] as const;
+const LANES = ["top", "mid", "bot"] as const;
 /** Lane towers from the outside in: they fall in this order. */
 export const TIERS = ["outer", "inner", "base"] as const;
 const NEXUS_TOWERS = 2;
 const TOTAL_TOWERS = LANES.length * TIERS.length + NEXUS_TOWERS;
 
-export type Lane = (typeof LANES)[number];
-export type Tier = (typeof TIERS)[number];
-export type Buff = keyof MapSnapshot[Side]["buffs"];
+type Lane = (typeof LANES)[number];
+type Tier = (typeof TIERS)[number];
+type Buff = keyof MapSnapshot[Side]["buffs"];
 
 export interface TeamMap {
 	towers: { standing: number; total: number };

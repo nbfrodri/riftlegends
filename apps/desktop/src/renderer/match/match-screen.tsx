@@ -14,9 +14,10 @@ import { PageHeader } from "../draft/page-header";
 import { championLabel, teamName, useDraftSession } from "../draft/session";
 import { EventFeed } from "./event-feed";
 import { FaceToFace } from "./face-to-face";
-import { Objectives, Structures } from "./map-tables";
 import { clockTime, speeds, usePlayback } from "./playback";
-import { GoldChart, TeamTotals } from "./scoreboard";
+import { GoldChart, sides, TeamTotals } from "./scoreboard";
+import { teamMap } from "./team-map";
+import { TeamPanel } from "./team-panel";
 
 function Replay({ match, entry }: { match: MatchView; entry: DraftView }) {
 	const { options, present, mine } = useDraftSession();
@@ -82,19 +83,22 @@ function Replay({ match, entry }: { match: MatchView; entry: DraftView }) {
 					{/* Both panes share one cell and stay in the layout, so switching
 					    panels never changes the row height. */}
 					<div
-						className={`grid min-w-0 grid-rows-[auto_1fr] gap-2.5 [grid-area:1/1] ${panel === "map" ? "" : "invisible"}`}
+						className={`grid min-w-0 grid-cols-2 gap-3 [grid-area:1/1] ${panel === "map" ? "" : "invisible"}`}
 						inert={panel !== "map"}
 					>
-						<Structures
-							snapshot={snapshot}
-							second={player.second}
-							names={names}
-						/>
-						<Objectives
-							snapshot={snapshot}
-							second={player.second}
-							names={names}
-						/>
+						{sides.map((side) => (
+							<TeamPanel
+								key={side}
+								side={side}
+								name={names[side]}
+								view={teamMap(
+									snapshot[side],
+									player.second,
+									// The loser's nexus falls with the last event.
+									player.ended && end.winner !== start[side],
+								)}
+							/>
+						))}
 					</div>
 					<div
 						className={`min-w-0 [grid-area:1/1] ${panel === "faceToFace" ? "" : "invisible"}`}

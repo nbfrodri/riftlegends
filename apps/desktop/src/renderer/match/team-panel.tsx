@@ -1,0 +1,184 @@
+import type { Side } from "@rift-legends/contracts";
+import { useTranslation } from "react-i18next";
+import { MapIcon } from "../assets/map-icon";
+import { panel, panelTable, panelTitle } from "./classes";
+import { clockTime } from "./playback";
+import { type TeamMap, TIERS } from "./team-map";
+
+type Structure = "tower" | "inhibitor" | "nexus";
+
+/** A structure's icon in the team colour, greyed once destroyed; its state as text. */
+function StructureState({
+	kind,
+	standing,
+}: {
+	kind: Structure;
+	standing: boolean;
+}) {
+	const { t } = useTranslation();
+	const icon = standing ? kind : (`${kind}Down` as const);
+	const label = t(`draft.match.${icon}`);
+	return (
+		<span
+			title={label}
+			data-down={!standing}
+			className={standing ? "text-(--side)" : "text-muted opacity-60"}
+		>
+			<MapIcon kind={icon} />
+			<span className="sr-only">{label}</span>
+		</span>
+	);
+}
+
+function Structures({ name, view }: { name: string; view: TeamMap }) {
+	const { t } = useTranslation();
+	return (
+		<table
+			aria-label={t("draft.match.teamStructures", { team: name })}
+			className={`${panelTable} [&_th[scope=row]]:text-left [&_th[scope=row]]:text-muted`}
+		>
+			<colgroup>
+				<col className="w-[26%]" />
+			</colgroup>
+			<thead>
+				<tr className="sr-only">
+					<th scope="col">{t("draft.match.lane")}</th>
+					{TIERS.map((tier) => (
+						<th scope="col" key={tier}>
+							{t(`draft.match.column.${tier}`)}
+						</th>
+					))}
+					<th scope="col">{t("draft.match.column.inhibitor")}</th>
+				</tr>
+			</thead>
+			<tbody>
+				{view.lanes.map(({ lane, towers, inhibitor }) => (
+					<tr key={lane}>
+						<th scope="row">{t(`draft.match.zone.lane-${lane}`)}</th>
+						{towers.map(({ tier, standing }) => (
+							<td key={tier}>
+								<StructureState kind="tower" standing={standing} />
+							</td>
+						))}
+						<td className="whitespace-nowrap">
+							<StructureState kind="inhibitor" standing={inhibitor.standing} />
+							{inhibitor.respawnIn !== null && (
+								<small className="ml-1 text-[12px]">
+									<span className="sr-only">{t("draft.match.backIn")} </span>
+									<span>{clockTime(inhibitor.respawnIn)}</span>
+								</small>
+							)}
+						</td>
+					</tr>
+				))}
+				<tr>
+					<th scope="row" className="whitespace-nowrap">
+						{t("draft.match.kind.nexus")}
+					</th>
+					<td colSpan={3}>
+						<span className="inline-flex gap-2">
+							{view.nexus.towers.map((standing, index) => (
+								<StructureState
+									// biome-ignore lint/suspicious/noArrayIndexKey: the two nexus towers are fixed slots.
+									key={index}
+									kind="tower"
+									standing={standing}
+								/>
+							))}
+						</span>
+					</td>
+					<td>
+						<StructureState kind="nexus" standing={view.nexus.standing} />
+					</td>
+				</tr>
+			</tbody>
+		</table>
+	);
+}
+
+const objectives = ["dragon", "herald", "baron", "elder"] as const;
+
+function Objectives({ view }: { view: TeamMap }) {
+	const { t } = useTranslation();
+	const { dragons, soul } = view.objectives;
+	const value = (kind: (typeof objectives)[number]) =>
+		kind === "dragon"
+			? t("draft.match.dragonCount", { count: dragons })
+			: view.objectives[`${kind}s`];
+	const effects = [
+		...(soul ? [{ icon: "dragon" as const, text: t("draft.match.soul") }] : []),
+		...view.effects.map(({ kind, remaining }) => ({
+			icon: kind,
+			text: t("draft.match.effectTime", {
+				effect: t(`draft.match.kind.${kind}`),
+				time: clockTime(remaining),
+			}),
+		})),
+	];
+	return (
+		<>
+			<dl className="grid grid-cols-2 gap-x-3 gap-y-1">
+				{objectives.map((kind) => (
+					<div key={kind} className="flex items-center gap-1.5">
+						<dt className="flex min-w-0 items-center gap-1.5 text-muted">
+							<MapIcon kind={kind} />
+							{t(`draft.match.objective.${kind}`)}
+						</dt>
+						<dd className="ml-auto font-bold">{value(kind)}</dd>
+					</div>
+				))}
+			</dl>
+			{effects.length > 0 ? (
+				<ul
+					aria-label={t("draft.match.effects")}
+					className="flex flex-wrap gap-x-3 gap-y-1 font-bold text-action"
+				>
+					{effects.map(({ icon, text }) => (
+						<li key={icon} className="flex items-center gap-1.5">
+							<MapIcon kind={icon} />
+							{text}
+						</li>
+					))}
+				</ul>
+			) : (
+				<p className="text-muted">{t("draft.match.noEffects")}</p>
+			)}
+		</>
+	);
+}
+
+/** One team's base and objectives, in its side colour. */
+export function TeamPanel({
+	side,
+	name,
+	view,
+}: {
+	side: Side;
+	name: string;
+	view: TeamMap;
+}) {
+	const { t } = useTranslation();
+	return (
+		<section
+			aria-label={t("draft.match.teamMap", { team: name })}
+			data-side={side}
+			className={`${panel} flex flex-col gap-1.5 border-(--side) border-t-[3px]`}
+		>
+			<h2 className={`${panelTitle} text-(--side) [overflow-wrap:anywhere]`}>
+				{name}
+			</h2>
+			<p className="flex items-baseline justify-between gap-2">
+				<span className="text-muted">{t("draft.match.towersStanding")}</span>
+				<b>
+					{t("draft.match.ofTotal", {
+						count: view.towers.standing,
+						total: view.towers.total,
+					})}
+				</b>
+			</p>
+			<Structures name={name} view={view} />
+			<hr className="my-1 border-line" />
+			<Objectives view={view} />
+		</section>
+	);
+}

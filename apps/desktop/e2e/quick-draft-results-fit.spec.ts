@@ -18,7 +18,7 @@ async function expectToFit(page: Page) {
 	expect(await overflow(page)).toEqual({ page: 0, main: 0 });
 }
 
-test("#259: the setup, game and series results fit the default window", async ({
+test("#259 #310: the setup, match and results fit the default window", async ({
 	electronApp,
 	appWindow,
 }) => {
@@ -29,6 +29,16 @@ test("#259: the setup, game and series results fit the default window", async ({
 	await playQuickDraftBo5(electronApp, appWindow, async (screen) => {
 		if (screen === "setup") {
 			await expectToFit(appWindow);
+			checked++;
+		}
+		if (screen === "match") {
+			await expectToFit(appWindow);
+			for (const team of ["Forge", "Shoal"])
+				await expect(
+					appWindow.getByRole("region", {
+						name: `${team} · estructuras y objetivos`,
+					}),
+				).toBeInViewport({ ratio: 1 });
 			checked++;
 		}
 		if (screen === "game-result") {
@@ -45,5 +55,5 @@ test("#259: the setup, game and series results fit the default window", async ({
 		}
 		checked++;
 	});
-	expect(checked).toBe(3);
+	expect(checked).toBe(4);
 });
