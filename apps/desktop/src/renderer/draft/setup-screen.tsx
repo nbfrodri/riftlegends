@@ -35,7 +35,7 @@ function Rule(props: {
 	children: React.ReactNode;
 }) {
 	return (
-		<div className="flex items-center justify-between gap-4 border-line border-t py-[clamp(12px,2vh,19px)]">
+		<div className="flex items-center justify-between gap-4 border-line border-t py-[clamp(8px,1.2vh,19px)]">
 			<div>
 				<h3 className="font-semibold">{props.title}</h3>
 				<p className="mt-1 text-[13px] text-muted">{props.note}</p>
@@ -80,7 +80,7 @@ function TeamCard(props: {
 	return (
 		<section className={`border-t-[3px] bg-panel ${border}`}>
 			<div
-				className={`flex h-[clamp(110px,17vh,150px)] items-center justify-between gap-4 bg-panel px-6 py-[18px] ${color}`}
+				className={`flex h-[clamp(96px,14vh,150px)] items-center justify-between gap-4 bg-panel px-6 py-[18px] ${color}`}
 			>
 				<div className="min-w-0">
 					<p className="font-semibold text-[12px] text-muted uppercase tracking-[0.055em]">

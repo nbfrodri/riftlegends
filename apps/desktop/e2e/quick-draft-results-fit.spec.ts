@@ -18,7 +18,7 @@ async function expectToFit(page: Page) {
 	expect(await overflow(page)).toEqual({ page: 0, main: 0 });
 }
 
-test("#259: the game and series results fit the default window", async ({
+test("#259: the setup, game and series results fit the default window", async ({
 	electronApp,
 	appWindow,
 }) => {
@@ -27,6 +27,10 @@ test("#259: the game and series results fit the default window", async ({
 	await appWindow.setViewportSize({ width: 1366, height: 768 });
 	let checked = 0;
 	await playQuickDraftBo5(electronApp, appWindow, async (screen) => {
+		if (screen === "setup") {
+			await expectToFit(appWindow);
+			checked++;
+		}
 		if (screen === "game-result") {
 			await expectToFit(appWindow);
 			checked++;
@@ -41,5 +45,5 @@ test("#259: the game and series results fit the default window", async ({
 		}
 		checked++;
 	});
-	expect(checked).toBe(2);
+	expect(checked).toBe(3);
 });
