@@ -96,19 +96,23 @@ export async function verifiesVersion(
 	}
 }
 
+export async function readActiveVersion(
+	pointer: string,
+): Promise<string | undefined> {
+	const current = await readJson(pointer, 256);
+	return isRecord(current) && isVersion(current.version)
+		? current.version
+		: undefined;
+}
+
 export async function activeVersion(
 	root: string,
 	source: Source,
 ): Promise<string | undefined> {
 	try {
-		const current = await readJson(join(root, "current.json"), 256);
-		if (
-			isRecord(current) &&
-			isVersion(current.version) &&
-			(await verifiesVersion(root, source, current.version))
-		) {
-			return current.version;
-		}
+		const version = await readActiveVersion(join(root, "current.json"));
+		if (version && (await verifiesVersion(root, source, version)))
+			return version;
 	} catch {
 		// The active cache can be absent, unreadable, or damaged on disk.
 	}

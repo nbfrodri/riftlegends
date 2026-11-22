@@ -1,17 +1,31 @@
 import { join } from "node:path";
-import { app, BrowserWindow, ipcMain, shell, utilityProcess } from "electron";
+import {
+	app,
+	BrowserWindow,
+	ipcMain,
+	protocol,
+	shell,
+	utilityProcess,
+} from "electron";
 import coreHostPath from "../core-host/index?modulePath";
 import { pingChannel } from "../shared/bridge";
 import { createAssetCache } from "./assets/cache";
+import { registerAssetIpc } from "./assets/ipc";
+import { assetScheme, serveAsset } from "./assets/protocol";
 import { type CoreProcess, createCoreBridge } from "./core-bridge";
 import { registerCoreIpc } from "./core-ipc";
 import { registerSystemLocale } from "./system-locale";
 import { createMainWindowOptions, secureNavigation } from "./window";
 import { registerWindowControls, supportsMinimize } from "./window-controls";
 
+protocol.registerSchemesAsPrivileged([
+	{ scheme: assetScheme, privileges: { secure: true } },
+]);
+
 async function start() {
 	const window = new BrowserWindow(createMainWindowOptions());
-	const assets = createAssetCache(app.getPath("userData"), {
+	const userData = app.getPath("userData");
+	const assets = createAssetCache(userData, {
 		...(process.env.RIFT_E2E_OFFLINE === "1" && {
 			transport: async () => {
 				throw Object.assign(new Error("Asset network unavailable"), {
@@ -20,8 +34,12 @@ async function start() {
 			},
 		}),
 	});
-	void assets.sync();
 	const { session } = window.webContents;
+	session.protocol.handle(assetScheme, (request) =>
+		serveAsset(userData, request),
+	);
+	registerAssetIpc(window, ipcMain, assets);
+	void assets.sync();
 	session.setPermissionCheckHandler(() => false);
 	session.setPermissionRequestHandler((_contents, _permission, reply) =>
 		reply(false),

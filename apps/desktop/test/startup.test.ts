@@ -4,6 +4,7 @@ import { pingChannel } from "../src/shared/bridge";
 const session = {
 	setPermissionCheckHandler: vi.fn(),
 	setPermissionRequestHandler: vi.fn(),
+	protocol: { handle: vi.fn() },
 };
 const mainFrame = {};
 const loadRenderer = vi.fn();
@@ -46,13 +47,18 @@ beforeEach(async () => {
 		},
 		ipcMain: { handle: handlers.set.bind(handlers) },
 		shell: { openExternal: vi.fn() },
+		protocol: { registerSchemesAsPrivileged: vi.fn() },
 	}));
 	// electron-vite turns this import into a path; Vitest would run the module.
 	vi.doMock("../src/core-host/index?modulePath", () => ({
 		default: "core.js",
 	}));
 	vi.doMock("../src/main/assets/cache", () => ({
-		createAssetCache: () => ({ sync: assetSync }),
+		createAssetCache: () => ({
+			sync: assetSync,
+			getStatus: vi.fn(),
+			subscribe: () => vi.fn(),
+		}),
 	}));
 	await import("../src/main/index");
 });

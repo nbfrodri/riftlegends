@@ -1,4 +1,9 @@
-import type { CoreError, Response } from "@rift-legends/contracts";
+import type {
+	AssetProgress,
+	AssetStatus,
+	CoreError,
+	Response,
+} from "@rift-legends/contracts";
 
 export const pingChannel = "riftlegends:ping";
 export const systemLocaleChannel = "app:system-locale";
@@ -10,6 +15,18 @@ export const coreChannels = {
 	query: "core:query",
 	facts: "core:facts",
 } as const;
+
+export const assetChannels = {
+	status: "assets:status",
+	sync: "assets:sync",
+	progress: "assets:progress",
+} as const;
+
+export interface AssetsApi {
+	status(): Promise<AssetStatus>;
+	sync(): Promise<AssetStatus>;
+	subscribe(listener: (progress: AssetProgress) => void): () => void;
+}
 
 export const windowChannels = {
 	minimize: "window:minimize",
@@ -68,6 +85,7 @@ export interface RiftLegendsAPI {
 	systemLocale(): Promise<string>;
 	window: WindowControls;
 	core: CoreApi;
+	assets: AssetsApi;
 }
 
 declare global {

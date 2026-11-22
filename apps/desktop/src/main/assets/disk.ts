@@ -78,7 +78,7 @@ export async function readBytes(
 	path: string,
 	limit: number,
 	prefix?: number,
-): Promise<Buffer | undefined> {
+): Promise<Buffer<ArrayBuffer> | undefined> {
 	const size = await fileSize(path);
 	if (
 		size === undefined ||

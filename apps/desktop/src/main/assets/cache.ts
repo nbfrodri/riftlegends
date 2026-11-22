@@ -1,4 +1,5 @@
 import { dirname } from "node:path";
+import type { AssetProgress, AssetStatus } from "@rift-legends/contracts";
 import { communityFiles, isVersion, versionsUrl } from "./catalog";
 import { cachePath } from "./disk";
 import {
@@ -17,10 +18,8 @@ import {
 	withResponse,
 } from "./transport";
 
-type AssetStatus =
-	| { state: "missing" }
-	| { state: "syncing"; progress: { completed: number; total: number } }
-	| { state: "ready"; version: string }
+type CacheStatus =
+	| Exclude<AssetStatus, { state: "error" }>
 	| { state: "error"; reason: string };
 
 function newer(version: string, current: string): boolean {
@@ -63,11 +62,17 @@ export function createAssetCache(
 	userData: string,
 	{ transport = httpsTransport }: { transport?: AssetTransport } = {},
 ) {
-	let status: AssetStatus = { state: "missing" };
-	let running: Promise<AssetStatus> | undefined;
+	let status: CacheStatus = { state: "missing" };
+	let running: Promise<CacheStatus> | undefined;
+	const listeners = new Set<(progress: AssetProgress) => void>();
 
-	async function synchronize(): Promise<AssetStatus> {
-		let fallback: AssetStatus = { state: "missing" };
+	function reportProgress(progress: AssetProgress) {
+		status = { state: "syncing", progress };
+		for (const listener of listeners) listener(progress);
+	}
+
+	async function synchronize(): Promise<CacheStatus> {
+		let fallback: CacheStatus = { state: "missing" };
 		let release: (() => Promise<void>) | undefined;
 		try {
 			const ddragon = dirname(
@@ -115,13 +120,10 @@ export function createAssetCache(
 					transport,
 					(completed, total) => {
 						sourceDone = completed;
-						status = {
-							state: "syncing",
-							progress: {
-								completed: dataDone + completed,
-								total: dataDone + total + pendingIcons,
-							},
-						};
+						reportProgress({
+							completed: dataDone + completed,
+							total: dataDone + total + pendingIcons,
+						});
 					},
 				);
 				dataDone += sourceDone;
@@ -143,13 +145,16 @@ export function createAssetCache(
 	}
 
 	return {
-		getStatus: (): AssetStatus => status,
-		sync(): Promise<AssetStatus> {
+		getStatus: (): CacheStatus => status,
+		subscribe(listener: (progress: AssetProgress) => void): () => void {
+			listeners.add(listener);
+			return () => listeners.delete(listener);
+		},
+		sync(): Promise<CacheStatus> {
 			if (running) return running;
-			status = { state: "syncing", progress: { completed: 0, total: 0 } };
 			running = synchronize()
 				.catch(
-					(error): AssetStatus => ({
+					(error): CacheStatus => ({
 						state: "error",
 						reason:
 							error instanceof Error
@@ -162,6 +167,7 @@ export function createAssetCache(
 					running = undefined;
 					return result;
 				});
+			reportProgress({ completed: 0, total: 0 });
 			return running;
 		},
 	};
