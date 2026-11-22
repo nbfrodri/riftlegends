@@ -1,7 +1,7 @@
 # Plan 10 — Contenido: dataset ficticio, iconos y caché de Data Dragon
 
-- **Estado:** aprobado (22-11-2026), troceado en #230–#236.
-- **Fase:** 2 · Draft rápido completo ([plan general](00-plan-general.md)).
+- **Estado:** hecho (22-11-2026): #230–#236, PR #237–#245. Aprobado el 22-11-2026.
+- **Fase:** 2 · Draft rápido completo ([plan general](../../plans/00-plan-general.md)).
 
 ## Objetivo
 
@@ -58,9 +58,9 @@ Queda fuera: datos de esports reales y atributos desde estadísticas (plan 11), 
 
 ### Caché de Data Dragon
 
-- Vive en el **proceso principal** (red y disco); el núcleo sigue puro. Reutiliza el diseño validado en el [spike S8](../research/spikes-2026-11/s77-resumable-download.md): `node:https`, `.part` con ETag, `Range` + `If-Range`, `Accept-Encoding: identity`, `staging-<versión>/` y puntero `current.json` atómico.
+- Vive en el **proceso principal** (red y disco); el núcleo sigue puro. Reutiliza el diseño validado en el [spike S8](../../research/spikes-2026-11/s77-resumable-download.md): `node:https`, `.part` con ETag, `Range` + `If-Range`, `Accept-Encoding: identity`, `staging-<versión>/` y puntero `current.json` atómico.
 - **Versión:** la última de `versions.json` al sincronizar; el manifiesto (tamaños y SHA-256) se genera al terminar la descarga y se verifica en cada arranque. Sin red, se usa la última caché válida.
-- **Qué se baja:** `champion.json` (es_ES y en_US), retratos cuadrados y los iconos de rol y objetivos de CommunityDragon. Cada origen (Data Dragon, CommunityDragon y, en el plan 11, Leaguepedia) tiene su carpeta y su manifiesto. Nada se versiona en el repo ni va en los binarios ([NOTICE.md](../../NOTICE.md)).
+- **Qué se baja:** `champion.json` (es_ES y en_US), retratos cuadrados y los iconos de rol y objetivos de CommunityDragon. Cada origen (Data Dragon, CommunityDragon y, en el plan 11, Leaguepedia) tiene su carpeta y su manifiesto. Nada se versiona en el repo ni va en los binarios ([NOTICE.md](../../../NOTICE.md)).
 - **Renderer:** protocolo `rift-asset://` registrado como privilegiado y de solo lectura, que resuelve rutas dentro de la caché activa. Sin acceso a `fs` desde el renderer.
 - **IPC:** `assets.status` (query) y `assets.sync` (comando con progreso), en el puente existente, validados con Zod.
 
@@ -95,3 +95,8 @@ Queda fuera: datos de esports reales y atributos desde estadísticas (plan 11), 
 - **Calibración:** más campeones cambian los resultados de K1–K5. Se recalibra en el issue 2, no después.
 - **CommunityDragon** cambia rutas sin aviso: el manifiesto lista las rutas usadas y un fallo deja los iconos propios.
 - **Legal:** sin assets de Riot en el repo ni en los binarios; todo se baja en tiempo de ejecución.
+
+## Pendiente al cerrar
+
+- U3 «a medias»: el contrato de estado no distingue una descarga interrumpida; al reabrir, la descarga se reanuda sola y Ajustes muestra «descargando».
+- Los retratos se descargan pero aún no se muestran: llegan con los campeones reales del plan 11 (`useAssetSrc` + `ChampionFace src`).
