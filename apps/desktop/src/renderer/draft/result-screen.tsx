@@ -68,7 +68,7 @@ function Tabs(props: {
 					tabIndex={props.selected === tab ? 0 : -1}
 					onClick={() => props.onSelect(tab)}
 					onKeyDown={(event) => move(event, index)}
-					className={`-mb-px border-b-2 px-4 py-2 ${props.selected === tab ? "border-action font-bold text-text" : "border-transparent text-muted"}`}
+					className={`-mb-px border-b-2 px-4 py-1.5 ${props.selected === tab ? "border-action font-bold text-text" : "border-transparent text-muted"}`}
 				>
 					{tab === SERIES
 						? t("draft.result.tabs.series")
@@ -120,25 +120,27 @@ function SeriesResult(props: {
 					</Button>
 				</div>
 			</Victory>
-			<Tabs games={props.games} selected={selected} onSelect={setSelected} />
-			<section
-				role="tabpanel"
-				id="result-panel"
-				// biome-ignore lint/a11y/noNoninteractiveTabindex: WAI-ARIA tabs pattern, the panel is the next stop after the tabs
-				tabIndex={0}
-				aria-labelledby={`result-tab-${selected}`}
-				className="min-w-0"
-			>
-				{game ? (
-					<GameReport game={game} summary={props.summary} showWinner />
-				) : (
-					<SeriesReport
-						games={props.games}
-						summary={props.summary}
-						onOpen={setSelected}
-					/>
-				)}
-			</section>
+			<div className="grid min-w-0 gap-2">
+				<Tabs games={props.games} selected={selected} onSelect={setSelected} />
+				<section
+					role="tabpanel"
+					id="result-panel"
+					// biome-ignore lint/a11y/noNoninteractiveTabindex: WAI-ARIA tabs pattern, the panel is the next stop after the tabs
+					tabIndex={0}
+					aria-labelledby={`result-tab-${selected}`}
+					className="min-w-0"
+				>
+					{game ? (
+						<GameReport game={game} summary={props.summary} showWinner />
+					) : (
+						<SeriesReport
+							games={props.games}
+							summary={props.summary}
+							onOpen={setSelected}
+						/>
+					)}
+				</section>
+			</div>
 		</>
 	);
 }
