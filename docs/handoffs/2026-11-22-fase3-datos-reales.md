@@ -62,5 +62,4 @@ Eventos e informes en `~/.cache/rift-tmp/codex/NN-events.jsonl` y `NN-report.jso
 | #251 | `feat/251-real-mode` | `../riftlegends-251` | Codex sin uso → Claude Opus medium | en curso |
 | #287 | `feat/287-career-component` | `../riftlegends-287` | Codex sin uso → Claude Sonnet medium | en curso |
 | #294 | — | — | gpt-6.2-astra high | espera a #293 |
-| #296 | `chore/296-drop-spike-artifacts` | `../riftlegends-296` | Codex sin uso → Claude Sonnet medium | en curso |
 | #297 | — | — | — | espera a #287 y #292 |
