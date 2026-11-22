@@ -90,6 +90,11 @@ export function useDraftSession() {
 	return session;
 }
 
+/** The session's content set; fictional outside a session (e.g. a lone board column). */
+export function useDraftContent(): ContentSet {
+	return use(Context)?.content ?? "fictional";
+}
+
 export const teamName = (options: SeriesOptions, id: string) =>
 	options.teams.find((team) => team.id === id)?.name ?? id;
 
