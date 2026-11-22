@@ -49,6 +49,23 @@ async function confirmAndWaitForRival() {
 	}
 }
 
+function firstAvailable() {
+	const available = within(screen.getByRole("group", { name: "Champions" }))
+		.getAllByRole("button")
+		.find((button) => !button.hasAttribute("aria-disabled"));
+	if (!available) throw new Error("no free champion");
+	return available;
+}
+
+async function toFirstPick(user: User) {
+	await toBoard(user);
+	for (let ban = 0; ban < 3; ban++) {
+		await user.click(firstAvailable());
+		await confirmAndWaitForRival();
+	}
+	await screen.findByText("B1 · Forge pick");
+}
+
 describe("draft board (U3)", () => {
 	test("on my ban turn, selecting and confirming sends draft.ban; the ban shows struck", async () => {
 		const user = userEvent.setup();
@@ -98,21 +115,8 @@ describe("draft board (U3)", () => {
 	test("on my pick turn, confirming sends draft.pick and the pick shows in my column with its role", async () => {
 		const user = userEvent.setup();
 		const core = await renderWithDraftCore(<DraftScreen />);
-		await toBoard(user);
-		for (let ban = 0; ban < 3; ban++) {
-			const pool = within(screen.getByRole("group", { name: "Champions" }));
-			const available = pool
-				.getAllByRole("button")
-				.find((button) => !button.hasAttribute("aria-disabled"));
-			if (!available) throw new Error("no free champion");
-			await user.click(available);
-			await confirmAndWaitForRival();
-		}
-		expect(await screen.findByText("B1 · Forge pick")).toBeTruthy();
-		const free = within(screen.getByRole("group", { name: "Champions" }))
-			.getAllByRole("button")
-			.find((b) => b.getAttribute("aria-disabled") !== "true");
-		if (!free) throw new Error("no free champion");
+		await toFirstPick(user);
+		const free = firstAvailable();
 		const name = free.querySelector("b")?.textContent ?? "";
 		await user.click(free);
 		await user.click(confirm());
@@ -124,6 +128,59 @@ describe("draft board (U3)", () => {
 		});
 		expect(first.querySelector("svg")).toBeTruthy();
 		expect(tile(`${name}. Already picked in this game`)).toBeTruthy();
+	});
+
+	test("confirming a pick renders the pool and picking column only when the pick arrives", async () => {
+		const user = userEvent.setup();
+		const { api, i18n } = await renderWithDraftCore(<DraftScreen />);
+		// Each of these headings is translated once per render of its component.
+		const translate = vi.spyOn(i18n, "t");
+		const renders = () => {
+			const keys = translate.mock.calls.map(([key]) => key);
+			return {
+				pool: keys.filter((key) => key === "draft.board.pool").length,
+				blue: keys.filter((key) => key === "draft.side.blue").length,
+				red: keys.filter((key) => key === "draft.side.red").length,
+			};
+		};
+		await toFirstPick(user);
+		const choice = firstAvailable();
+		const name = choice.getAttribute("aria-label");
+		await user.click(choice);
+		for (const count of Object.values(renders()))
+			expect(count).toBeGreaterThan(0);
+		translate.mockClear();
+
+		// Separate the command acknowledgement from the refreshed draft view.
+		let release = () => {};
+		const held = new Promise<void>((resolve) => {
+			release = resolve;
+		});
+		const query = api.query.getMockImplementation();
+		if (!query) throw new Error("no draft query implementation");
+		api.query.mockImplementationOnce(async (request) => {
+			await held;
+			return query(request);
+		});
+		fireEvent.click(confirm());
+		await waitFor(() =>
+			expect(api.send).toHaveLastResolvedWith(
+				expect.objectContaining({
+					ok: true,
+					facts: expect.arrayContaining([
+						expect.objectContaining({ type: "draft.picked" }),
+					]),
+				}),
+			),
+		);
+		const pending = renders();
+		release();
+		await waitFor(() => tile(`${name}. Already picked in this game`));
+
+		expect({ pending, total: renders() }).toEqual({
+			pending: { pool: 0, blue: 0, red: 0 },
+			total: { pool: 1, blue: 1, red: 0 },
+		});
 	});
 
 	test("an unavailable champion cannot be confirmed and says why only in its accessible name", async () => {

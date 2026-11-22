@@ -1,9 +1,13 @@
-import { draftFacts } from "@rift-legends/contracts";
+import {
+	draftFacts,
+	type SeriesOptions,
+	type Side,
+} from "@rift-legends/contracts";
 import { ChevronRight } from "lucide-react";
-import { useState } from "react";
+import { memo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useFacts } from "../../core";
-import { championLabel, teamName, useDraftSession } from "../session";
+import { championLabel, teamName } from "../session";
 import { InspectionPanel } from "./player-card";
 
 type Decision = Extract<
@@ -23,8 +27,13 @@ function storedOpen() {
 	}
 }
 
-function DecisionDetails({ decision }: { decision: Decision }) {
-	const { options } = useDraftSession();
+function DecisionDetails({
+	decision,
+	options,
+}: {
+	decision: Decision;
+	options: SeriesOptions;
+}) {
 	const { t, i18n } = useTranslation();
 	const number = new Intl.NumberFormat(i18n.language, {
 		maximumFractionDigits: 4,
@@ -124,11 +133,18 @@ function DecisionDetails({ decision }: { decision: Decision }) {
 }
 
 /** Mounted for the whole draft, including while the explanation is collapsed. */
-export function AiDecisionPanel() {
+export const AiDecisionPanel = memo(function AiDecisionPanel({
+	game,
+	options,
+	rival,
+	side,
+}: {
+	game: number;
+	options: SeriesOptions;
+	rival: string | null;
+	side: Side | null;
+}) {
 	const { t } = useTranslation();
-	const { mine, options, view } = useDraftSession();
-	const rival =
-		view && mine && (mine === view.blue.team ? view.red : view.blue);
 	const [open, setOpen] = useState(storedOpen);
 	const [decisions, setDecisions] = useState<Decision[]>([]);
 	useFacts((facts) => {
@@ -136,8 +152,8 @@ export function AiDecisionPanel() {
 		for (const fact of facts) {
 			if (
 				fact.type !== "ai.decided" ||
-				fact.team !== rival.team ||
-				fact.game !== view?.game
+				fact.team !== rival ||
+				fact.game !== game
 			)
 				continue;
 			const parsed = draftFacts.schema.safeParse(fact);
@@ -173,9 +189,7 @@ export function AiDecisionPanel() {
 					// The panel still works if the preference cannot be saved.
 				}
 			}}
-			accent={
-				rival && rival === view?.blue ? "border-side-blue" : "border-side-red"
-			}
+			accent={side === "blue" ? "border-side-blue" : "border-side-red"}
 		>
 			{latest ? (
 				<div className="mt-3 text-[13px]">
@@ -183,7 +197,7 @@ export function AiDecisionPanel() {
 						<h3 id="latest-ai-decision" className="truncate font-bold text-sm">
 							{label(latest)}
 						</h3>
-						<DecisionDetails decision={latest} />
+						<DecisionDetails decision={latest} options={options} />
 					</section>
 					{earlier.length > 0 && (
 						<>
@@ -204,7 +218,7 @@ export function AiDecisionPanel() {
 												/>
 												<span className="truncate">{label(decision)}</span>
 											</summary>
-											<DecisionDetails decision={decision} />
+											<DecisionDetails decision={decision} options={options} />
 										</details>
 									</li>
 								))}
@@ -219,4 +233,4 @@ export function AiDecisionPanel() {
 			)}
 		</InspectionPanel>
 	);
-}
+});
