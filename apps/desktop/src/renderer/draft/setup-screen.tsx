@@ -1,4 +1,8 @@
-import type { ContentSet, SeriesOptions } from "@rift-legends/contracts";
+import {
+	CONTENT_SETS,
+	type ContentSet,
+	type SeriesOptions,
+} from "@rift-legends/contracts";
 import { Button } from "@rift-legends/ui-kit/components/button";
 import {
 	SearchSelect,
@@ -12,7 +16,6 @@ import { useRealBlock } from "./real-content";
 import { useDraftSession } from "./session";
 import { TeamCrest } from "./team-crest";
 
-const CONTENT = ["fictional", "real"] as const satisfies readonly ContentSet[];
 /** Leagues in the order the team selector lists them (plan 11, A2). */
 const LEAGUES = ["LCK", "LPL", "LEC", "LCP", "LCS", "CBLOL"];
 
@@ -221,7 +224,7 @@ export function SetupScreen() {
 					>
 						<SegmentedControl
 							label={t("draft.setup.content")}
-							options={CONTENT.map((value) => ({
+							options={CONTENT_SETS.map((value) => ({
 								value,
 								label: t(`draft.setup.content.${value}`),
 								disabled: starting || (value === "real" && block !== null),

@@ -13,7 +13,7 @@ import {
 import { viewSummary } from "./summary";
 import { viewDraft } from "./view";
 
-export type { ContentLibrary, LoadedContent, SeriesState } from "./series";
+export type { ContentLibrary, SeriesState } from "./series";
 
 /** Dispatcher of the draft catalog (plan 06). */
 export const draftDispatcher = createDispatcher<SeriesState>({
