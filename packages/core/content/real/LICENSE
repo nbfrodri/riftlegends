@@ -1,0 +1,11 @@
+Datos normalizados de los colaboradores de Leaguepedia (lol.fandom.com).
+Licencia Creative Commons Atribución-CompartirIgual 3.0 Unported:
+https://creativecommons.org/licenses/by-sa/3.0/
+
+Fuente e historiales: https://lol.fandom.com/wiki/Leaguepedia
+Derechos: https://lol.fandom.com/wiki/Leaguepedia:Copyrights
+Cada JSON incluye la procedencia y las consultas de origen.
+
+Los logos y sus marcas pertenecen a sus titulares. El snapshot solo guarda
+metadatos para resolver y verificar los archivos. No incluye las imágenes.
+El código del repositorio conserva sus licencias MIT y Apache 2.0.

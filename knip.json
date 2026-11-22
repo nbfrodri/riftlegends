@@ -23,6 +23,9 @@
 				"config": ["playwright.config.ts", "playwright.visual.config.ts"]
 			}
 		},
+		"tools/data-pipeline": {
+			"entry": ["cli.ts", "**/*.test.ts"]
+		},
 		"packages/core": {
 			"entry": ["test/update-goldens.script.ts"],
 			"ignoreIssues": {

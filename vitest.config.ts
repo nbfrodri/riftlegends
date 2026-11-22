@@ -5,6 +5,12 @@ export default defineConfig({
 		projects: [
 			{
 				test: {
+					name: "data-pipeline",
+					include: ["tools/data-pipeline/**/*.test.ts"],
+				},
+			},
+			{
+				test: {
 					name: "ui-kit",
 					include: ["packages/ui-kit/**/*.test.ts"],
 				},

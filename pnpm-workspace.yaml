@@ -1,6 +1,7 @@
 packages:
   - "apps/*"
   - "packages/*"
+  - "tools/*"
 allowBuilds:
   lefthook: true
 # PixiJS declares distanceField as optional on the class but required on its interface.
