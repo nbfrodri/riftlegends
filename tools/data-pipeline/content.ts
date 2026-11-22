@@ -2,6 +2,7 @@ import { readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { realSnapshotSchema } from "@rift-legends/contracts/real-snapshot";
+import { parseHistory } from "./history.ts";
 import { buildPlayerTeamContent } from "./player-team-content.ts";
 import { season2026 } from "./scope.ts";
 
@@ -24,7 +25,15 @@ export async function buildContent(inputDir = dir) {
 			),
 		),
 	);
-	const { players, teams, provenance } = buildPlayerTeamContent(snapshots);
+	const careers = new Map(
+		parseHistory(await readFile(join(inputDir, "history.json"), "utf8")).players.map(
+			({ id, seasons }) => [id, seasons],
+		),
+	);
+	const { players, teams, provenance } = buildPlayerTeamContent(
+		snapshots,
+		careers,
+	);
 	return {
 		"players.json": serializeRows(players),
 		"teams.json": serializeRows(teams),

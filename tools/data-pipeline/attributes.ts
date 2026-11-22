@@ -3,6 +3,7 @@ import {
 	PLAYER_ATTRIBUTES,
 	type PlayerAttribute,
 } from "../../packages/contracts/draft/player-attributes.ts";
+import { careerLevelCap } from "./career.ts";
 import { leagueOffset } from "./league-strength.ts";
 import { groupBy } from "./normalization.ts";
 
@@ -130,6 +131,15 @@ const mental = {
 	communication: [6, 3],
 } as const;
 
+// Puntos que suma la trayectoria completa (careerStrength = 1) a los atributos
+// que dependen de haber vivido muchas temporadas y finales.
+const careerPoints: Partial<Record<PlayerAttribute, number>> = {
+	experience: 20,
+	composure: 6,
+	resilience: 5,
+	consistency: 4,
+};
+
 const average = (values: number[]) =>
 	values.reduce((total, value) => total + value, 0) / values.length;
 
@@ -240,9 +250,14 @@ const focusWeight = 3;
 /**
  * Nivel: media ponderada de los 20 atributos (peso 3 en los seis del rol, 1 en
  * el resto), estirada 1,25 sobre el centro de la banda. La liga ya está en los
- * atributos.
+ * atributos. La trayectoria (0–1, ver `careerStrength`) suma hasta
+ * `careerLevelCap` puntos.
  */
-export function playerLevel(attributes: AttributeScores, role: Role) {
+export function playerLevel(
+	attributes: AttributeScores,
+	role: Role,
+	career = 0,
+) {
 	let total = 0;
 	let weights = 0;
 	for (const key of PLAYER_ATTRIBUTES) {
@@ -252,7 +267,13 @@ export function playerLevel(attributes: AttributeScores, role: Role) {
 	}
 	const center = bandValue(0.5);
 	return Math.round(
-		Math.max(30, Math.min(99, center + 1.25 * (total / weights - center))),
+		Math.max(
+			30,
+			Math.min(
+				99,
+				center + 1.25 * (total / weights - center) + careerLevelCap * career,
+			),
+		),
 	);
 }
 
@@ -297,7 +318,7 @@ export function attributeProfiles(snapshot: RealSnapshot) {
 	}
 
 	const offset = leagueOffset[snapshot.league.id] ?? 0;
-	return (player: string, role: Role) => {
+	return (player: string, role: Role, career = 0) => {
 		const cohort = cohorts.get(role);
 		const profile = cohort?.get(player);
 		const estimated: PlayerAttribute[] = [];
@@ -339,6 +360,7 @@ export function attributeProfiles(snapshot: RealSnapshot) {
 					mental[attribute as keyof typeof mental];
 				value += experienceWeight * experience + resultWeight * result;
 			}
+			value += (careerPoints[attribute] ?? 0) * career;
 			if (!measured || proxies.has(attribute)) estimated.push(attribute);
 			return [
 				attribute,

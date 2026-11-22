@@ -2,6 +2,8 @@ import { homedir } from "node:os";
 import { isAbsolute, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
+import { Client } from "./client.ts";
+import { history } from "./history.ts";
 import { writeLogos } from "./logos.ts";
 import { snapshot } from "./snapshot.ts";
 
@@ -31,13 +33,20 @@ try {
 					"data-pipeline",
 				),
 		);
-		const fromRoot = relative(root, cacheDir);
-		if (
-			!isAbsolute(fromRoot) &&
-			fromRoot !== ".." &&
-			!fromRoot.startsWith(`..${sep}`)
-		) {
-			throw new Error("The raw cache directory must be outside the repository");
+		const historyDir = resolve(
+			process.env.RIFT_LEGENDS_HISTORY_CACHE ?? join(cacheDir, "history"),
+		);
+		for (const dir of [cacheDir, historyDir]) {
+			const fromRoot = relative(root, dir);
+			if (
+				!isAbsolute(fromRoot) &&
+				fromRoot !== ".." &&
+				!fromRoot.startsWith(`..${sep}`)
+			) {
+				throw new Error(
+					"The raw cache directory must be outside the repository",
+				);
+			}
 		}
 		const outputDir = join(root, "packages/core/content/real");
 		if (positionals[0] === "logos") {
@@ -55,21 +64,30 @@ try {
 			for (const miss of result.unmatched)
 				console.log(`unmatched ${miss.league} ${miss.team}: ${miss.reason}`);
 		} else {
-			const result = await snapshot({
+			const options = {
 				cacheDir,
 				outputDir,
 				offline: values.offline,
 				maxAttempts: Number(values["max-attempts"] ?? "5"),
-				fetch: (input, options) => {
+				fetch: (input: Parameters<typeof fetch>[0], init?: RequestInit) => {
 					const url = new URL(String(input));
 					const table = url.searchParams.get("tables");
 					const label = table
 						? `${table} (offset ${url.searchParams.get("offset")})`
 						: (url.searchParams.get("prop") ?? url.hostname);
 					console.error(`Fetching ${label}`);
-					return fetch(input, options);
+					return fetch(input, init);
 				},
-			});
+			};
+			const client = new Client(options);
+			const result = await snapshot(options, client);
+			const career = await history(
+				{ ...options, cacheDir: historyDir },
+				client.withCache(historyDir),
+			);
+			console.error(
+				`Career history: ${career.players} players, seasons ${career.years[0]}-${career.years.at(-1)}`,
+			);
 			console.table(result.totals);
 			console.log(JSON.stringify({ bytes: result.bytes, ...result.oddities }));
 		}

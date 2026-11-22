@@ -129,8 +129,7 @@ export class Client {
 	readonly #sleep: (milliseconds: number) => Promise<void>;
 	readonly #maxAttempts: number;
 	readonly #options: ClientOptions;
-	#tail = Promise.resolve();
-	#nextRequest = 0;
+	#queue = { tail: Promise.resolve(), nextRequest: 0 };
 
 	constructor(options: ClientOptions) {
 		this.#options = options;
@@ -143,12 +142,26 @@ export class Client {
 		}
 	}
 
+	/** Use a separate cache and query log while sharing the same rate limit. */
+	withCache(cacheDir: string) {
+		const client = new Client({ ...this.#options, cacheDir });
+		client.#queue = this.#queue;
+		return client;
+	}
+
 	async cargo(
 		table: string,
 		fields: string,
 		where: string,
 		orderBy: string,
+		options: {
+			join_on?: string;
+			group_by?: string;
+			/** Applied before caching, so the cache never keeps what it drops. */
+			cacheRow?: (row: CargoRow) => CargoRow;
+		} = {},
 	): Promise<CargoRow[]> {
+		const { cacheRow, ...params } = options;
 		const rows: CargoRow[] = [];
 		for (;;) {
 			const url = wikiUrl({
@@ -159,8 +172,16 @@ export class Client {
 				order_by: orderBy,
 				limit: String(cargoLimit),
 				offset: String(rows.length),
+				...params,
 			});
-			const page = await this.get(url, cargoRows);
+			const page = cacheRow
+				? await this.#enqueue(
+						url,
+						(body) => cargoRows(body).map(cacheRow),
+						(response) => response.json(),
+						(result) => ({ cargoquery: result.map((title) => ({ title })) }),
+					)
+				: await this.get(url, cargoRows);
 			rows.push(...page);
 			if (page.length < cargoLimit) return rows;
 		}
@@ -182,9 +203,12 @@ export class Client {
 		url: string,
 		parse: (body: unknown) => T,
 		read: (response: Response) => Promise<unknown>,
+		cacheBody?: (result: T) => unknown,
 	): Promise<T> {
-		const request = this.#tail.then(() => this.#read(url, parse, read));
-		this.#tail = request.then(
+		const request = this.#queue.tail.then(() =>
+			this.#read(url, parse, read, cacheBody),
+		);
+		this.#queue.tail = request.then(
 			() => {},
 			() => {},
 		);
@@ -195,6 +219,7 @@ export class Client {
 		url: string,
 		parse: (body: unknown) => T,
 		reader: (response: Response) => Promise<unknown>,
+		cacheBody?: (result: T) => unknown,
 	): Promise<T> {
 		const file = cacheFile(this.#options.cacheDir, url);
 		const cached = await readFile(file, "utf8").catch(
@@ -221,7 +246,10 @@ export class Client {
 		await mkdir(this.#options.cacheDir, { recursive: true, mode: 0o700 });
 		const temp = `${file}.${randomUUID()}.tmp`;
 		try {
-			await writeFile(temp, JSON.stringify({ retrievedAt, body }), {
+			await writeFile(temp, JSON.stringify({
+					retrievedAt,
+					body: cacheBody ? cacheBody(result) : body,
+				}), {
 				mode: 0o600,
 			});
 			await rename(temp, file);
@@ -241,9 +269,9 @@ export class Client {
 		let reason = "";
 		for (let attempt = 1; attempt <= this.#maxAttempts; attempt++) {
 			const wait =
-				Math.max(nextAttempt, spacing ? this.#nextRequest : 0) - this.#now();
+				Math.max(nextAttempt, spacing ? this.#queue.nextRequest : 0) - this.#now();
 			if (wait > 0) await this.#sleep(wait);
-			if (spacing) this.#nextRequest = this.#now() + spacing;
+			if (spacing) this.#queue.nextRequest = this.#now() + spacing;
 
 			let retry = 0;
 			try {
