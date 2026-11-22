@@ -41,6 +41,8 @@ interface DraftSession {
 	timer: boolean;
 	/** `null` until a series starts. */
 	rules: SeriesRules | null;
+	/** The team that actively chose a side, keyed by game. A draw has no chooser. */
+	sideChoosers: Readonly<Record<number, string>>;
 	lock: {
 		game: number;
 		position: number;
@@ -102,6 +104,7 @@ function LoadedSession(props: {
 	const position = useRef(0);
 	const [timer, setTimer] = useState(false);
 	const [rules, setRules] = useState<SeriesRules | null>(null);
+	const [sideChoosers, setSideChoosers] = useState<Record<number, string>>({});
 	const [lock, setLock] = useState<DraftSession["lock"]>(null);
 	const claimedTurn = useRef<DraftView | null>(null);
 	const [error, setError] = useState<CoreRequestError | null>(null);
@@ -134,6 +137,15 @@ function LoadedSession(props: {
 				});
 				position.current = result.position;
 				for (const fact of result.facts) {
+					if (
+						fact.type === "side.chosen" &&
+						fact.by !== "draw" &&
+						typeof fact.game === "number" &&
+						typeof fact.team === "string"
+					) {
+						const { game, team } = fact;
+						setSideChoosers((previous) => ({ ...previous, [game]: team }));
+					}
 					if (fact.type === "series.started") {
 						setTimer(fact.timer === true);
 						setRules({
@@ -177,6 +189,7 @@ function LoadedSession(props: {
 						options: options.data,
 						timer,
 						rules,
+						sideChoosers,
 						lock,
 						view: view.data,
 						mine,
@@ -200,6 +213,7 @@ function LoadedSession(props: {
 			onLost,
 			timer,
 			rules,
+			sideChoosers,
 			lock,
 		],
 	);
