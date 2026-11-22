@@ -46,3 +46,47 @@ test("real players and teams have the shape of the fictional content", async () 
 		expect(roster.filter((p) => p.leader)).toHaveLength(1);
 	}
 });
+
+test("credible real attributes, levels and seeds (#280)", async () => {
+	type P = {
+		handle: string;
+		team: string;
+		role: string;
+		level: number;
+		placeholder?: true;
+		attributes: Record<string, number>;
+	};
+	const players: P[] = await read("players.json");
+	const teams: { id: string; name: string; league: string; seed: number }[] =
+		await read("teams.json");
+	const star = (handle: string) => {
+		const found = players.find((p) => p.handle === handle && !p.placeholder);
+		if (!found) throw new Error(handle);
+		return found;
+	};
+	for (const handle of ["Faker", "Chovy", "Keria", "Ruler"]) {
+		const { attributes, level } = star(handle);
+		const values = Object.values(attributes);
+		expect(Math.min(...values), handle).toBeGreaterThanOrEqual(55);
+		expect(Math.max(...values), handle).toBeLessThanOrEqual(95);
+		expect(level, handle).toBeGreaterThanOrEqual(70);
+		expect(level, handle).toBeLessThanOrEqual(93);
+	}
+	expect(star("Chovy").level).toBeGreaterThanOrEqual(85);
+	// Nobody is near the extremes in most attributes.
+	for (const { attributes, placeholder } of players) {
+		if (placeholder) continue;
+		const values = Object.values(attributes);
+		expect(values.filter((v) => v < 45 || v > 95).length).toBeLessThan(4);
+	}
+	const seed = (name: string) => teams.find((t) => t.name === name)?.seed ?? 0;
+	const best = (league: string) =>
+		Math.min(
+			...teams.filter((t) => t.league === league).map((team) => team.seed),
+		);
+	const topLck = best("LCK");
+	const topLpl = best("LPL");
+	for (const weaker of ["LCP", "LCS", "CBLOL"])
+		expect(best(weaker), weaker).toBeGreaterThan(Math.min(topLck, topLpl) + 3);
+	expect(seed("Team Secret Whales")).toBeGreaterThan(10);
+});
