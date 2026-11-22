@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { defineCommands, defineQueries, position } from "../envelope";
 import { defineFacts } from "../facts";
-import { aiDecidedFact, aiPerTeam, TIERS } from "./ai";
+import { aiContent, aiDecidedFact, aiPerTeam, TIERS } from "./ai";
 import {
 	matchContent,
 	matchEndedFact,
@@ -202,7 +202,11 @@ export const seriesOptions = z.strictObject({
 	),
 	/** Each champion of the pool with the roles it plays, for the role filter (U3). */
 	champions: z.array(
-		z.strictObject({ id: championId, roles: z.array(z.enum(ROLES)) }),
+		z.strictObject({
+			id: championId,
+			name: aiContent.shape.champions.element.shape.name,
+			roles: z.array(z.enum(ROLES)),
+		}),
 	),
 });
 
