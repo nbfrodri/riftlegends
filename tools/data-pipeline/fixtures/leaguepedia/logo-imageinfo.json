@@ -1,0 +1,25 @@
+{
+  "continue": {
+    "iistart": "2021-04-02T01:25:53Z",
+    "continue": "||"
+  },
+  "query": {
+    "pages": {
+      "470308": {
+        "pageid": 470308,
+        "ns": 6,
+        "title": "File:T1logo profile.png",
+        "imagerepository": "local",
+        "imageinfo": [
+          {
+            "url": "https://static.wikia.nocookie.net/lolesports_gamepedia_en/images/7/78/T1logo_profile.png/revision/latest?cb=20221015004607",
+            "descriptionurl": "https://lol.fandom.com/wiki/File:T1logo_profile.png",
+            "descriptionshorturl": "https://lol.fandom.com/index.php?curid=470308",
+            "extmetadata": [],
+            "mime": "image/png"
+          }
+        ]
+      }
+    }
+  }
+}

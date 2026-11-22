@@ -1,0 +1,64 @@
+{
+  "cargoquery": [
+    {
+      "title": {
+        "OverviewPage": "LCK/2026 Season/Rounds 1-2",
+        "GameId": "LCK/2026 Season/Rounds 1-2_Week 1_1_1",
+        "MatchId": "LCK/2026 Season/Rounds 1-2_Week 1_1",
+        "Team1": "Hanwha Life Esports",
+        "Team2": "HANJIN BRION",
+        "Team1Pick1": "Ryze",
+        "Team1Pick2": "Ezreal",
+        "Team1Pick3": "Bard",
+        "Team1Pick4": "Jayce",
+        "Team1Pick5": "Pantheon",
+        "Team2Pick1": "Neeko",
+        "Team2Pick2": "Jarvan IV",
+        "Team2Pick3": "Cassiopeia",
+        "Team2Pick4": "Jhin",
+        "Team2Pick5": "Yorick",
+        "SwitchedSides": "1"
+      }
+    },
+    {
+      "title": {
+        "OverviewPage": "LCK/2026 Season/Rounds 1-2",
+        "GameId": "LCK/2026 Season/Rounds 1-2_Week 1_1_2",
+        "MatchId": "LCK/2026 Season/Rounds 1-2_Week 1_1",
+        "Team1": "HANJIN BRION",
+        "Team2": "Hanwha Life Esports",
+        "Team1Pick1": "Azir",
+        "Team1Pick2": "Trundle",
+        "Team1Pick3": "Renekton",
+        "Team1Pick4": "Mel",
+        "Team1Pick5": "Pyke",
+        "Team2Pick1": "Ashe",
+        "Team2Pick2": "Xin Zhao",
+        "Team2Pick3": "Seraphine",
+        "Team2Pick4": "Ziggs",
+        "Team2Pick5": "Gnar",
+        "SwitchedSides": "1"
+      }
+    },
+    {
+      "title": {
+        "OverviewPage": "LCK/2026 Season/Rounds 1-2",
+        "GameId": "LCK/2026 Season/Rounds 1-2_Week 1_2_1",
+        "MatchId": "LCK/2026 Season/Rounds 1-2_Week 1_2",
+        "Team1": "T1",
+        "Team2": "KT Rolster",
+        "Team1Pick1": "Orianna",
+        "Team1Pick2": "Jarvan IV",
+        "Team1Pick3": "Ezreal",
+        "Team1Pick4": "Anivia",
+        "Team1Pick5": "Ambessa",
+        "Team2Pick1": "Ryze",
+        "Team2Pick2": "Pantheon",
+        "Team2Pick3": "Jayce",
+        "Team2Pick4": "Ashe",
+        "Team2Pick5": "Seraphine",
+        "SwitchedSides": "1"
+      }
+    }
+  ]
+}
