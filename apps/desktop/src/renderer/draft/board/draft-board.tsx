@@ -216,7 +216,10 @@ const Inspection = memo(function Inspection(props: {
 				}
 			>
 				{rated ? (
-					<PlayerAttributes attributes={rated.attributes} />
+					<PlayerAttributes
+						attributes={rated.attributes}
+						estimated={rated.estimated}
+					/>
 				) : (
 					<p className="mt-2 text-[13px] text-muted">
 						{t("draft.board.playerHint")}

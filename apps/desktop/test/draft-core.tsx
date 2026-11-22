@@ -6,6 +6,7 @@ import {
 import {
 	draftDispatcher,
 	draftStateWith,
+	loadRealContent,
 	openSession,
 	packagedDraftContent,
 	packagedMatchContent,
@@ -18,8 +19,20 @@ import { render } from "@testing-library/react";
 import type { ReactElement } from "react";
 import { I18nextProvider } from "react-i18next";
 import { vi } from "vitest";
+import { AssetsProvider } from "../src/renderer/assets";
 import { CoreProvider } from "../src/renderer/core";
-import type { CoreApi, CoreCommand, CoreFact } from "../src/shared/bridge";
+import type {
+	AssetsApi,
+	CoreApi,
+	CoreCommand,
+	CoreFact,
+} from "../src/shared/bridge";
+
+/** The real content set, as the core host offers it (plan 11). */
+const real = () => {
+	const { draft, match } = loadRealContent();
+	return { content: draft, match };
+};
 
 /** The real draft dispatcher with the packaged content, behind the renderer's `CoreApi`. */
 function draftCore(match = packagedMatchContent, draft = packagedDraftContent) {
@@ -33,7 +46,7 @@ function draftCore(match = packagedMatchContent, draft = packagedDraftContent) {
 	};
 	const api = {
 		open: vi.fn(async () => {
-			session = openSession(1, draftStateWith(draft, match));
+			session = openSession(1, draftStateWith(draft, match, { real }));
 			return { ok: true as const, sessionId: 1 };
 		}),
 		send: vi.fn(async (command: CoreCommand) => {
@@ -94,12 +107,16 @@ export const namedDraft = {
 	})),
 };
 
-/** Renders `ui` against a real draft core, in a locale (English by default). */
+/**
+ * Renders `ui` against a real draft core, in a locale (English by default).
+ * With `assets`, the asset cache is that fake bridge.
+ */
 export async function renderWithDraftCore(
 	ui: ReactElement,
 	locale = "en-US",
 	match = packagedMatchContent,
 	draft = packagedDraftContent,
+	{ assets }: { assets?: AssetsApi } = {},
 ) {
 	const core = draftCore(match, draft);
 	const i18n = await createI18n(locale);
@@ -109,7 +126,9 @@ export async function renderWithDraftCore(
 	const view = render(
 		<I18nextProvider i18n={i18n}>
 			<QueryClientProvider client={client}>
-				<CoreProvider api={core.api}>{ui}</CoreProvider>
+				<CoreProvider api={core.api}>
+					{assets ? <AssetsProvider api={assets}>{ui}</AssetsProvider> : ui}
+				</CoreProvider>
 			</QueryClientProvider>
 		</I18nextProvider>,
 	);

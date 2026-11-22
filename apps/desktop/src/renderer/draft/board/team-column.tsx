@@ -4,10 +4,10 @@ import type {
 	SeriesOptions,
 	Side,
 } from "@rift-legends/contracts";
-import { ChampionFace } from "@rift-legends/ui-kit/components/champion-face";
 import { memo, useId } from "react";
 import { useTranslation } from "react-i18next";
 import { GameRoleIcon } from "../../assets/game-role-icon";
+import { ChampionPortrait } from "../champion-portrait";
 import { championLabel, teamName } from "../session";
 import { TeamCrest } from "../team-crest";
 import { slotRoles } from "./champions";
@@ -53,7 +53,7 @@ export const TeamColumn = memo(function TeamColumn(props: {
 			<header
 				className={`flex items-center justify-between gap-3.5 ${style.text}`}
 			>
-				<div>
+				<div className="min-w-0">
 					<p
 						id={`${id}-side`}
 						className="font-semibold text-[12px] uppercase tracking-[0.055em]"
@@ -62,12 +62,13 @@ export const TeamColumn = memo(function TeamColumn(props: {
 					</p>
 					<h2
 						id={`${id}-team`}
-						className="font-bold font-display text-[29px] text-text leading-tight tracking-heading"
+						title={name}
+						className="truncate font-bold font-display text-[29px] text-text leading-tight tracking-heading"
 					>
 						{name}
 					</h2>
 				</div>
-				<span className="[&_svg]:h-12 [&_svg]:w-16">
+				<span className="shrink-0 [&_img]:h-12 [&_img]:w-16 [&_svg]:h-12 [&_svg]:w-16">
 					<TeamCrest id={team.team} name={name} />
 				</span>
 			</header>
@@ -77,6 +78,12 @@ export const TeamColumn = memo(function TeamColumn(props: {
 					const current = index === props.current;
 					const player = { team: team.team, role };
 					const show = () => props.onPlayer(player);
+					const label = champion
+						? championLabel(options, champion)
+						: current
+							? t("draft.board.yourPick")
+							: t("draft.board.pending");
+					const handle = players?.find((p) => p.role === role)?.handle;
 					return (
 						<li key={role} className="flex">
 							<button
@@ -94,17 +101,16 @@ export const TeamColumn = memo(function TeamColumn(props: {
 								<span className={style.text}>
 									<GameRoleIcon role={role} />
 								</span>
-								{champion && <ChampionFace id={champion} size="compact" />}
+								{champion && <ChampionPortrait id={champion} size="compact" />}
 								<span className="min-w-0">
-									<strong className="block truncate">
-										{champion
-											? championLabel(options, champion)
-											: current
-												? t("draft.board.yourPick")
-												: t("draft.board.pending")}
+									<strong className="block truncate" title={label}>
+										{label}
 									</strong>
-									<small className="block text-[12px] text-muted">
-										{players?.find((p) => p.role === role)?.handle}
+									<small
+										className="block truncate text-[12px] text-muted"
+										title={handle}
+									>
+										{handle}
 									</small>
 								</span>
 							</button>

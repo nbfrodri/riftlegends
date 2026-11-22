@@ -4,7 +4,6 @@ import {
 	type Side,
 } from "@rift-legends/contracts";
 import { Button } from "@rift-legends/ui-kit/components/button";
-import { ChampionFace } from "@rift-legends/ui-kit/components/champion-face";
 import {
 	ArrowRight,
 	Circle,
@@ -15,6 +14,7 @@ import {
 import { useId, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useCoreQueries } from "../core";
+import { ChampionPortrait } from "./champion-portrait";
 import { type GameResult, readGame } from "./result-data";
 import { championLabel, teamName, useDraftSession } from "./session";
 import { SideSeriesPanel } from "./side-series-panel";
@@ -147,7 +147,7 @@ function PlayedBy(props: { team: string; champions: readonly string[] }) {
 						key={champion}
 						className="flex h-[clamp(44px,7vh,56px)] min-w-0 flex-col overflow-hidden rounded-control bg-surface"
 					>
-						<ChampionFace id={champion} size="pool" unavailable />
+						<ChampionPortrait id={champion} size="pool" unavailable />
 						<span className="truncate px-1 py-0.5 font-medium text-[12px] text-muted">
 							{championLabel(options, champion)}
 						</span>

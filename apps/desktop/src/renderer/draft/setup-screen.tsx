@@ -1,17 +1,22 @@
+import type { ContentSet, SeriesOptions } from "@rift-legends/contracts";
 import { Button } from "@rift-legends/ui-kit/components/button";
-import { SegmentedControl } from "@rift-legends/ui-kit/components/segmented-control";
 import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@rift-legends/ui-kit/components/select";
+	SearchSelect,
+	type SearchSelectGroup,
+} from "@rift-legends/ui-kit/components/search-select";
+import { SegmentedControl } from "@rift-legends/ui-kit/components/segmented-control";
 import { ArrowRight } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useRealBlock } from "./real-content";
 import { useDraftSession } from "./session";
 import { TeamCrest } from "./team-crest";
+
+const CONTENT = ["fictional", "real"] as const satisfies readonly ContentSet[];
+/** Leagues in the order the team selector lists them (plan 11, A2). */
+const LEAGUES = ["LCK", "LPL", "LEC", "LCP", "LCS", "CBLOL"];
+
+type Team = SeriesOptions["teams"][number];
 
 const FORMATS = ["bo1", "bo3", "bo5"] as const;
 const FEARLESS = ["hard", "soft", "off"] as const;
@@ -37,59 +42,77 @@ function Rule(props: {
 	);
 }
 
+/** The teams grouped by league, each group by seed; without leagues, one group. */
+function teamGroups(
+	teams: readonly Team[],
+	seedLabel: (n: number) => string,
+): SearchSelectGroup[] {
+	const item = (team: Team) => ({
+		value: team.id,
+		label: team.name,
+		detail: seedLabel(team.seed),
+	});
+	const leagues = [...new Set(teams.flatMap((team) => team.league ?? []))];
+	if (leagues.length === 0) return [{ items: teams.map(item) }];
+	const rank = (league: string) =>
+		LEAGUES.includes(league) ? LEAGUES.indexOf(league) : LEAGUES.length;
+	return leagues
+		.sort((a, b) => rank(a) - rank(b) || a.localeCompare(b))
+		.map((league) => ({
+			label: league,
+			items: teams.filter((team) => team.league === league).map(item),
+		}));
+}
+
 function TeamCard(props: {
 	label: string;
-	team: { id: string; name: string; seed: number };
-	teams: readonly { id: string; name: string; seed: number }[];
+	team: Team;
+	groups: readonly SearchSelectGroup[];
 	onChange: (id: string) => void;
 	side: "blue" | "red";
 }) {
 	const { t } = useTranslation();
-	const items = props.teams.map((team) => ({
-		value: team.id,
-		label: team.name,
-	}));
 	const color = props.side === "blue" ? "text-side-blue" : "text-side-red";
 	const border = props.side === "blue" ? "border-side-blue" : "border-side-red";
 	return (
 		<section className={`border-t-[3px] bg-panel ${border}`}>
 			<div
-				className={`flex h-[clamp(110px,17vh,150px)] items-center justify-between bg-panel px-6 py-[18px] ${color}`}
+				className={`flex h-[clamp(110px,17vh,150px)] items-center justify-between gap-4 bg-panel px-6 py-[18px] ${color}`}
 			>
-				<div>
+				<div className="min-w-0">
 					<p className="font-semibold text-[12px] text-muted uppercase tracking-[0.055em]">
 						{props.label}
 					</p>
-					<h2 className="mt-1 font-bold font-display text-[42px] text-text leading-none tracking-team">
+					<h2
+						title={props.team.name}
+						className="mt-1 truncate font-bold font-display text-[clamp(28px,3vw,42px)] text-text leading-none tracking-team"
+					>
 						{props.team.name}
 					</h2>
 					<p className="mt-1.5 text-[13px] text-muted">
-						{t("draft.setup.seed", { n: props.team.seed })}
+						{props.team.league
+							? t("draft.setup.leagueSeed", {
+									league: props.team.league,
+									n: props.team.seed,
+								})
+							: t("draft.setup.seed", { n: props.team.seed })}
 					</p>
 				</div>
-				<TeamCrest id={props.team.id} name={props.team.name} />
+				<span className="shrink-0">
+					<TeamCrest id={props.team.id} name={props.team.name} />
+				</span>
 			</div>
-			<div className="flex items-center justify-between border-line border-t px-5 py-[10px]">
+			<div className="flex items-center justify-between gap-4 border-line border-t px-5 py-[10px]">
 				<span>{t("draft.setup.club")}</span>
-				<Select
-					items={items}
+				<SearchSelect
+					label={props.label}
+					searchLabel={t("draft.setup.searchTeam")}
+					empty={t("draft.setup.noTeam")}
+					groups={props.groups}
 					value={props.team.id}
-					onValueChange={(value) => value && props.onChange(value)}
-				>
-					<SelectTrigger aria-label={props.label} className="min-w-40">
-						<SelectValue />
-					</SelectTrigger>
-					<SelectContent>
-						{props.teams.map((team) => (
-							<SelectItem key={team.id} value={team.id}>
-								{team.name}
-								<span className="ml-3 text-[13px] text-muted">
-									{t("draft.setup.seed", { n: team.seed })}
-								</span>
-							</SelectItem>
-						))}
-					</SelectContent>
-				</Select>
+					onChange={props.onChange}
+					className="w-56 max-w-full"
+				/>
 			</div>
 		</section>
 	);
@@ -98,11 +121,17 @@ function TeamCard(props: {
 /** U1: teams, format, fearless and timer. The rival's coach is information only. */
 export function SetupScreen() {
 	const { t, i18n } = useTranslation();
-	const { options, send, setMine } = useDraftSession();
+	const { options, send, setMine, sessionId, content, setContent } =
+		useDraftSession();
+	const block = useRealBlock(sessionId);
 	// Best seed first: the selectors and the default pairing follow it.
 	const teams = useMemo(
 		() => options.teams.slice().sort((a, b) => a.seed - b.seed),
 		[options.teams],
+	);
+	const groups = useMemo(
+		() => teamGroups(teams, (n) => t("draft.setup.seed", { n })),
+		[teams, t],
 	);
 	const [first, second] = teams;
 	const [mineId, setMineId] = useState(first?.id);
@@ -112,18 +141,26 @@ export function SetupScreen() {
 	const [timer, setTimer] = useState<Timer>("off");
 	const [starting, setStarting] = useState(false);
 
-	const mine = teams.find((team) => team.id === mineId);
-	const rival = teams.find((team) => team.id === rivalId);
+	// A content change brings other teams: fall back to the two best seeds.
+	const mine = teams.find((team) => team.id === mineId) ?? first;
+	const rival =
+		teams.find((team) => team.id === rivalId && team.id !== mine?.id) ??
+		teams.find((team) => team.id !== mine?.id);
 	if (!mine || !rival) return null;
 
 	// A team cannot face itself: taking the rival's team gives it mine.
 	const chooseMine = (id: string) => {
-		if (id === rival.id) setRivalId(mine.id);
+		setRivalId(id === rival.id ? mine.id : rival.id);
 		setMineId(id);
 	};
 	const chooseRival = (id: string) => {
-		if (id === mine.id) setMineId(rival.id);
+		setMineId(id === mine.id ? rival.id : mine.id);
 		setRivalId(id);
+	};
+	const chooseContent = (next: ContentSet) => {
+		setMineId(undefined);
+		setRivalId(undefined);
+		setContent(next);
 	};
 
 	const coach = rival.coach;
@@ -134,7 +171,7 @@ export function SetupScreen() {
 	const personality = coach?.personality ?? "balanced";
 
 	async function start() {
-		if (!mine || !rival) return;
+		if (!mine || !rival || (content === "real" && block)) return;
 		setStarting(true);
 		const ok = await send("series.start", {
 			teams: [mine.id, rival.id],
@@ -145,6 +182,7 @@ export function SetupScreen() {
 			pool: options.pool,
 			seed: crypto.getRandomValues(new Uint32Array(1))[0],
 			ai: [null, "coach"],
+			...(content === "real" && { content }),
 		});
 		if (ok) setMine(mine.id);
 		else setStarting(false);
@@ -156,14 +194,14 @@ export function SetupScreen() {
 				<TeamCard
 					label={t("draft.setup.myTeam")}
 					team={mine}
-					teams={teams}
+					groups={groups}
 					onChange={chooseMine}
 					side="blue"
 				/>
 				<TeamCard
 					label={t("draft.setup.rivalTeam")}
 					team={rival}
-					teams={teams}
+					groups={groups}
 					onChange={chooseRival}
 					side="red"
 				/>
@@ -173,6 +211,25 @@ export function SetupScreen() {
 					<h2 className="mb-[13px] font-bold font-display text-xl tracking-heading">
 						{t("draft.setup.rules")}
 					</h2>
+					<Rule
+						title={t("draft.setup.content")}
+						note={
+							block
+								? t(`draft.setup.contentBlock.${block}`)
+								: t(`draft.setup.contentNote.${content}`)
+						}
+					>
+						<SegmentedControl
+							label={t("draft.setup.content")}
+							options={CONTENT.map((value) => ({
+								value,
+								label: t(`draft.setup.content.${value}`),
+								disabled: starting || (value === "real" && block !== null),
+							}))}
+							value={content}
+							onChange={chooseContent}
+						/>
+					</Rule>
 					<Rule
 						title={t("draft.setup.format")}
 						note={t("draft.setup.formatNote")}
@@ -248,7 +305,10 @@ export function SetupScreen() {
 			</div>
 			<footer className="mt-auto flex items-center justify-between gap-4 border-line border-t pt-[14px] text-muted">
 				<span>{t("draft.setup.seedingNote")}</span>
-				<Button disabled={starting} onClick={() => void start()}>
+				<Button
+					disabled={starting || (content === "real" && block !== null)}
+					onClick={() => void start()}
+				>
 					{t("draft.setup.start")}
 					<ArrowRight aria-hidden="true" className="size-4" />
 				</Button>
