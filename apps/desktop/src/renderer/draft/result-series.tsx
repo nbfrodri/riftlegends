@@ -40,46 +40,48 @@ function Mvp(props: {
 	return (
 		<section
 			aria-label={t("draft.result.mvp.name")}
-			className={`border-t-[3px] bg-panel p-5 ${props.sideOf(mvp.team) === "blue" ? "border-side-blue" : "border-side-red"}`}
+			className={`grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-8 border-t-[3px] bg-panel px-5 py-3 ${props.sideOf(mvp.team) === "blue" ? "border-side-blue" : "border-side-red"}`}
 		>
-			<p className="font-semibold text-[12px] text-muted uppercase tracking-[0.055em]">
-				{t("draft.result.mvp.label", { team: name })}
-			</p>
-			<h2 className="mt-3 font-bold font-display text-[32px] leading-none tracking-heading">
-				{t("draft.result.stats.playerName", {
-					team: name,
-					role: role ? t(`draft.roles.role.${role}`) : "",
-				})}
-			</h2>
-			<p className="mt-1 truncate text-[14px] text-muted">
-				{new Intl.ListFormat(i18n.language, {
-					style: "long",
-					type: "conjunction",
-				}).format(
-					mvp.champions.map((champion, i) =>
-						t("draft.result.mvp.champion", {
-							champion: championLabel(options, champion),
-							game: props.games[i]?.game ?? i + 1,
-						}),
-					),
-				)}
-			</p>
-			<dl className="my-4 grid grid-cols-3 gap-3 border-line border-y py-3">
+			<div>
+				<p className="font-semibold text-[12px] text-muted uppercase tracking-[0.055em]">
+					{t("draft.result.mvp.label", { team: name })}
+				</p>
+				<h2 className="mt-2 font-bold font-display text-[28px] leading-none tracking-heading">
+					{t("draft.result.stats.playerName", {
+						team: name,
+						role: role ? t(`draft.roles.role.${role}`) : "",
+					})}
+				</h2>
+				<p className="mt-1 text-[14px] text-muted">
+					{new Intl.ListFormat(i18n.language, {
+						style: "long",
+						type: "conjunction",
+					}).format(
+						mvp.champions.map((champion, i) =>
+							t("draft.result.mvp.champion", {
+								champion: championLabel(options, champion),
+								game: props.games[i]?.game ?? i + 1,
+							}),
+						),
+					)}
+				</p>
+				<p className="mt-1 text-[14px] text-muted">
+					{t("draft.result.mvp.why", {
+						share: percent(mvp.participation),
+						team: name,
+					})}
+				</p>
+			</div>
+			<dl className="grid grid-cols-[repeat(3,auto)] gap-8 border-line border-l py-1 pl-8">
 				{stats.map((stat) => (
 					<div key={stat.label}>
 						<dt className="text-[13px] text-muted">{stat.label}</dt>
-						<dd className="font-bold font-display text-[29px] leading-tight">
+						<dd className="whitespace-nowrap font-bold font-display text-[26px] leading-tight">
 							{stat.value}
 						</dd>
 					</div>
 				))}
 			</dl>
-			<p className="text-[14px] text-muted">
-				{t("draft.result.mvp.why", {
-					share: percent(mvp.participation),
-					team: name,
-				})}
-			</p>
 		</section>
 	);
 }
@@ -99,35 +101,35 @@ function Recap(props: {
 	let winsA = 0;
 	let winsB = 0;
 	return (
-		<section className="bg-panel p-4">
-			<h2 className="font-bold font-display text-[19px] tracking-heading">
+		<section className="bg-panel px-4 py-3">
+			<h2 className="font-bold font-display text-[19px] leading-tight tracking-heading">
 				{t("draft.result.recap.title")}
 			</h2>
 			<table
 				aria-label={t("draft.result.recap.name")}
-				className="mt-2 w-full text-[14px] tabular-nums"
+				className="mt-1 w-full text-[14px] leading-5 tabular-nums"
 			>
 				<thead className="text-left text-muted">
 					<tr>
-						<th scope="col" className="p-1.5 font-normal">
+						<th scope="col" className="px-1.5 py-1 font-normal">
 							{t("draft.result.recap.map")}
 						</th>
-						<th scope="col" className="p-1.5 font-normal">
+						<th scope="col" className="px-1.5 py-1 font-normal">
 							{t("draft.result.recap.winner")}
 						</th>
-						<th scope="col" className="p-1.5 font-normal">
+						<th scope="col" className="px-1.5 py-1 font-normal">
 							{t("draft.result.recap.duration")}
 						</th>
-						<th scope="col" className="p-1.5 font-normal">
+						<th scope="col" className="px-1.5 py-1 font-normal">
 							{t("draft.result.recap.kills", {
 								a: teamName(options, teamA),
 								b: teamName(options, teamB),
 							})}
 						</th>
-						<th scope="col" className="p-1.5 font-normal">
+						<th scope="col" className="px-1.5 py-1 font-normal">
 							{t("draft.result.recap.score")}
 						</th>
-						<th scope="col" className="w-12 p-1.5">
+						<th scope="col" className="w-12 px-1.5 py-1">
 							<span className="sr-only">{t("draft.result.recap.open")}</span>
 						</th>
 					</tr>
@@ -138,18 +140,20 @@ function Recap(props: {
 						else winsB += 1;
 						return (
 							<tr key={game.game} className="border-line border-t">
-								<th scope="row" className="p-1.5 text-left">
+								<th scope="row" className="px-1.5 py-1 text-left">
 									{game.game}
 								</th>
-								<td className="p-1.5">{teamName(options, game.winner)}</td>
-								<td className="p-1.5">{clock(game.duration)}</td>
-								<td className="p-1.5">
+								<td className="px-1.5 py-1">
+									{teamName(options, game.winner)}
+								</td>
+								<td className="px-1.5 py-1">{clock(game.duration)}</td>
+								<td className="px-1.5 py-1">
 									{killsOf(game, teamA)} / {killsOf(game, teamB)}
 								</td>
-								<td className="p-1.5">
+								<td className="px-1.5 py-1">
 									{winsA} – {winsB}
 								</td>
-								<td className="p-1">
+								<td className="px-1 py-0.5 text-right">
 									<IconButton
 										icon={ArrowUpRight}
 										label={t("draft.result.recap.view", { game: game.game })}
@@ -165,7 +169,7 @@ function Recap(props: {
 	);
 }
 
-/** The "Full series" tab: MVP, mean differences by role and the map-by-map recap. */
+/** The "Full series" tab: the MVP above, then the map-by-map recap and the mean differences by role. */
 export function SeriesReport(props: {
 	games: readonly GameResult[];
 	summary: SeriesSummary | undefined;
@@ -176,11 +180,12 @@ export function SeriesReport(props: {
 	const teamA = props.games[0]?.blue ?? "";
 	const sideOf = (team: string) => (team === teamA ? "blue" : "red");
 	return (
-		<div className="grid min-w-0 gap-[14px]">
-			<div className="grid grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] items-stretch gap-[14px]">
-				{props.summary?.mvp && (
-					<Mvp mvp={props.summary.mvp} games={props.games} sideOf={sideOf} />
-				)}
+		<div className="grid min-w-0 gap-3">
+			{props.summary?.mvp && (
+				<Mvp mvp={props.summary.mvp} games={props.games} sideOf={sideOf} />
+			)}
+			<div className="grid grid-cols-2 items-stretch gap-3">
+				<Recap games={props.games} teamA={teamA} onOpen={props.onOpen} />
 				<GapsTable
 					gaps={gapsOfSeries(props.games, props.summary)}
 					options={options}
@@ -189,7 +194,6 @@ export function SeriesReport(props: {
 					note={t("draft.result.gaps.average")}
 				/>
 			</div>
-			<Recap games={props.games} teamA={teamA} onOpen={props.onOpen} />
 		</div>
 	);
 }

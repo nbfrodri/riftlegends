@@ -32,33 +32,36 @@ export function GapsTable(props: {
 	}).format(flagged.map((gap) => roleLabel(gap.role)));
 
 	return (
-		<section className="bg-panel p-4">
+		<section className="bg-panel px-4 py-3 short:py-2.5">
 			<div className="flex items-baseline justify-between gap-2">
-				<h2 className="font-bold font-display text-[19px] tracking-heading">
+				<h2 className="whitespace-nowrap font-bold font-display text-[19px] leading-tight tracking-heading">
 					{t("draft.result.gaps.title")}
 				</h2>
-				<strong className={flagged.length > 0 ? "text-action" : "text-muted"}>
+				<strong
+					className={`text-right text-[13px] ${flagged.length > 0 ? "text-action" : "text-muted"}`}
+				>
 					{flagged.length > 0
 						? t("draft.result.gaps.call", { roles })
 						: t("draft.result.gaps.none")}
 				</strong>
 			</div>
-			{props.note && (
-				<p className="mt-1 text-[12px] text-muted">{props.note}</p>
-			)}
-			<table aria-label={props.name} className="mt-2 w-full text-[14px]">
+			{props.note && <p className="text-[12px] text-muted">{props.note}</p>}
+			<table
+				aria-label={props.name}
+				className="mt-1.5 w-full text-[14px] leading-5 tabular-nums"
+			>
 				<thead className="text-left text-muted">
 					<tr>
-						<th scope="col" className="p-1.5 font-normal">
+						<th scope="col" className="px-1.5 py-0.5 font-normal">
 							{t("draft.result.gaps.role")}
 						</th>
-						<th scope="col" className="p-1.5 font-normal">
+						<th scope="col" className="px-1.5 py-0.5 font-normal">
 							{t("draft.result.gaps.leader")}
 						</th>
-						<th scope="col" className="p-1.5 font-normal">
+						<th scope="col" className="px-1.5 py-0.5 text-right font-normal">
 							{t("draft.result.gaps.rating")}
 						</th>
-						<th scope="col" className="p-1.5 font-normal">
+						<th scope="col" className="px-1.5 py-0.5 text-right font-normal">
 							{t("draft.result.gaps.gold")}
 						</th>
 					</tr>
@@ -70,13 +73,13 @@ export function GapsTable(props: {
 							data-gap={gap.gap}
 							className={`border-line border-t ${gap.gap ? "bg-surface" : ""}`}
 						>
-							<th scope="row" className="p-1.5 text-left font-semibold">
-								<span className="inline-flex items-center gap-1.5">
+							<th scope="row" className="px-1.5 py-0.5 text-left font-semibold">
+								<span className="flex items-center gap-1.5">
 									<GameRoleIcon role={gap.role} size={16} />
 									{roleLabel(gap.role)}
 								</span>
 							</th>
-							<td className="p-1.5">
+							<td className="px-1.5 py-0.5">
 								{gap.team ? (
 									<strong
 										className={
@@ -91,7 +94,9 @@ export function GapsTable(props: {
 									t("draft.result.gaps.even")
 								)}
 							</td>
-							<td className={`p-1.5 ${gap.gap ? "font-bold text-action" : ""}`}>
+							<td
+								className={`px-1.5 py-0.5 text-right ${gap.gap ? "font-bold text-action" : ""}`}
+							>
 								{gap.team
 									? t("draft.result.gaps.pointsMore", {
 											count: gap.points,
@@ -99,7 +104,7 @@ export function GapsTable(props: {
 										})
 									: t("draft.result.gaps.even")}
 							</td>
-							<td className="p-1.5">
+							<td className="px-1.5 py-0.5 text-right">
 								{gap.gold === 0
 									? t("draft.result.gaps.even")
 									: goldDiff(gap.gold)}
