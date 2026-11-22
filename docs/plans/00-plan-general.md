@@ -103,6 +103,11 @@ Cada fase termina con un hito verificable y un commit o PR fusionado en `main`. 
 
 ### Fase 7 — Profundidad de gestión
 - Meta y parches entre splits (tiers dinámicos, notas de parche generadas).
+- **Petición del usuario (22-11-2026), parches y maestría:**
+  - **Parches:** cada cierto tiempo, un parche sube o baja el tier de algunos campeones y cambia sus counters y sinergias. Las notas del parche explican qué cambió.
+  - **Maestría:** cada jugador tiene una maestría de 0 a 100 con cada campeón. Sube jugando partidas oficiales y scrims, y entrenándolo (plan 20), con coste de oportunidad: pocos campeones por semana. Baja despacio si no se juega.
+  - **Límites de la maestría:** el techo depende de su rol y su versatilidad. Un parche fuerte o un rework puede bajarla.
+  - **Efecto y dónde se ve:** pesa en la partida y en la IA de draft (comfort picks), y se ve en el perfil del jugador, en el draft y en la ficha de campeón.
 - **Propuesta del usuario (21-11-2026):** dirigir la partida como coach más allá del «Plan de partida» del plan 09: pausas tácticas en momentos clave (p. ej. minutos 15 y 25) para cambiar de plan (el «pivote estratégico»), ejecutadas mejor o peor según el shotcalling; y palancas nuevas (línea a la que se juega, invadir o defender la jungla, splitpush o agruparse), cada una con su efecto en la simulación y su calibración.
 - Scouting e información imperfecta.
 - Entrenamiento con coste de oportunidad (elegir qué atributos de cada jugador mejorar) y **scrims** ([IDEA §8](../../IDEA.md#8-novedades-respecto-a-draftsim)).
