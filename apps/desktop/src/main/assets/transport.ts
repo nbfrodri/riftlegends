@@ -31,6 +31,12 @@ const offlineCodes = new Set([
 
 export class NetworkUnavailable extends Error {}
 
+export class AssetHttpError extends Error {
+	constructor(readonly status: number) {
+		super(`Asset request failed (HTTP ${status})`);
+	}
+}
+
 function networkFailure(error: unknown, signal: AbortSignal): never {
 	if (signal.aborted)
 		throw new NetworkUnavailable("Asset request timed out", { cause: error });

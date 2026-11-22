@@ -1,6 +1,7 @@
 import type {
 	AssetProgress,
 	AssetStatus,
+	ChampionCatalog,
 	CoreError,
 	Response,
 } from "@rift-legends/contracts";
@@ -19,12 +20,15 @@ export const coreChannels = {
 export const assetChannels = {
 	status: "assets:status",
 	sync: "assets:sync",
+	champions: "assets:champions",
 	progress: "assets:progress",
 } as const;
 
 export interface AssetsApi {
 	status(): Promise<AssetStatus>;
 	sync(): Promise<AssetStatus>;
+	/** The verified active champion catalog, or null before one is available. */
+	champions(): Promise<ChampionCatalog | null>;
 	subscribe(listener: (progress: AssetProgress) => void): () => void;
 }
 

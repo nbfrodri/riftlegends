@@ -11,6 +11,7 @@ import {
 	writeJson,
 } from "./disk";
 import {
+	AssetHttpError,
 	type AssetTransport,
 	NetworkUnavailable,
 	responseLength,
@@ -195,7 +196,7 @@ export async function downloadFile(
 					prefix = Buffer.alloc(0);
 					await rm(metadata, { force: true });
 				} else {
-					throw new Error(`Asset request failed (HTTP ${response.status})`);
+					throw new AssetHttpError(response.status);
 				}
 				if (
 					expected !== undefined &&

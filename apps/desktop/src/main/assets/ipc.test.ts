@@ -1,4 +1,6 @@
+import type { ChampionCatalog } from "@rift-legends/contracts";
 import { expect, test, vi } from "vitest";
+import { createAssetsApi } from "../../preload/assets";
 import { registerAssetIpc } from "./ipc";
 
 test("validates the sender and rejects any arguments before handling asset IPC", async () => {
@@ -19,12 +21,23 @@ test("validates the sender and rejects any arguments before handling asset IPC",
 		removeHandler: (channel: string) => handlers.delete(channel),
 	};
 	const cache = {
+		getChampions: vi.fn(
+			(): ChampionCatalog => [
+				{
+					id: "MonkeyKing",
+					key: 62,
+					names: { es: "Wukong", en: "Wukong" },
+					titles: { es: "El Rey Mono", en: "The Monkey King" },
+					classes: ["fighter"],
+				},
+			],
+		),
 		getStatus: vi.fn(() => ({ state: "missing" as const })),
 		sync: vi.fn(async () => ({ state: "missing" as const })),
 		subscribe: vi.fn(() => () => {}),
 	};
 	registerAssetIpc(window as never, ipc as never, cache);
-	for (const channel of ["assets:status", "assets:sync"]) {
+	for (const channel of ["assets:status", "assets:sync", "assets:champions"]) {
 		const handle = handlers.get(channel);
 		expect(handle).toBeDefined();
 		expect(() => handle?.({ senderFrame: {} })).toThrow(
@@ -39,9 +52,17 @@ test("validates the sender and rejects any arguments before handling asset IPC",
 	}
 	expect(cache.getStatus).not.toHaveBeenCalled();
 	expect(cache.sync).not.toHaveBeenCalled();
+	expect(cache.getChampions).not.toHaveBeenCalled();
 	await expect(
 		handlers.get("assets:sync")?.({ senderFrame: mainFrame }),
 	).resolves.toEqual({
 		state: "missing",
 	});
+	const bridge = createAssetsApi({
+		invoke: async (channel, ...args) =>
+			handlers.get(channel)?.({ senderFrame: mainFrame }, ...args),
+		on: vi.fn(),
+		off: vi.fn(),
+	});
+	await expect(bridge.champions()).resolves.toEqual(cache.getChampions());
 });

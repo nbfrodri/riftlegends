@@ -12,10 +12,22 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createAssetCache } from "./cache";
+import { serveAsset } from "./protocol";
 import { type AssetTransport, withResponse } from "./transport";
 
 const versions = "/api/versions.json";
-const portrait = "/cdn/16.23.1/img/champion/Ahri.png";
+const gameData = "plugins/rcp-be-lol-game-data/global";
+const summary = (patch: string, locale: string) =>
+	`/${patch}/${gameData}/${locale}/v1/champion-summary.json`;
+const portrait = `/16.23/${gameData}/default/v1/champion-icons/103.png`;
+const champion = {
+	id: 103,
+	alias: "Ahri",
+	name: "Ahri",
+	description: "The Nine-Tailed Fox",
+	roles: ["mage", "assassin"],
+	squarePortraitPath: "/lol-game-data/assets/v1/champion-icons/103.png",
+};
 const png = Buffer.from("89504e470d0a1a0a0102030405060708", "hex");
 const etag = '"assets-1"';
 
@@ -41,7 +53,8 @@ function networkError(code: string) {
 describe("main asset cache", () => {
 	let profile: string;
 	let version: string;
-	let championId: string;
+	let catalog: unknown[];
+	let versionsList: string[];
 	let requests: Array<{ url: URL; headers: Record<string, string> }>;
 	let override: AssetTransport | undefined;
 	const transport: AssetTransport = async (url, headers, signal) => {
@@ -49,26 +62,36 @@ describe("main asset cache", () => {
 		const special = await override?.(url, headers, signal);
 		if (special) return special;
 		if (url.pathname === versions)
-			return response(JSON.stringify([version, "1.2.3"]));
-		if (url.pathname.endsWith("champion.json")) {
-			return response(
-				JSON.stringify({ data: { [championId]: { id: championId } } }),
-			);
+			return response(JSON.stringify(versionsList));
+		if (url.pathname.endsWith("champion-summary.json")) {
+			const entries = url.pathname.includes("/es_es/")
+				? catalog.map((entry) =>
+						entry === champion
+							? { ...champion, description: "La Mujer Zorro" }
+							: entry,
+					)
+				: catalog;
+			return response(JSON.stringify(entries));
 		}
 		return response(png);
 	};
 	const create = () => createAssetCache(profile, { transport });
 	const source = (...parts: string[]) =>
-		join(profile, "assets", "ddragon", ...parts);
-	const part = () =>
-		source("staging-16.23.1", "img", "champion", "Ahri.png.part");
+		join(profile, "assets", "cdragon", ...parts);
+	const part = () => source("staging-16.23", "champions", "Ahri.png.part");
 	const lock = (pid: number) =>
 		join(profile, "assets", `sync-${pid}-00000000-0000-4000-8000-000000000000`);
 
 	beforeEach(async () => {
 		profile = await mkdtemp(join(tmpdir(), "rift-assets-"));
-		version = "16.23.1";
-		championId = "Ahri";
+		version = "16.23";
+		versionsList = ["16.23.1", "16.22.1"];
+		catalog = [
+			{ id: -1, alias: "None", roles: [] },
+			champion,
+			{ id: 60001, alias: "Jade_Annie", roles: ["mage"] },
+			{ id: 104, alias: "Placeholder", roles: [] },
+		];
 		requests = [];
 		override = undefined;
 	});
@@ -116,10 +139,7 @@ describe("main asset cache", () => {
 		const deadOwner = lock(2_147_483_647);
 		await mkdir(deadOwner, { recursive: true });
 		expect(await create().sync()).toEqual({ state: "ready", version });
-		expect(await readdir(join(profile, "assets"))).toEqual([
-			"cdragon",
-			"ddragon",
-		]);
+		expect(await readdir(join(profile, "assets"))).toEqual(["cdragon"]);
 	});
 
 	it("D0 reclaims an old cache lock whose pid was reused", async () => {
@@ -130,25 +150,32 @@ describe("main asset cache", () => {
 		expect(await create().sync()).toEqual({ state: "ready", version });
 	});
 
-	it("D0 joins an in-flight sync, caches both locales and sources, and checks for a newer version", async () => {
+	it("D0 joins an in-flight sync, caches both locales and all icons, and checks for a newer version", async () => {
 		const cache = create();
+		expect(cache.getChampions()).toBeNull();
 		const pending = cache.sync();
 		expect(cache.sync()).toBe(pending);
 		expect(cache.getStatus()).toMatchObject({ state: "syncing" });
 		expect(await pending).toEqual({ state: "ready", version });
+		expect(cache.getChampions()).toEqual([
+			{
+				id: "Ahri",
+				key: 103,
+				names: { es: "Ahri", en: "Ahri" },
+				titles: { es: "La Mujer Zorro", en: "The Nine-Tailed Fox" },
+				classes: ["mage", "assassin"],
+			},
+		]);
 		expect(
 			requests.filter(({ url }) => url.pathname === versions),
 		).toHaveLength(1);
-		for (const locale of ["es_ES", "en_US"]) {
+		for (const locale of ["es_es", "en_gb"]) {
 			expect(
-				requests.some(
-					({ url }) =>
-						url.pathname === `/cdn/${version}/data/${locale}/champion.json`,
-				),
+				requests.some(({ url }) => url.pathname === summary(version, locale)),
 			).toBe(true);
 		}
-		const icons = requests.filter(
-			({ url }) => url.hostname === "raw.communitydragon.org",
+		const icons = requests.filter(({ url }) =>
+			url.pathname.startsWith("/latest/"),
 		);
 		expect(icons).toHaveLength(12);
 		expect(
@@ -158,10 +185,31 @@ describe("main asset cache", () => {
 					headers["Accept-Encoding"] === "identity",
 			),
 		).toBe(true);
+		expect(
+			requests
+				.filter(({ url }) => url.pathname.includes("/champion-icons/"))
+				.map(({ url }) => url.pathname),
+		).toEqual([portrait]);
+		const image = await serveAsset(profile, {
+			url: "rift-asset://cdragon/champions/Ahri.png",
+			method: "GET",
+		});
+		expect(Buffer.from(await image.arrayBuffer())).toEqual(png);
+		expect(
+			JSON.parse(await readFile(source(version, "catalog", "es.json"), "utf8")),
+		).toEqual([
+			{
+				id: "Ahri",
+				key: 103,
+				name: "Ahri",
+				title: "La Mujer Zorro",
+				classes: ["mage", "assassin"],
+			},
+		]);
 		const manifest = JSON.parse(
 			await readFile(source(version, "manifest.json"), "utf8"),
 		);
-		expect(manifest.files["img/champion/Ahri.png"]).toEqual({
+		expect(manifest.files["champions/Ahri.png"]).toEqual({
 			size: png.length,
 			sha256: expect.stringMatching(/^[a-f0-9]{64}$/),
 		});
@@ -170,9 +218,85 @@ describe("main asset cache", () => {
 		expect(await create().sync()).toEqual({ state: "ready", version });
 		expect(requests.map(({ url }) => url.pathname)).toEqual([versions]);
 
-		version = "16.24.1";
+		version = "16.24";
+		versionsList = ["16.24.1", "16.23.1"];
 		expect(await cache.sync()).toEqual({ state: "ready", version });
-		expect(await readdir(source())).toEqual(["16.24.1", "current.json"]);
+		expect(await readdir(source())).toEqual(["16.24", "current.json"]);
+	});
+
+	it("falls back one distinct patch when either catalog is missing", async () => {
+		versionsList = ["16.23.2", "16.23.1", "16.22.1", "16.21.1"];
+		override = async (url) =>
+			url.pathname === summary("16.23", "es_es")
+				? response("", 404)
+				: undefined;
+		expect(await create().sync()).toEqual({ state: "ready", version: "16.22" });
+		expect(
+			requests.some(({ url }) => url.pathname === summary("16.22", "en_gb")),
+		).toBe(true);
+		expect(
+			requests.some(
+				({ url }) =>
+					url.pathname.startsWith("/16.23/") && url.pathname.endsWith(".png"),
+			),
+		).toBe(false);
+	});
+
+	it.each([
+		[
+			"duplicate alias",
+			[
+				champion,
+				{
+					...champion,
+					id: 104,
+					alias: "ahri",
+					squarePortraitPath: "/lol-game-data/assets/v1/champion-icons/104.png",
+				},
+			],
+		],
+		["duplicate numeric key", [champion, { ...champion, alias: "Other" }]],
+		["too many entries", Array(513).fill(champion)],
+		["oversized numeric key", [{ ...champion, id: 100_000_000 }]],
+		[
+			"a mismatched portrait path",
+			[
+				{
+					...champion,
+					squarePortraitPath: "/lol-game-data/assets/v1/champion-icons/104.png",
+				},
+			],
+		],
+		[
+			"a foreign portrait URL",
+			[{ ...champion, squarePortraitPath: "https://example.com/103.png" }],
+		],
+	])("rejects %s before requesting images", async (_problem, entries) => {
+		catalog = entries;
+		expect(await create().sync()).toMatchObject({ state: "error" });
+		expect(requests.some(({ url }) => url.pathname.endsWith(".png"))).toBe(
+			false,
+		);
+	});
+
+	it("rejects a mismatched numeric key across locales", async () => {
+		override = async (url) =>
+			url.pathname === summary("16.23", "es_es")
+				? response(
+						JSON.stringify([
+							{
+								...champion,
+								id: 104,
+								squarePortraitPath:
+									"/lol-game-data/assets/v1/champion-icons/104.png",
+							},
+						]),
+					)
+				: undefined;
+		expect(await create().sync()).toMatchObject({ state: "error" });
+		expect(requests.some(({ url }) => url.pathname.endsWith(".png"))).toBe(
+			false,
+		);
 	});
 
 	it.each(["ENETUNREACH", "EACCES", "ECONNRESET", "ETIMEDOUT"])(
@@ -188,7 +312,8 @@ describe("main asset cache", () => {
 	it("D2 keeps the previous cache when a new version is incomplete", async () => {
 		expect(await create().sync()).toEqual({ state: "ready", version });
 		const old = version;
-		version = "16.24.1";
+		version = "16.24";
+		versionsList = ["16.24.1", "16.23.1"];
 		override = async (url) => {
 			if (url.hostname === "raw.communitydragon.org")
 				throw networkError("ECONNRESET");
@@ -200,20 +325,18 @@ describe("main asset cache", () => {
 		});
 	});
 
-	it.each(["ddragon", "cdragon"])(
-		"D2 still opens the previous cache offline if activation stops at %s",
-		async (failedSource) => {
-			expect(await create().sync()).toEqual({ state: "ready", version });
-			const old = version;
-			version = "16.24.1";
-			await mkdir(join(profile, "assets", failedSource, "current.json.tmp"));
-			expect(await create().sync()).toMatchObject({ state: "error" });
-			override = async () => {
-				throw networkError("ENETUNREACH");
-			};
-			expect(await create().sync()).toEqual({ state: "ready", version: old });
-		},
-	);
+	it("D2 still opens the previous cache offline if activation fails", async () => {
+		expect(await create().sync()).toEqual({ state: "ready", version });
+		const old = version;
+		version = "16.24";
+		versionsList = ["16.24.1", "16.23.1"];
+		await mkdir(source("current.json.tmp"));
+		expect(await create().sync()).toMatchObject({ state: "error" });
+		override = async () => {
+			throw networkError("ENETUNREACH");
+		};
+		expect(await create().sync()).toEqual({ state: "ready", version: old });
+	});
 
 	it.each(["resume", "ignore", "416", "tamper", "wrong range"])(
 		"D3 recovers an interrupted file (%s)",
@@ -230,11 +353,13 @@ describe("main asset cache", () => {
 				});
 			};
 			expect(await create().sync()).toEqual({ state: "ready", version });
+			expect(await readFile(source(version, "champions", "Ahri.png"))).toEqual(
+				png,
+			);
 			expect(
-				await readFile(source(version, "img", "champion", "Ahri.png")),
-			).toEqual(png);
-			expect(
-				requests.some(({ url }) => url.pathname.endsWith("champion.json")),
+				requests.some(({ url }) =>
+					url.pathname.endsWith("champion-summary.json"),
+				),
 			).toBe(false);
 			const portraitRequests = requests.filter(
 				({ url }) => url.pathname === portrait,
@@ -255,22 +380,25 @@ describe("main asset cache", () => {
 		"D4 revalidates active files offline (%s)",
 		async (mode) => {
 			await create().sync();
-			const file = source(version, "img", "champion", "Ahri.png");
+			const file = source(version, "champions", "Ahri.png");
 			if (mode === "deleted") await rm(file);
 			if (mode === "changed") await writeFile(file, Buffer.alloc(png.length));
 			override = async () => {
 				throw networkError("ENETUNREACH");
 			};
-			expect(await create().sync()).toEqual(
+			const offline = create();
+			expect(await offline.sync()).toEqual(
 				mode === "ok" ? { state: "ready", version } : { state: "missing" },
 			);
+			if (mode === "ok") expect(offline.getChampions()?.[0]?.key).toBe(103);
+			else expect(offline.getChampions()).toBeNull();
 		},
 	);
 
 	it.each(["../escape", "a/b", "..", "a\\b", "a%2fb", "a:b", "con"])(
 		"D6 rejects champion ID %s before requesting a portrait",
 		async (id) => {
-			championId = id;
+			catalog = [{ ...champion, alias: id }];
 			expect(await create().sync()).toMatchObject({ state: "error" });
 			expect(requests.some(({ url }) => url.pathname.endsWith(".png"))).toBe(
 				false,
@@ -286,7 +414,7 @@ describe("main asset cache", () => {
 	])(
 		"D6 rejects version %s before building URLs or paths",
 		async (invalidVersion) => {
-			version = invalidVersion;
+			versionsList = [invalidVersion, "16.22.1"];
 			expect(await create().sync()).toMatchObject({ state: "error" });
 			expect(requests.map(({ url }) => url.pathname)).toEqual([versions]);
 		},
@@ -296,8 +424,7 @@ describe("main asset cache", () => {
 		await create().sync();
 		const manifestPath = source(version, "manifest.json");
 		const manifest = JSON.parse(await readFile(manifestPath, "utf8"));
-		manifest.files["../../outside.png"] =
-			manifest.files["img/champion/Ahri.png"];
+		manifest.files["../../outside.png"] = manifest.files["champions/Ahri.png"];
 		await writeFile(manifestPath, JSON.stringify(manifest));
 		override = async () => {
 			throw networkError("ENETUNREACH");
@@ -306,9 +433,9 @@ describe("main asset cache", () => {
 	});
 
 	it("D6 retries a poisoned catalog on the next sync", async () => {
-		championId = "../escape";
+		catalog = [{ ...champion, alias: "../escape" }];
 		expect(await create().sync()).toMatchObject({ state: "error" });
-		championId = "Ahri";
+		catalog = [champion];
 		expect(await create().sync()).toEqual({ state: "ready", version });
 	});
 
@@ -374,8 +501,8 @@ describe("main asset cache", () => {
 		async () => {
 			const outside = join(profile, "outside");
 			await mkdir(outside);
-			await mkdir(source("staging-16.23.1"), { recursive: true });
-			await symlink(outside, source("staging-16.23.1", "data"), "dir");
+			await mkdir(source("staging-16.23"), { recursive: true });
+			await symlink(outside, source("staging-16.23", "upstream"), "dir");
 			expect(await create().sync()).toMatchObject({ state: "error" });
 			expect(await readdir(outside)).toEqual([]);
 		},

@@ -11,8 +11,6 @@ import {
 } from "react";
 import type { AssetsApi } from "../../shared/bridge";
 
-type AssetSource = "ddragon" | "cdragon";
-
 interface AssetsState {
 	/** Undefined until the first answer from main. */
 	status: AssetStatus | undefined;
@@ -81,7 +79,7 @@ export function useAssets() {
  * not ready (and outside an `AssetsProvider`), so callers fall back to their
  * own art.
  */
-export function useAssetSrc(source: AssetSource, path: string) {
+export function useAssetSrc(source: "cdragon", path: string) {
 	const assets = use(AssetsContext);
 	return assets?.ready ? `rift-asset://${source}/${path}` : undefined;
 }

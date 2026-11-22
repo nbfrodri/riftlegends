@@ -129,17 +129,22 @@ export async function matches(
 	);
 }
 
-export async function writeJson(path: string, value: unknown): Promise<void> {
+export async function writeJson(path: string, value: unknown): Promise<Digest> {
 	const temporary = `${path}.tmp`;
+	const bytes = Buffer.from(JSON.stringify(value));
 	await rm(temporary, { force: true });
 	const handle = await open(temporary, "wx");
 	try {
-		await handle.writeFile(JSON.stringify(value));
+		await handle.writeFile(bytes);
 		await handle.sync();
 	} finally {
 		await handle.close();
 	}
 	await rename(temporary, path);
+	return {
+		size: bytes.length,
+		sha256: createHash("sha256").update(bytes).digest("hex"),
+	};
 }
 
 export async function syncDirectory(path: string): Promise<void> {
