@@ -4,7 +4,6 @@ import type {
 	MatchView,
 } from "@rift-legends/contracts";
 import {
-	act,
 	cleanup,
 	fireEvent,
 	render,
@@ -12,7 +11,7 @@ import {
 	waitFor,
 } from "@testing-library/react";
 import type { ReactElement } from "react";
-import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+import { afterEach, describe, expect, test } from "vitest";
 import { AssetsProvider } from "../src/renderer/assets";
 import { GameRoleIcon } from "../src/renderer/assets/game-role-icon";
 import { MapIcon } from "../src/renderer/assets/map-icon";
