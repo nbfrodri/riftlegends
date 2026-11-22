@@ -101,7 +101,7 @@ export function SetupScreen() {
 	const { options, send, setMine } = useDraftSession();
 	// Best seed first: the selectors and the default pairing follow it.
 	const teams = useMemo(
-		() => options.teams.toSorted((a, b) => a.seed - b.seed),
+		() => options.teams.slice().sort((a, b) => a.seed - b.seed),
 		[options.teams],
 	);
 	const [first, second] = teams;

@@ -55,7 +55,8 @@ describe("series setup (U1)", () => {
 		expect(options).toHaveLength(8);
 		expect(options.map((o) => o.textContent)).toEqual(
 			packagedMatchContent.teams
-				.toSorted((a, b) => a.seed - b.seed)
+				.slice()
+				.sort((a, b) => a.seed - b.seed)
 				.map((team, i) => `${team.name}Seed ${i + 1}`),
 		);
 	});
