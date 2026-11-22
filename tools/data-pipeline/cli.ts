@@ -80,7 +80,11 @@ try {
 				},
 			};
 			const client = new Client(options);
-			const result = await snapshot(options, client);
+			const result = await snapshot(
+				options,
+				client,
+				client.withCache(historyDir),
+			);
 			const career = await history(
 				{ ...options, cacheDir: historyDir },
 				client.withCache(historyDir),

@@ -76,6 +76,20 @@ export function person(link: string, display?: string) {
 	return { id, name: handle(display ?? bare) };
 }
 
+/** Maps a Leaguepedia link to a snapshot player id (exact, then ignoring case). */
+export function idResolver(ids: Iterable<string>) {
+	const exact = new Set(ids);
+	const folded = new Map<string, string | null>();
+	for (const id of exact) {
+		const key = id.toLowerCase();
+		folded.set(key, folded.has(key) ? null : id);
+	}
+	return (link: string) => {
+		const { id } = person(link);
+		return exact.has(id) ? id : (folded.get(id.toLowerCase()) ?? undefined);
+	};
+}
+
 export function teamResolver(source: SourceData) {
 	const pages = indexBy(
 		source.teams,

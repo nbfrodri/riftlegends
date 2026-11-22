@@ -4,7 +4,7 @@ import { indexContent } from "../ai/content-index";
 import { CONTENT_VERSION } from "../version";
 import { loadRealContent } from "./real";
 
-const LEAGUES = { LCK: 10, LPL: 14, LEC: 12, LCP: 8, LCS: 8, CBLOL: 8 };
+const LEAGUES = ["LCK", "LPL", "LEC", "LCP", "LCS", "CBLOL"];
 
 it("R: parses the real snapshot as draft and match content", () => {
 	const { draft, match } = loadRealContent();
@@ -12,15 +12,11 @@ it("R: parses the real snapshot as draft and match content", () => {
 	expect(matchContent.parse(match)).toEqual(match);
 });
 
-it("A2: has the 60 teams of the six leagues", () => {
+it("A2: has teams from each of the six leagues", () => {
 	const { match } = loadRealContent();
-	expect(match.teams).toHaveLength(60);
-	const perLeague: Record<string, number> = {};
-	for (const team of match.teams) {
-		const league = team.league ?? "none";
-		perLeague[league] = (perLeague[league] ?? 0) + 1;
-	}
-	expect(perLeague).toEqual(LEAGUES);
+	expect(new Set(match.teams.map(({ league }) => league))).toEqual(
+		new Set(LEAGUES),
+	);
 });
 
 it("fields a player in every role of every team, starters before subs", () => {

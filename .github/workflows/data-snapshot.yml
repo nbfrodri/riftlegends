@@ -45,27 +45,36 @@ jobs:
         with:
           path: ${{ env.RIFT_LEGENDS_DATA_CACHE }}
           key: leaguepedia-raw-${{ steps.date.outputs.utc }}
-      # Past seasons never change: a stable key, so the weekly run only asks for new years.
-      - name: Restore career history responses
+      # Restore the latest closed-season cache and save a new key as it grows.
+      - name: Restore closed-season responses
         id: history
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ${{ env.RIFT_LEGENDS_HISTORY_CACHE }}
-          key: leaguepedia-history-${{ hashFiles('tools/data-pipeline/history.ts', 'tools/data-pipeline/scope.ts') }}
-          restore-keys: leaguepedia-history-
+          key: leaguepedia-history-v2-${{ steps.date.outputs.utc }}
+          restore-keys: |
+            leaguepedia-history-v2-
+            leaguepedia-history-
       - name: Regenerate snapshot
+        id: snapshot
         run: |
+          before=$(find "$RIFT_LEGENDS_HISTORY_CACHE" -type f 2>/dev/null | wc -l || true)
           cp -R packages/core/content/real "$RUNNER_TEMP/snapshot-before"
           pnpm data:snapshot
+          pnpm data:content
           pnpm data:logos
+          after=$(find "$RIFT_LEGENDS_HISTORY_CACHE" -type f 2>/dev/null | wc -l || true)
+          if [[ "$before" != "$after" ]]; then
+            echo "history-changed=true" >> "$GITHUB_OUTPUT"
+          fi
       - name: Save Leaguepedia responses
         if: steps.raw.outputs.cache-hit != 'true'
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ${{ env.RIFT_LEGENDS_DATA_CACHE }}
           key: ${{ steps.raw.outputs.cache-primary-key }}
-      - name: Save career history responses
-        if: steps.history.outputs.cache-hit != 'true'
+      - name: Save closed-season responses
+        if: steps.history.outputs.cache-hit != 'true' && steps.snapshot.outputs.history-changed == 'true'
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ${{ env.RIFT_LEGENDS_HISTORY_CACHE }}

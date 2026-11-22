@@ -127,7 +127,7 @@ describe("content choice (plan 11, A1)", () => {
 });
 
 describe("real teams (plan 11, A2)", () => {
-	test("pairs the two best seeds and groups the 60 teams by league", async () => {
+	test("pairs the two best seeds and groups the snapshot teams by league", async () => {
 		const user = userEvent.setup();
 		await setup();
 		await chooseReal(user);
@@ -145,7 +145,11 @@ describe("real teams (plan 11, A2)", () => {
 					"option",
 				).length,
 		);
-		expect(sizes).toEqual([10, 14, 12, 8, 8, 8]);
+		expect(sizes).toEqual(
+			leagues.map(
+				(league) => bySeed.filter((team) => team.league === league).length,
+			),
+		);
 	});
 
 	test("finds a team by typing part of its name", async () => {
@@ -160,7 +164,9 @@ describe("real teams (plan 11, A2)", () => {
 			target.name.slice(0, 6),
 		);
 		await user.click(
-			screen.getByRole("option", { name: new RegExp(`^${target.name}`) }),
+			screen.getByRole("option", {
+				name: (name) => name.startsWith(target.name),
+			}),
 		);
 		expect(
 			screen.getByRole("combobox", { name: "My team" }).textContent,

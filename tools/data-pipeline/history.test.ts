@@ -7,13 +7,12 @@ import {
 	acquireYear,
 	buildHistory,
 	historyYears,
-	idResolver,
 	parseHistory,
 	preserveHistory,
 	serializeHistory,
 	type YearData,
 } from "./history.ts";
-import { person } from "./normalization.ts";
+import { idResolver, person } from "./normalization.ts";
 
 let dir: string;
 beforeEach(async () => {

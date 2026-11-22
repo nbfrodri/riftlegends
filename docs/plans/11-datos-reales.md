@@ -19,7 +19,8 @@ Queda fuera: ligas menores (plan 24), regens y evolución (plan 16), meta por pa
 | P2 | Respeta la API: User-Agent propio sin datos personales, una petición a la vez, `maxlag` y reintentos con espera | Un 429 o `maxlag` espera y reintenta; tras N fallos se aborta sin escribir un snapshot a medias |
 | P3 | Cada fichero lleva procedencia: fuente, fecha de consulta, licencia (CC BY-SA 3.0, la que declara Leaguepedia) y atribución | Falta la procedencia: la validación lo rechaza |
 | P4 | Jugadores con varios equipos en la temporada quedan en el último; suplentes marcados | Jugador sin partidas: atributos por defecto de su rol y liga, marcados como estimados |
-| P5 | Un workflow semanal (y manual) regenera el snapshot y abre un PR si algo cambia | Sin cambios: no abre PR; nunca fusiona solo |
+| P5 | El workflow semanal (y manual) descubre la temporada, regenera el contenido y resume el cambio de año en el PR | Sin cambios, no abre PR. Excluye exhibiciones, ascensos, descensos y clasificatorios. Espera a que jueguen las seis ligas |
+| P5a | Al inicio de temporada, las partidas previas completan la muestra de atributos | A partir de 150 partidas de liga o 30 por jugador termina el refuerzo |
 
 ### Campeones reales
 
@@ -71,18 +72,19 @@ Queda fuera: ligas menores (plan 24), regens y evolución (plan 16), meta por pa
 - [Evaluación de Riot Games Open Access powered by GRID para la CI](../research/grid-open-access-2026-11.md).
 - **Fuente única de esports: Leaguepedia** (API Cargo de `lol.fandom.com`). Tablas previstas: equipos, plantillas de torneo (jugadores y coaches), partidas y estadísticas por jugador y partida. No se usa Oracle's Elixir ni gol.gg mientras su licencia no esté clara.
 - **Pipeline** en `tools/data-pipeline/` (Node + TypeScript, fuera del binario): descarga, guarda las respuestas crudas en una caché local fuera del repo, normaliza y escribe `packages/core/content/real/*.json` con procedencia. Los JSON van al repo (datos CC BY-SA; código MIT/Apache) con un `LICENSE` propio en esa carpeta.
+- **Cambio de temporada (#288):** Cargo descubre los torneos por liga y año. El snapshot cambia de año al empezar las seis ligas y la ventana de trayectoria avanza con él. La temporada previa solo complementa los atributos de las ligas con poca muestra. [Filtros, umbrales y caché](../../tools/data-pipeline/README.md#cambio-de-temporada).
 - **Sin texto ni arte de Riot en el repo:** el snapshot guarda ids de campeón; los nombres (ES y EN), retratos y clases salen de la caché del plan 10 (`champion-summary.json` de CommunityDragon). La tabla curada de arquetipos usa solo ids.
 - **Logos de equipos:** nombre de archivo, URL resuelta y SHA-1 de Leaguepedia en el snapshot; se descargan en tiempo de ejecución al origen `leaguepedia` de la caché del plan 10.
 - **Plantillas:** el historial conserva los equipos por torneo. La plantilla de temporada asigna cada jugador a su último equipo por partida y marca la suplencia por mayoría de partidas en su rol. Si el identificador de Leaguepedia incluye un desambiguador entre paréntesis, se sustituye por una huella para no publicar nombres reales.
 - **Atributos:** cada uno con su fórmula en `tools/data-pipeline/attributes.ts` (por ejemplo, farming ← CS por minuto; visión ← puntuación de visión por minuto; agresividad ← participación en bajas temprana). Los de equipo y mentales (comunicación, shotcalling, temple) parten de la media del rol, ajustada por experiencia y resultados; se marcan como **estimados** en el perfil.
-- **Fórmulas creíbles (#280):** cada atributo medido es la media ponderada de los percentiles (rol y liga, suavizados con 12 partidas) de varias métricas (`recipes` en `attributes.ts`; p. ej. peleas = KP, cuota de daño, muertes y asistencias). El percentil se lleva a una banda de **55–88** (centro 71,5), más los **puntos de liga** (LCK +4 · LPL +3 · LEC 0 · LCP −2 · LCS −3 · CBLOL −6) y los **resultados del equipo** (±3 a ±6 puntos según el atributo; los playoffs cuentan doble). Experiencia: partidas de 2026 frente a la media del rol. **Nivel:** media ponderada de los 20 atributos (peso 3 en los seis del rol, 1 en el resto), estirada ×1,25 sobre el centro. **Sembrado:** rating tipo Elo = prior de liga (LCK +150 · LPL +120 · LEC 0 · LCP −80 · LCS −110 · CBLOL −190) + 400·log10(w/(1−w)) con el % de victorias suavizado (12 partidas al 50 %, playoffs ×2); orden global por rating. El histórico anterior a 2026 no está en el snapshot.
+- **Fórmulas creíbles (#280):** cada atributo medido es la media ponderada de los percentiles (rol y liga, suavizados con 12 partidas) de varias métricas (`recipes` en `attributes.ts`; p. ej. peleas = KP, cuota de daño, muertes y asistencias). El percentil se lleva a una banda de **55–88** (centro 71,5), más los **puntos de liga** (LCK +4 · LPL +3 · LEC 0 · LCP −2 · LCS −3 · CBLOL −6) y los **resultados del equipo** (±3 a ±6 puntos según el atributo; los playoffs cuentan doble). Experiencia: partidas de la muestra frente a la media del rol. **Nivel:** media ponderada de los 20 atributos (peso 3 en los seis del rol, 1 en el resto), estirada ×1,25 sobre el centro. **Sembrado:** rating tipo Elo = prior de liga (LCK +150 · LPL +120 · LEC 0 · LCP −80 · LCS −110 · CBLOL −190) + 400·log10(w/(1−w)) con el % de victorias suavizado (12 partidas al 50 %, playoffs ×2); orden global por rating.
 - **Jugadores y equipos (#250):** `pnpm data:content` genera `players.json`, `teams.json` y `provenance.json` desde el snapshot, sin red ([README del pipeline](../../tools/data-pipeline/README.md#jugadores-y-equipos)). Los atributos no medibles o basados en proxies van en `estimated`.
 - **Contenido en el núcleo:** el mismo esquema del plan 10. `content_version` distinto por snapshot; los goldens siguen con el contenido ficticio.
 - **Datos sin licencia clara, nunca:** si una tabla o campo no está bajo CC BY-SA, no entra.
 
 ## Decisiones del usuario (22-11-2026)
 
-1. **Temporada:** la foto de datos cubre **2026 completa** (todos los splits); se regenera con un comando.
+1. **Temporada:** la foto inicial cubre 2026 completa. A partir de #288, el pipeline descubre el siguiente año automáticamente.
 2. **Nombres de campeón:** salen de la **caché** en ES y EN. El modo real exige haber descargado la caché una vez.
 3. **Atributos no medibles** (comunicación, shotcalling, temple, resistencia mental): **estimados** desde la media del rol, ajustados por experiencia y resultados, y **marcados como estimados** en la UI.
 4. **Coaches:** la personalidad sale del **estilo de draft** del equipo.
@@ -105,6 +107,7 @@ Queda fuera: ligas menores (plan 24), regens y evolución (plan 16), meta por pa
 | 8 | #265 · Campeones desde CommunityDragon: nombres, retratos y clases | R5 |
 | 9 | #266 · Workflow semanal que regenera el snapshot con un PR | P5 |
 | 10 | #267 · Condiciones de Riot Open Access (GRID) como segunda fuente | Informe en `docs/research/` |
+| 11 | #288 · Cambio automático de temporada | P5, P5a |
 
 ## Riesgos
 

@@ -4,9 +4,10 @@ import { realSnapshotSchema } from "@rift-legends/contracts/real-snapshot";
 import { mergeSamePlayers } from "./canonical-players.ts";
 import type { Season } from "./career.ts";
 import { type CargoRow, Client, type ClientOptions } from "./client.ts";
-import { person } from "./normalization.ts";
+import { idResolver, person } from "./normalization.ts";
 import { compare } from "./queries.ts";
-import { historySpan, season2026, snapshotSeason } from "./scope.ts";
+import { historySpan, leagues } from "./scope.ts";
+import { seasonOf } from "./season.ts";
 
 /** Main leagues, as they were called each year (LTA, PCS, VCS and LJL included). */
 const domesticLeagues = [
@@ -35,10 +36,7 @@ const notFinal = /Regional Finals|Play-?In|Qualif/i;
 const quote = (values: readonly string[]) =>
 	values.map((value) => `'${value}'`).join(",");
 
-export function historyYears(
-	season = snapshotSeason,
-	span = historySpan,
-): number[] {
+export function historyYears(season: number, span = historySpan): number[] {
 	return Array.from({ length: span }, (_, index) => season - span + index);
 }
 
@@ -81,20 +79,6 @@ export async function acquireYear(client: Client, year: number) {
 	return { year, games, events, titles };
 }
 export type YearData = Awaited<ReturnType<typeof acquireYear>>;
-
-/** Maps a Leaguepedia link to a 2026 player id (exact, then ignoring case). */
-export function idResolver(ids: Iterable<string>) {
-	const exact = new Set(ids);
-	const folded = new Map<string, string | null>();
-	for (const id of [...exact].sort(compare)) {
-		const key = id.toLowerCase();
-		folded.set(key, folded.has(key) ? null : id);
-	}
-	return (link: string) => {
-		const { id } = person(link);
-		return exact.has(id) ? id : (folded.get(id.toLowerCase()) ?? undefined);
-	};
-}
 
 export interface PlayerHistory {
 	id: string;
@@ -244,7 +228,6 @@ export async function preserveHistory(path: string, file: HistoryFile) {
 interface HistoryOptions extends ClientOptions {
 	/** Folder with the league snapshots; history.json is written next to them. */
 	outputDir: string;
-	season?: number;
 	span?: number;
 }
 
@@ -256,11 +239,9 @@ export async function history(
 	options: HistoryOptions,
 	client = new Client(options),
 ) {
-	const season = options.season ?? snapshotSeason;
-	const years = historyYears(season, options.span);
 	const snapshots = mergeSamePlayers(
 		await Promise.all(
-			season2026.map(async ({ id }) =>
+			leagues.map(async ({ id }) =>
 				realSnapshotSchema.parse(
 					JSON.parse(
 						await readFile(
@@ -272,6 +253,9 @@ export async function history(
 			),
 		),
 	);
+	const season = seasonOf(snapshots);
+	if (!season) throw new Error("Cannot determine the season of the snapshot");
+	const years = historyYears(season, options.span);
 	const ids = snapshots.flatMap((snapshot) =>
 		snapshot.seasonPlayers.map(({ id }) => id),
 	);
