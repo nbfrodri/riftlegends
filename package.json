@@ -7,6 +7,7 @@
 		"postinstall": "pnpm --filter @rift-legends/desktop exec install-electron",
 		"dev": "pnpm --filter @rift-legends/desktop dev",
 		"data:snapshot": "node tools/data-pipeline/cli.ts",
+		"data:champions": "node tools/data-pipeline/champions-cli.ts",
 		"data:content": "node tools/data-pipeline/content.ts",
 		"e2e": "pnpm --filter @rift-legends/desktop build && pnpm --filter @rift-legends/desktop e2e",
 		"e2e:visual": "pnpm --filter @rift-legends/desktop build && pnpm --filter @rift-legends/desktop e2e:visual",
