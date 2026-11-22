@@ -105,6 +105,7 @@ Cada fase termina con un hito verificable y un commit o PR fusionado en `main`. 
 - Meta y parches entre splits (tiers dinámicos, notas de parche generadas).
 - **Petición del usuario (22-11-2026), parches y maestría:**
   - **Parches:** cada cierto tiempo, un parche sube o baja el tier de algunos campeones y cambia sus counters y sinergias. Las notas del parche explican qué cambió.
+  - **Meta propio de cada carrera:** cada carrera parte de la tier list del contenido con el que empezó, y sus parches salen de su propia semilla. Dos carreras acaban con metas distintas; el draft rápido usa la tier list actual del contenido.
   - **Maestría:** cada jugador tiene una maestría de 0 a 100 con cada campeón. Sube jugando partidas oficiales y scrims, y entrenándolo (plan 20), con coste de oportunidad: pocos campeones por semana. Baja despacio si no se juega.
   - **Límites de la maestría:** el techo depende de su rol y su versatilidad. Un parche fuerte o un rework puede bajarla.
   - **Efecto y dónde se ve:** pesa en la partida y en la IA de draft (comfort picks), y se ve en el perfil del jugador, en el draft y en la ficha de campeón.
