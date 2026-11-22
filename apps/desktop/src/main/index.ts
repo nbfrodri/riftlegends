@@ -7,6 +7,7 @@ import {
 	shell,
 	utilityProcess,
 } from "electron";
+import snapshot from "../../../../packages/core/content/real/logos.json";
 import coreHostPath from "../core-host/index?modulePath";
 import { pingChannel } from "../shared/bridge";
 import { createAssetCache } from "./assets/cache";
@@ -26,6 +27,7 @@ async function start() {
 	const window = new BrowserWindow(createMainWindowOptions());
 	const userData = app.getPath("userData");
 	const assets = createAssetCache(userData, {
+		logos: snapshot.logos,
 		...(process.env.RIFT_E2E_OFFLINE === "1" && {
 			transport: async () => {
 				throw Object.assign(new Error("Asset network unavailable"), {
