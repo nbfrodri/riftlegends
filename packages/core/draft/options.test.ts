@@ -64,6 +64,7 @@ describe("series.options (plan 09, U1)", () => {
 		const view = seriesOptions.parse(result.view);
 		expect(view.champions).toContainEqual({
 			id: "rimefoil",
+			name: "Rimefoil",
 			roles: ["top", "mid"],
 		});
 		expect(view.champions.map((c) => c.id)).toEqual(view.pool);

@@ -125,6 +125,8 @@
 	"draft.match.soul": "Dragon soul",
 	"draft.match.toSoul": "{{count}} to soul",
 	"draft.match.noEffect": "No effect",
+	"draft.match.kill": "{{killer}} kills {{victim}}.",
+	"draft.match.assists": "Assisted by {{champions}}.",
 	"draft.match.events": "Match events",
 	"draft.match.noEvents": "Waiting for the first event.",
 	"draft.match.earlier": "Show earlier events",

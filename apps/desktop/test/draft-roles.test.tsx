@@ -8,7 +8,7 @@ import {
 	DraftSessionProvider,
 	useDraftSession,
 } from "../src/renderer/draft/session";
-import { renderWithDraftCore } from "./draft-core";
+import { namedDraft, renderWithDraftCore } from "./draft-core";
 
 afterEach(cleanup);
 
@@ -49,6 +49,9 @@ function renderRoles(mine = "forge") {
 			<Driver mine={mine} />
 			<RolesScreen />
 		</DraftSessionProvider>,
+		"en-US",
+		undefined,
+		namedDraft,
 	);
 }
 
@@ -105,7 +108,9 @@ describe("role assignment (U7)", () => {
 	test("proposes a valid lineup, one champion per role, with confirm enabled", async () => {
 		await renderRoles();
 		await screen.findByRole("button", { name: "Confirm lineup" });
-		expect(cards()).toHaveLength(5);
+		expect(
+			screen.getAllByRole("article", { name: /^The Unforgotten Guardian of / }),
+		).toHaveLength(5);
 		expect(new Set(cards().map(roleOf)).size).toBe(5);
 		expect(confirm().hasAttribute("disabled")).toBe(false);
 		expect(screen.getByRole("status").textContent).toContain(

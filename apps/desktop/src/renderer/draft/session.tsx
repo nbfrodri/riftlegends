@@ -72,6 +72,9 @@ export function useDraftSession() {
 export const teamName = (options: SeriesOptions, id: string) =>
 	options.teams.find((team) => team.id === id)?.name ?? id;
 
+export const championLabel = (options: SeriesOptions, id: string) =>
+	options.champions.find((champion) => champion.id === id)?.name ?? id;
+
 const everyFact = () => true;
 const noFact = () => false;
 

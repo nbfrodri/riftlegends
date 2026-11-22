@@ -24,8 +24,9 @@ export const viewOptions = (state: SeriesState): SeriesOptions => {
 			players: players(id),
 		})),
 		pool: champions.map((champion) => champion.id),
-		champions: champions.map(({ id, positions }) => ({
+		champions: champions.map(({ id, name, positions }) => ({
 			id,
+			name,
 			roles: positions.map((position) => position.role),
 		})),
 		positions: Object.fromEntries(

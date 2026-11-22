@@ -1,23 +1,5 @@
 import { ROLES, type Role } from "@rift-legends/contracts";
 
-// Until plan 10 brings names and art, a champion shows its id capitalised, its
-// initials and a hue derived from the id, as in the approved mockup.
-
-export const championName = (id: string) =>
-	id.charAt(0).toUpperCase() + id.slice(1);
-
-export const initials = (id: string) => id.slice(0, 2).toUpperCase();
-
-/** A stable hue (0–359) for the champion's face. */
-export function hue(id: string) {
-	let hash = 2166136261;
-	for (const char of id) {
-		hash ^= char.charCodeAt(0);
-		hash = Math.imul(hash, 16777619);
-	}
-	return (hash >>> 0) % 360;
-}
-
 /**
  * The role each of a team's five pick slots shows: a pick takes the first of
  * its champion's roles still free; empty slots take the roles left, in order.
