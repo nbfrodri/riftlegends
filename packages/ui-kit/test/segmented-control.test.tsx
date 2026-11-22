@@ -46,3 +46,23 @@ test("changes the value by click and with the arrow keys", async () => {
 	await user.keyboard("{ArrowLeft}");
 	expect(onChange).toHaveBeenLastCalledWith("bo1");
 });
+
+test("a disabled option cannot be chosen", async () => {
+	const user = userEvent.setup();
+	const onChange = vi.fn();
+	render(
+		<SegmentedControl
+			label="Format"
+			options={[
+				...options.slice(0, 2),
+				{ value: "bo5", label: "Bo5", disabled: true },
+			]}
+			value="bo3"
+			onChange={onChange}
+		/>,
+	);
+	const bo5 = screen.getByRole("radio", { name: "Bo5" }) as HTMLInputElement;
+	expect(bo5.disabled).toBe(true);
+	await user.click(bo5);
+	expect(onChange).not.toHaveBeenCalled();
+});
