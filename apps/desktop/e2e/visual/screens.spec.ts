@@ -21,6 +21,12 @@ test.beforeEach(async ({ electronApp, appWindow }) => {
 	await expect(appWindow.getByRole("heading", { level: 1 })).toHaveText(
 		"Configurar serie",
 	);
+	// Cold start: the font files are read lazily, so the screenshot's own
+	// font wait can time out on the first test (#258). Load every face first.
+	await appWindow.evaluate(async () => {
+		await Promise.all(Array.from(document.fonts, (face) => face.load()));
+		await document.fonts.ready;
+	});
 });
 
 const goTo = async (page: Page, section: string) => {
