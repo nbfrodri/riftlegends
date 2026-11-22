@@ -56,11 +56,11 @@ Eventos e informes en `~/.cache/rift-tmp/codex/NN-events.jsonl` y `NN-report.jso
 
 | Issue | Rama | Worktree | Modelo | Estado |
 | --- | --- | --- | --- | --- |
-| #291 | `perf/291-confirm-rerender` | `../riftlegends-291` | gpt-6.2-sol medium | en curso |
-| #292 | `feat/292-series-panel` | `../riftlegends-292` | gpt-6.2-astra high | en curso |
-| #293 | `feat/293-official-stat-icons` | `../riftlegends-293` | gpt-6.2-astra high | en curso |
-| #251 | `feat/251-real-mode` | `../riftlegends-251` | gpt-6.2-astra high | en curso (desde el trabajo a medias) |
-| #287 | `feat/287-career-component` | `../riftlegends-287` | gpt-6.2-sol medium | en curso (desde el trabajo a medias) |
+| #291 | `perf/291-confirm-rerender` | `../riftlegends-291` | Codex sin uso (hasta 23:17) → Claude Sonnet medium | en curso |
+| #292 | `feat/292-series-panel` | `../riftlegends-292` | Codex sin uso → Claude Opus medium | en curso |
+| #293 | `feat/293-official-stat-icons` | `../riftlegends-293` | Codex sin uso → Claude Opus medium | en curso |
+| #251 | `feat/251-real-mode` | `../riftlegends-251` | Codex sin uso → Claude Opus medium | en curso |
+| #287 | `feat/287-career-component` | `../riftlegends-287` | Codex sin uso → Claude Sonnet medium | en curso |
 | #294 | — | — | gpt-6.2-astra high | espera a #293 |
-| #296 | `chore/296-drop-spike-artifacts` | `../riftlegends-296` | gpt-6.2-sol low | en curso |
+| #296 | `chore/296-drop-spike-artifacts` | `../riftlegends-296` | Codex sin uso → Claude Sonnet medium | en curso |
 | #297 | — | — | — | espera a #287 y #292 |
