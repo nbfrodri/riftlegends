@@ -84,6 +84,13 @@ Cada fase termina con un hito verificable y un commit o PR fusionado en `main`. 
 - Formatos: liga, grupos, Swiss propio (restricciones de región, sin revanchas) y eliminatorias simple y doble; calendario y ligas top; First Stand, MSI y Worlds.
 - **Formatos como datos, configurables al crear la carrera** (decisión del 22-11-2026): por defecto, el formato real de la temporada de cada competición (p. ej. tres splits con round robin y playoffs de doble eliminación; Swiss en Worlds). Al crear la carrera, el usuario puede cambiar por competición: número de splits, vueltas del round robin, Bo1/Bo3/Bo5 por fase, grupos o Swiss, eliminación simple o doble y plazas internacionales por región. Queda fijo durante la carrera salvo para temporadas futuras. Los mismos bloques sirven al modo Torneo.
 - Modo **Torneo** (IDEA §6) como primer consumidor.
+- **Sección «Competición» (petición del usuario, 22-11-2026):**
+  - temporada actual de todas las ligas, no solo la propia;
+  - clasificación de cada split;
+  - calendario y resultados;
+  - cuadros visuales de los playoffs (simple o doble eliminación) y de los internacionales (grupos, Swiss y eliminatorias);
+  - página de cada equipo: plantilla, racha y forma, partidos y estadísticas.
+- **Todas las partidas con el mismo motor** (decisión del 22-11-2026): las de otras regiones y equipos se juegan con el draft de la IA y la simulación por minuto, pero sin animación. Así sus picks, resultados y estadísticas son reales y alimentan el meta y el historial. La partida solo se ve animada si el usuario la abre. El presupuesto de tiempo de esta fase lo comprueba. Si no se cumple, se optimiza el motor antes que inventar un modo «rápido» que falsee los datos.
 - **Salida:** simular un año competitivo completo IA contra IA de forma determinista y en un tiempo acotado (presupuesto a fijar en su plan).
 
 ### Fase 5 — Carrera v1
@@ -109,6 +116,9 @@ Cada fase termina con un hito verificable y un commit o PR fusionado en `main`. 
 - Meta y parches entre splits (tiers dinámicos, notas de parche generadas).
 - **Petición del usuario (22-11-2026), parches y maestría:**
   - **Parches:** cada cierto tiempo, un parche sube o baja el tier de algunos campeones y cambia sus counters y sinergias. Las notas del parche explican qué cambió.
+  - **Cómo evoluciona el meta:**
+    - **Meta que emerge:** el tier de cada campeón sale de las partidas simuladas de la propia carrera (presencia y % de victorias, por región y global). Cada región tiene su tendencia y los internacionales las mezclan.
+    - **Parches:** como Riot, nerfean lo que domina (mucha presencia o % de victorias alto) y mejoran lo olvidado. La IA de draft reacciona al tier nuevo.
   - **Meta propio de cada carrera:** cada carrera parte de la tier list del contenido con el que empezó, y sus parches salen de su propia semilla. Dos carreras acaban con metas distintas; el draft rápido usa la tier list actual del contenido.
   - **Maestría:** cada jugador tiene una maestría de 0 a 100 con cada campeón. Sube jugando partidas oficiales y scrims, y entrenándolo (plan 20), con coste de oportunidad: pocos campeones por semana. Baja despacio si no se juega.
   - **Límites de la maestría:** el techo depende de su rol y su versatilidad. Un parche fuerte o un rework puede bajarla.
