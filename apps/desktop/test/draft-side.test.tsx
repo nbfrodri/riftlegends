@@ -1,8 +1,19 @@
-import { cleanup, screen } from "@testing-library/react";
+import { CONTRACT_VERSION, type MatchView } from "@rift-legends/contracts";
+import { cleanup, configure, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { afterEach, describe, expect, test } from "vitest";
+import { useEffect, useRef } from "react";
+import { afterEach, describe, expect, test, vi } from "vitest";
 import { DraftScreen } from "../src/renderer/draft/draft-screen";
-import { renderWithDraftCore } from "./draft-core";
+import {
+	DraftSessionProvider,
+	useDraftSession,
+} from "../src/renderer/draft/session";
+import { draftStages, stageOf } from "../src/renderer/draft/stages";
+import { namedDraft, renderWithDraftCore } from "./draft-core";
+
+// The fearless test plays a whole game with the real core.
+configure({ asyncUtilTimeout: 10000 });
+vi.setConfig({ testTimeout: 20000 });
 
 afterEach(cleanup);
 
@@ -39,6 +50,40 @@ describe("side choice (U2)", () => {
 		});
 	});
 
+	test("explains each side: blue picks first, red answers with the last pick", async () => {
+		const user = userEvent.setup();
+		await renderWithDraftCore(<DraftScreen />);
+		await startAs(user, "Forge");
+
+		const blue = screen.getByRole("radio", { name: "Blue side" });
+		const red = screen.getByRole("radio", { name: "Red side" });
+		expect(blue.getAttribute("aria-describedby")).toBeTruthy();
+		expect(screen.getByRole("radio", { description: /First pick/ })).toBe(blue);
+		expect(screen.getByRole("radio", { description: /Last pick/ })).toBe(red);
+		// The order of the ten picks, as in pro play (plan 06).
+		expect(
+			screen.getByRole("img", { name: "Picks 1, 4, 5, 8, and 9" }),
+		).toBeTruthy();
+		expect(
+			screen.getByRole("img", { name: "Picks 2, 3, 6, 7, and 10" }),
+		).toBeTruthy();
+	});
+
+	test("shows the series format and its fearless rule", async () => {
+		const user = userEvent.setup();
+		await renderWithDraftCore(<DraftScreen />);
+		await startAs(user, "Forge");
+
+		const series = screen.getByRole("region", { name: "Series" });
+		expect(within(series).getByText("Bo3")).toBeTruthy();
+		expect(within(series).getByText("First to 2 games")).toBeTruthy();
+		expect(within(series).getByText("Hard")).toBeTruthy();
+		// Game 1: nothing is locked yet.
+		expect(
+			screen.queryByRole("region", { name: "Locked champions" }),
+		).toBeNull();
+	});
+
 	test("does not wait on the AI: it chooses and the screen shows the side it took", async () => {
 		const user = userEvent.setup();
 		const core = await renderWithDraftCore(<DraftScreen />);
@@ -58,5 +103,97 @@ describe("side choice (U2)", () => {
 		expect(
 			await screen.findByRole("heading", { level: 1, name: "Draft" }),
 		).toBeTruthy();
+	});
+});
+
+/** Plays game 1 of a hard-fearless Bo5 with the AI, then hands the side choice to its chooser. */
+function Driver() {
+	const { view, options, send, setMine, mine, present, presentation } =
+		useDraftSession();
+	const busy = useRef(false);
+	useEffect(() => {
+		if (busy.current || mine) return;
+		busy.current = true;
+		const step = async () => {
+			if (!view) {
+				const [a, b] = options.teams.map((team) => team.id);
+				await send("series.start", {
+					teams: [a, b],
+					seeds: [0, 1],
+					format: "bo5",
+					fearless: "hard",
+					timer: false,
+					pool: options.pool,
+					seed: 7,
+					ai: ["coach", "coach"],
+				});
+			} else if (view.phase === "result") {
+				if (presentation !== "match") present("match");
+				else await send("match.play", {});
+			} else if (view.phase === "side" && view.turn) {
+				if (view.game === 1) {
+					await send("side.choose", { team: view.turn.team, side: "blue" });
+				} else {
+					present(null);
+					setMine(view.turn.team);
+				}
+			} else {
+				await send("draft.ai", {});
+			}
+			busy.current = false;
+		};
+		void step();
+	});
+	return null;
+}
+
+function Flow() {
+	const { view, presentation, mine } = useDraftSession();
+	if (!mine) return null;
+	const Stage = draftStages[stageOf(view, presentation)];
+	return <Stage />;
+}
+
+describe("side choice with fearless", () => {
+	test("shows the champions each team played, greyed, before game 2", async () => {
+		const core = await renderWithDraftCore(
+			<DraftSessionProvider>
+				<Driver />
+				<Flow />
+			</DraftSessionProvider>,
+			"en-US",
+			undefined,
+			namedDraft,
+		);
+		const locked = await screen.findByRole("region", {
+			name: "Locked champions",
+		});
+		const result = await core.api.query({
+			v: CONTRACT_VERSION,
+			kind: "match.view",
+			sessionId: 1,
+			params: { game: 1 },
+		});
+		if (!result.ok) throw new Error(JSON.stringify(result));
+		const ended = (result.view as MatchView).facts.find(
+			(f) => f.type === "match.ended",
+		);
+		if (ended?.type !== "match.ended") throw new Error("no match.ended");
+
+		for (const team of ["Forge", "Shoal"]) {
+			const list = within(locked).getByRole("list", {
+				name: `Played by ${team}`,
+			});
+			const played = ended.players
+				.filter((p) => p.team === team.toLowerCase())
+				.map(
+					(p) => namedDraft.champions.find((c) => c.id === p.champion)?.name,
+				);
+			expect(await within(list).findAllByRole("listitem")).toHaveLength(5);
+			for (const name of played) {
+				expect(within(list).getByText(name as string)).toBeTruthy();
+			}
+		}
+		expect(screen.getByText(/lost the last game/)).toBeTruthy();
 	});
 });

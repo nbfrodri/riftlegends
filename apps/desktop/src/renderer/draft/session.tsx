@@ -31,8 +31,16 @@ import {
  */
 export type Presentation = "side" | "match" | "result";
 
+/** Format and fearless mode of the series, from its `series.started` fact. */
+export interface SeriesRules {
+	format: "bo1" | "bo3" | "bo5";
+	fearless: "hard" | "soft" | "off";
+}
+
 interface DraftSession {
 	timer: boolean;
+	/** `null` until a series starts. */
+	rules: SeriesRules | null;
 	lock: {
 		game: number;
 		position: number;
@@ -87,6 +95,7 @@ function LoadedSession(props: {
 	const { mutateAsync } = useCoreCommand();
 	const position = useRef(0);
 	const [timer, setTimer] = useState(false);
+	const [rules, setRules] = useState<SeriesRules | null>(null);
 	const [lock, setLock] = useState<DraftSession["lock"]>(null);
 	const claimedTurn = useRef<DraftView | null>(null);
 	const [error, setError] = useState<CoreRequestError | null>(null);
@@ -119,7 +128,13 @@ function LoadedSession(props: {
 				});
 				position.current = result.position;
 				for (const fact of result.facts) {
-					if (fact.type === "series.started") setTimer(fact.timer === true);
+					if (fact.type === "series.started") {
+						setTimer(fact.timer === true);
+						setRules({
+							format: fact.format as SeriesRules["format"],
+							fearless: fact.fearless as SeriesRules["fearless"],
+						});
+					}
 					if (
 						(fact.type === "draft.banned" || fact.type === "draft.picked") &&
 						typeof fact.game === "number" &&
@@ -155,6 +170,7 @@ function LoadedSession(props: {
 						sessionId,
 						options: options.data,
 						timer,
+						rules,
 						lock,
 						view: view.data,
 						mine,
@@ -177,6 +193,7 @@ function LoadedSession(props: {
 			presentation,
 			onLost,
 			timer,
+			rules,
 			lock,
 		],
 	);
