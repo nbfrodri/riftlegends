@@ -107,6 +107,7 @@ Cada fase termina con un hito verificable y un commit o PR fusionado en `main`. 
 - Scouting e información imperfecta.
 - Entrenamiento con coste de oportunidad (elegir qué atributos de cada jugador mejorar) y **scrims** ([IDEA §8](../../IDEA.md#8-novedades-respecto-a-draftsim)).
 - Moral, química y vestuario.
+- **Composiciones contra el rival (#320):** reparto de daño frente a resistencias especializadas (p. ej. todo mágico contra Galio) y estilos que se cruzan (engage, poke, splitpush, scaling), explicados en el desglose.
 - **Salida:** cada sistema influye en resultados de forma explicable (visible en el desglose) y probada con tests de propiedades.
 
 ### Fase 8 — Narrativa e historial
@@ -123,6 +124,10 @@ Cada fase termina con un hito verificable y un commit o PR fusionado en `main`. 
 ### Fase 10 — Expansión de alcance
 - Ligas menores y ascensos, modo **Sandbox/Realidades** (edición de meta y plantillas, simulación IA contra IA).
 - **Salida:** subir desde una liga menor hasta una liga top en una carrera.
+
+### Fase 10b — Tutorial guiado (al final)
+- **Petición del usuario (22-11-2026):** tutorial guiado del juego, al final del desarrollo, cuando las pantallas estén estables. Recorre el draft rápido, la ficha de campeón, la partida y la carrera, y se puede repetir desde Ajustes.
+- **Librería candidata:** [Driver.js](https://driverjs.com/) (MIT, sin dependencias, sin framework, funciona sin red). React Joyride (MIT) es la alternativa; Shepherd.js (AGPL o comercial) e Intro.js (GPL o comercial) quedan descartadas por licencia. Se confirma con Context7 y se añade a `docs/libraries.md` en su plan.
 
 ### Fase 11 — Distribución
 - electron-builder (NSIS, AppImage, tar.gz) y un workflow que publica en el repo público `riftlegends-releases` con notas en inglés, guía de SmartScreen y aviso de Riot.
