@@ -6,35 +6,40 @@ import { teamName, useDraftSession } from "./session";
 import type { DraftStage } from "./stages";
 
 type ScoreView = Pick<DraftView, "wins" | "game"> & {
+	phase?: DraftView["phase"];
 	blue: { team: string };
 	red: { team: string };
 };
 
-function Score({ view }: { view: ScoreView | null }) {
+function Score({ view, stage }: { view: ScoreView | null; stage: DraftStage }) {
 	const { t } = useTranslation();
 	const { options, mine } = useDraftSession();
 	if (!view) return null;
+	// In the side phase the core points to the next game but keeps the last draft.
+	const showingResult = view.phase === "side" && stage === "result";
+	const neutral = view.phase === "side" && !showingResult;
+	const { blue, red } = view;
+	const [left, right] =
+		neutral && red.team === mine ? [red, blue] : [blue, red];
 	const wins = (team: string) => view.wins[team === mine ? 0 : 1];
-	const sides = [
-		{ team: view.blue.team, color: "text-side-blue" },
-		{ team: view.red.team, color: "text-side-red" },
-	];
 	return (
 		<fieldset
 			aria-label={t("draft.score.label")}
 			className="m-0 grid min-w-0 border-0 p-0 grid-cols-[1fr_auto_1fr] items-center gap-x-3 text-center"
 		>
-			<span className={`font-bold ${sides[0]?.color}`}>
-				{teamName(options, view.blue.team)}
+			<span className={neutral ? "font-bold" : "font-bold text-side-blue"}>
+				{teamName(options, left.team)}
 			</span>
 			<b className="whitespace-nowrap font-display text-3xl">
-				{wins(view.blue.team)} – {wins(view.red.team)}
+				{wins(left.team)} – {wins(right.team)}
 			</b>
-			<span className={`font-bold ${sides[1]?.color}`}>
-				{teamName(options, view.red.team)}
+			<span className={neutral ? "font-bold" : "font-bold text-side-red"}>
+				{teamName(options, right.team)}
 			</span>
 			<small className="col-span-3 mt-1 text-muted">
-				{t("draft.score.game", { game: view.game })}
+				{t("draft.score.game", {
+					game: showingResult ? view.game - 1 : view.game,
+				})}
 			</small>
 		</fieldset>
 	);
@@ -85,7 +90,7 @@ export function PageHeader({
 						: t(`draft.stage.${stage}.title`)}
 				</h1>
 			</div>
-			<Score view={score ?? view} />
+			<Score view={score ?? view} stage={stage} />
 			{children}
 		</header>
 	);

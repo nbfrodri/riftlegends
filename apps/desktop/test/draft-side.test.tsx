@@ -4,6 +4,7 @@ import userEvent from "@testing-library/user-event";
 import { useEffect, useRef } from "react";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { DraftScreen } from "../src/renderer/draft/draft-screen";
+import { PageHeader } from "../src/renderer/draft/page-header";
 import {
 	DraftSessionProvider,
 	useDraftSession,
@@ -107,7 +108,7 @@ describe("side choice (U2)", () => {
 });
 
 /** Plays game 1 of a hard-fearless Bo5 with the AI, then hands the side choice to its chooser. */
-function Driver() {
+function Driver({ showResult = false }: { showResult?: boolean }) {
 	const { view, options, send, setMine, mine, present, presentation } =
 		useDraftSession();
 	const busy = useRef(false);
@@ -132,9 +133,9 @@ function Driver() {
 				else await send("match.play", {});
 			} else if (view.phase === "side" && view.turn) {
 				if (view.game === 1) {
-					await send("side.choose", { team: view.turn.team, side: "blue" });
+					await send("side.choose", { team: view.turn.team, side: "red" });
 				} else {
-					present(null);
+					present(showResult ? "result" : null);
 					setMine(view.turn.team);
 				}
 			} else {
@@ -150,9 +151,46 @@ function Driver() {
 function Flow() {
 	const { view, presentation, mine } = useDraftSession();
 	if (!mine) return null;
-	const Stage = draftStages[stageOf(view, presentation)];
-	return <Stage />;
+	const stage = stageOf(view, presentation);
+	const Stage = draftStages[stage];
+	return (
+		<>
+			<PageHeader stage={stage} />
+			<Stage />
+		</>
+	);
 }
+
+test("shows game 2 in series order until its sides are chosen", async () => {
+	const user = userEvent.setup();
+	await renderWithDraftCore(
+		<DraftSessionProvider>
+			<Driver showResult />
+			<Flow />
+		</DraftSessionProvider>,
+	);
+
+	const score = await screen.findByRole("group", { name: "Series score" });
+	const { getByText } = within(score);
+	expect(getByText("Game 1")).toBeTruthy();
+	expect(score.textContent).toContain("Shoal1 – 0Forge");
+	expect(getByText("Shoal").classList.contains("text-side-blue")).toBe(true);
+	expect(getByText("Forge").classList.contains("text-side-red")).toBe(true);
+
+	await user.click(await screen.findByRole("button", { name: "Next game" }));
+	expect(getByText("Game 2")).toBeTruthy();
+	expect(score.textContent).toContain("Forge0 – 1Shoal");
+	expect(getByText("Forge").className).not.toMatch(/text-side-(blue|red)/);
+	expect(getByText("Shoal").className).not.toMatch(/text-side-(blue|red)/);
+
+	await user.click(screen.getByRole("radio", { name: "Blue side" }));
+	await user.click(screen.getByRole("button", { name: "Go to draft" }));
+	await screen.findByRole("heading", { level: 1, name: "Draft" });
+
+	expect(score.textContent).toContain("Forge0 – 1Shoal");
+	expect(getByText("Forge").classList.contains("text-side-blue")).toBe(true);
+	expect(getByText("Shoal").classList.contains("text-side-red")).toBe(true);
+});
 
 describe("side choice with fearless", () => {
 	test("shows the champions each team played, greyed, before game 2", async () => {
