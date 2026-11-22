@@ -1,3 +1,6 @@
+import { useState } from "react";
+import { useAssetSrc } from "../assets";
+
 // Original objective and structure drawings from the approved match mockup.
 const paths = {
 	tower: "M7 3v3h3V3h4v3h3V3h2v6l-3 2 1 8h2v2H5v-2h2l1-8-3-2V3z M10 19v-4h4v4",
@@ -11,10 +14,41 @@ const paths = {
 	elder: "M2 15l5-5-1-6 5 4 6-6-1 7 5-1-3 5 3 2-4 3-6-2-4 5-4-2 3-4zM14 11h1",
 };
 
-export function MapIcon({ kind }: { kind: keyof typeof paths }) {
+type Kind = keyof typeof paths;
+
+// Destroyed structures reuse the official icon, greyed out.
+const official: Record<Kind, string> = {
+	tower: "tower",
+	towerDown: "tower",
+	inhibitor: "inhibitor",
+	inhibitorDown: "inhibitor",
+	nexus: "nexus",
+	dragon: "dragon",
+	herald: "herald",
+	baron: "baron",
+	elder: "elder",
+};
+
+const box = "inline-block size-[17px] align-middle";
+
+export function MapIcon({ kind }: { kind: Kind }) {
+	const src = useAssetSrc("cdragon", `objectives/${official[kind]}.png`);
+	const [failed, setFailed] = useState<string>();
+	if (src && src !== failed) {
+		const down = kind === "towerDown" || kind === "inhibitorDown";
+		return (
+			<img
+				src={src}
+				alt=""
+				aria-hidden="true"
+				onError={() => setFailed(src)}
+				className={`${box} object-contain ${down ? "opacity-55 grayscale" : ""}`}
+			/>
+		);
+	}
 	return (
 		<svg
-			className="inline-block size-[17px] align-middle"
+			className={box}
 			viewBox="0 0 24 24"
 			aria-hidden="true"
 			fill="none"

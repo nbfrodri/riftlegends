@@ -181,7 +181,7 @@ export function Objectives({ snapshot, second, names }: Props) {
 					{objectives.map((kind) => (
 						<tr key={kind}>
 							<th scope="row" className="text-muted">
-								<span className="m-auto flex max-w-[166px] items-center gap-[7px] text-left [&>svg]:flex-none">
+								<span className="m-auto flex max-w-[166px] items-center gap-[7px] text-left [&>:is(svg,img)]:flex-none">
 									<MapIcon kind={kind} />
 									{t(`draft.match.objective.${kind}`)}
 								</span>

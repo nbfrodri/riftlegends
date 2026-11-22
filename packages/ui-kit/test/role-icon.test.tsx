@@ -1,5 +1,5 @@
-import { cleanup, render, screen } from "@testing-library/react";
-import { afterEach, expect, test } from "vitest";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { afterEach, describe, expect, test } from "vitest";
 import { RoleIcon } from "../components/role-icon";
 
 afterEach(cleanup);
@@ -35,4 +35,59 @@ test.each([
 	const icon = screen.getByRole("img", { name: label });
 	expect(icon.getAttribute("width")).toBe(String(size));
 	expect(icon.getAttribute("height")).toBe(String(size));
+});
+
+// Named positions: a literal `role="…"` reads as an ARIA role to the linter.
+const positions = {
+	top: "top",
+	jungle: "jungle",
+	mid: "mid",
+	bot: "bot",
+} as const;
+
+describe("official image", () => {
+	test("shows the image in the same box and keeps the accessible name", () => {
+		const { container } = render(
+			<RoleIcon
+				role={positions.mid}
+				size={16}
+				label="Mid"
+				src="rift-asset://cdragon/roles/mid.png"
+			/>,
+		);
+		const icon = screen.getByRole("img", { name: "Mid" });
+		expect(icon.tagName).toBe("IMG");
+		expect(icon.getAttribute("src")).toBe("rift-asset://cdragon/roles/mid.png");
+		expect(icon.getAttribute("width")).toBe("16");
+		expect(icon.getAttribute("height")).toBe("16");
+		expect(container.querySelector("svg")).toBeNull();
+	});
+
+	test("hides an unlabelled image from assistive technology", () => {
+		const { container } = render(
+			<RoleIcon
+				role={positions.top}
+				src="rift-asset://cdragon/roles/top.png"
+			/>,
+		);
+		const image = container.querySelector("img");
+		expect(image?.getAttribute("alt")).toBe("");
+		expect(image?.getAttribute("aria-hidden")).toBe("true");
+	});
+
+	test("falls back to the own icon, same size, when the image fails", () => {
+		render(
+			<RoleIcon
+				role={positions.bot}
+				size={24}
+				label="ADC"
+				src="rift-asset://cdragon/roles/bot.png"
+			/>,
+		);
+		fireEvent.error(screen.getByRole("img", { name: "ADC" }));
+		const icon = screen.getByRole("img", { name: "ADC" });
+		expect(icon.tagName.toLowerCase()).toBe("svg");
+		expect(icon.getAttribute("width")).toBe("24");
+		expect(icon.getAttribute("height")).toBe("24");
+	});
 });

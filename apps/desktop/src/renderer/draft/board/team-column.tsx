@@ -1,8 +1,8 @@
 import type { Role, Side } from "@rift-legends/contracts";
 import { ChampionFace } from "@rift-legends/ui-kit/components/champion-face";
-import { RoleIcon } from "@rift-legends/ui-kit/components/role-icon";
 import { useId } from "react";
 import { useTranslation } from "react-i18next";
+import { GameRoleIcon } from "../../assets/game-role-icon";
 import { championLabel, useDraftSession } from "../session";
 import { TeamCrest } from "../team-crest";
 
@@ -81,7 +81,7 @@ export function TeamColumn(props: {
 									{index + 1}
 								</span>
 								<span className={style.text}>
-									<RoleIcon role={role} />
+									<GameRoleIcon role={role} />
 								</span>
 								{champion && <ChampionFace id={champion} size="compact" />}
 								<span className="min-w-0">

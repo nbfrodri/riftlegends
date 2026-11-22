@@ -7,6 +7,7 @@ import {
 	SelectValue,
 } from "@rift-legends/ui-kit/components/select";
 import { useTranslation } from "react-i18next";
+import { ContentSettings } from "./assets/content-settings";
 import { isLocale, storeLanguage } from "./language";
 
 // Placeholder screens: each one only names itself until its real content lands
@@ -57,6 +58,7 @@ export function SettingsScreen() {
 					</SelectContent>
 				</Select>
 			</div>
+			<ContentSettings />
 		</>
 	);
 }

@@ -2,8 +2,10 @@ import { RouterProvider } from "@tanstack/react-router";
 import { cleanup, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+import { AssetsProvider } from "../src/renderer/assets";
 import { initialLocale, LANGUAGE_STORAGE_KEY } from "../src/renderer/language";
 import { createAppRouter } from "../src/renderer/router";
+import { fakeAssets } from "./fake-assets";
 import { renderInLocale } from "./render-in-locale";
 
 beforeEach(() => localStorage.clear());
@@ -15,7 +17,9 @@ afterEach(() => {
 
 async function renderSettings(locale: string) {
 	await renderInLocale(
-		<RouterProvider router={createAppRouter("/ajustes")} />,
+		<AssetsProvider api={fakeAssets().api}>
+			<RouterProvider router={createAppRouter("/ajustes")} />
+		</AssetsProvider>,
 		locale,
 	);
 	await screen.findByRole("heading", { level: 1 });

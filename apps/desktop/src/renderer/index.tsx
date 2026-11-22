@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { RouterProvider } from "@tanstack/react-router";
 import { createRoot } from "react-dom/client";
 import { I18nextProvider } from "react-i18next";
+import { AssetsProvider } from "./assets";
 import { CoreProvider } from "./core";
 import { CoreProbe } from "./core/probe";
 import { initialLocale } from "./language";
@@ -21,11 +22,13 @@ async function start(root: HTMLElement) {
 		<I18nextProvider i18n={i18n}>
 			<QueryClientProvider client={new QueryClient()}>
 				<CoreProvider api={window.riftlegends.core}>
-					<div className="flex h-dvh flex-col">
-						<TitleBar controls={window.riftlegends.window} />
-						{probe && <CoreProbe />}
-						<RouterProvider router={createAppRouter()} />
-					</div>
+					<AssetsProvider api={window.riftlegends.assets}>
+						<div className="flex h-dvh flex-col">
+							<TitleBar controls={window.riftlegends.window} />
+							{probe && <CoreProbe />}
+							<RouterProvider router={createAppRouter()} />
+						</div>
+					</AssetsProvider>
 				</CoreProvider>
 			</QueryClientProvider>
 		</I18nextProvider>,

@@ -54,7 +54,11 @@ test("Mercado with the sidebar expanded", async ({ appWindow }) => {
 test("Ajustes", async ({ appWindow }) => {
 	await expandSidebar(appWindow);
 	await goTo(appWindow, "Ajustes");
+	// Offline E2E: the startup sync settles on "not downloaded".
+	const content = appWindow.getByRole("region", { name: "Contenido" });
+	await expect(content.getByText(/^Sin descargar\./)).toBeVisible();
 	await expect(appWindow).toHaveScreenshot("ajustes.png");
+	await expect(content).toHaveScreenshot("ajustes-contenido.png");
 });
 
 test.describe("Quick draft", () => {
