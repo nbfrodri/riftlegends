@@ -1,5 +1,6 @@
 import { get } from "node:https";
-import { communityDragon, dataDragon, leaguepediaImages } from "./catalog";
+import { riotLogoHosts } from "@rift-legends/contracts";
+import { communityDragon, dataDragon } from "./catalog";
 
 interface AssetResponse {
 	status: number;
@@ -15,7 +16,11 @@ export type AssetTransport = (
 ) => Promise<AssetResponse | undefined>;
 
 const timeoutMs = 15_000;
-const hosts = new Set([dataDragon, communityDragon, leaguepediaImages]);
+const hosts = new Set([
+	dataDragon,
+	communityDragon,
+	...riotLogoHosts.map((host) => `https://${host}`),
+]);
 const offlineCodes = new Set([
 	"EACCES",
 	"EPERM",

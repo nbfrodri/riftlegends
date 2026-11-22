@@ -95,7 +95,7 @@ export function summarize(before: readonly League[], after: readonly League[]) {
 
 async function readLeagues(directory: string) {
 	const files = (await readdir(directory))
-		.filter((file) => file.endsWith(".json"))
+		.filter((file) => file.endsWith(".json") && file !== "logos.json")
 		.sort();
 	return Promise.all(
 		files.map(async (file) => {

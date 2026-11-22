@@ -48,6 +48,7 @@ jobs:
         run: |
           cp -R packages/core/content/real "$RUNNER_TEMP/snapshot-before"
           pnpm data:snapshot
+          pnpm data:logos
       - name: Save Leaguepedia responses
         if: steps.raw.outputs.cache-hit != 'true'
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0

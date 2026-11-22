@@ -6,7 +6,7 @@ import { fakeAssets } from "./fake-assets";
 
 afterEach(cleanup);
 
-const logo = "rift-asset://leaguepedia/teams/gen-g.png";
+const logo = "rift-asset://logos/teams/gen-g.png";
 
 function renderCrest(id: string, logos: Record<string, string> = {}) {
 	const assets = fakeAssets({ state: "ready", version: "1.0" });

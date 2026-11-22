@@ -14,8 +14,6 @@ export const versionsUrl = new URL("/api/versions.json", dataDragon);
 export const maxCatalogBytes = 4 * 1024 * 1024;
 export const maxImageBytes = 1024 * 1024;
 export const maxLogoBytes = 512 * 1024;
-// Team logos come from the Leaguepedia wiki's image host (see logos.ts).
-export const leaguepediaImages = "https://static.wikia.nocookie.net";
 const championLocales = { en: "en_gb", es: "es_es" } as const;
 export type ChampionLocale = keyof typeof championLocales;
 const gameData = "plugins/rcp-be-lol-game-data/global";

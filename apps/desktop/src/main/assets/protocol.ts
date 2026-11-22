@@ -7,10 +7,10 @@ import { readActiveVersion } from "./store";
 export const assetScheme = "rift-asset";
 
 const logoRequest =
-	/^rift-asset:\/\/leaguepedia\/(teams\/[a-z0-9-]{1,64}\.(png|jpg|webp))$/;
+	/^rift-asset:\/\/logos\/(teams\/[a-z0-9-]{1,64}\.(png|jpg|webp))$/;
 
 async function serveLogo(userData: string, path: string, format: LogoFormat) {
-	const root = join(userData, "assets", "leaguepedia");
+	const root = join(userData, "assets", "logos");
 	// Only files named by the manifest, and only while they still match it.
 	if (!(await readLogoEntry(root, path))) return undefined;
 	const bytes = await readBytes(await cachePath(root, path), maxLogoBytes);

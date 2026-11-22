@@ -2,6 +2,7 @@ import { createHash, randomUUID } from "node:crypto";
 import { mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
+import { sniffImageMime } from "@rift-legends/contracts/real-logos";
 
 export interface ClientOptions {
 	cacheDir: string;
@@ -15,7 +16,73 @@ export interface ClientOptions {
 export type CargoRow = Readonly<Record<string, string | null>>;
 const cargoLimit = 500;
 const cargoInterval = 11_000;
+const lolesportsInterval = 1_000;
 const userAgent = "RiftLegendsDataPipeline/0.1";
+const maxImageBytes = 512 * 1024;
+
+/**
+ * lolesports.com's own public web client key, shipped in its website. It
+ * identifies the site, not a person, and is not a secret.
+ */
+export const lolesportsApi = "https://esports-api.lolesports.com/persisted/gw";
+const lolesportsKey = "0TvQnueqKa5mxJntVWt0w4LpLfEkrV1Ta8rQBb9Z";
+const lolesportsHosts = new Set([
+	"esports-api.lolesports.com",
+	"static.lolesports.com",
+	"lolstatic-a.akamaihd.net",
+]);
+
+export interface ImageDigest {
+	sha256: string;
+	size: number;
+	mime: string;
+}
+
+class Permanent extends Error {}
+
+function requestHeaders(url: string): Record<string, string> {
+	return new URL(url).hostname === "esports-api.lolesports.com"
+		? { "User-Agent": userAgent, "x-api-key": lolesportsKey }
+		: { "User-Agent": userAgent };
+}
+
+function interval(url: string) {
+	const parsed = new URL(url);
+	if (parsed.searchParams.get("action") === "cargoquery") return cargoInterval;
+	return lolesportsHosts.has(parsed.hostname) ? lolesportsInterval : 0;
+}
+
+async function readImage(response: Response): Promise<ImageDigest> {
+	const declared = Number(response.headers.get("content-length") ?? 0);
+	if (declared > maxImageBytes) throw new Permanent("Image is too large");
+	const chunks: Uint8Array[] = [];
+	let size = 0;
+	for await (const chunk of response.body ?? []) {
+		size += chunk.length;
+		if (size > maxImageBytes) throw new Permanent("Image is too large");
+		chunks.push(chunk);
+	}
+	const bytes = Buffer.concat(chunks);
+	const mime = sniffImageMime(bytes);
+	if (!mime) throw new Permanent("Not a PNG, JPEG or WebP image");
+	return {
+		sha256: createHash("sha256").update(bytes).digest("hex"),
+		size,
+		mime,
+	};
+}
+
+function parseDigest(body: unknown): ImageDigest {
+	const { sha256, size, mime } = (body ?? {}) as Partial<ImageDigest>;
+	if (
+		typeof sha256 !== "string" ||
+		!/^[0-9a-f]{64}$/.test(sha256) ||
+		!Number.isSafeInteger(size) ||
+		typeof mime !== "string"
+	)
+		throw new Error("Invalid image digest");
+	return { sha256, size: size as number, mime };
+}
 
 export function wikiUrl(params: Record<string, string>) {
 	return `https://lol.fandom.com/api.php?${new URLSearchParams({ format: "json", maxlag: "5", ...params })}`;
@@ -63,7 +130,7 @@ export class Client {
 	readonly #maxAttempts: number;
 	readonly #options: ClientOptions;
 	#tail = Promise.resolve();
-	#nextCargo = 0;
+	#nextRequest = 0;
 
 	constructor(options: ClientOptions) {
 		this.#options = options;
@@ -99,8 +166,24 @@ export class Client {
 		}
 	}
 
+	/**
+	 * SHA-256, size and type of an image, downloaded once and cached as
+	 * metadata only: the bytes are never stored. Redirects are refused.
+	 */
+	imageDigest(url: string): Promise<ImageDigest> {
+		return this.#enqueue(url, parseDigest, readImage);
+	}
+
 	get<T>(url: string, parse: (body: unknown) => T): Promise<T> {
-		const request = this.#tail.then(() => this.#read(url, parse));
+		return this.#enqueue(url, parse, (response) => response.json());
+	}
+
+	#enqueue<T>(
+		url: string,
+		parse: (body: unknown) => T,
+		read: (response: Response) => Promise<unknown>,
+	): Promise<T> {
+		const request = this.#tail.then(() => this.#read(url, parse, read));
 		this.#tail = request.then(
 			() => {},
 			() => {},
@@ -108,7 +191,11 @@ export class Client {
 		return request;
 	}
 
-	async #read<T>(url: string, parse: (body: unknown) => T): Promise<T> {
+	async #read<T>(
+		url: string,
+		parse: (body: unknown) => T,
+		reader: (response: Response) => Promise<unknown>,
+	): Promise<T> {
 		const file = cacheFile(this.#options.cacheDir, url);
 		const cached = await readFile(file, "utf8").catch(
 			(error: NodeJS.ErrnoException) => {
@@ -128,7 +215,7 @@ export class Client {
 			return result;
 		}
 		if (this.#options.offline) throw new Error(`Offline cache miss: ${url}`);
-		const body = await this.#download(url);
+		const body = await this.#download(url, reader);
 		const result = parse(body);
 		const retrievedAt = new Date(this.#now()).toISOString();
 		await mkdir(this.#options.cacheDir, { recursive: true, mode: 0o700 });
@@ -145,26 +232,33 @@ export class Client {
 		return result;
 	}
 
-	async #download(url: string): Promise<unknown> {
-		const cargo = new URL(url).searchParams.get("action") === "cargoquery";
+	async #download(
+		url: string,
+		reader: (response: Response) => Promise<unknown>,
+	): Promise<unknown> {
+		const spacing = interval(url);
 		let nextAttempt = 0;
 		let reason = "";
 		for (let attempt = 1; attempt <= this.#maxAttempts; attempt++) {
 			const wait =
-				Math.max(nextAttempt, cargo ? this.#nextCargo : 0) - this.#now();
+				Math.max(nextAttempt, spacing ? this.#nextRequest : 0) - this.#now();
 			if (wait > 0) await this.#sleep(wait);
-			if (cargo) this.#nextCargo = this.#now() + cargoInterval;
+			if (spacing) this.#nextRequest = this.#now() + spacing;
 
 			let retry = 0;
 			try {
 				const response = await this.#fetch(url, {
-					headers: { "User-Agent": userAgent },
+					headers: requestHeaders(url),
+					redirect: lolesportsHosts.has(new URL(url).hostname)
+						? "error"
+						: "follow",
 					signal: AbortSignal.timeout(30_000),
 				});
 				retry = retryAfter(response.headers.get("retry-after"), this.#now());
 				if (response.ok) {
-					const body = await response.json();
-					const apiError = body?.error?.code;
+					const body = await reader(response);
+					const apiError = (body as { error?: { code?: unknown } } | null)
+						?.error?.code;
 					if (!apiError) return body;
 					reason = String(apiError);
 					if (apiError !== "ratelimited" && apiError !== "maxlag") break;
@@ -174,6 +268,7 @@ export class Client {
 					if (response.status !== 429 && response.status < 500) break;
 				}
 			} catch (error) {
+				if (error instanceof Permanent) throw error;
 				reason =
 					error instanceof Error && error.cause
 						? `${error.message}: ${error.cause}`
