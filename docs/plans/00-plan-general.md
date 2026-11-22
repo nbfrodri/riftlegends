@@ -94,7 +94,8 @@ Cada fase termina con un hito verificable y un commit o PR fusionado en `main`. 
 
 ### Fase 6 — Jugadores, mercado y temporadas
 - Evolución por edad y forma, pools de campeones, contratos, renovaciones, agentes libres, academias, **regens**, offseason y bucle de varias temporadas.
-- **Staff** (plan 29): head coach, assistant coach, analistas, coaches por posición y psicólogo, con mercado y contratos. El usuario es el manager: draftea él (con sugerencias del assistant coach) o delega en el head coach.
+- **Staff** (plan 29): head coach, assistant coach, analistas, coaches por posición y psicólogo, con mercado y contratos. Cada rol mejora un solo sistema y su efecto se ve en el desglose. El usuario es el manager: draftea él (con sugerencias del assistant coach) o delega en el head coach.
+- **Nacionalidad e idioma:** el dato y la bandera llegan con los datos reales (plan 11); el efecto en la química, con el plan 21, y las plazas de importados, con el plan 17.
 - **Finanzas** (plan 30): ingresos, gastos, sueldos, primas, traspasos y buyouts, reglas salariales por liga y presupuesto de la directiva.
 - **Salida:** 10 temporadas simuladas con distribuciones de edad, nivel, fichajes **y saldo de los clubes** dentro de bandas Monte Carlo acordadas (ningún club IA se arruina ni acumula dinero sin límite).
 - **Propuesta del usuario para el plan 17 (21-11-2026):** ventanas de fichajes durante la temporada (entre fases) y en la offseason. En la lista del mercado, al pulsar un jugador su fila se despliega hacia abajo con la ficha (los 20 atributos), sus estadísticas y las acciones: hacer una oferta, seguirle o pedir un informe de scouting. Alternativa a valorar: un panel lateral fijo. Se decide al redactar el plan.

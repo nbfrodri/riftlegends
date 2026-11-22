@@ -103,6 +103,7 @@ Inventario basado en DraftSim, que ya validó que estos sistemas funcionan y apo
 - **Coaches por posición:** mejoran el entrenamiento de los jugadores de su línea.
 - **Psicólogo:** moral, temple y resistencia mental.
 - Con datos reales, el staff de cada equipo sale de Leaguepedia; lo que no se mide (su nivel) se estima y se marca.
+- **Regla de diseño:** cada rol mejora **un solo sistema** y su efecto se ve en el desglose de ese sistema (p. ej. «+3 de preparación por el analista»). Un rol que no cambia nada visible no entra.
 
 ### Finanzas
 - **Ingresos:** reparto de la liga, patrocinadores (según reputación, región y resultados), premios de torneos, afición y merchandising, y ventas de jugadores (traspasos y buyouts cobrados).
@@ -111,6 +112,12 @@ Inventario basado en DraftSim, que ya validó que estos sistemas funcionan y apo
 - **Reglas por liga como datos:** límite salarial e impuesto de lujo donde existan (p. ej. LCK), tamaño de plantilla y academia.
 - **Directiva:** fija el presupuesto de cada temporada y los objetivos. Sin despido; si las cuentas van mal, limita fichajes u obliga a vender.
 - Dinero en enteros y como hechos append-only (cada movimiento queda en el historial y en un informe mensual).
+
+### Nacionalidad e idioma
+- Cada jugador y miembro del staff tiene **nacionalidad** (con su bandera) e **idiomas**. Con datos reales, la nacionalidad sale de Leaguepedia.
+- Cada equipo tiene un **idioma de trabajo** (el de su región). Quien no lo habla comunica peor: baja la química y el efecto de su atributo de comunicación en las disputas.
+- El idioma se aprende con el tiempo en el equipo (más rápido con buena comunicación y si comparte idioma con compañeros); compartir nacionalidad da algo de química.
+- Las **plazas de importados** de cada liga (y la residencia que convierte a un importado en local) son datos de la liga y limitan el mercado.
 
 ### Meta
 - Tiers de campeones con evolución durante torneos (lo que domina se prioriza o se banea).
