@@ -1,4 +1,8 @@
-import { type AiOfTeam, CONTRACT_VERSION } from "@rift-legends/contracts";
+import {
+	type AiOfTeam,
+	CONTRACT_VERSION,
+	type MatchPlan,
+} from "@rift-legends/contracts";
 import { describe, expect, it } from "vitest";
 import { fictionalContent } from "../ai/fixtures/content";
 import { openSession } from "../server/dispatcher";
@@ -65,12 +69,57 @@ describe("match.plan", () => {
 							key: `tempo.own.${power}`,
 							points: power === "early" ? 100000 : -100000,
 						},
-						{ key: "objectives.mid", points: 50000 },
+						...(power === "early"
+							? [{ key: "objectives.mid", points: 50000 }]
+							: []),
 					]),
 				},
 			});
 		},
 	);
+
+	it("only gives reasons that support each lever's chosen direction, strongest first", () => {
+		const state = drafted(loaded(), ["coach", null]);
+		const own = state.draft?.picks.red ?? [];
+		const rival = state.draft?.picks.blue ?? [];
+		const mixed = (picks: readonly string[], powers: readonly string[]) =>
+			Object.fromEntries(picks.map((id, i) => [id, powers[i % powers.length]]));
+		const powers = {
+			...mixed(own, ["early", "early", "late", "late", "mid"]),
+			...mixed(rival, ["mid"]),
+		};
+		const result = plan({
+			...state,
+			content: {
+				...fictionalContent,
+				champions: fictionalContent.champions.map((champion) => ({
+					...champion,
+					power: (powers[champion.id] ?? "mid") as "early" | "mid" | "late",
+					archetypes: own.includes(champion.id) ? ["splitpush"] : [],
+				})),
+			},
+		});
+		if (!result.ok) throw new Error("expected a plan");
+		const view = { view: result.view as MatchPlan };
+		for (const lever of ["tempo", "objectives", "risk"] as const) {
+			const mine = view.view.causes.filter((c) =>
+				c.key.startsWith(`${lever}.`),
+			);
+			const sign = {
+				fast: 1,
+				dragon: 1,
+				risky: 1,
+				slow: -1,
+				baron: -1,
+				safe: -1,
+				balanced: 0,
+			}[view.view.strategy[lever]];
+			for (const cause of mine) expect(cause.points * sign).toBeGreaterThan(0);
+			const weights = mine.map((c) => c.points * sign);
+			expect(weights).toEqual([...weights].sort((a, b) => b - a));
+		}
+		expect(view.view.causes.length).toBeGreaterThan(0);
+	});
 
 	it("recommends a balanced plan for identical mid-game poke drafts", () => {
 		const state = drafted(loaded(), [null, "coach"]);
