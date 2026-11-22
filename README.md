@@ -16,7 +16,7 @@ Diriges un equipo profesional: preparas el draft, gestionas la plantilla y compi
 </div>
 
 > [!NOTE]
-> Fan project gratuito y no oficial, sin afiliación con Riot Games ([aviso legal](NOTICE.md)). El proyecto está en la Fase 0, dedicada a los cimientos del monorepo y la app de escritorio.
+> Fan project gratuito y no oficial, sin afiliación con Riot Games ([aviso legal](NOTICE.md)). Ya se juega un **draft rápido Bo5 fearless** contra la IA. El proyecto está en la **Fase 3**: contenido real de LoL (equipos, jugadores y campeones de 2026).
 
 ## El juego
 
@@ -26,7 +26,8 @@ Diriges un equipo profesional: preparas el draft, gestionas la plantilla y compi
 | **Las decisiones importan** | Cada resultado se puede rastrear hasta sus causas: composición, forma, estrategia y meta |
 | **Historias emergentes** | Rachas, rivalidades, dinastías y regens que surgen de la simulación, no de un guion |
 | **Realismo competitivo** | LCK, LPL, LEC, LCS, CBLOL y LCP, con First Stand, MSI y Worlds |
-| **Respeto por tu tiempo** | Juegas cada decisión o la delegas en el staff y avanzas rápido |
+| **Gestión del club** | Staff que contratas (head coach, assistant coach, analistas…), finanzas, contratos y buyouts, y química según nacionalidad e idioma |
+| **Respeto por tu tiempo** | Juegas el draft con sugerencias del assistant coach o lo delegas en el head coach, y avanzas rápido |
 
 La visión completa está en [IDEA.md](IDEA.md).
 
@@ -64,7 +65,7 @@ flowchart LR
   Main --> Core["Núcleo TS<br/>utilityProcess"]
   Core -- hechos y vistas --> UI
   Core <--> DB[("SQLite<br/>por carrera")]
-  Core -. contenido validado .-> Content["Datos<br/>Data Dragon · Leaguepedia"]
+  Core -. contenido validado .-> Content["Datos<br/>Leaguepedia · CommunityDragon"]
 ```
 
 ## Hoja de ruta
@@ -73,9 +74,10 @@ flowchart LR
 | --- | --- |
 | 0 · Cimientos | Monorepo, CI y estilo visual |
 | 1 · Spikes | Validar el draft *broadcast*, las tablas densas y el determinismo |
-| **2 · Draft rápido** | **Primer hito jugable: serie Bo5 fearless contra la IA** |
-| 3–5 | Contenido real, competición y carrera |
-| 6–8 | Mercado y regens, meta, scouting, moral y narrativa |
+| 2 · Draft rápido | Primer hito jugable: serie Bo5 fearless contra la IA (hecho) |
+| **3 · Datos reales** | **Equipos, jugadores y campeones reales de 2026 (en curso)** |
+| 4–5 | Formatos de competición configurables y carrera |
+| 6–8 | Staff, finanzas, mercado y regens, meta, scouting, moral y narrativa |
 | 9–11 | Minimapa, ligas menores, Sandbox y releases |
 
 El detalle está en el [plan general](docs/plans/00-plan-general.md), y el trabajo en curso en el [tablero](https://github.com/users/nbfrodri/projects/1).
@@ -117,6 +119,18 @@ Para arrancar la app de escritorio en modo desarrollo y para ejecutar los tests 
 mise exec -- pnpm dev
 mise exec -- pnpm e2e
 ```
+
+### Datos reales
+
+El contenido real sale de Leaguepedia (CC BY-SA) y se guarda como snapshot JSON en `packages/core/content/real/`. Un workflow semanal lo regenera y abre un PR; la app no consulta Leaguepedia. Los retratos, nombres de campeón, iconos y logos se descargan a una caché local al arrancar con red.
+
+```sh
+mise exec -- pnpm data:snapshot   # descarga el snapshot de Leaguepedia
+mise exec -- pnpm data:content    # genera jugadores y equipos (sin red)
+mise exec -- pnpm data:champions  # genera los campeones
+```
+
+El detalle está en [tools/data-pipeline](tools/data-pipeline/README.md).
 
 ## Documentación
 

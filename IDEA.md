@@ -34,7 +34,7 @@ La simulación sigue siendo central: partidas, temporadas, mercado y evolución 
 
 1. Avanzar el calendario hasta el siguiente evento: partido, ventana de fichajes, parche, reunión.
 2. Prepararse: scouting del rival, entrenamiento, scrims, elección de estrategia.
-3. Jugar el **draft** (o delegarlo en el staff).
+3. Jugar el **draft** (con sugerencias del assistant coach) o delegarlo en el head coach.
 4. Ver la partida (resumen animado, timeline de eventos o simulación instantánea).
 5. Reaccionar: moral, forma, prensa, ajustes para el siguiente partido.
 
@@ -48,9 +48,11 @@ Construir un proyecto a largo plazo: subir de nivel competitivo, ganar títulos,
 
 ## 5. Rol del jugador
 
-El jugador es el **head coach / manager** de un equipo. Controla:
+El jugador es el **manager** del equipo: decide y contrata, también al staff. Controla:
 
-- **Draft**: picks, bans, orden y estrategia de serie (incluido fearless).
+- **Draft**: lo juega él, con sugerencias del assistant coach, o lo delega en el head coach, que draftea con la ayuda del assistant coach. Se elige antes de cada serie.
+- **Staff**: contrata head coach, assistant coach, analistas, coaches por posición y psicólogo; cada uno mejora un sistema (ver §7, *Staff*).
+- **Finanzas**: presupuesto de la directiva, sueldos, fichajes y buyouts (ver §7, *Finanzas*).
 - **Estrategia de partida**: plan de juego, prioridades de objetivos, nivel de riesgo.
 - **Plantilla**: titulares, suplentes, academia, fichajes, renovaciones y salidas.
 - **Preparación**: foco del entrenamiento (meta frente a comfort picks, sinergias, scouting).
@@ -92,6 +94,30 @@ Inventario basado en DraftSim, que ya validó que estos sistemas funcionan y apo
 - Identidad estable, atributos, pool de campeones, forma, edad y evolución.
 - Mercado de fichajes, agentes libres, academias y renovaciones.
 - Premios: MVP, All-Pro, finales y registros históricos.
+
+### Staff
+- Se contrata y se despide como a los jugadores: mercado, sueldo y contrato.
+- **Head coach:** draftea si el usuario se lo delega; su personalidad y fuerza de draft deciden la IA del equipo (plan 07).
+- **Assistant coach:** sugiere picks y bans con su razón (el desglose de la IA de draft) y mejora el draft del head coach.
+- **Analistas:** mejoran el scouting y la lectura del meta.
+- **Coaches por posición:** mejoran el entrenamiento de los jugadores de su línea.
+- **Psicólogo:** moral, temple y resistencia mental.
+- Con datos reales, el staff de cada equipo sale de Leaguepedia; lo que no se mide (su nivel) se estima y se marca.
+- **Regla de diseño:** cada rol mejora **un solo sistema** y su efecto se ve en el desglose de ese sistema (p. ej. «+3 de preparación por el analista»). Un rol que no cambia nada visible no entra.
+
+### Finanzas
+- **Ingresos:** reparto de la liga, patrocinadores (según reputación, región y resultados), premios de torneos, afición y merchandising, y ventas de jugadores (traspasos y buyouts cobrados).
+- **Gastos:** sueldos de jugadores y staff, primas, academia, instalaciones y bootcamps, viajes a internacionales, y traspasos y buyouts pagados.
+- **Contratos:** duración (hasta un split o año concreto), sueldo, primas por títulos y **buyout**. Con contrato en vigor se negocia el traspaso con el club; si se paga el buyout, el club no puede negarse. Al acabar el contrato, agente libre.
+- **Reglas por liga como datos:** límite salarial e impuesto de lujo donde existan (p. ej. LCK), tamaño de plantilla y academia.
+- **Directiva:** fija el presupuesto de cada temporada y los objetivos. Sin despido; si las cuentas van mal, limita fichajes u obliga a vender.
+- Dinero en enteros y como hechos append-only (cada movimiento queda en el historial y en un informe mensual).
+
+### Nacionalidad e idioma
+- Cada jugador y miembro del staff tiene **nacionalidad** (con su bandera) e **idiomas**. Con datos reales, la nacionalidad sale de Leaguepedia.
+- Cada equipo tiene un **idioma de trabajo** (el de su región). Quien no lo habla comunica peor: baja la química y el efecto de su atributo de comunicación en las disputas.
+- El idioma se aprende con el tiempo en el equipo (más rápido con buena comunicación y si comparte idioma con compañeros); compartir nacionalidad da algo de química.
+- Las **plazas de importados** de cada liga (y la residencia que convierte a un importado en local) son datos de la liga y limitan el mercado.
 
 ### Meta
 - Tiers de campeones con evolución durante torneos (lo que domina se prioriza o se banea).
