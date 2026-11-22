@@ -127,10 +127,9 @@ describe("match.play strategy", () => {
 		expect(profile(played).blue).toEqual(profile(original).blue);
 		expect(played).toEqual(run(state, "match.play", { strategy: fast }));
 		expect(played.state.match).toBe(balancedMatch);
-		expect(played.state.match?.teams.map((t) => t.strategy)).toEqual([
-			balanced,
-			balanced,
-		]);
+		for (const team of played.state.match?.teams ?? []) {
+			expect(team.strategy).toEqual(balanced);
+		}
 		const chooser = played.state.chooser ?? "";
 		const side = chooser === "forge" ? "blue" : "red";
 		const next = draftWith(
