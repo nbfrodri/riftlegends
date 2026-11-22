@@ -1,6 +1,6 @@
 # Plan 11 — Datos reales: Leaguepedia, campeones reales y atributos de jugadores
 
-- **Estado:** aprobado (22-11-2026), troceado en #247–#253.
+- **Estado:** aprobado (22-11-2026), troceado en #247–#253 y #265–#267.
 - **Fase:** 3 · Pipeline de contenido real ([plan general](00-plan-general.md)).
 
 ## Objetivo
@@ -19,15 +19,17 @@ Queda fuera: ligas menores (plan 24), regens y evolución (plan 16), meta por pa
 | P2 | Respeta la API: User-Agent propio sin datos personales, una petición a la vez, `maxlag` y reintentos con espera | Un 429 o `maxlag` espera y reintenta; tras N fallos se aborta sin escribir un snapshot a medias |
 | P3 | Cada fichero lleva procedencia: fuente, fecha de consulta, licencia (CC BY-SA 3.0, la que declara Leaguepedia) y atribución | Falta la procedencia: la validación lo rechaza |
 | P4 | Jugadores con varios equipos en la temporada quedan en el último; suplentes marcados | Jugador sin partidas: atributos por defecto de su rol y liga, marcados como estimados |
+| P5 | Un workflow semanal (y manual) regenera el snapshot y abre un PR si algo cambia | Sin cambios: no abre PR; nunca fusiona solo |
 
 ### Campeones reales
 
 | # | Comportamiento | Caso límite |
 | --- | --- | --- |
-| R1 | Cada campeón de Data Dragon tiene roles, tier, daño, curva de poder y arquetipos | Campeón nuevo sin partidas profesionales: roles y arquetipos de la tabla curada, tier C |
+| R1 | Cada campeón del juego tiene roles, tier, daño, curva de poder y arquetipos | Campeón nuevo sin partidas profesionales: roles y arquetipos de la tabla curada, tier C |
 | R2 | Roles y tier salen de la presencia en partidas profesionales de la temporada (picks y bans por rol) | Rol con menos del 5 % de sus picks: no cuenta como posición |
 | R3 | Matchups y sinergias solo con muestra mínima | Por debajo de la muestra: no se generan (no inventamos datos) |
 | R4 | Los nombres y retratos salen de la caché en tiempo de ejecución, en el idioma de la UI | Sin caché: el modo real no está disponible y la UI lo explica |
+| R5 | Nombres (ES y EN), retratos y clase de cada campeón salen de `champion-summary.json` de CommunityDragon | Campeón sin partidas pro ni entrada en la tabla curada: arquetipos por defecto según su clase |
 
 ### Jugadores y equipos
 
@@ -55,7 +57,7 @@ Queda fuera: ligas menores (plan 24), regens y evolución (plan 16), meta por pa
 - [Consultas, cobertura y licencia de Leaguepedia para 2026](../research/leaguepedia-2026-11.md).
 - **Fuente única de esports: Leaguepedia** (API Cargo de `lol.fandom.com`). Tablas previstas: equipos, plantillas de torneo (jugadores y coaches), partidas y estadísticas por jugador y partida. No se usa Oracle's Elixir ni gol.gg mientras su licencia no esté clara.
 - **Pipeline** en `tools/data-pipeline/` (Node + TypeScript, fuera del binario): descarga, guarda las respuestas crudas en una caché local fuera del repo, normaliza y escribe `packages/core/content/real/*.json` con procedencia. Los JSON van al repo (datos CC BY-SA; código MIT/Apache) con un `LICENSE` propio en esa carpeta.
-- **Sin texto ni arte de Riot en el repo:** el snapshot guarda ids de campeón; los nombres (ES y EN) y retratos salen de la caché de Data Dragon del plan 10. La tabla curada de arquetipos usa solo ids.
+- **Sin texto ni arte de Riot en el repo:** el snapshot guarda ids de campeón; los nombres (ES y EN), retratos y clases salen de la caché del plan 10 (`champion-summary.json` de CommunityDragon). La tabla curada de arquetipos usa solo ids.
 - **Logos de equipos:** URL de Leaguepedia en el snapshot; se descargan en tiempo de ejecución al origen `leaguepedia` de la caché del plan 10, con la misma verificación.
 - **Atributos:** cada uno con su fórmula en `tools/data-pipeline/attributes.ts` (por ejemplo, farming ← CS por minuto; visión ← puntuación de visión por minuto; agresividad ← participación en bajas temprana). Los de equipo y mentales (comunicación, shotcalling, temple) parten de la media del rol, ajustada por experiencia y resultados; se marcan como **estimados** en el perfil.
 - **Contenido en el núcleo:** el mismo esquema del plan 10. `content_version` distinto por snapshot; los goldens siguen con el contenido ficticio.
@@ -68,6 +70,9 @@ Queda fuera: ligas menores (plan 24), regens y evolución (plan 16), meta por pa
 3. **Atributos no medibles** (comunicación, shotcalling, temple, resistencia mental): **estimados** desde la media del rol, ajustados por experiencia y resultados, y **marcados como estimados** en la UI.
 4. **Coaches:** la personalidad sale del **estilo de draft** del equipo.
 5. **Fuerza de liga:** coeficientes fijos y editables, LCK y LPL los más altos y CBLOL el más bajo.
+6. **Actualización:** la app no consulta Leaguepedia; un workflow semanal regenera el snapshot y abre un PR, y los datos nuevos llegan con cada versión. Sin cuenta de Leaguepedia.
+7. **Campeones:** CommunityDragon en lugar de Data Dragon para nombres, retratos y clases (se actualiza el mismo día del parche y trae la clase).
+8. **Riot Open Access (GRID):** se estudian sus condiciones antes de usarlo; solo en el CI, nunca con una clave dentro de la app.
 
 ## Troceado en issues (Tarea de plan · milestone «Fase 3 — Pipeline de contenido real»)
 
@@ -80,6 +85,9 @@ Queda fuera: ligas menores (plan 24), regens y evolución (plan 16), meta por pa
 | 5 | #251 · Modo real en la app: selector de contenido, nombres y retratos desde la caché, ligas | R4, A1–A3 |
 | 6 | #252 · Logos de equipos en la caché (origen `leaguepedia`) | A3 |
 | 7 | #253 · Calibración con contenido real, E2E Bo5 en modo real y créditos | A4–A6 |
+| 8 | #265 · Campeones desde CommunityDragon: nombres, retratos y clases | R5 |
+| 9 | #266 · Workflow semanal que regenera el snapshot con un PR | P5 |
+| 10 | #267 · Condiciones de Riot Open Access (GRID) como segunda fuente | Informe en `docs/research/` |
 
 ## Riesgos
 
