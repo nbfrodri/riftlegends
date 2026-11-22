@@ -62,6 +62,7 @@ Queda fuera: ligas menores (plan 24), regens y evolución (plan 16), meta por pa
 - **Logos de equipos:** nombre de archivo, URL resuelta y SHA-1 de Leaguepedia en el snapshot; se descargan en tiempo de ejecución al origen `leaguepedia` de la caché del plan 10.
 - **Plantillas:** el historial conserva los equipos por torneo. La plantilla de temporada asigna cada jugador a su último equipo por partida y marca la suplencia por mayoría de partidas en su rol. Si el identificador de Leaguepedia incluye un desambiguador entre paréntesis, se sustituye por una huella para no publicar nombres reales.
 - **Atributos:** cada uno con su fórmula en `tools/data-pipeline/attributes.ts` (por ejemplo, farming ← CS por minuto; visión ← puntuación de visión por minuto; agresividad ← participación en bajas temprana). Los de equipo y mentales (comunicación, shotcalling, temple) parten de la media del rol, ajustada por experiencia y resultados; se marcan como **estimados** en el perfil.
+- **Jugadores y equipos (#250):** `pnpm data:content` genera `players.json`, `teams.json` y `provenance.json` desde el snapshot, sin red ([README del pipeline](../../tools/data-pipeline/README.md#jugadores-y-equipos)). Los atributos no medibles o basados en proxies van en `estimated`.
 - **Contenido en el núcleo:** el mismo esquema del plan 10. `content_version` distinto por snapshot; los goldens siguen con el contenido ficticio.
 - **Datos sin licencia clara, nunca:** si una tabla o campo no está bajo CC BY-SA, no entra.
 

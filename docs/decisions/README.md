@@ -64,6 +64,7 @@ Resumen de las decisiones **vigentes**, para empezar cualquier sesión sin volve
 | 2026-11-22 | Datos reales solo de **Leaguepedia** (CC BY-SA), temporada **2026 completa**, en un snapshot JSON en el repo; nombres de campeón desde la caché (sin texto de Riot en el repo); atributos no medibles estimados y marcados; personalidad del coach por estilo de draft; coeficientes de fuerza por liga editables | [plan 11](../plans/11-datos-reales.md) |
 | 2026-11-22 | Datos reales: la app **no consulta Leaguepedia**; un workflow semanal regenera el snapshot y abre un PR (llega con cada versión). Nombres, retratos y clases de campeón desde **CommunityDragon**. Riot Open Access (GRID), solo tras estudiar sus condiciones y nunca con clave en la app | [plan 11](../plans/11-datos-reales.md#decisiones-del-usuario-22-11-2026) |
 | 2026-11-22 | El snapshot separa plantillas históricas y de temporada. Los desambiguadores personales de los identificadores se sustituyen por huellas | [plan 11](../plans/11-datos-reales.md#diseño) |
+| 2026-11-22 | Jugadores y equipos reales (#250): atributos por percentil de rol y liga con fuerza de liga editable, lo no medible **estimado y marcado**, sembrado global por % de victorias suavizado y personalidad del coach por estilo de draft relativo a su liga | [plan 11](../plans/11-datos-reales.md), [pipeline](../../tools/data-pipeline/README.md#jugadores-y-equipos) |
 
 ## Estilo visual
 

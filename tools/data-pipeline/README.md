@@ -19,4 +19,22 @@ Para consultar datos nuevos, usa una caché vacía. En una descarga completa hay
 
 Los JSON separan el historial de plantillas de `seasonPlayers`, que asigna cada jugador a su último equipo por fecha e ID de partida. Sin partidos, se usa la última plantilla por fecha de torneo. `sub` indica que el jugador no inició más de la mitad de las partidas del equipo en ese rol. Los IDs de Leaguepedia con paréntesis conservan el handle y sustituyen el desambiguador por una huella, ya que puede incluir el nombre real. En los drafts, `null` indica un hueco, y `draftOrder: false` identifica listas de marcador cuyo orden de selección se desconoce.
 
+## Jugadores y equipos
+
+```sh
+mise exec -- pnpm data:content
+```
+
+Lee solo los JSON de `packages/core/content/real/` (sin red) y escribe `players.json`, `teams.json` y `provenance.json` en la misma carpeta, con la forma del contenido ficticio. Dos ejecuciones dan los mismos bytes; un test comprueba que los ficheros del repo están al día.
+
+| Pieza | Dónde | Resumen |
+| --- | --- | --- |
+| Atributos (J1, P4) | [attributes.ts](attributes.ts) | Cada atributo medible sale del percentil de una métrica por minuto dentro de su rol y liga, con 12 partidas previas que acercan las muestras pequeñas a la media (65). Los que no se miden (temple, resistencia, concentración, shotcalling, comunicación) y los proxies parten de esa media, ajustada por experiencia y resultados; van en `estimated`. Sin partidas: todo estimado |
+| Fuerza de liga (J2) | [league-strength.ts](league-strength.ts) | Un coeficiente por liga (LCK 1,08 · LPL 1,06 · LEC 1 · LCP 0,98 · LCS 0,96 · CBLOL 0,9), editable, con su justificación |
+| Pools y maestría (J3) | [player-team-content.ts](player-team-content.ts) | Mains: el más jugado y los de ≥3 partidas y ≥20 %. Con menos de 3 campeones, el resto sale de los más jugados del rol (maestría 30) |
+| Equipos (J4) | [player-team-content.ts](player-team-content.ts) | Sembrado global: % de victorias suavizado (6 victorias y 6 derrotas previas) por la fuerza de su liga. Coach: el head coach de su última plantilla; sin coach, «—» y `balanced`. Roles sin jugador: relleno con `placeholder` y todo estimado |
+| Coach (J5) | [coach-style.ts](coach-style.ts) | Personalidad = la señal de draft que más sube sobre la media de su liga (mínimo 8 drafts con orden conocido; si no, `balanced`). Usa una tabla mínima de arquetipos (TODO #249) |
+
+Los valores que el snapshot no mide quedan por defecto: química 40–80 según partidas juntos, estrategia equilibrada, adaptación 50 y valoración de coach 2,5.
+
 Datos de los colaboradores de Leaguepedia, **CC BY-SA 3.0 Unported**. El [aviso de licencia](../../packages/core/content/real/LICENSE) explica la atribución. Las [capturas de prueba](fixtures/leaguepedia/README.md) se completan con filas y respuestas sintéticas etiquetadas en los tests.
