@@ -17,7 +17,9 @@ async function pickClub(
 	club: string,
 ) {
 	await user.click(screen.getByRole("combobox", { name: label }));
-	await user.click(await screen.findByRole("option", { name: club }));
+	await user.click(
+		await screen.findByRole("option", { name: new RegExp(`^${club}\\b`) }),
+	);
 }
 
 describe("series setup (U1)", () => {
@@ -35,6 +37,27 @@ describe("series setup (U1)", () => {
 		expect(checked("Bo3")).toBe(true);
 		expect(checked("Hard")).toBe(true);
 		expect(checked("Off")).toBe(true);
+	});
+
+	test("lists the teams ordered by seed and shows each seed in plain words", async () => {
+		const user = userEvent.setup();
+		await renderWithDraftCore(<DraftScreen />, "en-US", {
+			...packagedMatchContent,
+			teams: [...packagedMatchContent.teams].reverse(),
+		});
+		await screen.findByRole("heading", { level: 1, name: "Set up series" });
+		const mine = screen.getByRole("combobox", { name: "My team" });
+		expect(mine.textContent).toContain("Forge");
+		expect(screen.getByText("Seed 1")).toBeTruthy();
+		expect(screen.getByText("Seed 2")).toBeTruthy();
+		await user.click(mine);
+		const options = await screen.findAllByRole("option");
+		expect(options).toHaveLength(8);
+		expect(options.map((o) => o.textContent)).toEqual(
+			packagedMatchContent.teams
+				.toSorted((a, b) => a.seed - b.seed)
+				.map((team, i) => `${team.name}Seed ${i + 1}`),
+		);
 	});
 
 	test("shows the rival coach as information, not as a setting", async () => {
@@ -126,5 +149,6 @@ describe("series setup (U1)", () => {
 		expect(screen.getByRole("button", { name: "Empezar serie" })).toBeTruthy();
 		expect(checked("Apagado")).toBe(true);
 		expect(screen.getByText("Contraelección")).toBeTruthy();
+		expect(screen.getByText("Sembrado 1")).toBeTruthy();
 	});
 });
