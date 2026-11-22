@@ -1,8 +1,30 @@
-import { maxCatalogBytes, maxImageBytes } from "./catalog";
+import { join } from "node:path";
+import { maxCatalogBytes, maxImageBytes, maxLogoBytes } from "./catalog";
 import { cachePath, readBytes } from "./disk";
+import { type LogoFormat, logoMimes, readLogoEntry } from "./logos";
 import { readActiveVersion } from "./store";
 
 export const assetScheme = "rift-asset";
+
+const logoRequest =
+	/^rift-asset:\/\/leaguepedia\/(teams\/[a-z0-9-]{1,64}\.(png|jpg|webp))$/;
+
+async function serveLogo(userData: string, path: string, format: LogoFormat) {
+	const root = join(userData, "assets", "leaguepedia");
+	// Only files named by the manifest, and only while they still match it.
+	if (!(await readLogoEntry(root, path))) return undefined;
+	const bytes = await readBytes(await cachePath(root, path), maxLogoBytes);
+	return (
+		bytes &&
+		new Response(bytes, {
+			headers: {
+				"cache-control": "no-store",
+				"content-type": logoMimes[format],
+				"x-content-type-options": "nosniff",
+			},
+		})
+	);
+}
 
 export async function serveAsset(
 	userData: string,
@@ -12,6 +34,17 @@ export async function serveAsset(
 	if (request.method !== "GET") return notFound();
 	// Chromium and Electron can remove dot segments before dispatch.
 	// Containment must also hold for the canonical URL we receive.
+	const logo = logoRequest.exec(request.url);
+	if (logo?.[1] && logo[2]) {
+		try {
+			return (
+				(await serveLogo(userData, logo[1], logo[2] as LogoFormat)) ??
+				notFound()
+			);
+		} catch {
+			return notFound();
+		}
+	}
 	const match = /^rift-asset:\/\/cdragon\/([^?#]+)$/.exec(request.url);
 	const encoded = match?.[1];
 	if (!encoded) return notFound();

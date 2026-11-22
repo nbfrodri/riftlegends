@@ -17,6 +17,8 @@ interface AssetsState {
 	/** True while the last settled state was `ready`: the protocol serves files. */
 	ready: boolean;
 	sync(): void;
+	/** Team id to the `rift-asset://` URL of its downloaded logo. */
+	teamLogos: Readonly<Record<string, string>>;
 }
 
 const AssetsContext = createContext<AssetsState | null>(null);
@@ -29,6 +31,7 @@ export function AssetsProvider(props: { api: AssetsApi; children: ReactNode }) {
 	const { api } = props;
 	const [status, setStatus] = useState<AssetStatus>();
 	const [ready, setReady] = useState(false);
+	const [teamLogos, setTeamLogos] = useState<Record<string, string>>({});
 	const mounted = useRef(true);
 
 	const settle = useCallback((next: AssetStatus) => {
@@ -64,7 +67,23 @@ export function AssetsProvider(props: { api: AssetsApi; children: ReactNode }) {
 		api.sync().then(settle, () => settle({ state: "error" }));
 	}, [api, settle]);
 
-	const value = useMemo(() => ({ status, ready, sync }), [status, ready, sync]);
+	// Logos come from a separate download; look again whenever the cache settles.
+	// biome-ignore lint/correctness/useExhaustiveDependencies: `ready` only triggers the refetch
+	useEffect(() => {
+		let current = true;
+		api.teamLogos().then(
+			(logos) => current && setTeamLogos(logos),
+			() => undefined,
+		);
+		return () => {
+			current = false;
+		};
+	}, [api, ready]);
+
+	const value = useMemo(
+		() => ({ status, ready, sync, teamLogos }),
+		[status, ready, sync, teamLogos],
+	);
 	return <AssetsContext value={value}>{props.children}</AssetsContext>;
 }
 
@@ -82,4 +101,13 @@ export function useAssets() {
 export function useAssetSrc(source: "cdragon", path: string) {
 	const assets = use(AssetsContext);
 	return assets?.ready ? `rift-asset://${source}/${path}` : undefined;
+}
+
+/**
+ * The `rift-asset://` URL of a team's downloaded logo, or undefined when it has
+ * none (or outside an `AssetsProvider`), so callers fall back to their own crest.
+ */
+export function useTeamLogoSrc(teamId: string): string | undefined {
+	const logos = use(AssetsContext)?.teamLogos;
+	return logos && Object.hasOwn(logos, teamId) ? logos[teamId] : undefined;
 }

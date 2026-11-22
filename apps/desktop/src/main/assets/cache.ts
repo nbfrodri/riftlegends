@@ -6,6 +6,7 @@ import type {
 } from "@rift-legends/contracts";
 import { isVersion, versionsUrl } from "./catalog";
 import { cachePath } from "./disk";
+import { readTeamLogos, syncTeamLogos, type TeamLogoSource } from "./logos";
 import {
 	activateVersion,
 	activeCatalog,
@@ -124,7 +125,34 @@ export function createAssetCache(
 		}
 	}
 
+	const logoRoot = async () =>
+		dirname(
+			await cachePath(userData, "assets/leaguepedia/manifest.json", true),
+		);
+
 	return {
+		/** Logos of the given teams (untrusted snapshot input); failures are per logo. */
+		async syncTeamLogos(
+			sources: readonly TeamLogoSource[],
+		): Promise<{ failed: string[] }> {
+			const root = await logoRoot();
+			const release = await acquireSyncLock(dirname(root));
+			try {
+				return await syncTeamLogos(root, sources, transport);
+			} finally {
+				await release();
+			}
+		},
+		/** Team id to `rift-asset://` URL of every verified logo on disk. */
+		async getTeamLogos(): Promise<Record<string, string>> {
+			const logos = await readTeamLogos(await logoRoot());
+			return Object.fromEntries(
+				Object.entries(logos).map(([id, path]) => [
+					id,
+					`rift-asset://leaguepedia/${path}`,
+				]),
+			);
+		},
 		getStatus: (): CacheStatus => status,
 		getChampions: (): ChampionCatalog | null => champions,
 		subscribe(listener: (progress: AssetProgress) => void): () => void {

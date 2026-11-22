@@ -8,6 +8,7 @@ export const createAssetsApi = (
 	status: () => ipc.invoke(assetChannels.status),
 	sync: () => ipc.invoke(assetChannels.sync),
 	champions: () => ipc.invoke(assetChannels.champions),
+	teamLogos: () => ipc.invoke(assetChannels.teamLogos),
 	subscribe(listener) {
 		const notify = (_event: IpcRendererEvent, progress: AssetProgress) =>
 			listener(progress);

@@ -1,5 +1,5 @@
 import { get } from "node:https";
-import { communityDragon, dataDragon } from "./catalog";
+import { communityDragon, dataDragon, leaguepediaImages } from "./catalog";
 
 interface AssetResponse {
 	status: number;
@@ -15,7 +15,7 @@ export type AssetTransport = (
 ) => Promise<AssetResponse | undefined>;
 
 const timeoutMs = 15_000;
-const hosts = new Set([dataDragon, communityDragon]);
+const hosts = new Set([dataDragon, communityDragon, leaguepediaImages]);
 const offlineCodes = new Set([
 	"EACCES",
 	"EPERM",

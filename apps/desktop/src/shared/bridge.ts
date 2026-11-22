@@ -21,6 +21,7 @@ export const assetChannels = {
 	status: "assets:status",
 	sync: "assets:sync",
 	champions: "assets:champions",
+	teamLogos: "assets:teamLogos",
 	progress: "assets:progress",
 } as const;
 
@@ -29,6 +30,8 @@ export interface AssetsApi {
 	sync(): Promise<AssetStatus>;
 	/** The verified active champion catalog, or null before one is available. */
 	champions(): Promise<ChampionCatalog | null>;
+	/** Team id to `rift-asset://` URL of each verified team logo on disk. */
+	teamLogos(): Promise<Record<string, string>>;
 	subscribe(listener: (progress: AssetProgress) => void): () => void;
 }
 
