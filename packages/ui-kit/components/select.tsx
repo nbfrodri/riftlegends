@@ -53,7 +53,7 @@ export function SelectContent({
 					<Primitive.Popup
 						data-slot="select-content"
 						className={withState(
-							"max-h-(--available-height) min-w-(--anchor-width) overflow-y-auto rounded-control border border-line bg-panel py-1 text-text [scrollbar-color:var(--color-line)_var(--color-panel)] transition-opacity duration-100 ease-out data-ending-style:opacity-0 data-starting-style:opacity-0 motion-reduce:transition-none",
+							"max-h-(--available-height) min-w-(--anchor-width) overflow-y-auto rounded-control border border-line bg-panel py-1 text-text transition-opacity duration-100 ease-out data-ending-style:opacity-0 data-starting-style:opacity-0 motion-reduce:transition-none",
 							className,
 						)}
 						{...props}

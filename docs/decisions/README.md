@@ -89,6 +89,7 @@ Resumen de las decisiones **vigentes**, para empezar cualquier sesión sin volve
 | 2026-11-20 | **Iconos de rol propios** en el estilo Caja, que funcionan sin red y en el modo ficticio; los oficiales se descargarán de CommunityDragon en el modo LoL real (plan 10) | PR de este cambio |
 | 2026-11-22 | Iconos de **estadísticas** (KDA, oro, súbditos, daño y visión) del cliente oficial: set SVG del marcador de fin de partida en la caché de CommunityDragon; sin caché, iconos de Lucide. Los **objetivos** usan su icono oficial en todas las pantallas | [plan 11](../plans/11-datos-reales.md), #293 |
 | 2026-11-19 | El botón **minimizar se oculta** en compositores Wayland en mosaico que no lo soportan (Hyprland, sway, river y niri); en el resto se muestra | PR #54 |
+| 2026-11-22 | **Barras de desplazamiento** Caja en toda la app, definidas una sola vez en el CSS global con `::-webkit-scrollbar` (8 px, pista transparente, pulgar `line` que pasa a `muted` al pasar el ratón, sin flechas). Ningún elemento usa `scrollbar-color` ni `scrollbar-width` (salvo `none`), porque en Chromium anulan esas reglas | [styles.css](../../packages/ui-kit/styles.css) (#307) |
 | 2026-11-19 | Estilo **Caja** (Frecuencia con Unbounded + Archivo), **barra lateral izquierda** fija y plegable, e icono **Corte · Puntera** | [ADR 0002](0002-estilo-visual.md), [design/](../../design/README.md) |
 | 2026-11-22 | Las capturas visuales esperan los recursos de cada pantalla (#317) | [Tests visuales](../../apps/desktop/e2e/visual/README.md) |
 

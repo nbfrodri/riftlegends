@@ -31,7 +31,7 @@ export function ScrollArea({
 				</Primitive.Viewport>
 				<Primitive.Scrollbar
 					orientation="vertical"
-					className="flex w-2 touch-none bg-surface p-px select-none"
+					className="flex w-2 touch-none bg-transparent p-px select-none"
 				>
 					<Primitive.Thumb className="w-full rounded-control bg-line hover:bg-muted" />
 				</Primitive.Scrollbar>
