@@ -24,16 +24,13 @@ export function launchApp(
 			`--lang=${options.systemLocale}`,
 		],
 		chromiumSandbox: true,
-		...(options.env && {
-			env: {
-				...(Object.fromEntries(
-					Object.entries(process.env).filter(
-						([, value]) => value !== undefined,
-					),
-				) as Record<string, string>),
-				...options.env,
-			},
-		}),
+		env: {
+			...(Object.fromEntries(
+				Object.entries(process.env).filter(([, value]) => value !== undefined),
+			) as Record<string, string>),
+			...options.env,
+			RIFT_E2E_OFFLINE: "1",
+		},
 	});
 }
 
