@@ -63,7 +63,7 @@ test("explains the latest rival decision and keeps earlier decisions newest firs
 	// Forge's coach considers the likely reply. Forge also has first turn.
 	await screen.findByRole("button", { name: "Start series" });
 	await user.click(screen.getByRole("combobox", { name: "My team" }));
-	await user.click(await screen.findByRole("option", { name: "Shoal" }));
+	await user.click(await screen.findByRole("option", { name: /^Shoal\b/ }));
 	await user.click(screen.getByRole("button", { name: "Start series" }));
 	await screen.findByText("Waiting for side choice");
 	await act(async () => core.act("draft.ai", {}));
