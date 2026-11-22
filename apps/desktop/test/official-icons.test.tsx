@@ -4,6 +4,7 @@ import type {
 	MatchView,
 } from "@rift-legends/contracts";
 import {
+	act,
 	cleanup,
 	fireEvent,
 	render,
@@ -11,7 +12,7 @@ import {
 	waitFor,
 } from "@testing-library/react";
 import type { ReactElement } from "react";
-import { afterEach, describe, expect, test } from "vitest";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { AssetsProvider } from "../src/renderer/assets";
 import { GameRoleIcon } from "../src/renderer/assets/game-role-icon";
 import { MapIcon } from "../src/renderer/assets/map-icon";
@@ -73,27 +74,46 @@ describe("U2: official role icons", () => {
 });
 
 describe("official stat icons", () => {
+	/** Stands in for the browser's Image so a test can fail the preload. */
+	const preloads: { src: string; onerror: (() => void) | null }[] = [];
+	beforeEach(() => {
+		preloads.length = 0;
+		vi.stubGlobal(
+			"Image",
+			class {
+				src = "";
+				onerror: (() => void) | null = null;
+				constructor() {
+					preloads.push(this);
+				}
+			},
+		);
+	});
+	afterEach(() => vi.unstubAllGlobals());
+
 	test.each(["kda", "gold", "cs", "damage", "vision"] as const)(
-		"%s uses the cached client icon and falls back in the same box if it fails",
+		"%s paints the cached client icon in the text colour and falls back if it fails",
 		async (stat) => {
+			const url = `rift-asset://cdragon/stats/${stat}.svg`;
 			const { container } = renderWith(ready, <StatIcon stat={stat} />);
-			const image = await waitFor(() => {
-				const found = container.querySelector("img");
-				if (!found) throw new Error("no image yet");
+			const icon = await waitFor(() => {
+				const found = container.querySelector<HTMLElement>("[data-stat-icon]");
+				if (!found) throw new Error("no official icon yet");
 				return found;
 			});
-			expect(image.getAttribute("src")).toBe(
-				`rift-asset://cdragon/stats/${stat}.svg`,
-			);
-			expect(image.getAttribute("alt")).toBe("");
-			fireEvent.error(image);
+			expect(icon.getAttribute("aria-hidden")).toBe("true");
+			expect(icon.style.backgroundColor).toBe("currentcolor");
+			expect(icon.style.maskImage).toBe(`url(${url})`);
+			expect(icon.style.width).toBe("14px");
+			expect(icon.style.height).toBe("14px");
 			expect(container.querySelector("img")).toBeNull();
+			const preload = preloads.find((image) => image.src === url);
+			act(() => preload?.onerror?.());
+			expect(container.querySelector("[data-stat-icon]")).toBeNull();
 			const fallback = container.querySelector("svg");
 			expect(fallback?.getAttribute("aria-hidden")).toBe("true");
-			expect(fallback?.getAttribute("width")).toBe(image.getAttribute("width"));
-			expect(fallback?.getAttribute("height")).toBe(
-				image.getAttribute("height"),
-			);
+			expect(fallback?.getAttribute("width")).toBe("14");
+			expect(fallback?.getAttribute("height")).toBe("14");
 		},
 	);
 
