@@ -1,4 +1,8 @@
-import type { AssetStatus } from "@rift-legends/contracts";
+import type {
+	AssetStatus,
+	MatchEvent,
+	MatchView,
+} from "@rift-legends/contracts";
 import {
 	cleanup,
 	fireEvent,
@@ -166,20 +170,22 @@ describe("U2: official objective icons", () => {
 });
 
 describe("objective events in the feed", () => {
-	const event = (kind: "dragon" | "tower" | "kill", second: number) =>
-		({
-			type: "match.event",
-			game: 1,
-			minute: 1,
-			second,
-			kind,
-			side: "blue",
-			zone: "dragon-pit",
-			kills: [],
-			gold: { blue: 0, red: 0 },
-			chance: 5000,
-			causes: [],
-		}) as const;
+	const event = (
+		kind: MatchEvent["kind"],
+		second: number,
+	): MatchView["facts"][number] => ({
+		type: "match.event",
+		game: 1,
+		minute: 1,
+		second,
+		kind,
+		side: "blue",
+		zone: "dragon-pit",
+		kills: [],
+		gold: { blue: 0, red: 0 },
+		chance: 5000,
+		causes: [],
+	});
 
 	test("show the objective's official icon next to the title", async () => {
 		renderWith(
