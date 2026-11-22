@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 import { realSnapshotSchema } from "@rift-legends/contracts/real-snapshot";
 import { parseHistory } from "./history.ts";
 import { buildPlayerTeamContent } from "./player-team-content.ts";
-import { season2026 } from "./scope.ts";
+import { leagues } from "./scope.ts";
 
 const dir = fileURLToPath(
 	new URL("../../packages/core/content/real/", import.meta.url),
@@ -17,7 +17,7 @@ export function serializeRows(rows: readonly unknown[]) {
 
 export async function buildContent(inputDir = dir) {
 	const snapshots = await Promise.all(
-		season2026.map(async ({ id }) =>
+		leagues.map(async ({ id }) =>
 			realSnapshotSchema.parse(
 				JSON.parse(
 					await readFile(join(inputDir, `${id.toLowerCase()}.json`), "utf8"),

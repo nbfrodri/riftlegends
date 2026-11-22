@@ -1,4 +1,5 @@
 import { type CargoRow, type Client, wikiUrl } from "./client.ts";
+import { person } from "./normalization.ts";
 import { dataDragonUrl, type LeagueScope } from "./scope.ts";
 
 export function compare(a: string, b: string): number {
@@ -9,7 +10,7 @@ export function teamKey(value: string) {
 	return value.replaceAll("_", " ").toLowerCase();
 }
 
-function inList(field: string, values: readonly string[]) {
+export function inList(field: string, values: readonly string[]) {
 	// Cargo rejects backslashes and SQL comments in filters. Quote values as SQL literals.
 	return `${field} IN (${values.map((value) => `'${value.replaceAll("'", "''")}'`).join(",")})`;
 }
@@ -170,6 +171,42 @@ function readImages(body: unknown, titles: string[]) {
 	return result;
 }
 
+export async function acquireScoreboard(
+	client: Client,
+	where: string,
+	includeDraftData: boolean,
+) {
+	const scoreFields =
+		"OverviewPage,GameId,DateTime_UTC,Team1,Team2,Winner,WinTeam,Gamelength";
+	const lineFields =
+		"GameId,GameRoleId,Link,Team,Side,Role,IngameRole,Kills,Deaths,Assists,CS,Gold,DamageToChampions,VisionScore";
+	const games = await client.cargo(
+		"ScoreboardGames",
+		includeDraftData
+			? "OverviewPage,GameId,DateTime_UTC,Team1,Team2,Winner,WinTeam,Patch,Gamelength,Team1Picks,Team2Picks,Team1Bans,Team2Bans"
+			: scoreFields,
+		where,
+		"GameId",
+	);
+	const lines = await client.cargo(
+		"ScoreboardPlayers",
+		includeDraftData
+			? "GameId,GameRoleId,Link,Name,Team,Side,Champion,Role,IngameRole,Kills,Deaths,Assists,CS,Gold,DamageToChampions,VisionScore"
+			: lineFields,
+		where,
+		"GameId,GameRoleId",
+		includeDraftData
+			? {}
+			: {
+					cacheRow: (row) => ({
+						...row,
+						Link: row.Link ? person(row.Link).id : null,
+					}),
+				},
+	);
+	return { games, lines };
+}
+
 export async function acquire(client: Client, scope: readonly LeagueScope[]) {
 	const where = inList(
 		"OverviewPage",
@@ -181,18 +218,7 @@ export async function acquire(client: Client, scope: readonly LeagueScope[]) {
 		where,
 		"OverviewPage",
 	);
-	const games = await client.cargo(
-		"ScoreboardGames",
-		"OverviewPage,GameId,DateTime_UTC,Team1,Team2,Winner,WinTeam,Patch,Gamelength,Team1Picks,Team2Picks,Team1Bans,Team2Bans",
-		where,
-		"GameId",
-	);
-	const lines = await client.cargo(
-		"ScoreboardPlayers",
-		"GameId,GameRoleId,Link,Name,Team,Side,Champion,Role,IngameRole,Kills,Deaths,Assists,CS,Gold,DamageToChampions,VisionScore",
-		where,
-		"GameId,GameRoleId",
-	);
+	const { games, lines } = await acquireScoreboard(client, where, true);
 	const drafts = await client.cargo(
 		"PicksAndBansS7",
 		["GameId", "Team1", "Team2", "SwitchedSides", ...draftFields].join(","),

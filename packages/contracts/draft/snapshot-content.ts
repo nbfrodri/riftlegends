@@ -89,12 +89,16 @@ const game = z.strictObject({
 export const realSnapshotSchema = z
 	.strictObject({
 		provenance,
+		season: z.int().positive().optional(),
 		league: z.strictObject({ id: text, name: text }),
 		tournaments: z.array(tournament).min(1),
 		teams: z.array(team).min(1),
 		rosters: z.array(roster),
 		seasonPlayers: z.array(seasonPlayer),
 		games: z.array(game).min(1),
+		// Last season's games of a league with few games this season. They only
+		// feed player attributes, so their teams need not be in `teams`.
+		previousGames: z.array(game).optional(),
 	})
 	.superRefine((snapshot, ctx) => {
 		checkDuplicates(

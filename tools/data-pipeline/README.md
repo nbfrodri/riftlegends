@@ -7,7 +7,15 @@ mise exec -- pnpm data:snapshot
 mise exec -- pnpm data:snapshot --offline
 ```
 
-El comando escribe un JSON por liga en `packages/core/content/real/`, tras validar las seis ligas. Usa la lista de torneos principales de 2026 de [scope.ts](scope.ts) y el catálogo EN de Data Dragon fijado allí. Descarga solo datos y metadatos de los logos (el campo `logo` de Leaguepedia ya no lo usa la app; los logos salen de `data:logos`).
+El comando escribe un JSON por liga en `packages/core/content/real/`, tras validar las seis ligas. Descubre los torneos principales con Cargo y usa el catálogo EN de Data Dragon fijado en [scope.ts](scope.ts). Descarga datos y metadatos de los logos. Los logos de la app salen de `data:logos`.
+
+## Cambio de temporada
+
+[season.ts](season.ts) consulta los torneos de las seis ligas por `League` y `Year` (año UTC) y cuenta las partidas agrupadas por torneo. Entran los torneos oficiales de nivel principal, con fecha de inicio en ese año y alguna partida. Se excluyen exhibiciones, ascensos, descensos y clasificatorios externos. [season-exceptions.ts](season-exceptions.ts) permite corregir páginas concretas si Cargo las clasifica mal.
+
+El snapshot pasa al año nuevo cuando las seis ligas han disputado al menos una partida válida. Hasta entonces se conserva la temporada anterior. Los equipos y plantillas se reconstruyen a partir de los torneos seleccionados, incluidas las altas, bajas y cambios de nombre.
+
+Mientras una liga tenga menos de **150 partidas**, cada jugador de su plantilla puede completar una muestra de **30 partidas** con las más recientes de la temporada anterior en esa liga. La mezcla solo alimenta los atributos. Las consultas de los marcadores previos se guardan en la caché de temporadas cerradas y comparten el límite de Cargo con el resto del pipeline.
 
 | Opción | Uso |
 | --- | --- |
@@ -42,7 +50,7 @@ Datos de los colaboradores de Leaguepedia, **CC BY-SA 3.0 Unported**. El [aviso 
 
 ## Trayectoria de los jugadores
 
-`pnpm data:snapshot` también escribe `packages/core/content/real/history.json` (tras el snapshot, con la misma caché y el mismo límite de Cargo). Mira los 7 años anteriores a la temporada del snapshot (`snapshotSeason` e `historySpan` en [scope.ts](scope.ts); al avanzar la temporada, la ventana se mueve sola). Son tres consultas agregadas por año con `GROUP BY` (partidas por jugador, eventos internacionales y títulos), unas 1 500 filas por año y nada partida a partida. Los años cerrados no cambian: su caché va aparte (`RIFT_LEGENDS_HISTORY_CACHE`, por defecto `<caché>/history`) y el workflow la restaura con clave estable, de modo que cada lunes solo se pide el año nuevo. Solo se guardan los ids del snapshot (con huellas); los demás nombres se descartan antes de escribir la caché. Después, `pnpm data:content` regenera jugadores y equipos.
+`pnpm data:snapshot` también escribe `packages/core/content/real/history.json` para los siete años anteriores a la temporada del snapshot. La ventana avanza con la temporada y consulta tres agregados por año con `GROUP BY` (partidas por jugador, eventos internacionales y títulos). La caché de años cerrados va aparte (`RIFT_LEGENDS_HISTORY_CACHE`, por defecto `<caché>/history`). El workflow restaura la última y guarda una nueva cuando incorpora consultas. La caché sustituye los desambiguadores personales por huellas y el historial publicado contiene solo los IDs de los jugadores del snapshot.
 
 ## Logos de equipos
 
@@ -57,7 +65,7 @@ Lee los equipos de los JSON del snapshot, los empareja con la API web pública d
 
 El [workflow](../../.github/workflows/data-snapshot.yml) se ejecuta los lunes a las 05:23 UTC y también se puede lanzar desde **Actions → Real data snapshot → Run workflow** en la rama por defecto. Las respuestas crudas viven en `actions/cache` (privada del repositorio, con clave por fecha UTC): no se suben como artefacto ni se commitean, porque los desambiguadores de `Link` pueden incluir nombres reales. Un día nuevo consulta de nuevo la fuente. Si solo cambian las fechas de consulta, se conservan los bytes y la procedencia de la última versión publicada.
 
-Cuando cambia la carpeta del snapshot, el workflow abre o actualiza el PR de `chore/data-snapshot`. El resumen compara con la rama por defecto. Cuenta los cambios de equipo en las plantillas de temporada, los equipos nuevos, los campeones que aparecen por primera vez en picks, bans o estadísticas y las partidas por liga. La revisión y la fusión son manuales.
+El workflow regenera el snapshot, los jugadores, los equipos y los logos. Si cambia algún fichero, abre o actualiza el PR de `chore/data-snapshot`. El resumen compara con la rama por defecto y avisa del cambio de temporada. Incluye fichajes, equipos nuevos, campeones nuevos en las partidas y recuentos por liga. La revisión y la fusión son manuales.
 
 En **Settings → Actions → General**, el repositorio debe permitir que GitHub Actions cree pull requests. El `GITHUB_TOKEN` integrado no inicia el CI automáticamente. Si el PR muestra **Approve workflows to run**, aprueba la ejecución. Puedes volver a lanzar una ejecución existente desde Actions. Si GitHub no creó ninguna, cierra y vuelve a abrir el PR con una cuenta con permiso de escritura. [Comportamiento de `GITHUB_TOKEN`](https://docs.github.com/en/actions/concepts/security/github_token)
 

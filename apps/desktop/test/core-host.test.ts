@@ -1,5 +1,5 @@
 import { CONTRACT_VERSION } from "@rift-legends/contracts";
-import { packagedDraftContent } from "@rift-legends/core";
+import { loadRealContent, packagedDraftContent } from "@rift-legends/core";
 import { describe, expect, it } from "vitest";
 import { createCoreHost, MAX_MESSAGE_BYTES } from "../src/core-host/host";
 
@@ -147,7 +147,9 @@ describe("draft sessions (plan 09, Q1)", () => {
 			ok: true;
 			view: { teams: { id: string }[]; pool: string[] };
 		};
-		expect(options.view.teams).toHaveLength(60);
+		expect(options.view.teams.map(({ id }) => id)).toEqual(
+			loadRealContent().match.teams.map(({ id }) => id),
+		);
 		const [a, b] = options.view.teams;
 		expect(
 			host.receive(

@@ -11,7 +11,7 @@ import { join } from "node:path";
 import { realSnapshotSchema } from "@rift-legends/contracts/real-snapshot";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { cacheFile } from "./client.ts";
-import { dataDragonUrl, season2026 } from "./scope.ts";
+import { dataDragonUrl } from "./scope.ts";
 import { snapshot } from "./snapshot.ts";
 
 let directory: string;
@@ -463,28 +463,66 @@ it("lists all unmapped champion names before writing any file", async () => {
 	await expect(readdir(outputDir)).rejects.toMatchObject({ code: "ENOENT" });
 });
 
-it("P1 selects only the 33 named main competition tournaments", async () => {
-	const pages = season2026.flatMap((league) => league.pages);
-	const counts = await fixture("games-by-tournament");
-	const recorded = new Set(
-		counts.cargoquery.map(
-			({ title }: { title: TestRow }) => title.OverviewPage,
-		),
+it("keeps previous games separate from current teams and rosters", async () => {
+	const bodies = await responses();
+	const previousPage = tournament.replace("2026", "2025");
+	const oldTeam = (team: string | undefined) =>
+		team === "T1" ? "Retired Team" : team;
+	await snapshot({
+		cacheDir,
+		outputDir,
+		now: () => Date.parse(pointInTime),
+		sleep: async () => {},
+		scope: scope.map((league) => ({
+			...league,
+			previousPages: [previousPage],
+		})),
+		fetch: async (input) => {
+			const url = new URL(String(input));
+			const table =
+				url.searchParams.get("tables") ??
+				url.searchParams.get("action") ??
+				url.href;
+			const body = bodies.get(table);
+			if (!url.searchParams.get("where")?.includes(previousPage))
+				return Response.json(body);
+			expect(["ScoreboardGames", "ScoreboardPlayers"]).toContain(table);
+			const { cargoquery } = body as { cargoquery: { title: TestRow }[] };
+			return Response.json(
+				cargo(
+					cargoquery.map(({ title }) => ({
+						...title,
+						GameId: title.GameId?.replace("2026", "2025"),
+						...(table === "ScoreboardGames"
+							? {
+									OverviewPage: previousPage,
+									Team1: oldTeam(title.Team1),
+									Team2: oldTeam(title.Team2),
+									WinTeam: oldTeam(title.WinTeam),
+									"DateTime UTC": title["DateTime UTC"]?.replace(
+										"2026",
+										"2025",
+									),
+								}
+							: { Team: oldTeam(title.Team) }),
+					})),
+				),
+			);
+		},
+	});
+	const written = realSnapshotSchema.parse(
+		JSON.parse(await readFile(join(outputDir, "lck.json"), "utf8")),
 	);
-	expect(season2026.map(({ id }) => id)).toEqual([
-		"LCK",
-		"LPL",
-		"LEC",
-		"LCP",
-		"LCS",
-		"CBLOL",
-	]);
-	expect(pages).toHaveLength(33);
-	expect(new Set(pages).size).toBe(33);
-	expect(pages.every((page) => recorded.has(page))).toBe(true);
-	expect(pages.join("\n")).not.toMatch(
-		/Showmatch|Promotion|Opening|Regional Finals/,
+	expect(written.previousGames?.map((game) => game.tournament)).toEqual(
+		written.games.map(() => previousPage),
 	);
+	expect(
+		written.previousGames?.flatMap((game) => game.lines).length,
+	).toBeGreaterThan(0);
+	expect(written.teams.map(({ id }) => id)).not.toContain("Retired Team");
+	expect(
+		written.rosters.every((roster) => roster.tournament === tournament),
+	).toBe(true);
 });
 
 it("reports an offline cache miss and preserves a previously written file", async () => {

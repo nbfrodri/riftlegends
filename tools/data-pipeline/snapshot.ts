@@ -16,9 +16,16 @@ import {
 	required,
 	teamResolver,
 } from "./normalization.ts";
-import { acquire, compare } from "./queries.ts";
+import {
+	acquire,
+	acquireScoreboard,
+	compare,
+	inList,
+	teamKey,
+} from "./queries.ts";
 import { normalizeRosters } from "./rosters.ts";
-import { dataDragonVersion, type LeagueScope, season2026 } from "./scope.ts";
+import { dataDragonVersion, type LeagueScope } from "./scope.ts";
+import { discoverSeason } from "./season.ts";
 
 interface SnapshotOptions extends ClientOptions {
 	outputDir: string;
@@ -82,8 +89,22 @@ async function publish(outputDir: string, files: ReadonlyMap<string, string>) {
 export async function snapshot(
 	options: SnapshotOptions,
 	client = new Client(options),
+	closedSeasons = client.withCache(join(options.cacheDir, "history")),
 ) {
-	const scope = options.scope ?? season2026;
+	const discovered = options.scope
+		? undefined
+		: await discoverSeason(
+				client,
+				new Date(options.now?.() ?? Date.now()),
+				undefined,
+				closedSeasons,
+			);
+	const scope = options.scope ?? discovered?.scope ?? [];
+	const missing = scope.filter(({ pages }) => pages.length === 0);
+	if (!scope.length || missing.length)
+		throw new Error(
+			`No played tournaments for the snapshot scope: ${missing.map(({ id }) => id).join(", ")}`,
+		);
 	const source = await acquire(client, scope);
 	const { pages, resolve } = teamResolver(source);
 	const champions = championResolver(source);
@@ -108,13 +129,29 @@ export async function snapshot(
 		seasonPlayers,
 		oddities: rosterOddities,
 	} = normalizeRosters(source, games, people, tournaments, resolve);
-	const queries = [...client.queries]
+	const pastGames = new Map<string, RealSnapshot["games"]>();
+	for (const { id, previousPages } of scope) {
+		if (!previousPages?.length) continue;
+		const scoreboard = await acquireScoreboard(
+			closedSeasons,
+			inList("OverviewPage", previousPages),
+			false,
+		);
+		const { games } = normalizeGames(
+			{ ...scoreboard, drafts: [] },
+			teamKey,
+			() => undefined,
+		);
+		pastGames.set(id, games);
+	}
+	const recorded = new Map([...client.queries, ...closedSeasons.queries]);
+	const queries = [...recorded]
 		.sort(([a], [b]) => compare(a, b))
 		.map(([url, retrievedAt]) => ({ url, retrievedAt }));
 	const provenance = {
 		source: "Leaguepedia",
 		domain: "lol.fandom.com",
-		retrievedAt: [...client.queries.values()].sort().at(-1),
+		retrievedAt: [...recorded.values()].sort().at(-1),
 		licence: "CC BY-SA 3.0",
 		attribution:
 			"Datos normalizados de los colaboradores de Leaguepedia (https://lol.fandom.com/wiki/Leaguepedia), CC BY-SA 3.0 Unported.",
@@ -125,6 +162,7 @@ export async function snapshot(
 	const built: RealSnapshot[] = [];
 	for (const league of scope) {
 		const selected = new Set(league.pages);
+		const previousGames = pastGames.get(league.id);
 		const leagueGames = games.filter((game) => selected.has(game.tournament));
 		const leagueRosters = rosters.filter((row) => selected.has(row.tournament));
 		const teams = [...new Set(leagueRosters.map(({ team }) => team))]
@@ -145,6 +183,7 @@ export async function snapshot(
 			});
 		const validated = realSnapshotSchema.parse({
 			provenance,
+			...(discovered ? { season: discovered.season } : {}),
 			league: { id: league.id, name: league.name },
 			tournaments: [...selected].sort(compare).map((id) => {
 				const row = tournaments.get(id);
@@ -159,6 +198,7 @@ export async function snapshot(
 				(row) => row.id,
 			),
 			games: leagueGames,
+			...(previousGames?.length ? { previousGames } : {}),
 		});
 		built.push(validated);
 	}

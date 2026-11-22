@@ -61,3 +61,14 @@ it("P5 omits transfers for new players and returns stable counts for unchanged l
 	expect(summarize(before, after)).toContain("Fichajes (0)");
 	expect(summarize(before, after)).toContain("| LCK | 1 | 1 |");
 });
+
+it("summarizes a season change from a legacy snapshot", () => {
+	const before = league("LCK", ["Blue", "Red"], "Blue", "Bard");
+	const after = {
+		...league("LCK", ["New", "Blue"], "Blue", "Bard"),
+		season: 2027,
+	};
+	expect(summarize([before], [after])).toContain(
+		"Cambio de temporada de 2026 a 2027",
+	);
+});

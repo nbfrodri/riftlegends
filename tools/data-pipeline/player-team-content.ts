@@ -5,7 +5,7 @@ import { coachStyles } from "./coach-style.ts";
 import { eloOf, leagueRating } from "./league-strength.ts";
 import { groupBy } from "./normalization.ts";
 import { compare } from "./queries.ts";
-import { snapshotSeason } from "./scope.ts";
+import { seasonOf } from "./season.ts";
 
 type Game = RealSnapshot["games"][number];
 type Team = RealSnapshot["teams"][number];
@@ -333,11 +333,12 @@ function uniqueHandles<
 export function buildPlayerTeamContent(
 	snapshots: readonly RealSnapshot[],
 	careers: CareerHistory = new Map(),
-	season = snapshotSeason,
 ) {
-	const built = snapshots.flatMap((snapshot) =>
-		build(snapshot, careers, season),
-	);
+	const season = seasonOf(snapshots);
+	const built =
+		season === undefined
+			? []
+			: snapshots.flatMap((snapshot) => build(snapshot, careers, season));
 	const ids = new Set<string>();
 	for (const { team, players } of built) {
 		for (const id of [team.id, ...players.map((p) => p.id)]) {

@@ -77,7 +77,7 @@ function gameDate(row: CargoRow) {
 }
 
 export function normalizeGames(
-	source: SourceData,
+	source: Pick<SourceData, "games" | "lines" | "drafts">,
 	resolveTeam: ResolveTeam,
 	findChampion: ResolveChampion,
 ) {

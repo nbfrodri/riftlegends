@@ -1,13 +1,15 @@
-import { readdir, readFile } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import {
 	type RealSnapshot,
 	realSnapshotSchema,
 } from "@rift-legends/contracts/real-snapshot";
+import { leagues } from "./scope.ts";
+import { seasonOf } from "./season.ts";
 
 type League = Pick<
 	RealSnapshot,
-	"league" | "teams" | "seasonPlayers" | "games"
+	"league" | "season" | "teams" | "seasonPlayers" | "games"
 >;
 
 function markdown(value: string) {
@@ -63,6 +65,8 @@ function section(title: string, items: string[]) {
 export function summarize(before: readonly League[], after: readonly League[]) {
 	const previous = index(before);
 	const current = index(after);
+	const previousSeason = seasonOf(before);
+	const currentSeason = seasonOf(after);
 	const transfers: string[] = [];
 	for (const [id, player] of current.players) {
 		const old = previous.players.get(id);
@@ -79,6 +83,9 @@ export function summarize(before: readonly League[], after: readonly League[]) {
 		...new Set([...previous.games.keys(), ...current.games.keys()]),
 	].sort();
 	return [
+		...(previousSeason && currentSeason && previousSeason !== currentSeason
+			? [`### Cambio de temporada de ${previousSeason} a ${currentSeason}`, ""]
+			: []),
 		...section("Fichajes", transfers),
 		...section("Equipos nuevos", newTeams),
 		...section("Campeones nuevos en partidas", newChampions),
@@ -94,12 +101,12 @@ export function summarize(before: readonly League[], after: readonly League[]) {
 }
 
 async function readLeagues(directory: string) {
-	const files = (await readdir(directory))
-		.filter((file) => file.endsWith(".json") && file !== "logos.json")
-		.sort();
 	return Promise.all(
-		files.map(async (file) => {
-			const body = await readFile(join(directory, file), "utf8");
+		leagues.map(async ({ id }) => {
+			const body = await readFile(
+				join(directory, `${id.toLowerCase()}.json`),
+				"utf8",
+			);
 			return realSnapshotSchema.parse(JSON.parse(body));
 		}),
 	);

@@ -5,7 +5,9 @@ import {
 } from "../../packages/contracts/draft/player-attributes.ts";
 import { careerLevelShare, levelCeiling } from "./career.ts";
 import { leagueOffset } from "./league-strength.ts";
-import { groupBy } from "./normalization.ts";
+import { groupBy, idResolver } from "./normalization.ts";
+import { compare } from "./queries.ts";
+import { minPlayerGames } from "./season.ts";
 
 type Game = RealSnapshot["games"][number];
 type Line = Game["lines"][number];
@@ -283,25 +285,43 @@ export function attributeProfiles(snapshot: RealSnapshot) {
 			.filter((tournament) => /playoff/i.test(tournament.name))
 			.map((tournament) => tournament.id),
 	);
-	const rows = [...snapshot.games]
-		.sort((a, b) => (a.id < b.id ? -1 : Number(a.id !== b.id)))
-		.flatMap((game) => {
-			const sides = groupBy(game.lines, (line) => line.team);
-			const weight = playoffs.has(game.tournament) ? playoffWeight : 1;
-			return game.lines.flatMap((line) =>
-				line.role
-					? [
-							{
-								line,
-								role: line.role,
-								rates: rates(game, line, sides.get(line.team) ?? []),
-								weight,
-								...(game.winner ? { won: line.team === game.winner } : {}),
-							},
-						]
-					: [],
-			);
-		});
+	const rowsOf = (games: readonly Game[]) =>
+		[...games]
+			.sort((a, b) => compare(a.id, b.id))
+			.flatMap((game) => {
+				const sides = groupBy(game.lines, (line) => line.team);
+				const weight = playoffs.has(game.tournament) ? playoffWeight : 1;
+				return game.lines.flatMap((line) =>
+					line.role
+						? [
+								{
+									line,
+									role: line.role,
+									date: game.date,
+									rates: rates(game, line, sides.get(line.team) ?? []),
+									weight,
+									...(game.winner ? { won: line.team === game.winner } : {}),
+								},
+							]
+						: [],
+				);
+			});
+	const rows = rowsOf(snapshot.games);
+	// Fill the sample with each returning player's latest previous games.
+	const played = new Map<string, number>();
+	for (const { line } of rows)
+		played.set(line.player, (played.get(line.player) ?? 0) + 1);
+	const resolve = idResolver(snapshot.seasonPlayers.map(({ id }) => id));
+	for (const row of rowsOf(snapshot.previousGames ?? []).sort((a, b) =>
+		compare(b.date, a.date),
+	)) {
+		const player = resolve(row.line.player);
+		if (player === undefined) continue;
+		const count = played.get(player) ?? 0;
+		if (count >= minPlayerGames) continue;
+		played.set(player, count + 1);
+		rows.push({ ...row, line: { ...row.line, player } });
+	}
 	const cohorts = new Map<Role, Map<string, ReturnType<typeof describe>>>();
 	for (const [role, roleRows] of groupBy(rows, (row) => row.role)) {
 		cohorts.set(
@@ -320,7 +340,7 @@ export function attributeProfiles(snapshot: RealSnapshot) {
 		const cohort = cohorts.get(role);
 		const profile = cohort?.get(player);
 		const estimated: PlayerAttribute[] = [];
-		// Experiencia: partidas de 2026 suavizadas, centradas en la media del rol.
+		// Experience: smoothed game counts centered on the role average.
 		const exposure = (games: number) => games / (games + 12);
 		const typicalExposure = cohort
 			? average(Array.from(cohort.values(), ({ games }) => exposure(games)))

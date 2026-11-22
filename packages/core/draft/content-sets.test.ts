@@ -75,7 +75,9 @@ describe("content sets (plan 11, #251)", () => {
 
 	it("A2: offers the real teams with their league when asked for them", () => {
 		const teams = view(withSets(), { content: "real" }).teams;
-		expect(teams).toHaveLength(60);
+		expect(teams.map(({ id }) => id)).toEqual(
+			loadRealContent().match.teams.map(({ id }) => id),
+		);
 		expect(new Set(teams.map((t) => t.league))).toEqual(
 			new Set(["LCK", "LPL", "LEC", "LCP", "LCS", "CBLOL"]),
 		);
@@ -116,7 +118,9 @@ describe("content sets (plan 11, #251)", () => {
 			type: "series.started",
 			content: "real",
 		});
-		expect(view(started.session).teams).toHaveLength(60);
+		expect(view(started.session).teams.map(({ id }) => id)).toEqual(
+			loadRealContent().match.teams.map(({ id }) => id),
+		);
 
 		let s = started.session;
 		const facts: Fact[] = [...started.facts];
