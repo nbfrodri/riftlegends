@@ -12,10 +12,12 @@ const when = (e: MatchEvent) => (e.minute - 1) * 60 + e.second;
 const EventRow = memo(function EventRow({
 	event,
 	team,
+	championByPlayer,
 	animate,
 }: {
 	event: MatchEvent;
 	team: string;
+	championByPlayer: ReadonlyMap<string, string>;
 	animate: boolean;
 }) {
 	const { t, i18n } = useTranslation();
@@ -55,7 +57,7 @@ const EventRow = memo(function EventRow({
 		<li
 			ref={row}
 			data-side={event.side}
-			className="grid min-h-[clamp(78px,12vh,120px)] grid-cols-[auto_1fr] content-center gap-3.5 border-line border-t py-[9px]"
+			className="grid min-h-[clamp(78px,12vh,120px)] grid-cols-[auto_minmax(0,1fr)] content-center gap-3.5 border-line border-t py-[9px]"
 		>
 			<time className="font-bold text-(--side) text-[16px]">
 				{clockTime(when(event))}
@@ -70,6 +72,27 @@ const EventRow = memo(function EventRow({
 				<h3 className="my-0.5 font-bold text-[16px]">
 					{t(`draft.match.kind.${event.kind}`)}
 				</h3>
+				{event.kills.map(({ killer, victim, assists }, index) => (
+					// biome-ignore lint/suspicious/noArrayIndexKey: kills retain the order recorded in the event.
+					<p key={index} className="truncate">
+						{t("draft.match.kill", {
+							killer: championByPlayer.get(killer) ?? killer,
+							victim: championByPlayer.get(victim) ?? victim,
+						})}
+						{assists.length > 0 && (
+							<>
+								{" "}
+								{t("draft.match.assists", {
+									champions: list.format(
+										assists.map(
+											(player) => championByPlayer.get(player) ?? player,
+										),
+									),
+								})}
+							</>
+						)}
+					</p>
+				))}
 				{causes.length > 2 ? (
 					<details className="text-muted">
 						<summary className="cursor-pointer">{summary}</summary>
@@ -87,11 +110,13 @@ export function EventFeed({
 	facts,
 	second,
 	names,
+	championByPlayer,
 	ended,
 }: {
 	facts: MatchView["facts"];
 	second: number;
 	names: TeamNames;
+	championByPlayer: ReadonlyMap<string, string>;
 	ended: boolean;
 }) {
 	const { t } = useTranslation();
@@ -124,6 +149,7 @@ export function EventFeed({
 								<EventRow
 									key={index}
 									event={event}
+									championByPlayer={championByPlayer}
 									team={names[event.side]}
 									animate={!ended}
 								/>

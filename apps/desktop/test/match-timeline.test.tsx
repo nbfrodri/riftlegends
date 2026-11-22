@@ -97,7 +97,11 @@ const match: MatchView = {
 			red: "shoal",
 			profiles: { blue: profile, red: profile },
 		},
-		{ ...event, causes: [...event.causes], kills: [] },
+		{
+			...event,
+			causes: [...event.causes],
+			kills: [{ killer: "b-top", victim: "r-top", assists: ["b-mid"] }],
+		},
 		{
 			...event,
 			minute: 2,
@@ -112,7 +116,22 @@ const match: MatchView = {
 			game: 1,
 			winner: "forge",
 			duration: 78,
-			players: [],
+			players: [
+				["b-top", "c1"],
+				["r-top", "c2"],
+				["b-mid", "c3"],
+			].map(([player, champion]) => ({
+				player: player as string,
+				champion: champion as string,
+				team: player === "r-top" ? "shoal" : "forge",
+				kills: 0,
+				deaths: 0,
+				assists: 0,
+				gold: 0,
+				damage: 0,
+				participation: 0,
+				rating: 50,
+			})),
 			decisive: [],
 		},
 	],
@@ -162,6 +181,11 @@ vi.mock("../src/renderer/draft/session", async (original) => ({
 		present,
 		sessionId: 1,
 		options: {
+			champions: [
+				{ id: "c2", name: "Silver Tide" },
+				{ id: "c1", name: "Ember Crown" },
+				{ id: "c3", name: "Bright Moon" },
+			],
 			teams: [
 				{ id: "forge", name: "Forge" },
 				{ id: "shoal", name: "Shoal" },
@@ -210,6 +234,8 @@ test("reveals facts at their second and updates the map and gold from the comple
 	advance(750);
 	expect(feed.queryAllByRole("listitem")).toHaveLength(0);
 	advance(250);
+	expect(feed.getByText(/Ember Crown.*Silver Tide/)).toBeTruthy();
+	expect(feed.getByText(/Bright Moon/)).toBeTruthy();
 	expect(feed.getByText("Dragón")).toBeTruthy();
 	expect(feed.getByText(/Foso del dragón/)).toBeTruthy();
 	expect(feed.getByText(/visión/i)).toBeTruthy();
@@ -269,6 +295,8 @@ test("face to face shows each lane's numbers for the current minute and advances
 	advance(5000);
 	expect(within(table).getAllByRole("row")).toHaveLength(lanes.length + 2);
 	let top = lane("Top");
+	expect(top.getByText("Ember Crown")).toBeTruthy();
+	expect(top.getByText("Silver Tide")).toBeTruthy();
 	expect(top.getByText("1/0/2")).toBeTruthy();
 	expect(top.getByText("0/1/0")).toBeTruthy();
 	expect(top.getByText("1,500")).toBeTruthy();

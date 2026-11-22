@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 import { teamName, useDraftSession } from "../session";
 import { AiDecisionPanel } from "./ai-decision-panel";
 import { ChampionPool, type PoolChampion } from "./champion-pool";
-import { championName, slotRoles } from "./champions";
+import { slotRoles } from "./champions";
 import { InspectionPanel, PlayerAttributes } from "./player-card";
 import { type PlayerRef, TeamColumn } from "./team-column";
 
@@ -22,13 +22,14 @@ const draftTurn = (view: DraftView): Turn | null =>
 
 function usePool(view: DraftView, options: SeriesOptions) {
 	return useMemo(() => {
-		const roles = new Map(options.champions.map((c) => [c.id, c.roles]));
+		const byId = new Map(options.champions.map((c) => [c.id, c]));
 		const champions: PoolChampion[] = view.availability.map((entry) => ({
 			id: entry.champion,
-			roles: roles.get(entry.champion) ?? [],
+			name: byId.get(entry.champion)?.name ?? entry.champion,
+			roles: byId.get(entry.champion)?.roles ?? [],
 			unavailable: entry.status === "free" ? null : entry.status,
 		}));
-		const rolesOf = (id: string): readonly Role[] => roles.get(id) ?? [];
+		const rolesOf = (id: string): readonly Role[] => byId.get(id)?.roles ?? [];
 		return { champions, rolesOf };
 	}, [view.availability, options.champions]);
 }
@@ -38,7 +39,7 @@ function TurnBar(props: {
 	turn: Turn;
 	view: DraftView;
 	mine: boolean;
-	selected: string | null;
+	selectedName: string | null;
 	busy: boolean;
 	onConfirm: () => void;
 }) {
@@ -62,9 +63,7 @@ function TurnBar(props: {
 				</p>
 				{props.mine ? (
 					<h2 className="truncate font-bold font-display text-[clamp(24px,2.5vw,38px)] leading-tight tracking-champion">
-						{props.selected
-							? championName(props.selected)
-							: t("draft.board.choose")}
+						{props.selectedName ?? t("draft.board.choose")}
 					</h2>
 				) : (
 					<p
@@ -76,7 +75,7 @@ function TurnBar(props: {
 				)}
 			</div>
 			<Button
-				disabled={!props.mine || !props.selected || props.busy}
+				disabled={!props.mine || !props.selectedName || props.busy}
 				onClick={props.onConfirm}
 			>
 				<Check aria-hidden="true" className="size-4" />
@@ -162,7 +161,7 @@ export function DraftBoard() {
 							turn={turn}
 							view={view}
 							mine={myTurn}
-							selected={choice?.id ?? null}
+							selectedName={choice?.name ?? null}
 							busy={busy}
 							onConfirm={() => void confirm()}
 						/>

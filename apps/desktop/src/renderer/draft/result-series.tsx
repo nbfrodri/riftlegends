@@ -4,7 +4,7 @@ import { ArrowUpRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { clock, type GameResult, gapsOfSeries, percent } from "./result-data";
 import { GapsTable } from "./result-gaps";
-import { teamName, useDraftSession } from "./session";
+import { championLabel, teamName, useDraftSession } from "./session";
 
 function Mvp(props: {
 	mvp: NonNullable<SeriesSummary["mvp"]>;
@@ -51,14 +51,14 @@ function Mvp(props: {
 					role: role ? t(`draft.roles.role.${role}`) : "",
 				})}
 			</h2>
-			<p className="mt-1 text-[14px] text-muted">
+			<p className="mt-1 truncate text-[14px] text-muted">
 				{new Intl.ListFormat(i18n.language, {
 					style: "long",
 					type: "conjunction",
 				}).format(
 					mvp.champions.map((champion, i) =>
 						t("draft.result.mvp.champion", {
-							champion: champion.charAt(0).toUpperCase() + champion.slice(1),
+							champion: championLabel(options, champion),
 							game: props.games[i]?.game ?? i + 1,
 						}),
 					),

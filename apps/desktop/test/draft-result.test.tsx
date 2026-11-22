@@ -18,7 +18,7 @@ import {
 	useDraftSession,
 } from "../src/renderer/draft/session";
 import { draftStages, stageOf } from "../src/renderer/draft/stages";
-import { renderWithDraftCore } from "./draft-core";
+import { namedDraft, renderWithDraftCore } from "./draft-core";
 
 // Each test plays whole games with the real core, which takes longer when the suite runs in parallel.
 configure({ asyncUtilTimeout: 10000 });
@@ -93,6 +93,9 @@ function renderResult(stop: "game1" | "over") {
 			<Driver stop={stop} />
 			<Flow />
 		</DraftSessionProvider>,
+		"en-US",
+		undefined,
+		namedDraft,
 	);
 }
 
@@ -131,12 +134,15 @@ describe("game result (U9)", () => {
 			expect(within(row).getByRole("rowheader").textContent).toBe(
 				`${capital(p.team)} ${ROLES[i % 5]}`,
 			);
+			const name = namedDraft.champions.find((c) => c.id === p.champion)?.name;
+			if (!name) throw new Error(`Unknown champion: ${p.champion}`);
+			expect(within(row).getByRole("cell", { name })).toBeTruthy();
 			expect(
 				within(row)
 					.getAllByRole("cell")
+					.slice(1)
 					.map((c) => c.textContent),
 			).toEqual([
-				capital(p.champion),
 				`${p.kills}/${p.deaths}/${p.assists}`,
 				grouped(p.gold),
 				grouped(p.damage),
@@ -272,6 +278,11 @@ describe("series result (U10)", () => {
 		if (!mvp) throw new Error("no mvp");
 
 		const panel = await screen.findByRole("region", { name: "Series MVP" });
+		for (const id of mvp.champions) {
+			expect(panel.textContent).toContain(
+				namedDraft.champions.find((c) => c.id === id)?.name,
+			);
+		}
 		expect(panel.textContent).toContain(capital(mvp.team));
 		expect(panel.textContent).toContain(String(mvp.rating / 10));
 		expect(panel.textContent).toContain(

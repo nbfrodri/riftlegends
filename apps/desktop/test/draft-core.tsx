@@ -22,7 +22,7 @@ import { CoreProvider } from "../src/renderer/core";
 import type { CoreApi, CoreCommand, CoreFact } from "../src/shared/bridge";
 
 /** The real draft dispatcher with the packaged content, behind the renderer's `CoreApi`. */
-function draftCore(match = packagedMatchContent) {
+function draftCore(match = packagedMatchContent, draft = packagedDraftContent) {
 	const listeners = new Set<(facts: readonly CoreFact[]) => void>();
 	const sent: CoreCommand[] = [];
 	let session: Session<SeriesState> | null = null;
@@ -33,7 +33,7 @@ function draftCore(match = packagedMatchContent) {
 	};
 	const api = {
 		open: vi.fn(async () => {
-			session = openSession(1, draftStateWith(packagedDraftContent, match));
+			session = openSession(1, draftStateWith(draft, match));
 			return { ok: true as const, sessionId: 1 };
 		}),
 		send: vi.fn(async (command: CoreCommand) => {
@@ -85,13 +85,23 @@ function draftCore(match = packagedMatchContent) {
 	return { api, sent, act };
 }
 
+/** Distinct display names reveal places that still render a champion ID. */
+export const namedDraft = {
+	...packagedDraftContent,
+	champions: packagedDraftContent.champions.map((c) => ({
+		...c,
+		name: `The Unforgotten Guardian of ${c.name}`,
+	})),
+};
+
 /** Renders `ui` against a real draft core, in a locale (English by default). */
 export async function renderWithDraftCore(
 	ui: ReactElement,
 	locale = "en-US",
 	match = packagedMatchContent,
+	draft = packagedDraftContent,
 ) {
-	const core = draftCore(match);
+	const core = draftCore(match, draft);
 	const i18n = await createI18n(locale);
 	const client = new QueryClient({
 		defaultOptions: { queries: { retry: false }, mutations: { retry: false } },

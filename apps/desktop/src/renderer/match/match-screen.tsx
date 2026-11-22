@@ -7,11 +7,11 @@ import { Button } from "@rift-legends/ui-kit/components/button";
 import { IconButton } from "@rift-legends/ui-kit/components/icon-button";
 import { SegmentedControl } from "@rift-legends/ui-kit/components/segmented-control";
 import { ArrowRight, Pause, Play, SkipForward, X } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { CoreErrorMessage, useCoreQuery } from "../core";
 import { PageHeader } from "../draft/page-header";
-import { teamName, useDraftSession } from "../draft/session";
+import { championLabel, teamName, useDraftSession } from "../draft/session";
 import { EventFeed } from "./event-feed";
 import { FaceToFace } from "./face-to-face";
 import { Objectives, Structures } from "./map-tables";
@@ -24,6 +24,16 @@ function Replay({ match, entry }: { match: MatchView; entry: DraftView }) {
 	const start = match.facts[0];
 	const last = match.facts.at(-1);
 	const end = last?.type === "match.ended" ? last : undefined;
+	const championByPlayer = useMemo(
+		() =>
+			new Map(
+				end?.players.map(({ player, champion }) => [
+					player,
+					championLabel(options, champion),
+				]),
+			),
+		[end, options],
+	);
 	const player = usePlayback(end?.duration ?? 0);
 	const [panel, setPanel] = useState<"map" | "faceToFace">("map");
 	const index = player.ended
@@ -90,10 +100,15 @@ function Replay({ match, entry }: { match: MatchView; entry: DraftView }) {
 						className={`min-w-0 [grid-area:1/1] ${panel === "faceToFace" ? "" : "invisible"}`}
 						inert={panel !== "faceToFace"}
 					>
-						<FaceToFace snapshot={snapshot} names={names} />
+						<FaceToFace
+							snapshot={snapshot}
+							names={names}
+							championByPlayer={championByPlayer}
+						/>
 					</div>
 				</div>
 				<EventFeed
+					championByPlayer={championByPlayer}
 					facts={match.facts}
 					second={player.second}
 					names={names}

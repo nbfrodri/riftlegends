@@ -74,12 +74,23 @@ function Ahead({
 		});
 }
 
-function Numbers({ line, side }: { line: Line; side: Side }) {
+function Numbers({
+	line,
+	side,
+	champion,
+}: {
+	line: Line;
+	side: Side;
+	champion: string | undefined;
+}) {
 	const format = useGoldFormat();
 	return (
 		<>
 			<td data-side={side} className="text-(--side)">
-				{line.kills}/{line.deaths}/{line.assists}
+				{champion && <span className="block truncate text-xs">{champion}</span>}
+				<span>
+					{line.kills}/{line.deaths}/{line.assists}
+				</span>
 			</td>
 			<td>{line.cs}</td>
 			<td>{format.format(line.gold)}</td>
@@ -90,8 +101,10 @@ function Numbers({ line, side }: { line: Line; side: Side }) {
 export function FaceToFace({
 	snapshot,
 	names,
+	championByPlayer,
 }: {
 	snapshot: MapSnapshot;
+	championByPlayer: ReadonlyMap<string, string>;
 	names: TeamNames;
 }) {
 	const { t } = useTranslation();
@@ -144,8 +157,16 @@ export function FaceToFace({
 										</small>
 									</span>
 								</th>
-								<Numbers line={blue} side="blue" />
-								<Numbers line={red} side="red" />
+								<Numbers
+									line={blue}
+									side="blue"
+									champion={championByPlayer.get(blue.player)}
+								/>
+								<Numbers
+									line={red}
+									side="red"
+									champion={championByPlayer.get(red.player)}
+								/>
 							</tr>
 						);
 					})}

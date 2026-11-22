@@ -1,9 +1,10 @@
 import type { Role, Side } from "@rift-legends/contracts";
+import { ChampionFace } from "@rift-legends/ui-kit/components/champion-face";
 import { RoleIcon } from "@rift-legends/ui-kit/components/role-icon";
 import { useId } from "react";
 import { useTranslation } from "react-i18next";
+import { championLabel, useDraftSession } from "../session";
 import { TeamCrest } from "../team-crest";
-import { championName } from "./champions";
 
 export interface PlayerRef {
 	team: string;
@@ -30,6 +31,7 @@ export function TeamColumn(props: {
 	onPlayer: (player: PlayerRef) => void;
 }) {
 	const { t } = useTranslation();
+	const { options } = useDraftSession();
 	const id = useId();
 	const style = SIDE[props.side];
 	return (
@@ -81,10 +83,11 @@ export function TeamColumn(props: {
 								<span className={style.text}>
 									<RoleIcon role={role} />
 								</span>
+								{champion && <ChampionFace id={champion} size="compact" />}
 								<span className="min-w-0">
 									<strong className="block truncate">
 										{champion
-											? championName(champion)
+											? championLabel(options, champion)
 											: current
 												? t("draft.board.yourPick")
 												: t("draft.board.pending")}
@@ -114,8 +117,8 @@ export function TeamColumn(props: {
 				{props.bans.map((ban, index) =>
 					ban ? (
 						// biome-ignore lint/suspicious/noArrayIndexKey: bans only grow, in order.
-						<li key={index}>
-							<s>{championName(ban)}</s>
+						<li key={index} className="max-w-full truncate">
+							<s>{championLabel(options, ban)}</s>
 						</li>
 					) : (
 						// biome-ignore lint/suspicious/noArrayIndexKey: bans only grow, in order.

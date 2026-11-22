@@ -125,6 +125,8 @@
 	"draft.match.soul": "Alma de dragón",
 	"draft.match.toSoul": "A {{count}} del alma",
 	"draft.match.noEffect": "Sin efecto",
+	"draft.match.kill": "{{killer}} elimina a {{victim}}.",
+	"draft.match.assists": "Asistencias de {{champions}}.",
 	"draft.match.events": "Eventos de la partida",
 	"draft.match.noEvents": "A la espera del primer evento.",
 	"draft.match.earlier": "Mostrar eventos anteriores",

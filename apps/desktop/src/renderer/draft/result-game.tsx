@@ -1,4 +1,5 @@
 import type { SeriesSummary } from "@rift-legends/contracts";
+import { ChampionFace } from "@rift-legends/ui-kit/components/champion-face";
 import { RoleIcon } from "@rift-legends/ui-kit/components/role-icon";
 import { useTranslation } from "react-i18next";
 import {
@@ -9,9 +10,7 @@ import {
 	topCauses,
 } from "./result-data";
 import { GapsTable } from "./result-gaps";
-import { teamName, useDraftSession } from "./session";
-
-const championName = (id: string) => id.charAt(0).toUpperCase() + id.slice(1);
+import { championLabel, teamName, useDraftSession } from "./session";
 
 /** Banner with the winner's name, as in the approved mockup. */
 export function Victory(props: {
@@ -109,7 +108,14 @@ function Stats({
 									})}
 								</span>
 							</th>
-							<td className="p-1.5 text-left">{championName(line.champion)}</td>
+							<td className="w-1/4 max-w-0 p-1.5 text-left">
+								<span className="flex items-center gap-1.5">
+									<ChampionFace id={line.champion} size="compact" />
+									<span className="truncate">
+										{championLabel(options, line.champion)}
+									</span>
+								</span>
+							</td>
 							<td className="p-1.5 text-right">
 								{line.kills}/{line.deaths}/{line.assists}
 							</td>

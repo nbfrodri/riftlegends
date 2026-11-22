@@ -12,7 +12,7 @@ import { Profiler } from "react";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { pacing } from "../src/renderer/draft/broadcast/pacing";
 import { DraftScreen } from "../src/renderer/draft/draft-screen";
-import { renderWithDraftCore } from "./draft-core";
+import { namedDraft, renderWithDraftCore } from "./draft-core";
 
 afterEach(cleanup);
 
@@ -52,12 +52,24 @@ async function confirmAndWaitForRival() {
 describe("draft board (U3)", () => {
 	test("on my ban turn, selecting and confirming sends draft.ban; the ban shows struck", async () => {
 		const user = userEvent.setup();
-		const core = await renderWithDraftCore(<DraftScreen />);
+		const core = await renderWithDraftCore(
+			<DraftScreen />,
+			"en-US",
+			undefined,
+			namedDraft,
+		);
 		await toBoard(user);
 
 		expect(screen.getByText("Ban 1 · Forge")).toBeTruthy();
 		expect(confirm().hasAttribute("disabled")).toBe(true);
-		await choose(user, "Cragbell");
+		const name = "The Unforgotten Guardian of Cragbell";
+		await user.type(screen.getByRole("searchbox"), "guARDian of Crag");
+		expect(
+			within(screen.getByRole("group", { name: "Champions" })).getAllByRole(
+				"button",
+			),
+		).toHaveLength(1);
+		await choose(user, name);
 
 		expect(core.sent.at(-1)).toMatchObject({
 			kind: "draft.ban",
@@ -67,9 +79,9 @@ describe("draft board (U3)", () => {
 		await waitFor(() =>
 			expect(
 				within(blue).getByRole("list", { name: "Bans" }).textContent,
-			).toContain("Cragbell"),
+			).toContain(name),
 		);
-		expect(within(blue).getByText("Cragbell").tagName).toBe("S");
+		expect(within(blue).getByText(name).tagName).toBe("S");
 	});
 
 	test("the user cannot confirm while the rival is choosing", async () => {

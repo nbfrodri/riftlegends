@@ -3,8 +3,7 @@ import { ChevronRight } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useFacts } from "../../core";
-import { teamName, useDraftSession } from "../session";
-import { championName } from "./champions";
+import { championLabel, teamName, useDraftSession } from "../session";
 import { InspectionPanel } from "./player-card";
 
 type Decision = Extract<
@@ -25,6 +24,7 @@ function storedOpen() {
 }
 
 function DecisionDetails({ decision }: { decision: Decision }) {
+	const { options } = useDraftSession();
 	const { t, i18n } = useTranslation();
 	const number = new Intl.NumberFormat(i18n.language, {
 		maximumFractionDigits: 4,
@@ -97,9 +97,9 @@ function DecisionDetails({ decision }: { decision: Decision }) {
 								<tr key={champion} className="border-line border-b">
 									<th
 										scope="row"
-										className="py-1 pr-2 text-left font-normal text-muted [overflow-wrap:anywhere]"
+										className="max-w-0 truncate py-1 pr-2 text-left font-normal text-muted"
 									>
-										{championName(champion)}
+										{championLabel(options, champion)}
 									</th>
 									<td className="whitespace-nowrap py-1 text-right tabular-nums">
 										{percent.format(chance / SCALE)}
@@ -113,9 +113,9 @@ function DecisionDetails({ decision }: { decision: Decision }) {
 				)}
 			</div>
 			{decision.reply && (
-				<p className="mt-2 text-muted">
+				<p className="mt-2 truncate text-muted">
 					{t("draft.aiPanel.reply", {
-						champion: championName(decision.reply.champion),
+						champion: championLabel(options, decision.reply.champion),
 					})}
 				</p>
 			)}
@@ -155,7 +155,9 @@ export function AiDecisionPanel() {
 	const label = ({ champion, action }: Decision) =>
 		champion === null
 			? t("draft.aiPanel.skippedBan")
-			: t(`draft.aiPanel.${action}`, { champion: championName(champion) });
+			: t(`draft.aiPanel.${action}`, {
+					champion: championLabel(options, champion),
+				});
 
 	return (
 		<InspectionPanel
@@ -178,7 +180,7 @@ export function AiDecisionPanel() {
 			{latest ? (
 				<div className="mt-3 text-[13px]">
 					<section aria-labelledby="latest-ai-decision">
-						<h3 id="latest-ai-decision" className="font-bold text-sm">
+						<h3 id="latest-ai-decision" className="truncate font-bold text-sm">
 							{label(latest)}
 						</h3>
 						<DecisionDetails decision={latest} />
@@ -200,7 +202,7 @@ export function AiDecisionPanel() {
 													aria-hidden="true"
 													className="size-3.5 shrink-0 group-open/decision:rotate-90"
 												/>
-												{label(decision)}
+												<span className="truncate">{label(decision)}</span>
 											</summary>
 											<DecisionDetails decision={decision} />
 										</details>

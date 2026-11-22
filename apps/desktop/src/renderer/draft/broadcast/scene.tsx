@@ -2,8 +2,7 @@ import { animate } from "motion/mini";
 import { useEffect, useLayoutEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useReducedMotion } from "../../use-reduced-motion";
-import { championName } from "../board/champions";
-import { teamName, useDraftSession } from "../session";
+import { championLabel, teamName, useDraftSession } from "../session";
 import { pacing } from "./pacing";
 
 function Sweep({ position }: { position: number | undefined }) {
@@ -70,7 +69,9 @@ export function BroadcastScene() {
 		return () => entrance.complete();
 	}, [current, reduced]);
 	const team = current ? teamName(options, current.team) : "";
-	const champion = current?.champion ? championName(current.champion) : "";
+	const champion = current?.champion
+		? championLabel(options, current.champion)
+		: "";
 	const message = !current
 		? ""
 		: t(

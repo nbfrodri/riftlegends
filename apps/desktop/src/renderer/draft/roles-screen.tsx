@@ -1,5 +1,6 @@
 import { ROLES, type Role } from "@rift-legends/contracts";
 import { Button } from "@rift-legends/ui-kit/components/button";
+import { ChampionFace } from "@rift-legends/ui-kit/components/champion-face";
 import { RoleIcon } from "@rift-legends/ui-kit/components/role-icon";
 import {
 	Select,
@@ -12,35 +13,9 @@ import { ArrowLeftRight, Check, RotateCcw } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { type Lineup, suggestRoles } from "./roles-proposal";
-import { teamName, useDraftSession } from "./session";
+import { championLabel, teamName, useDraftSession } from "./session";
 
 type Assignment = Record<string, Role>;
-
-const championName = (id: string) => id.charAt(0).toUpperCase() + id.slice(1);
-
-/** A stable colour per champion, so the same one always looks the same. */
-function hueOf(id: string) {
-	let hash = 0;
-	for (const char of id) hash = (hash * 31 + char.charCodeAt(0)) % 360;
-	return hash;
-}
-
-function Face({ champion }: { champion: string }) {
-	const hue = hueOf(champion);
-	return (
-		<span
-			aria-hidden="true"
-			className="my-3 grid min-h-[78px] flex-1 place-items-center font-bold font-display text-[clamp(45px,5.3vw,76px)] tracking-[-0.085em]"
-			style={{
-				color: `hsl(${hue} 53% 79%)`,
-				backgroundColor: `hsl(${hue} 27% 26%)`,
-				backgroundImage: `repeating-linear-gradient(126deg, transparent 0 11px, hsl(${hue} 26% 55% / 0.14) 11px 12px, transparent 12px 18px)`,
-			}}
-		>
-			{championName(champion).slice(0, 2).toUpperCase()}
-		</span>
-	);
-}
 
 const toAssignment = (lineup: Lineup) =>
 	Object.fromEntries(ROLES.map((role) => [lineup[role], role])) as Assignment;
@@ -134,19 +109,19 @@ function LineupEditor(props: { picks: string[]; sideColor: string }) {
 					{order.map((champion) => {
 						const role = assignment[champion] as Role;
 						const conflict = repeated.includes(role);
-						const name = championName(champion);
+						const name = championLabel(options, champion);
 						return (
 							<article
 								key={champion}
 								aria-label={name}
-								className={`flex flex-col border-t-[3px] bg-panel p-[11px] ${conflict ? "border-side-red" : props.sideColor}`}
+								className={`flex min-w-0 flex-col border-t-[3px] bg-panel p-[11px] ${conflict ? "border-side-red" : props.sideColor}`}
 							>
 								<header className="flex items-center gap-[7px] text-action">
 									<RoleIcon role={role} />
 									<b>{roleLabel(role)}</b>
 								</header>
-								<Face champion={champion} />
-								<h3 className="font-bold font-display text-[clamp(13px,1.15vw,18px)] tracking-[-0.04em]">
+								<ChampionFace id={champion} size="role" />
+								<h3 className="truncate font-bold font-display text-[clamp(13px,1.15vw,18px)] tracking-[-0.04em]">
 									{name}
 								</h3>
 								<div className="mt-[10px] flex flex-col gap-[7px]">

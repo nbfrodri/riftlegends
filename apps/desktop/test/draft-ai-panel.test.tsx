@@ -9,7 +9,7 @@ import {
 	useDraftSession,
 } from "../src/renderer/draft/session";
 import { draftStages } from "../src/renderer/draft/stages";
-import { renderWithDraftCore } from "./draft-core";
+import { namedDraft, renderWithDraftCore } from "./draft-core";
 
 afterEach(() => {
 	cleanup();
@@ -32,7 +32,7 @@ async function toBoard(user: User) {
 const panel = () => screen.getByRole("group", { name: "AI decisions" });
 
 const displayChampion = (id: string) =>
-	id.charAt(0).toUpperCase() + id.slice(1);
+	namedDraft.champions.find((c) => c.id === id)?.name;
 
 function decisionLabel(decision: Decision) {
 	if (!decision.champion) return "Skipped ban";
@@ -56,6 +56,9 @@ test("explains the latest rival decision and keeps earlier decisions newest firs
 		<DraftSessionProvider>
 			<ManualDraft />
 		</DraftSessionProvider>,
+		"en-US",
+		undefined,
+		namedDraft,
 	);
 	// Forge's coach considers the likely reply. Forge also has first turn.
 	await screen.findByRole("button", { name: "Start series" });
