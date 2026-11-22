@@ -92,8 +92,9 @@ Resumen de las decisiones **vigentes**, para empezar cualquier sesión sin volve
 
 | Fecha | Decisión | Fuente |
 | --- | --- | --- |
-| 2026-11-19 | Repo principal **privado** (código en inglés, documentación en español) y **repo público solo para releases** | [ADR 0001](0001-stack-tecnologico.md) |
-| 2026-11-19 | Licencia dual MIT o Apache-2.0; publicar sin firma de código (SignPath si el repo se hace público) | [README](../../README.md) |
+| 2026-11-19 | ~~Repo principal **privado** (código en inglés, documentación en español) y **repo público solo para releases**~~ Sustituida por la fila del 22-11 | [ADR 0001](0001-stack-tecnologico.md) |
+| 2026-11-22 | El repo principal pasa a ser **público** (sin minutos de GitHub Actions en el privado). Código en inglés y documentación en español; las releases siguen en el repo público de releases. Firma de código con SignPath (solicitud pendiente) | Decisión del usuario |
+| 2026-11-19 | Licencia dual MIT o Apache-2.0; publicar sin firma de código hasta tener SignPath (el repo ya es público) | [README](../../README.md) |
 | 2026-11-19 | **Trunk-based**: solo `main` y ramas cortas por issue; beta = `vX.Y.Z-beta.N`; estable = `vX.Y.Z` | [AGENTS.md](../../AGENTS.md) |
 | 2026-11-21 | El flujo plan → issues → PR se aplica también a las funciones nuevas y a los cambios posteriores al plan general; solo los arreglos pequeños van directos a issue y PR | [AGENTS.md](../../AGENTS.md) |
 | 2026-11-19 | Flujo **plan → issues "Tarea de plan" → tablero → rama → PR con `Closes #NN`**; solo squash; `main` protegida (PR obligatorio sin aprobaciones, historial lineal y sin force-push) | [AGENTS.md](../../AGENTS.md) |
