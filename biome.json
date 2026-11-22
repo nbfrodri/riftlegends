@@ -8,6 +8,7 @@
 			"!design",
 			"!docs/research",
 			"!packages/core/test/fixtures",
+			"!tools/data-pipeline/fixtures/leaguepedia",
 			"!pnpm-lock.yaml",
 			"!.claude/settings.local.json",
 			"!.claude/skills",

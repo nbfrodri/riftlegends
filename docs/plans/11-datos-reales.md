@@ -52,6 +52,7 @@ Queda fuera: ligas menores (plan 24), regens y evolución (plan 16), meta por pa
 
 ## Diseño
 
+- [Consultas, cobertura y licencia de Leaguepedia para 2026](../research/leaguepedia-2026-11.md).
 - **Fuente única de esports: Leaguepedia** (API Cargo de `lol.fandom.com`). Tablas previstas: equipos, plantillas de torneo (jugadores y coaches), partidas y estadísticas por jugador y partida. No se usa Oracle's Elixir ni gol.gg mientras su licencia no esté clara.
 - **Pipeline** en `tools/data-pipeline/` (Node + TypeScript, fuera del binario): descarga, guarda las respuestas crudas en una caché local fuera del repo, normaliza y escribe `packages/core/content/real/*.json` con procedencia. Los JSON van al repo (datos CC BY-SA; código MIT/Apache) con un `LICENSE` propio en esa carpeta.
 - **Sin texto ni arte de Riot en el repo:** el snapshot guarda ids de campeón; los nombres (ES y EN) y retratos salen de la caché de Data Dragon del plan 10. La tabla curada de arquetipos usa solo ids.

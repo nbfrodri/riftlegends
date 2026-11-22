@@ -1,0 +1,25 @@
+{
+  "cargoquery": [
+    {
+      "title": {
+        "OverviewPage": "LCK/2026 Season/Rounds 1-2",
+        "GameId": "LCK/2026 Season/Rounds 1-2_Week 1_2_2",
+        "MatchId": "LCK/2026 Season/Rounds 1-2_Week 1_2",
+        "DateTime UTC": "2026-04-01 11:09:00",
+        "Team1": "KT Rolster",
+        "Team2": "T1",
+        "WinTeam": "KT Rolster",
+        "Winner": "1",
+        "Team1Picks": "Vayne,Nocturne,Annie,Yunara,Lulu",
+        "Team2Picks": "K'Sante,Vi,Taliyah,Corki,Nami",
+        "Team1Bans": "Bard,Rumble,Azir,Ahri,Galio",
+        "Team2Bans": "Aurora,Karma,Yone,Gnar,Renekton",
+        "Patch": "26.06",
+        "Gamelength": "40:34",
+        "Gamelength Number": "40.566666666667",
+        "N GameInMatch": "2",
+        "DateTime UTC__precision": "0"
+      }
+    }
+  ]
+}

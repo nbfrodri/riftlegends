@@ -1,0 +1,67 @@
+{
+  "cargoquery": [
+    {
+      "title": {
+        "OverviewPage": "LCK/2026 Season/Rounds 1-2",
+        "GameId": "LCK/2026 Season/Rounds 1-2_Week 1_1_1",
+        "MatchId": "LCK/2026 Season/Rounds 1-2_Week 1_1",
+        "DateTime UTC": "2026-04-01 08:11:00",
+        "Team1": "HANJIN BRION",
+        "Team2": "Hanwha Life Esports",
+        "WinTeam": "Hanwha Life Esports",
+        "Winner": "2",
+        "Team1Picks": "Yorick,Jarvan IV,Cassiopeia,Jhin,Neeko",
+        "Team2Picks": "Jayce,Pantheon,Ryze,Ezreal,Bard",
+        "Team1Bans": "Azir,Karma,Varus,Ambessa,Xin Zhao",
+        "Team2Bans": "Orianna,Rumble,Sion,Caitlyn,K'Sante",
+        "Patch": "26.06",
+        "Gamelength": "32:07",
+        "Gamelength Number": "32.116666666667",
+        "N GameInMatch": "1",
+        "DateTime UTC__precision": "0"
+      }
+    },
+    {
+      "title": {
+        "OverviewPage": "LCK/2026 Season/Rounds 1-2",
+        "GameId": "LCK/2026 Season/Rounds 1-2_Week 1_1_2",
+        "MatchId": "LCK/2026 Season/Rounds 1-2_Week 1_1",
+        "DateTime UTC": "2026-04-01 09:05:00",
+        "Team1": "Hanwha Life Esports",
+        "Team2": "HANJIN BRION",
+        "WinTeam": "Hanwha Life Esports",
+        "Winner": "1",
+        "Team1Picks": "Gnar,Xin Zhao,Ziggs,Ashe,Seraphine",
+        "Team2Picks": "Renekton,Trundle,Azir,Mel,Pyke",
+        "Team1Bans": "Orianna,Caitlyn,Poppy,Nautilus,Yunara",
+        "Team2Bans": "Varus,Rumble,Karma,Akali,Kennen",
+        "Patch": "26.06",
+        "Gamelength": "29:34",
+        "Gamelength Number": "29.566666666667",
+        "N GameInMatch": "2",
+        "DateTime UTC__precision": "0"
+      }
+    },
+    {
+      "title": {
+        "OverviewPage": "LCK/2026 Season/Rounds 1-2",
+        "GameId": "LCK/2026 Season/Rounds 1-2_Week 1_2_1",
+        "MatchId": "LCK/2026 Season/Rounds 1-2_Week 1_2",
+        "DateTime UTC": "2026-04-01 10:23:00",
+        "Team1": "KT Rolster",
+        "Team2": "T1",
+        "WinTeam": "KT Rolster",
+        "Winner": "1",
+        "Team1Picks": "Jayce,Pantheon,Ryze,Ashe,Seraphine",
+        "Team2Picks": "Ambessa,Jarvan IV,Orianna,Ezreal,Anivia",
+        "Team1Bans": "Bard,Rumble,Karma,Yorick,Nautilus",
+        "Team2Bans": "Varus,Vi,Azir,Lulu,Nami",
+        "Patch": "26.06",
+        "Gamelength": "24:00",
+        "Gamelength Number": "24",
+        "N GameInMatch": "1",
+        "DateTime UTC__precision": "0"
+      }
+    }
+  ]
+}

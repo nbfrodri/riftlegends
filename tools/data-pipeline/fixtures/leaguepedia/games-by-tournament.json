@@ -1,0 +1,214 @@
+{
+  "cargoquery": [
+    {
+      "title": {
+        "OverviewPage": "CBLOL/2026 Season/Cup",
+        "GameCount": "68"
+      }
+    },
+    {
+      "title": {
+        "OverviewPage": "CBLOL/2026 Season/Split 1",
+        "GameCount": "66"
+      }
+    },
+    {
+      "title": {
+        "OverviewPage": "CBLOL/2026 Season/Split 1 Playoffs",
+        "GameCount": "39"
+      }
+    },
+    {
+      "title": {
+        "OverviewPage": "CBLOL/2026 Season/Split 2",
+        "GameCount": "62"
+      }
+    },
+    {
+      "title": {
+        "OverviewPage": "CBLOL/2026 Season/Split 2 Playoffs",
+        "GameCount": "40"
+      }
+    },
+    {
+      "title": {
+        "OverviewPage": "LCK/2026 Season/Cup",
+        "GameCount": "125"
+      }
+    },
+    {
+      "title": {
+        "OverviewPage": "LCK/2026 Season/Road to MSI",
+        "GameCount": "20"
+      }
+    },
+    {
+      "title": {
+        "OverviewPage": "LCK/2026 Season/Rounds 1-2",
+        "GameCount": "204"
+      }
+    },
+    {
+      "title": {
+        "OverviewPage": "LCK/2026 Season/Rounds 3-4",
+        "GameCount": "98"
+      }
+    },
+    {
+      "title": {
+        "OverviewPage": "LCK/2026 Season/Season Play-In",
+        "GameCount": "14"
+      }
+    },
+    {
+      "title": {
+        "OverviewPage": "LCK/2026 Season/Season Playoffs",
+        "GameCount": "41"
+      }
+    },
+    {
+      "title": {
+        "OverviewPage": "LCP/2026 Season/Promotion",
+        "GameCount": "18"
+      }
+    },
+    {
+      "title": {
+        "OverviewPage": "LCP/2026 Season/Split 1",
+        "GameCount": "70"
+      }
+    },
+    {
+      "title": {
+        "OverviewPage": "LCP/2026 Season/Split 1 Playoffs",
+        "GameCount": "32"
+      }
+    },
+    {
+      "title": {
+        "OverviewPage": "LCP/2026 Season/Split 2",
+        "GameCount": "69"
+      }
+    },
+    {
+      "title": {
+        "OverviewPage": "LCP/2026 Season/Split 2 Playoffs",
+        "GameCount": "32"
+      }
+    },
+    {
+      "title": {
+        "OverviewPage": "LCP/2026 Season/Split 3",
+        "GameCount": "80"
+      }
+    },
+    {
+      "title": {
+        "OverviewPage": "LCS/2026 Season/Lock-In",
+        "GameCount": "59"
+      }
+    },
+    {
+      "title": {
+        "OverviewPage": "LCS/2026 Season/Spring Playoffs",
+        "GameCount": "29"
+      }
+    },
+    {
+      "title": {
+        "OverviewPage": "LCS/2026 Season/Spring Season",
+        "GameCount": "69"
+      }
+    },
+    {
+      "title": {
+        "OverviewPage": "LCS/2026 Season/Summer Playoffs",
+        "GameCount": "39"
+      }
+    },
+    {
+      "title": {
+        "OverviewPage": "LCS/2026 Season/Summer Season",
+        "GameCount": "64"
+      }
+    },
+    {
+      "title": {
+        "OverviewPage": "LEC/2026 Season/Spring Playoffs",
+        "GameCount": "30"
+      }
+    },
+    {
+      "title": {
+        "OverviewPage": "LEC/2026 Season/Spring Season",
+        "GameCount": "111"
+      }
+    },
+    {
+      "title": {
+        "OverviewPage": "LEC/2026 Season/Summer Playoffs",
+        "GameCount": "31"
+      }
+    },
+    {
+      "title": {
+        "OverviewPage": "LEC/2026 Season/Summer Season",
+        "GameCount": "106"
+      }
+    },
+    {
+      "title": {
+        "OverviewPage": "LEC/2026 Season/Versus Playoffs",
+        "GameCount": "39"
+      }
+    },
+    {
+      "title": {
+        "OverviewPage": "LEC/2026 Season/Versus Season",
+        "GameCount": "66"
+      }
+    },
+    {
+      "title": {
+        "OverviewPage": "LPL/2026 Season/Grand Finals",
+        "GameCount": "55"
+      }
+    },
+    {
+      "title": {
+        "OverviewPage": "LPL/2026 Season/Regional Finals",
+        "GameCount": "12"
+      }
+    },
+    {
+      "title": {
+        "OverviewPage": "LPL/2026 Season/Split 1",
+        "GameCount": "137"
+      }
+    },
+    {
+      "title": {
+        "OverviewPage": "LPL/2026 Season/Split 1 Playoffs",
+        "GameCount": "77"
+      }
+    },
+    {
+      "title": {
+        "OverviewPage": "LPL/2026 Season/Split 2",
+        "GameCount": "171"
+      }
+    },
+    {
+      "title": {
+        "OverviewPage": "LPL/2026 Season/Split 2 Playoffs",
+        "GameCount": "68"
+      }
+    },
+    {
+      "title": {
+        "OverviewPage": "LPL/2026 Season/Split 3",
+        "GameCount": "167"
+      }
+    }
+  ]
+}
