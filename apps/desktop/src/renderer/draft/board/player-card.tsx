@@ -2,6 +2,7 @@ import type { PlayerAttribute, SeriesOptions } from "@rift-legends/contracts";
 import { ChevronRight } from "lucide-react";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
+import { type Stat, StatIcon } from "../../assets/stat-icon";
 
 type Attributes =
 	SeriesOptions["teams"][number]["players"][number]["attributes"];
@@ -14,6 +15,12 @@ const AREAS = [
 	["mental", ["composure", "resilience", "experience", "consistency", "focus"]],
 	["team", ["shotcalling", "communication", "versatility"]],
 ] as const satisfies readonly (readonly [string, readonly PlayerAttribute[]])[];
+
+/** Attributes that match a scoreboard stat show its icon. */
+const attributeIcons = {
+	farming: "cs",
+	vision: "vision",
+} as const satisfies Partial<Record<PlayerAttribute, Stat>>;
 
 /** A collapsible panel under the board, as in the mockup. */
 export function InspectionPanel(props: {
@@ -70,7 +77,17 @@ export function PlayerAttributes({ attributes }: { attributes: Attributes }) {
 						<dl className="text-[12px] leading-[1.47]">
 							{keys.map((key) => (
 								<div key={key} className="flex justify-between gap-2">
-									<dt className="text-muted">{t(`draft.board.attr.${key}`)}</dt>
+									<dt className="flex items-center gap-1 text-muted">
+										{key in attributeIcons && (
+											<StatIcon
+												stat={
+													attributeIcons[key as keyof typeof attributeIcons]
+												}
+												size={12}
+											/>
+										)}
+										{t(`draft.board.attr.${key}`)}
+									</dt>
 									<dd className="font-semibold">{attributes[key]}</dd>
 								</div>
 							))}

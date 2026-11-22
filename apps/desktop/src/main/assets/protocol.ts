@@ -6,6 +6,12 @@ import { readActiveVersion } from "./store";
 
 export const assetScheme = "rift-asset";
 
+const cdragonTypes = {
+	".png": "image/png",
+	".svg": "image/svg+xml",
+	".json": "application/json",
+} as const;
+
 const logoRequest =
 	/^rift-asset:\/\/logos\/(teams\/[a-z0-9-]{1,64}\.(png|jpg|webp))$/;
 
@@ -55,22 +61,29 @@ export async function serveAsset(
 		const segments = encoded.split("/").map(decodeURIComponent);
 		if (segments.some((segment) => segment.includes("/"))) return notFound();
 		const path = segments.join("/");
-		const png = path.endsWith(".png");
-		if (!png && !path.endsWith(".json")) return notFound();
+		const type = Object.entries(cdragonTypes).find(([extension]) =>
+			path.endsWith(extension),
+		)?.[1];
+		if (!type) return notFound();
+		const json = type === cdragonTypes[".json"];
 
 		const sourcePath = "assets/cdragon";
 		const pointer = await cachePath(userData, `${sourcePath}/current.json`);
 		const version = await readActiveVersion(pointer);
 		if (!version) return notFound();
 		const file = await cachePath(userData, `${sourcePath}/${version}/${path}`);
-		const bytes = await readBytes(file, png ? maxImageBytes : maxCatalogBytes);
+		const bytes = await readBytes(file, json ? maxCatalogBytes : maxImageBytes);
 		if (!bytes) return notFound();
 
 		return new Response(bytes, {
 			headers: {
 				"cache-control": "no-store",
-				"content-type": png ? "image/png" : "application/json",
+				"content-type": type,
 				"x-content-type-options": "nosniff",
+				// An SVG opened on its own must not run or load anything.
+				...(type === cdragonTypes[".svg"] && {
+					"content-security-policy": "default-src 'none'",
+				}),
 			},
 		});
 	} catch {

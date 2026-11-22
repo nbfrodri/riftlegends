@@ -2,6 +2,7 @@ import type { SeriesSummary } from "@rift-legends/contracts";
 import { ChampionFace } from "@rift-legends/ui-kit/components/champion-face";
 import { useTranslation } from "react-i18next";
 import { GameRoleIcon } from "../assets/game-role-icon";
+import { type Stat, StatIcon } from "../assets/stat-icon";
 import {
 	clock,
 	type GameResult,
@@ -42,6 +43,12 @@ export function Victory(props: {
 		</section>
 	);
 }
+
+const statIcons = {
+	kda: "kda",
+	gold: "gold",
+	damage: "damage",
+} as const satisfies Record<string, Stat>;
 
 function Stats({
 	game,
@@ -92,7 +99,12 @@ function Stats({
 								scope="col"
 								className={`whitespace-nowrap px-1.5 py-1 font-normal ${i < 2 ? "text-left" : "text-right"}`}
 							>
-								{t(`draft.result.stats.${key}`)}
+								<span className="inline-flex items-center gap-1">
+									{key in statIcons && (
+										<StatIcon stat={statIcons[key as keyof typeof statIcons]} />
+									)}
+									{t(`draft.result.stats.${key}`)}
+								</span>
 							</th>
 						))}
 						<th scope="col" className="px-1.5 py-1 text-right font-normal">

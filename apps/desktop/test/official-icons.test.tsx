@@ -10,6 +10,7 @@ import type { ReactElement } from "react";
 import { afterEach, describe, expect, test } from "vitest";
 import { AssetsProvider } from "../src/renderer/assets";
 import { GameRoleIcon } from "../src/renderer/assets/game-role-icon";
+import { StatIcon } from "../src/renderer/assets/stat-icon";
 import { MapIcon } from "../src/renderer/match/map-icon";
 import { fakeAssets } from "./fake-assets";
 
@@ -62,6 +63,44 @@ describe("U2: official role icons", () => {
 		render(<GameRoleIcon role={positions.top} label="Top" />);
 		expect(screen.getByRole("img", { name: "Top" }).tagName.toLowerCase()).toBe(
 			"svg",
+		);
+	});
+});
+
+describe("official stat icons", () => {
+	test.each(["kda", "gold", "cs", "damage", "vision"] as const)(
+		"%s uses the cached client icon and falls back in the same box if it fails",
+		async (stat) => {
+			const { container } = renderWith(ready, <StatIcon stat={stat} />);
+			const image = await waitFor(() => {
+				const found = container.querySelector("img");
+				if (!found) throw new Error("no image yet");
+				return found;
+			});
+			expect(image.getAttribute("src")).toBe(
+				`rift-asset://cdragon/stats/${stat}.svg`,
+			);
+			expect(image.getAttribute("alt")).toBe("");
+			fireEvent.error(image);
+			expect(container.querySelector("img")).toBeNull();
+			const fallback = container.querySelector("svg");
+			expect(fallback?.getAttribute("aria-hidden")).toBe("true");
+			expect(fallback?.getAttribute("width")).toBe(image.getAttribute("width"));
+			expect(fallback?.getAttribute("height")).toBe(
+				image.getAttribute("height"),
+			);
+		},
+	);
+
+	test("without the cache the own icon is used", async () => {
+		const { container } = renderWith(
+			{ state: "missing" },
+			<StatIcon stat="gold" />,
+		);
+		await Promise.resolve();
+		expect(container.querySelector("img")).toBeNull();
+		expect(container.querySelector("svg")?.getAttribute("aria-hidden")).toBe(
+			"true",
 		);
 	});
 });

@@ -21,6 +21,16 @@ const gameData = "plugins/rcp-be-lol-game-data/global";
 const summary = (patch: string, locale: string) =>
 	`/${patch}/${gameData}/${locale}/v1/champion-summary.json`;
 const portrait = `/16.23/${gameData}/default/v1/champion-icons/103.png`;
+const postgame = "plugins/rcp-fe-lol-postgame/global/default";
+const statIcons = {
+	kda: `${postgame}/scoreboard-kda-icon.svg`,
+	gold: `${postgame}/scoreboard-coins-icon.svg`,
+	cs: `${postgame}/scoreboard-stat-switcher-minions-slain.svg`,
+	damage: `${postgame}/scoreboard-sword-icon.svg`,
+	vision: `${postgame}/scoreboard-stat-switcher-eye.svg`,
+};
+const svg = (label: string) =>
+	`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><title>${label}</title></svg>`;
 const champion = {
 	id: 103,
 	alias: "Ahri",
@@ -74,6 +84,7 @@ describe("main asset cache", () => {
 				: catalog;
 			return response(JSON.stringify(entries));
 		}
+		if (url.pathname.endsWith(".svg")) return response(svg("icon"));
 		return response(png);
 	};
 	const create = () => createAssetCache(profile, { transport });
@@ -118,6 +129,40 @@ describe("main asset cache", () => {
 		});
 		requests = [];
 	}
+
+	it("serves each stat icon from its fixed CommunityDragon SVG", async () => {
+		const images = new Map(
+			Object.entries(statIcons).map(([stat, path]) => [
+				`https://raw.communitydragon.org/latest/${path}`,
+				svg(stat),
+			]),
+		);
+		override = async (url) => {
+			const bytes = images.get(url.href);
+			return bytes === undefined ? undefined : response(bytes);
+		};
+		expect(await create().sync()).toEqual({ state: "ready", version });
+		for (const stat of Object.keys(statIcons)) {
+			const image = await serveAsset(profile, {
+				method: "GET",
+				url: `rift-asset://cdragon/stats/${stat}.svg`,
+			});
+			expect(image.status).toBe(200);
+			expect(image.headers.get("content-type")).toBe("image/svg+xml");
+			expect(await image.text()).toBe(svg(stat));
+		}
+	});
+
+	it("rejects a stat icon that is not an SVG image", async () => {
+		override = async (url) =>
+			url.pathname === `/latest/${statIcons.gold}`
+				? response("<html>not found</html>")
+				: undefined;
+		expect(await create().sync()).toMatchObject({ state: "error" });
+		await expect(readFile(source("current.json"))).rejects.toMatchObject({
+			code: "ENOENT",
+		});
+	});
 
 	it("D0 waits for a live cache owner before issuing any request", async () => {
 		await mkdir(lock(process.pid), { recursive: true });
@@ -178,7 +223,7 @@ describe("main asset cache", () => {
 		const icons = requests.filter(({ url }) =>
 			url.pathname.startsWith("/latest/"),
 		);
-		expect(icons).toHaveLength(12);
+		expect(icons).toHaveLength(12 + Object.keys(statIcons).length);
 		expect(
 			requests.every(
 				({ url, headers }) =>

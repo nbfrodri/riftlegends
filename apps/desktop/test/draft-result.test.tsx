@@ -123,6 +123,11 @@ describe("game result (U9)", () => {
 	test("shows the winner and every player's stats from match.view", async () => {
 		const core = await renderResult("game1");
 		const table = await screen.findByRole("table", { name: "Map 1 stats" });
+		for (const name of ["K/D/A", "Gold", "Damage"]) {
+			expect(
+				within(table).getByRole("columnheader", { name }).querySelector("svg"),
+			).toBeTruthy();
+		}
 		const match = await ask<MatchView>(core, "match.view", { game: 1 });
 		const ended = match.facts.find((f) => f.type === "match.ended");
 		if (ended?.type !== "match.ended") throw new Error("no match.ended");

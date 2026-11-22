@@ -37,6 +37,18 @@ test("serves PNG and JSON from the active version with their MIME types", async 
 	expect(await data.json()).toEqual({ active: true });
 });
 
+test("serves SVG as an image that cannot load anything else", async () => {
+	await mkdir(join(active, "stats"));
+	await writeFile(join(active, "stats", "gold.svg"), "<svg></svg>");
+	const image = await get("cdragon/stats/gold.svg");
+	expect(image.status).toBe(200);
+	expect(image.headers.get("content-type")).toBe("image/svg+xml");
+	expect(image.headers.get("content-security-policy")).toBe(
+		"default-src 'none'",
+	);
+	expect(await image.text()).toBe("<svg></svg>");
+});
+
 test("reads the active pointer for each request", async () => {
 	const source = join(profile, "assets", "cdragon");
 	await mkdir(join(source, "2.0"), { recursive: true });

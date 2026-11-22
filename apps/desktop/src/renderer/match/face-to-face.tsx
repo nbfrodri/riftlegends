@@ -2,6 +2,7 @@ import type { MapSnapshot, Side } from "@rift-legends/contracts";
 import { Fragment } from "react";
 import { useTranslation } from "react-i18next";
 import { GameRoleIcon } from "../assets/game-role-icon";
+import { StatIcon } from "../assets/stat-icon";
 import { panel, panelTable, panelTitle } from "./classes";
 import {
 	sides,
@@ -132,7 +133,10 @@ export function FaceToFace({
 							<Fragment key={side}>
 								{columns.map((column) => (
 									<th scope="col" key={column}>
-										{t(`draft.match.faceToFace.${column}`)}
+										<span className="inline-flex items-center gap-1">
+											<StatIcon stat={column} size={12} />
+											{t(`draft.match.faceToFace.${column}`)}
+										</span>
 									</th>
 								))}
 							</Fragment>
