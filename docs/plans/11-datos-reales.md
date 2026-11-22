@@ -17,7 +17,7 @@ Queda fuera: ligas menores (plan 24), regens y evolución (plan 16), meta por pa
 | --- | --- | --- |
 | P1 | `pnpm data:snapshot` genera el snapshot JSON de las seis ligas desde Leaguepedia (equipos, plantillas, coaches y partidas de la temporada) | Con las respuestas grabadas (fixtures), dos ejecuciones dan bytes idénticos |
 | P2 | Respeta la API: User-Agent propio sin datos personales, una petición a la vez, `maxlag` y reintentos con espera | Un 429 o `maxlag` espera y reintenta; tras N fallos se aborta sin escribir un snapshot a medias |
-| P3 | Cada fichero lleva procedencia: fuente, fecha de consulta, licencia (CC BY-SA 4.0) y atribución | Falta la procedencia: la validación lo rechaza |
+| P3 | Cada fichero lleva procedencia: fuente, fecha de consulta, licencia (CC BY-SA 3.0, la que declara Leaguepedia) y atribución | Falta la procedencia: la validación lo rechaza |
 | P4 | Jugadores con varios equipos en la temporada quedan en el último; suplentes marcados | Jugador sin partidas: atributos por defecto de su rol y liga, marcados como estimados |
 
 ### Campeones reales
@@ -83,6 +83,8 @@ Queda fuera: ligas menores (plan 24), regens y evolución (plan 16), meta por pa
 
 ## Riesgos
 
+- **Límite de la API:** Cargo admite 6 consultas por minuto sin cuenta ([informe](../research/leaguepedia-2026-11.md#límites-y-política)); regenerar la temporada lleva varios minutos, nunca se hace en tiempo de ejecución.
+- **Logos sin licencia abierta:** son marcas de sus dueños; solo se descargan en tiempo de ejecución, como el resto de assets de Riot, y nunca entran en el repo.
 - **Disponibilidad de Leaguepedia** (cambios de esquema o límites): el snapshot va al repo, así que el juego no depende de la API; solo regenerarlo.
 - **Atributos poco creíbles** para jugadores concretos: fórmulas documentadas, revisión de una muestra a mano y ajuste de coeficientes.
 - **Legal:** Riot prohíbe usar su PI en juegos (riesgo ya asumido, [ADR 0001](../decisions/0001-stack-tecnologico.md)); los datos de la comunidad se atribuyen según su licencia.
