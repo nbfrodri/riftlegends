@@ -10,8 +10,9 @@ import type { ReactElement } from "react";
 import { afterEach, describe, expect, test } from "vitest";
 import { AssetsProvider } from "../src/renderer/assets";
 import { GameRoleIcon } from "../src/renderer/assets/game-role-icon";
+import { MapIcon } from "../src/renderer/assets/map-icon";
 import { StatIcon } from "../src/renderer/assets/stat-icon";
-import { MapIcon } from "../src/renderer/match/map-icon";
+import { EventFeed } from "../src/renderer/match/event-feed";
 import { fakeAssets } from "./fake-assets";
 
 afterEach(cleanup);
@@ -161,5 +162,45 @@ describe("U2: official objective icons", () => {
 		await Promise.resolve();
 		expect(container.querySelector("img")).toBeNull();
 		expect(container.querySelector("svg")).toBeTruthy();
+	});
+});
+
+describe("objective events in the feed", () => {
+	const event = (kind: "dragon" | "tower" | "kill", second: number) =>
+		({
+			type: "match.event",
+			game: 1,
+			minute: 1,
+			second,
+			kind,
+			side: "blue",
+			zone: "dragon-pit",
+			kills: [],
+			gold: { blue: 0, red: 0 },
+			chance: 5000,
+			causes: [],
+		}) as const;
+
+	test("show the objective's official icon next to the title", async () => {
+		renderWith(
+			ready,
+			<EventFeed
+				facts={[event("dragon", 10), event("tower", 20), event("kill", 30)]}
+				second={60}
+				names={{ blue: "Blue", red: "Red" }}
+				championByPlayer={new Map()}
+				ended
+			/>,
+		);
+		const rows = await waitFor(() => {
+			const found = screen.getAllByRole("listitem");
+			if (!found[1]?.querySelector("img")) throw new Error("no image yet");
+			return found;
+		});
+		const icon = (row: HTMLElement | undefined) =>
+			row?.querySelector("h3 img")?.getAttribute("src");
+		expect(icon(rows[0])).toBeUndefined();
+		expect(icon(rows[1])).toBe("rift-asset://cdragon/objectives/tower.png");
+		expect(icon(rows[2])).toBe("rift-asset://cdragon/objectives/dragon.png");
 	});
 });

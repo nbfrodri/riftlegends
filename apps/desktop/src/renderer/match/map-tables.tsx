@@ -1,8 +1,8 @@
 import type { MapSnapshot, Side } from "@rift-legends/contracts";
 import { Fragment } from "react";
 import { useTranslation } from "react-i18next";
+import { MapIcon } from "../assets/map-icon";
 import { panel, panelTable, panelTitle } from "./classes";
-import { MapIcon } from "./map-icon";
 import { clockTime } from "./playback";
 import { sides, type TeamNames } from "./scoreboard";
 

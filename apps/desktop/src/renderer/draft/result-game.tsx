@@ -2,6 +2,7 @@ import type { SeriesSummary } from "@rift-legends/contracts";
 import { ChampionFace } from "@rift-legends/ui-kit/components/champion-face";
 import { useTranslation } from "react-i18next";
 import { GameRoleIcon } from "../assets/game-role-icon";
+import { isObjectiveKind, MapIcon } from "../assets/map-icon";
 import { type Stat, StatIcon } from "../assets/stat-icon";
 import {
 	clock,
@@ -196,7 +197,8 @@ function Disputes({ game }: { game: GameResult }) {
 								{clock(event.minute * 60 + event.second)}
 							</time>
 							<div>
-								<h3 className="font-semibold">
+								<h3 className="flex items-center gap-1.5 font-semibold">
+									{isObjectiveKind(event.kind) && <MapIcon kind={event.kind} />}
 									{t(`draft.result.event.${event.kind}`, { team })}
 								</h3>
 								{causes.length > 0 && (

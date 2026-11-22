@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { MapIcon } from "../assets/map-icon";
 import { CoreErrorMessage, useCoreQuery } from "../core";
 import { teamName, useDraftSession } from "./session";
 
@@ -57,6 +58,7 @@ const levers = [
 			{
 				value: "dragon",
 				icon: Flame,
+				objective: "dragon",
 				label: "draft.plan.objectives.dragon",
 				hint: "draft.plan.objectives.dragon.hint",
 			},
@@ -69,6 +71,7 @@ const levers = [
 			{
 				value: "baron",
 				icon: Crown,
+				objective: "baron",
 				label: "draft.plan.objectives.baron",
 				hint: "draft.plan.objectives.baron.hint",
 			},
@@ -103,6 +106,8 @@ const levers = [
 function Option(props: {
 	value: string;
 	icon: LucideIcon;
+	/** Shows the official objective icon, with `icon` as its fallback. */
+	objective?: "dragon" | "baron" | undefined;
 	label: string;
 	hint: string;
 	name: string;
@@ -124,7 +129,17 @@ function Option(props: {
 			/>
 			<span className="flex h-full flex-col gap-2 border border-line bg-panel p-[14px] hover:bg-surface peer-checked:border-action peer-checked:bg-surface peer-checked:shadow-[inset_0_-3px_var(--color-action)] peer-focus-visible:outline-2 peer-focus-visible:outline-action">
 				<span className="flex items-center gap-2 font-bold">
-					<Icon aria-hidden="true" className="size-5 text-action" />
+					{props.objective ? (
+						<MapIcon
+							kind={props.objective}
+							size="size-5"
+							fallback={
+								<Icon aria-hidden="true" className="size-5 text-action" />
+							}
+						/>
+					) : (
+						<Icon aria-hidden="true" className="size-5 text-action" />
+					)}
 					{props.label}
 					{props.suggested && (
 						<span className="ml-auto bg-action px-2 py-[2px] font-bold text-[12px] text-on-action">
@@ -184,6 +199,9 @@ function PlanEditor({ plan }: { plan: MatchPlan }) {
 									key={choice.value}
 									value={choice.value}
 									icon={choice.icon}
+									objective={
+										"objective" in choice ? choice.objective : undefined
+									}
 									label={t(choice.label)}
 									hint={t(choice.hint)}
 									name={`plan-${lever}`}

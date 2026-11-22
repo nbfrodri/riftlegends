@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useAssetSrc } from "../assets";
+import { type ReactNode, useState } from "react";
+import { useAssetSrc } from ".";
 
 // Original objective and structure drawings from the approved match mockup.
 const paths = {
@@ -16,6 +16,10 @@ const paths = {
 
 type Kind = keyof typeof paths;
 
+/** Whether a match event kind is an objective or structure with its own icon. */
+export const isObjectiveKind = (kind: string): kind is Kind =>
+	Object.hasOwn(official, kind) && !kind.endsWith("Down");
+
 // Destroyed structures reuse the official icon, greyed out.
 const official: Record<Kind, string> = {
 	tower: "tower",
@@ -29,9 +33,18 @@ const official: Record<Kind, string> = {
 	elder: "elder",
 };
 
-const box = "inline-block size-[17px] align-middle";
-
-export function MapIcon({ kind }: { kind: Kind }) {
+/** An objective or structure: the official icon when cached; the own drawing, or `fallback`, otherwise. */
+export function MapIcon({
+	kind,
+	size = "size-[17px]",
+	fallback,
+}: {
+	kind: Kind;
+	/** A Tailwind size class shared by the image and its fallback. */
+	size?: string;
+	fallback?: ReactNode;
+}) {
+	const box = `inline-block shrink-0 ${size} align-middle`;
 	const src = useAssetSrc("cdragon", `objectives/${official[kind]}.png`);
 	const [failed, setFailed] = useState<string>();
 	if (src && src !== failed) {
@@ -46,6 +59,7 @@ export function MapIcon({ kind }: { kind: Kind }) {
 			/>
 		);
 	}
+	if (fallback) return fallback;
 	return (
 		<svg
 			className={box}

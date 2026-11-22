@@ -160,6 +160,25 @@ describe("game result (U9)", () => {
 		});
 	});
 
+	test("a decisive objective shows its icon next to its title", async () => {
+		const core = await renderResult("game1");
+		const real = core.api.query.getMockImplementation();
+		core.api.query.mockImplementation(async (query) => {
+			const answer = (await real?.(query)) as { ok: boolean; view: MatchView };
+			if (query.kind === "match.view" && answer.ok) {
+				for (const fact of answer.view.facts) {
+					if (fact.type === "match.event") fact.kind = "baron";
+				}
+			}
+			return answer as never;
+		});
+		const list = await screen.findByRole("list", { name: "Decisive disputes" });
+		for (const item of within(list).getAllByRole("listitem")) {
+			expect(item.textContent).toContain("Baron for");
+			expect(item.querySelector("h3 svg")).toBeTruthy();
+		}
+	});
+
 	test("lists the decisive disputes with their causes in words, and unknown keys as they are", async () => {
 		const core = await renderResult("game1");
 		const real = core.api.query.getMockImplementation();
