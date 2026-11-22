@@ -164,6 +164,7 @@ Cada plan se crea al empezar su fase con `to-spec` o `dev-workflow`, y se trocea
 - La Fase 1 depende del **estilo visual elegido** (Fase 0).
 - Los contratos de IPC (04) y el RNG (05) se fijan antes de cualquier sistema de dominio.
 - La persistencia (13) llega en la Fase 5, pero el esquema de hechos se diseña ya en la Fase 2 para no migrar pronto.
+- **Carreras aisladas de los datos nuevos (decisión del 22-11-2026):** cada carrera guarda una copia del contenido con el que empezó y su `content_version`. Las actualizaciones del snapshot real (workflow semanal) solo llegan a las carreras nuevas y al draft rápido; una carrera en curso nunca cambia ni se corrompe al actualizar el juego. El plan 13 lo convierte en tests (cargar una carrera tras cambiar el contenido empaquetado da el mismo mundo).
 - Riesgos residuales del ADR 0001: PI y nombre, coste del draft broadcast, gráficos en Linux, divergencia de carreras y SmartScreen.
 
 ## Verificación de este plan
