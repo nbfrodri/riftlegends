@@ -64,5 +64,203 @@
 			"risk": "risky"
 		},
 		"adaptation": 55
+	},
+	{
+		"id": "breakwater",
+		"name": "Breakwater",
+		"seed": 3,
+		"coach": {
+			"name": "Edda Marr",
+			"personality": "flex",
+			"rating": 37
+		},
+		"chemistry": [
+			{
+				"a": "breakwater-top",
+				"b": "breakwater-jungle",
+				"value": 73
+			},
+			{
+				"a": "breakwater-mid",
+				"b": "breakwater-jungle",
+				"value": 77
+			},
+			{
+				"a": "breakwater-bot",
+				"b": "breakwater-support",
+				"value": 79
+			}
+		],
+		"strategy": {
+			"tempo": "balanced",
+			"objectives": "baron",
+			"risk": "balanced"
+		},
+		"adaptation": 78
+	},
+	{
+		"id": "sunspoke",
+		"name": "Sunspoke",
+		"seed": 4,
+		"coach": {
+			"name": "Neris Hale",
+			"personality": "early",
+			"rating": 34
+		},
+		"chemistry": [
+			{
+				"a": "sunspoke-top",
+				"b": "sunspoke-jungle",
+				"value": 70
+			},
+			{
+				"a": "sunspoke-mid",
+				"b": "sunspoke-jungle",
+				"value": 81
+			},
+			{
+				"a": "sunspoke-bot",
+				"b": "sunspoke-support",
+				"value": 76
+			}
+		],
+		"strategy": {
+			"tempo": "fast",
+			"objectives": "dragon",
+			"risk": "risky"
+		},
+		"adaptation": 68
+	},
+	{
+		"id": "nightjar",
+		"name": "Nightjar",
+		"seed": 5,
+		"coach": {
+			"name": "Tavia Rusk",
+			"personality": "scaling",
+			"rating": 30
+		},
+		"chemistry": [
+			{
+				"a": "nightjar-top",
+				"b": "nightjar-jungle",
+				"value": 67
+			},
+			{
+				"a": "nightjar-mid",
+				"b": "nightjar-jungle",
+				"value": 71
+			},
+			{
+				"a": "nightjar-bot",
+				"b": "nightjar-support",
+				"value": 81
+			}
+		],
+		"strategy": {
+			"tempo": "slow",
+			"objectives": "baron",
+			"risk": "safe"
+		},
+		"adaptation": 65
+	},
+	{
+		"id": "switchyard",
+		"name": "Switchyard",
+		"seed": 6,
+		"coach": {
+			"name": "Perrin Holt",
+			"personality": "architect",
+			"rating": 27
+		},
+		"chemistry": [
+			{
+				"a": "switchyard-top",
+				"b": "switchyard-jungle",
+				"value": 64
+			},
+			{
+				"a": "switchyard-mid",
+				"b": "switchyard-jungle",
+				"value": 68
+			},
+			{
+				"a": "switchyard-bot",
+				"b": "switchyard-support",
+				"value": 78
+			}
+		],
+		"strategy": {
+			"tempo": "balanced",
+			"objectives": "balanced",
+			"risk": "safe"
+		},
+		"adaptation": 70
+	},
+	{
+		"id": "longreach",
+		"name": "Longreach",
+		"seed": 7,
+		"coach": {
+			"name": "Sella Crewe",
+			"personality": "side-lane",
+			"rating": 23
+		},
+		"chemistry": [
+			{
+				"a": "longreach-top",
+				"b": "longreach-jungle",
+				"value": 72
+			},
+			{
+				"a": "longreach-mid",
+				"b": "longreach-jungle",
+				"value": 65
+			},
+			{
+				"a": "longreach-bot",
+				"b": "longreach-support",
+				"value": 67
+			}
+		],
+		"strategy": {
+			"tempo": "slow",
+			"objectives": "baron",
+			"risk": "balanced"
+		},
+		"adaptation": 54
+	},
+	{
+		"id": "flintwake",
+		"name": "Flintwake",
+		"seed": 8,
+		"coach": {
+			"name": "Corin Pike",
+			"personality": "pocket",
+			"rating": 18
+		},
+		"chemistry": [
+			{
+				"a": "flintwake-top",
+				"b": "flintwake-jungle",
+				"value": 57
+			},
+			{
+				"a": "flintwake-mid",
+				"b": "flintwake-jungle",
+				"value": 68
+			},
+			{
+				"a": "flintwake-bot",
+				"b": "flintwake-support",
+				"value": 63
+			}
+		],
+		"strategy": {
+			"tempo": "fast",
+			"objectives": "dragon",
+			"risk": "risky"
+		},
+		"adaptation": 49
 	}
 ]

@@ -654,5 +654,529 @@
 		"cc": 4,
 		"mobility": 8,
 		"frontline": 4
+	},
+	{
+		"id": "gravelspan",
+		"name": "Gravelspan",
+		"positions": [
+			{
+				"role": "top",
+				"tier": "S+"
+			},
+			{
+				"role": "jungle",
+				"tier": "B"
+			}
+		],
+		"damage": "mixed",
+		"power": "mid",
+		"archetypes": ["tank", "engage"],
+		"cc": 8,
+		"mobility": 4,
+		"frontline": 9
+	},
+	{
+		"id": "knuckleridge",
+		"name": "Knuckleridge",
+		"positions": [
+			{
+				"role": "top",
+				"tier": "S"
+			}
+		],
+		"damage": "physical",
+		"power": "late",
+		"archetypes": ["splitpush", "skirmish"],
+		"cc": 3,
+		"mobility": 6,
+		"frontline": 6
+	},
+	{
+		"id": "varnishgraft",
+		"name": "Varnishgraft",
+		"positions": [
+			{
+				"role": "top",
+				"tier": "A"
+			},
+			{
+				"role": "mid",
+				"tier": "B"
+			}
+		],
+		"damage": "magic",
+		"power": "early",
+		"archetypes": ["poke", "skirmish"],
+		"cc": 4,
+		"mobility": 5,
+		"frontline": 3
+	},
+	{
+		"id": "spindlehusk",
+		"name": "Spindlehusk",
+		"positions": [
+			{
+				"role": "top",
+				"tier": "B"
+			}
+		],
+		"damage": "utility",
+		"power": "late",
+		"archetypes": ["tank", "peel"],
+		"cc": 7,
+		"mobility": 2,
+		"frontline": 9
+	},
+	{
+		"id": "brassburrow",
+		"name": "Brassburrow",
+		"positions": [
+			{
+				"role": "top",
+				"tier": "C"
+			},
+			{
+				"role": "jungle",
+				"tier": "C"
+			}
+		],
+		"damage": "physical",
+		"power": "early",
+		"archetypes": ["dive"],
+		"cc": 4,
+		"mobility": 8,
+		"frontline": 5
+	},
+	{
+		"id": "shalefurrow",
+		"name": "Shalefurrow",
+		"positions": [
+			{
+				"role": "top",
+				"tier": "D"
+			}
+		],
+		"damage": "mixed",
+		"power": "mid",
+		"archetypes": ["splitpush"],
+		"cc": 2,
+		"mobility": 5,
+		"frontline": 5
+	},
+	{
+		"id": "rootthimble",
+		"name": "Rootthimble",
+		"positions": [
+			{
+				"role": "jungle",
+				"tier": "S"
+			},
+			{
+				"role": "support",
+				"tier": "B"
+			}
+		],
+		"damage": "utility",
+		"power": "early",
+		"archetypes": ["engage", "tank"],
+		"cc": 8,
+		"mobility": 6,
+		"frontline": 7
+	},
+	{
+		"id": "sootplume",
+		"name": "Sootplume",
+		"positions": [
+			{
+				"role": "jungle",
+				"tier": "A"
+			}
+		],
+		"damage": "magic",
+		"power": "late",
+		"archetypes": ["carry", "skirmish"],
+		"cc": 3,
+		"mobility": 7,
+		"frontline": 2
+	},
+	{
+		"id": "cleftmantle",
+		"name": "Cleftmantle",
+		"positions": [
+			{
+				"role": "jungle",
+				"tier": "B"
+			},
+			{
+				"role": "top",
+				"tier": "A"
+			}
+		],
+		"damage": "mixed",
+		"power": "mid",
+		"archetypes": ["dive", "engage"],
+		"cc": 6,
+		"mobility": 8,
+		"frontline": 5
+	},
+	{
+		"id": "gutterglen",
+		"name": "Gutterglen",
+		"positions": [
+			{
+				"role": "jungle",
+				"tier": "B"
+			}
+		],
+		"damage": "physical",
+		"power": "early",
+		"archetypes": ["pick", "skirmish"],
+		"cc": 5,
+		"mobility": 7,
+		"frontline": 3
+	},
+	{
+		"id": "tallowstalk",
+		"name": "Tallowstalk",
+		"positions": [
+			{
+				"role": "jungle",
+				"tier": "C"
+			}
+		],
+		"damage": "magic",
+		"power": "mid",
+		"archetypes": ["pick"],
+		"cc": 6,
+		"mobility": 5,
+		"frontline": 2
+	},
+	{
+		"id": "kettlesheaf",
+		"name": "Kettlesheaf",
+		"positions": [
+			{
+				"role": "jungle",
+				"tier": "D"
+			}
+		],
+		"damage": "physical",
+		"power": "late",
+		"archetypes": ["tank", "peel"],
+		"cc": 6,
+		"mobility": 3,
+		"frontline": 8
+	},
+	{
+		"id": "mercurypane",
+		"name": "Mercurypane",
+		"positions": [
+			{
+				"role": "mid",
+				"tier": "S+"
+			},
+			{
+				"role": "bot",
+				"tier": "B"
+			}
+		],
+		"damage": "magic",
+		"power": "late",
+		"archetypes": ["carry", "hypercarry"],
+		"cc": 2,
+		"mobility": 4,
+		"frontline": 1
+	},
+	{
+		"id": "oxbloodink",
+		"name": "Oxbloodink",
+		"positions": [
+			{
+				"role": "mid",
+				"tier": "S"
+			}
+		],
+		"damage": "physical",
+		"power": "early",
+		"archetypes": ["dive", "pick"],
+		"cc": 4,
+		"mobility": 9,
+		"frontline": 2
+	},
+	{
+		"id": "seamseer",
+		"name": "Seamseer",
+		"positions": [
+			{
+				"role": "mid",
+				"tier": "A"
+			},
+			{
+				"role": "support",
+				"tier": "B"
+			}
+		],
+		"damage": "utility",
+		"power": "mid",
+		"archetypes": ["peel", "utility"],
+		"cc": 7,
+		"mobility": 4,
+		"frontline": 2
+	},
+	{
+		"id": "fumeledger",
+		"name": "Fumeledger",
+		"positions": [
+			{
+				"role": "mid",
+				"tier": "B"
+			}
+		],
+		"damage": "magic",
+		"power": "early",
+		"archetypes": ["poke"],
+		"cc": 3,
+		"mobility": 3,
+		"frontline": 1
+	},
+	{
+		"id": "thistledial",
+		"name": "Thistledial",
+		"positions": [
+			{
+				"role": "mid",
+				"tier": "C"
+			},
+			{
+				"role": "top",
+				"tier": "C"
+			}
+		],
+		"damage": "mixed",
+		"power": "late",
+		"archetypes": ["splitpush", "skirmish"],
+		"cc": 3,
+		"mobility": 6,
+		"frontline": 4
+	},
+	{
+		"id": "vellumkiln",
+		"name": "Vellumkiln",
+		"positions": [
+			{
+				"role": "mid",
+				"tier": "D"
+			}
+		],
+		"damage": "magic",
+		"power": "mid",
+		"archetypes": ["pick"],
+		"cc": 6,
+		"mobility": 4,
+		"frontline": 2
+	},
+	{
+		"id": "needlecurrent",
+		"name": "Needlecurrent",
+		"positions": [
+			{
+				"role": "bot",
+				"tier": "S"
+			}
+		],
+		"damage": "physical",
+		"power": "mid",
+		"archetypes": ["carry", "skirmish"],
+		"cc": 2,
+		"mobility": 7,
+		"frontline": 1
+	},
+	{
+		"id": "lanternspool",
+		"name": "Lanternspool",
+		"positions": [
+			{
+				"role": "bot",
+				"tier": "A"
+			},
+			{
+				"role": "mid",
+				"tier": "B"
+			}
+		],
+		"damage": "magic",
+		"power": "early",
+		"archetypes": ["poke", "carry"],
+		"cc": 3,
+		"mobility": 3,
+		"frontline": 1
+	},
+	{
+		"id": "marrowshuttle",
+		"name": "Marrowshuttle",
+		"positions": [
+			{
+				"role": "bot",
+				"tier": "B"
+			}
+		],
+		"damage": "mixed",
+		"power": "late",
+		"archetypes": ["hypercarry"],
+		"cc": 1,
+		"mobility": 4,
+		"frontline": 1
+	},
+	{
+		"id": "starlingflint",
+		"name": "Starlingflint",
+		"positions": [
+			{
+				"role": "bot",
+				"tier": "B"
+			}
+		],
+		"damage": "physical",
+		"power": "early",
+		"archetypes": ["pick", "carry"],
+		"cc": 5,
+		"mobility": 5,
+		"frontline": 2
+	},
+	{
+		"id": "pumicesong",
+		"name": "Pumicesong",
+		"positions": [
+			{
+				"role": "bot",
+				"tier": "C"
+			},
+			{
+				"role": "support",
+				"tier": "C"
+			}
+		],
+		"damage": "utility",
+		"power": "mid",
+		"archetypes": ["poke", "utility"],
+		"cc": 5,
+		"mobility": 3,
+		"frontline": 2
+	},
+	{
+		"id": "anvilskate",
+		"name": "Anvilskate",
+		"positions": [
+			{
+				"role": "bot",
+				"tier": "D"
+			}
+		],
+		"damage": "physical",
+		"power": "late",
+		"archetypes": ["carry"],
+		"cc": 1,
+		"mobility": 6,
+		"frontline": 1
+	},
+	{
+		"id": "sporebastion",
+		"name": "Sporebastion",
+		"positions": [
+			{
+				"role": "support",
+				"tier": "S+"
+			},
+			{
+				"role": "top",
+				"tier": "B"
+			}
+		],
+		"damage": "utility",
+		"power": "mid",
+		"archetypes": ["tank", "peel"],
+		"cc": 8,
+		"mobility": 3,
+		"frontline": 9
+	},
+	{
+		"id": "hingebloom",
+		"name": "Hingebloom",
+		"positions": [
+			{
+				"role": "support",
+				"tier": "S"
+			}
+		],
+		"damage": "physical",
+		"power": "early",
+		"archetypes": ["engage", "pick"],
+		"cc": 9,
+		"mobility": 5,
+		"frontline": 6
+	},
+	{
+		"id": "cirrusspindle",
+		"name": "Cirrusspindle",
+		"positions": [
+			{
+				"role": "support",
+				"tier": "A"
+			}
+		],
+		"damage": "utility",
+		"power": "late",
+		"archetypes": ["peel", "utility"],
+		"cc": 6,
+		"mobility": 5,
+		"frontline": 2
+	},
+	{
+		"id": "gildedbrine",
+		"name": "Gildedbrine",
+		"positions": [
+			{
+				"role": "support",
+				"tier": "B"
+			}
+		],
+		"damage": "magic",
+		"power": "early",
+		"archetypes": ["poke", "pick"],
+		"cc": 6,
+		"mobility": 3,
+		"frontline": 2
+	},
+	{
+		"id": "wickerhollow",
+		"name": "Wickerhollow",
+		"positions": [
+			{
+				"role": "support",
+				"tier": "C"
+			}
+		],
+		"damage": "mixed",
+		"power": "mid",
+		"archetypes": ["engage", "dive"],
+		"cc": 7,
+		"mobility": 8,
+		"frontline": 5
+	},
+	{
+		"id": "dovetailmote",
+		"name": "Dovetailmote",
+		"positions": [
+			{
+				"role": "support",
+				"tier": "D"
+			}
+		],
+		"damage": "utility",
+		"power": "late",
+		"archetypes": ["utility", "peel"],
+		"cc": 4,
+		"mobility": 4,
+		"frontline": 2
 	}
 ]

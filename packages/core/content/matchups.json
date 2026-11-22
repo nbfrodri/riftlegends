@@ -40,5 +40,125 @@
 		"against": "shellward",
 		"role": "support",
 		"value": 2
+	},
+	{
+		"champion": "varnishgraft",
+		"against": "spindlehusk",
+		"role": "top",
+		"value": 5
+	},
+	{
+		"champion": "knuckleridge",
+		"against": "gravelspan",
+		"role": "top",
+		"value": 4
+	},
+	{
+		"champion": "brassburrow",
+		"against": "rimefoil",
+		"role": "top",
+		"value": 4
+	},
+	{
+		"champion": "shalefurrow",
+		"against": "fallowhorn",
+		"role": "top",
+		"value": -3
+	},
+	{
+		"champion": "rootthimble",
+		"against": "coalstride",
+		"role": "jungle",
+		"value": -3
+	},
+	{
+		"champion": "gutterglen",
+		"against": "sootplume",
+		"role": "jungle",
+		"value": 4
+	},
+	{
+		"champion": "kettlesheaf",
+		"against": "cleftmantle",
+		"role": "jungle",
+		"value": 3
+	},
+	{
+		"champion": "tallowstalk",
+		"against": "bellwisp",
+		"role": "jungle",
+		"value": 4
+	},
+	{
+		"champion": "oxbloodink",
+		"against": "mercurypane",
+		"role": "mid",
+		"value": 5
+	},
+	{
+		"champion": "seamseer",
+		"against": "waxblade",
+		"role": "mid",
+		"value": 4
+	},
+	{
+		"champion": "fumeledger",
+		"against": "thistledial",
+		"role": "mid",
+		"value": 3
+	},
+	{
+		"champion": "vellumkiln",
+		"against": "silkflare",
+		"role": "mid",
+		"value": 3
+	},
+	{
+		"champion": "lanternspool",
+		"against": "marrowshuttle",
+		"role": "bot",
+		"value": 4
+	},
+	{
+		"champion": "needlecurrent",
+		"against": "pumicesong",
+		"role": "bot",
+		"value": 3
+	},
+	{
+		"champion": "starlingflint",
+		"against": "suncord",
+		"role": "bot",
+		"value": 4
+	},
+	{
+		"champion": "anvilskate",
+		"against": "briarshot",
+		"role": "bot",
+		"value": -4
+	},
+	{
+		"champion": "sporebastion",
+		"against": "hingebloom",
+		"role": "support",
+		"value": 5
+	},
+	{
+		"champion": "gildedbrine",
+		"against": "sporebastion",
+		"role": "support",
+		"value": 3
+	},
+	{
+		"champion": "wickerhollow",
+		"against": "riftchime",
+		"role": "support",
+		"value": 4
+	},
+	{
+		"champion": "dovetailmote",
+		"against": "cirrusspindle",
+		"role": "support",
+		"value": -3
 	}
 ]
