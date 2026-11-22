@@ -24,7 +24,7 @@
 			}
 		},
 		"tools/data-pipeline": {
-			"entry": ["cli.ts", "**/*.test.ts"]
+			"entry": ["cli.ts", "summary.ts", "**/*.test.ts"]
 		},
 		"packages/core": {
 			"entry": ["test/update-goldens.script.ts"],

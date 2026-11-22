@@ -269,6 +269,18 @@ async function offline() {
 	return readFile(join(outputDir, "lck.json"), "utf8");
 }
 
+it("P5 keeps snapshot bytes when a refresh only changes retrieval timestamps", async () => {
+	await seedCache();
+	const first = await offline();
+	for (const file of await readdir(cacheDir)) {
+		const path = join(cacheDir, file);
+		const entry = JSON.parse(await readFile(path, "utf8"));
+		entry.retrievedAt = "2026-11-29T12:00:00.000Z";
+		await writeFile(path, JSON.stringify(entry));
+	}
+	expect(await offline()).toBe(first);
+});
+
 it("P1 regenerates identical bytes offline from recorded responses, with stable key and row order", async () => {
 	await seedCache();
 	const first = await offline();
