@@ -1,5 +1,36 @@
 import { expect, launchApp, test } from "./fixtures";
 
+test("T9: opens a new window while the previous process is still quitting", async ({
+	playwright,
+	systemLocale,
+}, testInfo) => {
+	const options = { profileDir: testInfo.outputPath("profile"), systemLocale };
+	const first = await launchApp({ playwright }, options);
+	try {
+		await first.firstWindow();
+		await first.evaluate(({ app, BrowserWindow }) => {
+			app.once("before-quit", (event) => event.preventDefault());
+			BrowserWindow.getAllWindows()[0]?.close();
+		});
+		await expect
+			.poll(() =>
+				first.evaluate(
+					({ BrowserWindow }) => BrowserWindow.getAllWindows().length,
+				),
+			)
+			.toBe(0);
+		const second = await launchApp({ playwright }, options);
+		try {
+			const page = await second.firstWindow({ timeout: 5_000 });
+			await expect(page.locator("html")).toHaveAttribute("lang", "en");
+		} finally {
+			await second.close();
+		}
+	} finally {
+		await first.close();
+	}
+});
+
 test("T9: the language choice survives a relaunch and beats the system locale", async ({
 	playwright,
 	systemLocale,

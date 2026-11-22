@@ -62,14 +62,14 @@ test("D0 loads the renderer while asset synchronization is pending", () => {
 	expect(assetSync).toHaveBeenCalledBefore(loadRenderer);
 });
 
-test("D0 a second app instance quits before starting another sync", async () => {
+test("D0 opens a window even if an exiting instance still holds Electron's lock", async () => {
 	vi.resetModules();
 	vi.clearAllMocks();
 	acquireInstance.mockReturnValueOnce(false);
 	await import("../src/main/index");
-	expect(quit).toHaveBeenCalledOnce();
-	expect(assetSync).not.toHaveBeenCalled();
-	expect(loadRenderer).not.toHaveBeenCalled();
+	expect(quit).not.toHaveBeenCalled();
+	expect(assetSync).toHaveBeenCalledOnce();
+	expect(loadRenderer).toHaveBeenCalledOnce();
 });
 
 test.each(["notifications", "media"])(

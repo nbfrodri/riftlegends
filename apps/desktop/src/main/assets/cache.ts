@@ -8,6 +8,7 @@ import {
 	pruneVersions,
 	verifiesVersion,
 } from "./store";
+import { acquireSyncLock } from "./sync-lock";
 import {
 	type AssetTransport,
 	httpsTransport,
@@ -67,6 +68,7 @@ export function createAssetCache(
 
 	async function synchronize(): Promise<AssetStatus> {
 		let fallback: AssetStatus = { state: "missing" };
+		let release: (() => Promise<void>) | undefined;
 		try {
 			const ddragon = dirname(
 				await cachePath(userData, "assets/ddragon/current.json", true),
@@ -74,6 +76,7 @@ export function createAssetCache(
 			const cdragon = dirname(
 				await cachePath(userData, "assets/cdragon/current.json", true),
 			);
+			release = await acquireSyncLock(dirname(ddragon));
 			const dataVersion = await activeVersion(ddragon, "ddragon");
 			const iconVersion = await activeVersion(cdragon, "cdragon");
 			// The Data Dragon pointer commits the pair. If only the icon pointer
@@ -133,9 +136,9 @@ export function createAssetCache(
 			return { state: "ready", version };
 		} catch (error) {
 			if (error instanceof NetworkUnavailable) return fallback;
-			const reason =
-				error instanceof Error ? error.message : "Asset synchronization failed";
-			return { state: "error", reason };
+			throw error;
+		} finally {
+			await release?.();
 		}
 	}
 
@@ -144,11 +147,21 @@ export function createAssetCache(
 		sync(): Promise<AssetStatus> {
 			if (running) return running;
 			status = { state: "syncing", progress: { completed: 0, total: 0 } };
-			running = synchronize().then((result) => {
-				status = result;
-				running = undefined;
-				return result;
-			});
+			running = synchronize()
+				.catch(
+					(error): AssetStatus => ({
+						state: "error",
+						reason:
+							error instanceof Error
+								? error.message
+								: "Asset synchronization failed",
+					}),
+				)
+				.then((result) => {
+					status = result;
+					running = undefined;
+					return result;
+				});
 			return running;
 		},
 	};

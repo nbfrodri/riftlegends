@@ -70,14 +70,5 @@ async function start() {
 	}
 }
 
-if (app.requestSingleInstanceLock()) {
-	app.on("second-instance", () => {
-		const [window] = BrowserWindow.getAllWindows();
-		if (window?.isMinimized()) window.restore();
-		window?.focus();
-	});
-	app.on("window-all-closed", () => app.quit());
-	void app.whenReady().then(start);
-} else {
-	app.quit();
-}
+app.on("window-all-closed", () => app.quit());
+void app.whenReady().then(start);
