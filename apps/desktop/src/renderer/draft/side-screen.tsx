@@ -5,16 +5,19 @@ import {
 } from "@rift-legends/contracts";
 import { Button } from "@rift-legends/ui-kit/components/button";
 import { ChampionFace } from "@rift-legends/ui-kit/components/champion-face";
-import { ArrowRight, Circle, CircleCheck } from "lucide-react";
+import {
+	ArrowRight,
+	Circle,
+	CircleCheck,
+	ListEnd,
+	ListStart,
+} from "lucide-react";
 import { useId, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useCoreQueries } from "../core";
-import {
-	championLabel,
-	type SeriesRules,
-	teamName,
-	useDraftSession,
-} from "./session";
+import { type GameResult, readGame } from "./result-data";
+import { championLabel, teamName, useDraftSession } from "./session";
+import { SideSeriesPanel } from "./side-series-panel";
 
 /** The picks of each side in the pro order (plan 06): red closes the draft. */
 const PICKS: Record<Side, readonly number[]> = {
@@ -23,15 +26,12 @@ const PICKS: Record<Side, readonly number[]> = {
 };
 /** The first pick after the second bans. */
 const SECOND_PHASE = 7;
-const WINS_NEEDED: Record<SeriesRules["format"], number> = {
-	bo1: 1,
-	bo3: 2,
-	bo5: 3,
-};
 const SIDES = ["blue", "red"] as const;
 const sideText = { blue: "text-side-blue", red: "text-side-red" };
 const sideBorder = { blue: "border-side-blue", red: "border-side-red" };
 const sideFill = { blue: "bg-side-blue", red: "bg-side-red" };
+/** First pick opens the draft; last pick closes it. */
+const RoleIcon = { blue: ListStart, red: ListEnd };
 const panel =
 	"flex flex-col gap-3 border-t-[3px] bg-panel p-4 short:gap-2 short:p-3";
 const panelTitle = "font-bold font-display text-lg tracking-heading";
@@ -75,6 +75,7 @@ function SideCard(props: {
 	const { t } = useTranslation();
 	const id = useId();
 	const { side, team, choice } = props;
+	const Icon = RoleIcon[side];
 	const content = (
 		<>
 			<div className="flex items-center justify-between gap-3">
@@ -97,7 +98,10 @@ function SideCard(props: {
 					))}
 			</div>
 			<p id={`${id}-about`} className="flex flex-col gap-1">
-				<b className="text-lg">{t(`draft.side.${side}.role`)}</b>
+				<b className="flex items-center gap-2 text-lg">
+					<Icon aria-hidden="true" className={`size-5 ${sideText[side]}`} />
+					{t(`draft.side.${side}.role`)}
+				</b>
 				<span className="text-muted">{t(`draft.side.${side}.about`)}</span>
 			</p>
 			<PickOrder side={side} />
@@ -121,35 +125,6 @@ function SideCard(props: {
 			/>
 			{content}
 		</label>
-	);
-}
-
-/** Format and fearless mode of the series; the score is in the header. */
-function SeriesPanel({ rules }: { rules: SeriesRules }) {
-	const { t } = useTranslation();
-	const id = useId();
-	return (
-		<section aria-labelledby={id} className={`${panel} border-line`}>
-			<h2 id={id} className={panelTitle}>
-				{t("draft.side.series")}
-			</h2>
-			<dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-3">
-				<dt className="text-muted">{t("draft.setup.format")}</dt>
-				<dd className="flex flex-col">
-					<b>{t(`draft.setup.format.${rules.format}`)}</b>
-					<span className="text-muted">
-						{t("draft.side.toWin", { count: WINS_NEEDED[rules.format] })}
-					</span>
-				</dd>
-				<dt className="text-muted">{t("draft.setup.fearless")}</dt>
-				<dd className="flex flex-col">
-					<b>{t(`draft.setup.fearless.${rules.fearless}`)}</b>
-					<span className="text-muted">
-						{t(`draft.setup.fearlessNote.${rules.fearless}`)}
-					</span>
-				</dd>
-			</dl>
-		</section>
 	);
 }
 
@@ -183,30 +158,16 @@ function PlayedBy(props: { team: string; champions: readonly string[] }) {
 	);
 }
 
-/**
- * Who played what in the games before `game`, from their `match.ended` facts.
- * The view's availability cannot tell: until the next draft starts, it still
- * holds the last game's picks and bans.
- */
-function LockedChampions(props: { game: number; teams: readonly string[] }) {
+/** Who played what in the games already played, which fearless locks. */
+function LockedChampions(props: {
+	games: readonly GameResult[];
+	teams: readonly string[];
+}) {
 	const { t } = useTranslation();
-	const { sessionId } = useDraftSession();
 	const id = useId();
-	const games = useCoreQueries<MatchView>(
-		Array.from({ length: props.game - 1 }, (_, i) => ({
-			v: CONTRACT_VERSION,
-			kind: "match.view",
-			sessionId,
-			params: { game: i + 1 },
-		})),
-	);
 	const played = (team: string) =>
-		games.flatMap(({ data }) =>
-			(data?.facts ?? []).flatMap((fact) =>
-				fact.type === "match.ended"
-					? fact.players.filter((p) => p.team === team).map((p) => p.champion)
-					: [],
-			),
+		props.games.flatMap((game) =>
+			game.lines.filter((l) => l.team === team).map((l) => l.champion),
 		);
 	return (
 		<section aria-labelledby={id} className={`${panel} border-line`}>
@@ -223,6 +184,26 @@ function LockedChampions(props: { game: number; teams: readonly string[] }) {
 }
 
 /**
+ * The games before the current one, from their `match.view`. The draft view
+ * cannot tell: until the next draft starts, it still holds the last game.
+ */
+function usePlayedGames(count: number): GameResult[] {
+	const { sessionId } = useDraftSession();
+	const queries = useCoreQueries<MatchView>(
+		Array.from({ length: count }, (_, i) => ({
+			v: CONTRACT_VERSION,
+			kind: "match.view",
+			sessionId,
+			params: { game: i + 1 },
+		})),
+	);
+	return queries.flatMap(({ data }) => {
+		const game = data ? readGame(data) : null;
+		return game ? [game] : [];
+	});
+}
+
+/**
  * U2: the chooser picks blue or red, seeing what each side means, the series
  * and what fearless has locked. The AI's choice shows until the user continues.
  */
@@ -232,6 +213,7 @@ export function SideScreen() {
 		useDraftSession();
 	const [side, setSide] = useState<Side>("blue");
 	const name = useId();
+	const games = usePlayedGames((view?.game ?? 1) - 1);
 
 	if (!view) return null;
 
@@ -295,10 +277,10 @@ export function SideScreen() {
 						</div>
 					)}
 				</div>
-				{rules && <SeriesPanel rules={rules} />}
+				{rules && <SideSeriesPanel rules={rules} games={games} />}
 			</div>
 			{rules && rules.fearless !== "off" && view.game > 1 && (
-				<LockedChampions game={view.game} teams={teams} />
+				<LockedChampions games={games} teams={teams} />
 			)}
 			{(chosen || choosing) && (
 				<footer className="mt-auto flex justify-end border-line border-t pt-[14px]">

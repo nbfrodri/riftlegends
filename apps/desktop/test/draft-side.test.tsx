@@ -79,6 +79,11 @@ describe("side choice (U2)", () => {
 		expect(within(series).getByText("Bo3")).toBeTruthy();
 		expect(within(series).getByText("First to 2 games")).toBeTruthy();
 		expect(within(series).getByText("Hard")).toBeTruthy();
+		const history = within(series).getByRole("table", { name: "Series recap" });
+		expect(
+			within(history).getByRole("row", { name: /Game 1 Choosing sides/ }),
+		).toBeTruthy();
+		expect(within(history).queryByRole("img", { name: "Winner" })).toBeNull();
 		// Game 1: nothing is locked yet.
 		expect(
 			screen.queryByRole("region", { name: "Locked champions" }),
@@ -99,6 +104,18 @@ describe("side choice (U2)", () => {
 		expect(screen.getByText("Red side").parentElement?.textContent).toContain(
 			"Shoal",
 		);
+		// The series recap shows game 1's sides and who chose them.
+		const history = screen.getByRole("table", { name: "Series recap" });
+		const row = await within(history).findByRole("row", { name: /Game 1/ });
+		const [blue, red] = within(row).getAllByRole("cell") as HTMLElement[];
+		expect(blue?.textContent).toContain("Forge");
+		expect(
+			within(blue as HTMLElement).getByRole("img", { name: "Chose side" }),
+		).toBeTruthy();
+		expect(red?.textContent).toContain("Shoal");
+		expect(
+			within(red as HTMLElement).queryByRole("img", { name: "Chose side" }),
+		).toBeNull();
 
 		await user.click(screen.getByRole("button", { name: "Go to draft" }));
 		expect(
@@ -107,8 +124,16 @@ describe("side choice (U2)", () => {
 	});
 });
 
-/** Plays game 1 of a hard-fearless Bo5 with the AI, then hands the side choice to its chooser. */
-function Driver({ showResult = false }: { showResult?: boolean }) {
+/** Plays until the requested side choice, then hands control to its chooser. */
+function Driver({
+	showResult = false,
+	stopAt = 2,
+	fearless = "hard",
+}: {
+	showResult?: boolean;
+	stopAt?: number;
+	fearless?: "hard" | "off";
+}) {
 	const { view, options, send, setMine, mine, present, presentation } =
 		useDraftSession();
 	const busy = useRef(false);
@@ -122,7 +147,7 @@ function Driver({ showResult = false }: { showResult?: boolean }) {
 					teams: [a, b],
 					seeds: [0, 1],
 					format: "bo5",
-					fearless: "hard",
+					fearless,
 					timer: false,
 					pool: options.pool,
 					seed: 7,
@@ -132,8 +157,11 @@ function Driver({ showResult = false }: { showResult?: boolean }) {
 				if (presentation !== "match") present("match");
 				else await send("match.play", {});
 			} else if (view.phase === "side" && view.turn) {
-				if (view.game === 1) {
-					await send("side.choose", { team: view.turn.team, side: "red" });
+				if (view.game < stopAt) {
+					await send("side.choose", {
+						team: view.turn.team,
+						side: view.game === 1 ? "red" : "blue",
+					});
 				} else {
 					present(showResult ? "result" : null);
 					setMine(view.turn.team);
@@ -190,6 +218,55 @@ test("shows game 2 in series order until its sides are chosen", async () => {
 	expect(score.textContent).toContain("Forge0 – 1Shoal");
 	expect(getByText("Forge").classList.contains("text-side-blue")).toBe(true);
 	expect(getByText("Shoal").classList.contains("text-side-red")).toBe(true);
+});
+
+test("keeps both sides, the chooser and the winner for each map with fearless off", async () => {
+	const core = await renderWithDraftCore(
+		<DraftSessionProvider>
+			<Driver stopAt={3} fearless="off" />
+			<Flow />
+		</DraftSessionProvider>,
+	);
+	// Wait for game 3's side choice: the table only then holds games 1 and 2.
+	await screen.findByRole("row", { name: /Game 3 Choosing sides/ });
+	const history = screen.getByRole("table", { name: "Series recap" });
+	expect(
+		within(history)
+			.getAllByRole("columnheader")
+			.map((th) => th.textContent),
+	).toEqual(["Map", "Blue", "Red"]);
+	for (const game of [1, 2]) {
+		const result = await core.api.query({
+			v: CONTRACT_VERSION,
+			kind: "match.view",
+			sessionId: 1,
+			params: { game },
+		});
+		if (!result.ok) throw new Error(JSON.stringify(result));
+		const facts = (result.view as MatchView).facts;
+		const started = facts.find((fact) => fact.type === "match.started");
+		const ended = facts.find((fact) => fact.type === "match.ended");
+		if (!started || !ended) throw new Error("missing game");
+		const row = await within(history).findByRole("row", {
+			name: new RegExp(`Game ${game}`),
+		});
+		const cells = within(row).getAllByRole("cell");
+		for (const [index, side] of (["blue", "red"] as const).entries()) {
+			const cell = within(cells[index] as HTMLElement);
+			expect(
+				cell.getByText(started[side] === "forge" ? "Forge" : "Shoal"),
+			).toBeTruthy();
+			expect(Boolean(cell.queryByRole("img", { name: "Winner" }))).toBe(
+				started[side] === ended.winner,
+			);
+			expect(Boolean(cell.queryByRole("img", { name: "Chose side" }))).toBe(
+				side === (game === 1 ? "red" : "blue"),
+			);
+		}
+	}
+	expect(
+		within(history).getByRole("row", { name: /Game 3 Choosing sides/ }),
+	).toBeTruthy();
 });
 
 describe("side choice with fearless", () => {
