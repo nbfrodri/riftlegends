@@ -78,6 +78,7 @@
   | Fecha | Puntuación | Más bajos |
   | --- | --- | --- |
   | 21-11-2026 (cierre del plan 07) | **85,17 %** (1.367 muertos, 194 supervivientes) | `server` 68,9 % (`debug.ts` sin tests), `ai/components/pick.ts` 67,7 %, `flex.ts` 71,0 % |
+  | 22-11-2026 (cierre de la Fase 2) | **90,32 %** (2.854 muertos, 240 supervivientes, 67 sin cubrir) | `server/debug.ts` 0 % (sin tests, solo depuración), `calibration/scenarios.ts` 51,9 % (apoyo de los tests de calibración) |
 
 ## Troceado en issues (Tarea de plan · milestone «Fase 2 — Draft rápido completo»)
 
