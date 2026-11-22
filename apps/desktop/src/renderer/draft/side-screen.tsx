@@ -235,18 +235,16 @@ export function SideScreen() {
 
 	return (
 		<>
+			<p role="status" className="flex flex-wrap gap-x-3">
+				<b>{status}</b>
+				{!chosen && (
+					<span className="text-muted">
+						{view.game === 1 ? t("draft.side.bySeed") : t("draft.side.byLoss")}
+					</span>
+				)}
+			</p>
 			<div className="grid grid-cols-[2fr_1fr] items-start gap-gap">
 				<div className="flex min-w-0 flex-col gap-3">
-					<p role="status" className="flex flex-wrap gap-x-3">
-						<b>{status}</b>
-						{!chosen && (
-							<span className="text-muted">
-								{view.game === 1
-									? t("draft.side.bySeed")
-									: t("draft.side.byLoss")}
-							</span>
-						)}
-					</p>
 					{choosing ? (
 						<div
 							role="radiogroup"
