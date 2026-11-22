@@ -74,42 +74,26 @@ describe("U2: official role icons", () => {
 });
 
 describe("official stat icons", () => {
-	/** Stands in for the browser's Image so a test can fail the preload. */
-	const preloads: { src: string; onerror: (() => void) | null }[] = [];
-	beforeEach(() => {
-		preloads.length = 0;
-		vi.stubGlobal(
-			"Image",
-			class {
-				src = "";
-				onerror: (() => void) | null = null;
-				constructor() {
-					preloads.push(this);
-				}
-			},
-		);
-	});
-	afterEach(() => vi.unstubAllGlobals());
-
 	test.each(["kda", "gold", "cs", "damage", "vision"] as const)(
-		"%s paints the cached client icon in the text colour and falls back if it fails",
+		"%s shows the cached client icon and falls back to the own one if it fails",
 		async (stat) => {
-			const url = `rift-asset://cdragon/stats/${stat}.svg`;
 			const { container } = renderWith(ready, <StatIcon stat={stat} />);
-			const icon = await waitFor(() => {
-				const found = container.querySelector<HTMLElement>("[data-stat-icon]");
-				if (!found) throw new Error("no official icon yet");
+			// A CSS mask over a rift-asset:// SVG does not load in Electron (#312),
+			// so the icon must be a plain image like the role icons.
+			const image = await waitFor(() => {
+				const found = container.querySelector("img");
+				if (!found) throw new Error("no image yet");
 				return found;
 			});
-			expect(icon.getAttribute("aria-hidden")).toBe("true");
-			expect(icon.style.backgroundColor).toBe("currentcolor");
-			expect(icon.style.maskImage).toBe(`url(${url})`);
-			expect(icon.style.width).toBe("14px");
-			expect(icon.style.height).toBe("14px");
+			expect(image.getAttribute("src")).toBe(
+				`rift-asset://cdragon/stats/${stat}.svg`,
+			);
+			expect(image.getAttribute("alt")).toBe("");
+			expect(image.getAttribute("aria-hidden")).toBe("true");
+			expect(image.getAttribute("width")).toBe("14");
+			expect(image.getAttribute("height")).toBe("14");
+			fireEvent.error(image);
 			expect(container.querySelector("img")).toBeNull();
-			const preload = preloads.find((image) => image.src === url);
-			act(() => preload?.onerror?.());
-			expect(container.querySelector("[data-stat-icon]")).toBeNull();
 			const fallback = container.querySelector("svg");
 			expect(fallback?.getAttribute("aria-hidden")).toBe("true");
 			expect(fallback?.getAttribute("width")).toBe("14");
