@@ -8,6 +8,13 @@ const role = z.enum(["top", "jungle", "mid", "bot", "support"]);
 const champion = z.string().regex(/^[A-Za-z][A-Za-z0-9]*$/);
 const stat = z.int().nonnegative().optional();
 
+export const snapshotLogo = z.strictObject({
+	file: text,
+	url: z.httpUrl(),
+	sha1: z.string().regex(/^[0-9a-f]{40}$/i),
+	mime: z.string().startsWith("image/"),
+});
+
 const provenance = z.strictObject({
 	source: z.literal("Leaguepedia"),
 	domain: z.literal("lol.fandom.com"),
@@ -30,14 +37,7 @@ const team = z.strictObject({
 	name: text,
 	short: text.optional(),
 	league: text,
-	logo: z
-		.strictObject({
-			file: text,
-			url: z.httpUrl(),
-			sha1: z.string().regex(/^[0-9a-f]{40}$/i),
-			mime: z.string().startsWith("image/"),
-		})
-		.optional(),
+	logo: snapshotLogo.optional(),
 });
 
 const person = z.strictObject({ id: text, name: text });
