@@ -1,30 +1,67 @@
-import type { SeriesOptions } from "@rift-legends/contracts";
-import type { SeriesState } from "./series";
+import type { ContentSet, SeriesOptions } from "@rift-legends/contracts";
+import { indexContent } from "../ai/content-index";
+import { QueryRejection } from "../server/dispatcher";
+import type { LoadedContent, SeriesState } from "./series";
+
+/** Each team's starters, in content order, with their attributes. */
+function lineups({ content, match }: Partial<LoadedContent>) {
+	const rosters = content ? indexContent(content).rosters : null;
+	const attributes = new Map(match?.players.map((p) => [p.id, p.attributes]));
+	return (team: string) =>
+		(content?.players ?? []).flatMap(
+			({ id, team: of, role, handle, estimated }) => {
+				const rated = attributes.get(id);
+				return of === team && rated && rosters?.get(team)?.get(role)?.id === id
+					? [
+							{
+								id,
+								role,
+								handle,
+								attributes: rated,
+								...(estimated && { estimated }),
+							},
+						]
+					: [];
+			},
+		);
+}
 
 /**
- * The `series.options` query: the teams (with their players' attributes) and
- * the champion pool (with each champion's roles and tiers) the session was opened with.
- * Empty in a session without content.
+ * The `series.options` query: the teams (with their starters' attributes) and
+ * the champion pool (with each champion's roles and tiers) of the named content
+ * set, or of the session's current content. Empty in a session without content.
  */
-export const viewOptions = (state: SeriesState): SeriesOptions => {
-	const champions = state.content?.champions ?? [];
-	const players = (team: string) =>
-		(state.content?.players ?? []).flatMap(({ id, team: of, role, handle }) => {
-			const attributes = state.match?.players.find(
-				(p) => p.id === id,
-			)?.attributes;
-			return of === team && attributes
-				? [{ id, role, handle, attributes }]
-				: [];
-		});
+export const viewOptions = (
+	state: SeriesState,
+	params: { content?: ContentSet } = {},
+): SeriesOptions | QueryRejection => {
+	let set: Partial<LoadedContent> = {
+		...(state.content && { content: state.content }),
+		...(state.match && { match: state.match }),
+	};
+	if (params.content) {
+		const named = state.library[params.content]?.();
+		if (!named) {
+			return new QueryRejection({
+				code: "invalid-command",
+				params: { path: "content" },
+			});
+		}
+		set = named;
+	}
+	const champions = set.content?.champions ?? [];
+	const players = lineups(set);
 	return {
-		teams: (state.match?.teams ?? []).map(({ id, name, seed, coach }) => ({
-			id,
-			name,
-			seed,
-			coach,
-			players: players(id),
-		})),
+		teams: (set.match?.teams ?? []).map(
+			({ id, name, seed, coach, league }) => ({
+				id,
+				name,
+				seed,
+				coach,
+				...(league && { league }),
+				players: players(id),
+			}),
+		),
 		pool: champions.map((champion) => champion.id),
 		champions: champions.map(({ id, name, positions }) => ({
 			id,

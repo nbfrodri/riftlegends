@@ -42,6 +42,8 @@ describe("draft commands", () => {
 	it.each([
 		["series.start", start],
 		["series.start", { ...start, seeds: undefined }],
+		["series.start", { ...start, content: "real" }],
+		["series.start", { ...start, content: "fictional" }],
 		["side.choose", { team: "t1", side: "blue" }],
 		["draft.ban", { team: "t1", champion: "ahri" }],
 		["draft.ban", { team: "t1", champion: null }],
@@ -68,6 +70,11 @@ describe("draft commands", () => {
 			{ ...start, fearless: "medium" },
 		],
 		["a seed out of 32 bits", "series.start", { ...start, seed: 2 ** 32 }],
+		[
+			"an unknown content set",
+			"series.start",
+			{ ...start, content: "fantasy" },
+		],
 		["an unknown side", "side.choose", { team: "t1", side: "green" }],
 		["an empty pick", "draft.pick", { team: "t1", champion: null }],
 		["an empty champion id", "draft.pick", { team: "t1", champion: "" }],
@@ -128,10 +135,38 @@ describe("draft facts", () => {
 			timeout: false,
 		},
 		{ type: "draft.rolesAssigned", position: 5, game: 1, team: "t1", roles },
+		{
+			type: "series.started",
+			position: 0,
+			teams: ["t1", "geng"],
+			format: "bo1",
+			fearless: "off",
+			timer: false,
+			pool: ["ahri", "azir"],
+			seed: 7,
+			content: "real",
+		},
 		{ type: "game.finished", position: 6, game: 1, winner: "t1" },
 		{ type: "series.finished", position: 7, winner: "t1", wins: [2, 1] },
 	])("round-trips $type", (fact) => {
 		expect(decodeFact(draftFacts, encodeFact(fact))).toEqual(fact);
+	});
+});
+
+describe("series options", () => {
+	const query = (params: unknown) =>
+		parseQuery(draftQueries, {
+			v: CONTRACT_VERSION,
+			kind: "series.options",
+			sessionId: 1,
+			params,
+		});
+
+	it("asks for the session's content or for a named content set", () => {
+		expect(query({}).ok).toBe(true);
+		expect(query({ content: "real" }).ok).toBe(true);
+		expect(query({ content: "fictional" }).ok).toBe(true);
+		expect(query({ content: "fantasy" }).ok).toBe(false);
 	});
 });
 

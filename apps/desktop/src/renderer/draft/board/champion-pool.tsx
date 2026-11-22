@@ -1,5 +1,4 @@
 import type { Role } from "@rift-legends/contracts";
-import { ChampionFace } from "@rift-legends/ui-kit/components/champion-face";
 import {
 	Select,
 	SelectContent,
@@ -9,6 +8,7 @@ import {
 } from "@rift-legends/ui-kit/components/select";
 import { type KeyboardEvent, memo, useCallback, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { ChampionPortrait } from "../champion-portrait";
 
 /** Why a champion cannot be chosen; `null` when it is free. */
 type Unavailable = "banned" | "picked" | "fearless" | null;
@@ -56,7 +56,11 @@ const Tile = memo(function Tile(props: {
 			onClick={() => !unavailable && props.onSelect(id)}
 			className={`relative flex min-h-0 min-w-0 flex-col rounded-control bg-surface text-left outline-offset-[-3px] focus-visible:z-1 focus-visible:outline-3 focus-visible:outline-action ${props.selected ? "outline-2 outline-action" : ""} ${unavailable ? "cursor-default" : ""}`}
 		>
-			<ChampionFace id={id} size="pool" unavailable={unavailable !== null} />
+			<ChampionPortrait
+				id={id}
+				size="pool"
+				unavailable={unavailable !== null}
+			/>
 			<b
 				className={`truncate px-1.5 py-1 text-[clamp(12px,0.95vw,14px)] ${unavailable ? "font-medium text-muted" : ""}`}
 			>

@@ -15,7 +15,10 @@ test("makes the user's first ban from the setup", async ({ appWindow }) => {
 		grid.getByRole("button", { name: "Cragbell. Banned in this game" }),
 	).toBeVisible();
 	await expect(
-		appWindow.getByRole("list", { name: "Bans" }).first(),
-	).toContainText("Cragbell");
+		appWindow
+			.getByRole("list", { name: "Bans" })
+			.first()
+			.getByRole("img", { name: "Cragbell" }),
+	).toBeVisible();
 	await expect(appWindow.getByText("Shoal's turn")).toBeVisible();
 });

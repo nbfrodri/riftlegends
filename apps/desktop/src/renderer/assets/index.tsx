@@ -1,4 +1,4 @@
-import type { AssetStatus } from "@rift-legends/contracts";
+import type { AssetStatus, ChampionCatalog } from "@rift-legends/contracts";
 import {
 	createContext,
 	type ReactNode,
@@ -19,6 +19,8 @@ interface AssetsState {
 	sync(): void;
 	/** Team id to the `rift-asset://` URL of its downloaded logo. */
 	teamLogos: Readonly<Record<string, string>>;
+	/** The verified champion catalog (names in ES and EN), or null without one. */
+	champions: ChampionCatalog | null;
 }
 
 const AssetsContext = createContext<AssetsState | null>(null);
@@ -32,6 +34,14 @@ export function AssetsProvider(props: { api: AssetsApi; children: ReactNode }) {
 	const [status, setStatus] = useState<AssetStatus>();
 	const [ready, setReady] = useState(false);
 	const [teamLogos, setTeamLogos] = useState<Record<string, string>>({});
+	const [catalog, setCatalog] = useState<{
+		status: AssetStatus;
+		champions: ChampionCatalog | null;
+	}>();
+	const champions =
+		status?.state === "ready" && catalog?.status !== status
+			? null
+			: (catalog?.champions ?? null);
 	const mounted = useRef(true);
 
 	const settle = useCallback((next: AssetStatus) => {
@@ -67,24 +77,32 @@ export function AssetsProvider(props: { api: AssetsApi; children: ReactNode }) {
 		api.sync().then(settle, () => settle({ state: "error" }));
 	}, [api, settle]);
 
-	// Logos come from a separate download; look again whenever the cache settles.
-	// biome-ignore lint/correctness/useExhaustiveDependencies: `ready` only triggers the refetch
 	useEffect(() => {
+		if (status?.state !== "ready") return;
 		let current = true;
 		api.teamLogos().then(
 			(logos) => current && setTeamLogos(logos),
 			() => undefined,
 		);
+		api.champions().then(
+			(champions) => current && setCatalog({ status, champions }),
+			() => current && setCatalog({ status, champions: null }),
+		);
 		return () => {
 			current = false;
 		};
-	}, [api, ready]);
+	}, [api, status]);
 
 	const value = useMemo(
-		() => ({ status, ready, sync, teamLogos }),
-		[status, ready, sync, teamLogos],
+		() => ({ status, ready, sync, teamLogos, champions }),
+		[status, ready, sync, teamLogos, champions],
 	);
 	return <AssetsContext value={value}>{props.children}</AssetsContext>;
+}
+
+/** The asset cache, or null outside an `AssetsProvider` (then there is no cache). */
+export function useOptionalAssets() {
+	return use(AssetsContext);
 }
 
 export function useAssets() {

@@ -1,5 +1,10 @@
 import type { PlayerAttribute, SeriesOptions } from "@rift-legends/contracts";
-import { ChevronRight } from "lucide-react";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger,
+} from "@rift-legends/ui-kit/components/tooltip";
+import { ChevronRight, CircleDashed } from "lucide-react";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { type Stat, StatIcon } from "../../assets/stat-icon";
@@ -60,13 +65,55 @@ export function InspectionPanel(props: {
 	);
 }
 
-/** U5: a player's attributes by area. The rival's show the same until scouting (plan 19). */
-export function PlayerAttributes({ attributes }: { attributes: Attributes }) {
+/** Marks an attribute estimated from the role rather than measured (plan 11). */
+function EstimatedMark() {
 	const { t } = useTranslation();
 	return (
+		<Tooltip>
+			<TooltipTrigger
+				render={
+					<span
+						role="img"
+						aria-label={t("draft.board.estimated")}
+						className="inline-flex text-muted"
+					/>
+				}
+			>
+				<CircleDashed aria-hidden="true" className="size-3" />
+			</TooltipTrigger>
+			<TooltipContent side="top">
+				{t("draft.board.estimatedHint")}
+			</TooltipContent>
+		</Tooltip>
+	);
+}
+
+/**
+ * U5: a player's attributes by area; those estimated rather than measured
+ * carry a mark. The rival's show the same until scouting (plan 19).
+ */
+export function PlayerAttributes({
+	attributes,
+	estimated = [],
+}: {
+	attributes: Attributes;
+	estimated?: readonly PlayerAttribute[] | undefined;
+}) {
+	const { t } = useTranslation();
+	const guessed = new Set(estimated);
+	return (
 		<>
-			<p className="mt-1 text-[13px] text-muted">
+			<p className="mt-1 flex items-center gap-1.5 text-[13px] text-muted">
 				{t("draft.board.attributeScale")}
+				{guessed.size > 0 && (
+					<span
+						aria-hidden="true"
+						className="ml-3 inline-flex items-center gap-1"
+					>
+						<CircleDashed className="size-3" />
+						{t("draft.board.estimated")}
+					</span>
+				)}
 			</p>
 			<div className="mt-[9px] grid grid-cols-[1fr_1.2fr_1.06fr_1.16fr_1.22fr] gap-3">
 				{AREAS.map(([area, keys]) => (
@@ -88,7 +135,10 @@ export function PlayerAttributes({ attributes }: { attributes: Attributes }) {
 										)}
 										{t(`draft.board.attr.${key}`)}
 									</dt>
-									<dd className="font-semibold">{attributes[key]}</dd>
+									<dd className="flex items-center gap-1 font-semibold tabular-nums">
+										{guessed.has(key) && <EstimatedMark />}
+										{attributes[key]}
+									</dd>
 								</div>
 							))}
 						</dl>

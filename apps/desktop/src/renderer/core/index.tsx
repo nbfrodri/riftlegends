@@ -82,7 +82,10 @@ export function useCoreQueries<View>(queries: readonly CoreQuery[]) {
  */
 export function useCoreQuery<View>(
 	query: CoreQuery,
-	options: { affectedBy: (fact: CoreFact) => boolean },
+	options: {
+		affectedBy: (fact: CoreFact) => boolean;
+		enabled?: boolean;
+	},
 ) {
 	const core = useCore();
 	const client = useQueryClient();
@@ -99,6 +102,7 @@ export function useCoreQuery<View>(
 			if (!result.ok) throw new CoreRequestError(result.error);
 			return result.view as View;
 		},
+		enabled: options.enabled ?? true,
 	});
 }
 

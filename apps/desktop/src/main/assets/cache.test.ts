@@ -554,6 +554,34 @@ describe("main asset cache", () => {
 		},
 	);
 
+	it("A3 syncs the snapshot logos when the champion cache is ready", async () => {
+		const logo = Buffer.concat([png, Buffer.from("verified team logo")]);
+		const url = "https://static.lolesports.com/teams/GEN.png";
+		override = async (request) =>
+			request.href === url ? response(logo) : undefined;
+		const cache = createAssetCache(profile, {
+			transport,
+			logos: [
+				{
+					team: "Gen.G",
+					url,
+					sha256: createHash("sha256").update(logo).digest("hex"),
+					size: logo.length,
+					mime: "image/png",
+				},
+			],
+		});
+		expect(await cache.sync()).toEqual({ state: "ready", version });
+		expect(await cache.getTeamLogos()).toEqual({
+			"Gen.G": "rift-asset://logos/teams/gen-g.png",
+		});
+		await cache.sync();
+		await cache.getTeamLogos();
+		expect(requests.filter((request) => request.url.href === url)).toHaveLength(
+			1,
+		);
+	});
+
 	it("A3 downloads team logos under their slug and lists their protocol URLs", async () => {
 		const logo = Buffer.concat([png, Buffer.from("logo")]);
 		const logoUrl = "https://static.lolesports.com/teams/A.png";

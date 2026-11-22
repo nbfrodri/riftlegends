@@ -4,7 +4,7 @@ import { cn } from "../lib/utils";
 interface SegmentedControlProps<Value extends string> {
 	/** Accessible name of the group. */
 	label: string;
-	options: readonly { value: Value; label: ReactNode }[];
+	options: readonly { value: Value; label: ReactNode; disabled?: boolean }[];
 	value: Value;
 	onChange: (value: Value) => void;
 	className?: string;
@@ -30,18 +30,25 @@ export function SegmentedControl<Value extends string>({
 			className={cn("inline-flex", className)}
 		>
 			{options.map((option, index) => (
-				<label key={option.value} className="relative cursor-pointer">
+				<label
+					key={option.value}
+					className={cn(
+						"relative",
+						option.disabled ? "cursor-default" : "cursor-pointer",
+					)}
+				>
 					<input
 						type="radio"
 						name={name}
 						value={option.value}
 						checked={option.value === value}
+						disabled={option.disabled}
 						onChange={() => onChange(option.value)}
 						className="peer absolute size-px opacity-0"
 					/>
 					<span
 						className={cn(
-							"block min-w-12 border border-line px-3 py-[5px] text-center text-text hover:bg-surface peer-checked:bg-surface peer-checked:font-bold peer-checked:text-action peer-checked:shadow-[inset_0_-2px_var(--color-action)] peer-focus-visible:outline-2 peer-focus-visible:outline-action",
+							"block min-w-12 border border-line px-3 py-[5px] text-center text-text hover:bg-surface peer-checked:bg-surface peer-disabled:text-muted peer-disabled:hover:bg-transparent peer-checked:font-bold peer-checked:text-action peer-checked:shadow-[inset_0_-2px_var(--color-action)] peer-focus-visible:outline-2 peer-focus-visible:outline-action",
 							index > 0 && "border-l-0",
 						)}
 					>

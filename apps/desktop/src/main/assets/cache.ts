@@ -76,11 +76,18 @@ async function candidatePatches(transport: AssetTransport): Promise<string[]> {
 
 export function createAssetCache(
 	userData: string,
-	{ transport = httpsTransport }: { transport?: AssetTransport } = {},
+	{
+		transport = httpsTransport,
+		logos = [],
+	}: {
+		transport?: AssetTransport;
+		logos?: readonly (Omit<TeamLogoSource, "id"> & { team: string })[];
+	} = {},
 ) {
 	let status: CacheStatus = { state: "missing" };
 	let champions: ChampionCatalog | null = null;
 	let running: Promise<CacheStatus> | undefined;
+	let syncingLogos: Promise<void> | undefined;
 	const listeners = new Set<(progress: AssetProgress) => void>();
 
 	function reportProgress(progress: AssetProgress) {
@@ -128,7 +135,7 @@ export function createAssetCache(
 	const logoRoot = async () =>
 		dirname(await cachePath(userData, "assets/logos/manifest.json", true));
 
-	return {
+	const cache = {
 		/** Logos of the given teams (untrusted snapshot input); failures are per logo. */
 		async syncTeamLogos(
 			sources: readonly TeamLogoSource[],
@@ -143,6 +150,7 @@ export function createAssetCache(
 		},
 		/** Team id to `rift-asset://` URL of every verified logo on disk. */
 		async getTeamLogos(): Promise<Record<string, string>> {
+			await syncingLogos;
 			const logos = await readTeamLogos(await logoRoot());
 			return Object.fromEntries(
 				Object.entries(logos).map(([id, path]) => [
@@ -170,6 +178,22 @@ export function createAssetCache(
 					}),
 				)
 				.then((result) => {
+					// Optional logos must not delay a playable champion catalog.
+					if (result.state === "ready" && logos.length && !syncingLogos) {
+						const sources = logos.map(({ team, ...source }) => ({
+							...source,
+							id: team,
+						}));
+						syncingLogos = cache
+							.syncTeamLogos(sources)
+							.then(
+								() => undefined,
+								() => undefined,
+							)
+							.finally(() => {
+								syncingLogos = undefined;
+							});
+					}
 					status = result;
 					running = undefined;
 					return result;
@@ -178,4 +202,5 @@ export function createAssetCache(
 			return running;
 		},
 	};
+	return cache;
 }

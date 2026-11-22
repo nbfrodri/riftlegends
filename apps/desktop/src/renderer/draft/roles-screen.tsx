@@ -1,6 +1,5 @@
 import { ROLES, type Role } from "@rift-legends/contracts";
 import { Button } from "@rift-legends/ui-kit/components/button";
-import { ChampionFace } from "@rift-legends/ui-kit/components/champion-face";
 import {
 	Select,
 	SelectContent,
@@ -12,6 +11,7 @@ import { ArrowLeftRight, Check, RotateCcw } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { GameRoleIcon } from "../assets/game-role-icon";
+import { ChampionPortrait } from "./champion-portrait";
 import { type Lineup, suggestRoles } from "./roles-proposal";
 import { championLabel, teamName, useDraftSession } from "./session";
 
@@ -120,7 +120,7 @@ function LineupEditor(props: { picks: string[]; sideColor: string }) {
 									<GameRoleIcon role={role} />
 									<b>{roleLabel(role)}</b>
 								</header>
-								<ChampionFace id={champion} size="role" />
+								<ChampionPortrait id={champion} size="role" />
 								<h3 className="truncate font-bold font-display text-[clamp(13px,1.15vw,18px)] tracking-[-0.04em]">
 									{name}
 								</h3>

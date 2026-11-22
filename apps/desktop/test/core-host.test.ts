@@ -131,6 +131,39 @@ describe("draft sessions (plan 09, Q1)", () => {
 		});
 	});
 
+	it("offers and starts a series with the real content (plan 11)", () => {
+		const host = createCoreHost();
+		const sessionId = open(host);
+		const options = host.receive({
+			id: 12,
+			op: "query",
+			body: JSON.stringify({
+				v: CONTRACT_VERSION,
+				kind: "series.options",
+				sessionId,
+				params: { content: "real" },
+			}),
+		}).result as {
+			ok: true;
+			view: { teams: { id: string }[]; pool: string[] };
+		};
+		expect(options.view.teams).toHaveLength(60);
+		const [a, b] = options.view.teams;
+		expect(
+			host.receive(
+				draftMessage("series.start", sessionId, 0, {
+					...start,
+					teams: [a?.id, b?.id],
+					pool: options.view.pool,
+					content: "real",
+				}),
+			).result,
+		).toMatchObject({
+			ok: true,
+			facts: [{ type: "series.started", content: "real" }],
+		});
+	});
+
 	it("answers draft.view and match.view", () => {
 		const host = createCoreHost();
 		const sessionId = open(host);

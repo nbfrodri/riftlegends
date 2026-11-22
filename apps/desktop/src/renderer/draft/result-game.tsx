@@ -1,9 +1,9 @@
 import type { SeriesSummary } from "@rift-legends/contracts";
-import { ChampionFace } from "@rift-legends/ui-kit/components/champion-face";
 import { useTranslation } from "react-i18next";
 import { GameRoleIcon } from "../assets/game-role-icon";
 import { isObjectiveKind, MapIcon } from "../assets/map-icon";
 import { type Stat, StatIcon } from "../assets/stat-icon";
+import { ChampionPortrait } from "./champion-portrait";
 import {
 	clock,
 	type GameResult,
@@ -131,7 +131,7 @@ function Stats({
 							</th>
 							<td className="w-1/4 max-w-0 px-1.5 py-1 text-left">
 								<span className="flex items-center gap-1.5">
-									<ChampionFace id={line.champion} size="compact" />
+									<ChampionPortrait id={line.champion} size="compact" />
 									<span className="truncate">
 										{championLabel(options, line.champion)}
 									</span>

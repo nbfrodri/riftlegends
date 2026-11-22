@@ -1,5 +1,6 @@
 import {
 	CONTRACT_VERSION,
+	type ContentSet,
 	type DraftView,
 	type SeriesOptions,
 	type TeamStrategy,
@@ -14,6 +15,8 @@ import {
 	useRef,
 	useState,
 } from "react";
+import { useTranslation } from "react-i18next";
+import { useOptionalAssets } from "../assets";
 import {
 	CoreErrorMessage,
 	CoreRequestError,
@@ -22,6 +25,7 @@ import {
 	useCoreQuery,
 	useOpenSession,
 } from "../core";
+import { localizeChampions } from "./real-content";
 
 /**
  * Presentation-only stages that the core does not know about (plan 09, "Flujo").
@@ -51,7 +55,14 @@ interface DraftSession {
 		action: "ban" | "pick";
 	} | null;
 	sessionId: number;
-	/** Teams (name and coach) and the champion pool the session offers. */
+	/** The content set the setup offers and the series is played with. */
+	content: ContentSet;
+	/** Only before the series starts: the setup's content choice (A1). */
+	setContent(content: ContentSet): void;
+	/**
+	 * Teams (name and coach) and the champion pool of `content`; with real
+	 * content, champions carry their cached name in the UI language (R4).
+	 */
 	options: SeriesOptions;
 	/** `null` until a series starts. */
 	view: DraftView | null;
@@ -96,10 +107,14 @@ const noFact = () => false;
 
 function LoadedSession(props: {
 	sessionId: number;
+	content: ContentSet;
+	setContent(content: ContentSet): void;
 	onLost: () => void;
 	children: ReactNode;
 }) {
-	const { sessionId, onLost } = props;
+	const { sessionId, onLost, content, setContent } = props;
+	const { i18n } = useTranslation();
+	const catalog = useOptionalAssets()?.champions;
 	const { mutateAsync } = useCoreCommand();
 	const position = useRef(0);
 	const [timer, setTimer] = useState(false);
@@ -117,8 +132,20 @@ function LoadedSession(props: {
 		{ affectedBy: everyFact },
 	);
 	const options = useCoreQuery<SeriesOptions>(
-		{ v: CONTRACT_VERSION, kind: "series.options", sessionId, params: {} },
+		{
+			v: CONTRACT_VERSION,
+			kind: "series.options",
+			sessionId,
+			params: { content },
+		},
 		{ affectedBy: noFact },
+	);
+	const shown = useMemo(
+		() =>
+			options.data && content === "real"
+				? localizeChampions(options.data, catalog, i18n.language)
+				: options.data,
+		[options.data, content, catalog, i18n.language],
 	);
 
 	const send = useCallback(
@@ -183,10 +210,12 @@ function LoadedSession(props: {
 
 	const value = useMemo(
 		() =>
-			options.data && view.data !== undefined
+			shown && view.data !== undefined
 				? {
 						sessionId,
-						options: options.data,
+						content,
+						setContent,
+						options: shown,
 						timer,
 						rules,
 						sideChoosers,
@@ -204,7 +233,9 @@ function LoadedSession(props: {
 				: null,
 		[
 			sessionId,
-			options.data,
+			content,
+			setContent,
+			shown,
 			view.data,
 			mine,
 			strategy,
@@ -237,6 +268,7 @@ export function DraftSessionProvider({ children }: { children: ReactNode }) {
 	const [sessionId, setSessionId] = useState<number | null>(null);
 	const [failure, setFailure] = useState<CoreRequestError | null>(null);
 	const [reopen, setReopen] = useState(0);
+	const [content, setContent] = useState<ContentSet>("fictional");
 
 	useEffect(() => {
 		let live = true;
@@ -258,7 +290,13 @@ export function DraftSessionProvider({ children }: { children: ReactNode }) {
 	if (failure) return <CoreErrorMessage error={failure} />;
 	if (sessionId === null) return null;
 	return (
-		<LoadedSession key={sessionId} sessionId={sessionId} onLost={onLost}>
+		<LoadedSession
+			key={sessionId}
+			sessionId={sessionId}
+			content={content}
+			setContent={setContent}
+			onLost={onLost}
+		>
 			{children}
 		</LoadedSession>
 	);

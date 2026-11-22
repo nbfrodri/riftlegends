@@ -17,6 +17,7 @@ import {
 	draftStateWith,
 	type Fact,
 	initialDebugState,
+	loadRealContent,
 	openSession,
 	packagedDraftContent,
 	packagedMatchContent,
@@ -148,7 +149,7 @@ const createHost = (modules: readonly [AnyModule, ...AnyModule[]]) => {
 
 /**
  * The game's host: the draft catalog with the packaged content loaded in each
- * session (plan 09), plus the debug catalog that the renderer probe and the
+ * session (plan 09) and the real content a series can name (plan 11), plus the debug catalog that the renderer probe and the
  * IPC E2E use (plan 04).
  */
 export const createCoreHost = () =>
@@ -159,7 +160,12 @@ export const createCoreHost = () =>
 			queries: draftQueries,
 			dispatcher: draftDispatcher,
 			initialState: () =>
-				draftStateWith(packagedDraftContent, packagedMatchContent),
+				draftStateWith(packagedDraftContent, packagedMatchContent, {
+					real: () => {
+						const { draft, match } = loadRealContent();
+						return { content: draft, match };
+					},
+				}),
 		},
 		{
 			owns: (kind) => kind.startsWith("debug."),

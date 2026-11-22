@@ -1,6 +1,7 @@
 import type {
 	AiContent,
 	AiOfTeam,
+	ContentSet,
 	MapSnapshot,
 	MatchContent,
 	Side,
@@ -42,7 +43,20 @@ export interface SeriesConfig {
 	readonly seed: number;
 	/** Which teams the AI plays, in `teams` order (plan 07). */
 	readonly ai?: readonly [AiOfTeam, AiOfTeam];
+	/** Content the series is played with; the session's own when absent. */
+	readonly content?: ContentSet;
 }
+
+/** A content set: what the draft AI and the match simulation read. */
+export interface LoadedContent {
+	readonly content: AiContent;
+	readonly match: MatchContent;
+}
+
+/** The content sets a session can play, loaded on first use. */
+export type ContentLibrary = Readonly<
+	Partial<Record<ContentSet, () => LoadedContent>>
+>;
 
 export interface SeriesState {
 	readonly config: SeriesConfig | null;
@@ -60,6 +74,8 @@ export interface SeriesState {
 	readonly content: AiContent | null;
 	/** What the match simulation reads (plan 08); loaded the same way. */
 	readonly match: MatchContent | null;
+	/** The sets `series.start` and `series.options` can name (plan 11). */
+	readonly library: ContentLibrary;
 	/** Each finished game: its winner and where it won the most (F8, F12). */
 	readonly outcomes: readonly {
 		readonly winner: string;
@@ -84,6 +100,7 @@ export const initialSeries: SeriesState = {
 	previous: [],
 	content: null,
 	match: null,
+	library: {},
 	outcomes: [],
 	matches: [],
 	maps: [],
@@ -216,9 +233,15 @@ const timeout = during<Record<string, never>>(
 );
 
 export const seriesCommands = {
-	"series.start": (state: SeriesState, config: SeriesConfig) => {
-		if (state.phase === "over") return fail("series-over");
-		if (state.config) return fail("wrong-action", { expected: "none" });
+	"series.start": (current: SeriesState, config: SeriesConfig) => {
+		if (current.phase === "over") return fail("series-over");
+		if (current.config) return fail("wrong-action", { expected: "none" });
+		let state = current;
+		if (config.content) {
+			const set = current.library[config.content]?.();
+			if (!set) return fail("invalid-command", { path: "content" });
+			state = { ...current, content: set.content, match: set.match };
+		}
 		if (config.ai?.some(Boolean) && !state.content) {
 			return fail("invalid-command", { path: "ai" });
 		}
@@ -239,6 +262,7 @@ export const seriesCommands = {
 			pool: config.pool,
 			seed: config.seed,
 			...(config.ai ? { ai: config.ai } : {}),
+			...(config.content ? { content: config.content } : {}),
 		};
 		if (config.seeds) {
 			const [a, b] = config.seeds;

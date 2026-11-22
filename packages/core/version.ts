@@ -9,8 +9,8 @@ import * as content from "./content/data";
 export const SIM_VERSION = 2;
 
 /** FNV-1a over canonical JSON encoded as UTF-16 little-endian. */
-function contentVersion(): number {
-	const json = encodeFact(content);
+export function contentVersionOf(data: object): number {
+	const json = encodeFact(data);
 	let hash = 2166136261n;
 	const addByte = (byte: number) =>
 		((hash ^ BigInt(byte)) * 16777619n) & 0xffffffffn;
@@ -22,4 +22,4 @@ function contentVersion(): number {
 	return Number(hash);
 }
 
-export const CONTENT_VERSION = contentVersion();
+export const CONTENT_VERSION = contentVersionOf(content);

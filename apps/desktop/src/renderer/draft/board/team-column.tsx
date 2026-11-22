@@ -4,10 +4,10 @@ import type {
 	SeriesOptions,
 	Side,
 } from "@rift-legends/contracts";
-import { ChampionFace } from "@rift-legends/ui-kit/components/champion-face";
 import { memo, useId } from "react";
 import { useTranslation } from "react-i18next";
 import { GameRoleIcon } from "../../assets/game-role-icon";
+import { ChampionPortrait } from "../champion-portrait";
 import { championLabel, teamName } from "../session";
 import { TeamCrest } from "../team-crest";
 import { slotRoles } from "./champions";
@@ -24,7 +24,7 @@ const SIDE = {
 
 /**
  * A side of the draft: its five picks (with the role and player each slot
- * shows) and its bans, struck. Hovering or focusing a slot shows its player.
+ * shows) and its bans as greyed portraits. Hovering or focusing a slot shows its player.
  */
 export const TeamColumn = memo(function TeamColumn(props: {
 	side: Side;
@@ -53,7 +53,7 @@ export const TeamColumn = memo(function TeamColumn(props: {
 			<header
 				className={`flex items-center justify-between gap-3.5 ${style.text}`}
 			>
-				<div>
+				<div className="min-w-0">
 					<p
 						id={`${id}-side`}
 						className="font-semibold text-[12px] uppercase tracking-[0.055em]"
@@ -62,12 +62,13 @@ export const TeamColumn = memo(function TeamColumn(props: {
 					</p>
 					<h2
 						id={`${id}-team`}
-						className="font-bold font-display text-[29px] text-text leading-tight tracking-heading"
+						title={name}
+						className="truncate font-bold font-display text-[29px] text-text leading-tight tracking-heading"
 					>
 						{name}
 					</h2>
 				</div>
-				<span className="[&_svg]:h-12 [&_svg]:w-16">
+				<span className="shrink-0 [&_img]:h-12 [&_img]:w-16 [&_svg]:h-12 [&_svg]:w-16">
 					<TeamCrest id={team.team} name={name} />
 				</span>
 			</header>
@@ -77,6 +78,12 @@ export const TeamColumn = memo(function TeamColumn(props: {
 					const current = index === props.current;
 					const player = { team: team.team, role };
 					const show = () => props.onPlayer(player);
+					const label = champion
+						? championLabel(options, champion)
+						: current
+							? t("draft.board.yourPick")
+							: t("draft.board.pending");
+					const handle = players?.find((p) => p.role === role)?.handle;
 					return (
 						<li key={role} className="flex">
 							<button
@@ -94,17 +101,16 @@ export const TeamColumn = memo(function TeamColumn(props: {
 								<span className={style.text}>
 									<GameRoleIcon role={role} />
 								</span>
-								{champion && <ChampionFace id={champion} size="compact" />}
+								{champion && <ChampionPortrait id={champion} size="compact" />}
 								<span className="min-w-0">
-									<strong className="block truncate">
-										{champion
-											? championLabel(options, champion)
-											: current
-												? t("draft.board.yourPick")
-												: t("draft.board.pending")}
+									<strong className="block truncate" title={label}>
+										{label}
 									</strong>
-									<small className="block text-[12px] text-muted">
-										{players?.find((p) => p.role === role)?.handle}
+									<small
+										className="block truncate text-[12px] text-muted"
+										title={handle}
+									>
+										{handle}
 									</small>
 								</span>
 							</button>
@@ -120,21 +126,24 @@ export const TeamColumn = memo(function TeamColumn(props: {
 			</p>
 			<ul
 				aria-labelledby={`${id}-bans`}
-				className="mt-[3px] flex min-h-[1.45em] flex-wrap gap-x-2.5 text-[13px] text-muted leading-[1.45]"
+				className="mt-[3px] flex min-h-8 flex-wrap items-center gap-1.5 text-[13px] text-muted leading-[1.45]"
 			>
-				{team.bans.map((ban, index) =>
-					ban ? (
+				{team.bans.map((ban, index) => {
+					if (!ban)
+						return (
+							// biome-ignore lint/suspicious/noArrayIndexKey: bans only grow, in order.
+							<li key={index} className="italic">
+								{t("draft.board.noBan")}
+							</li>
+						);
+					const label = championLabel(options, ban);
+					return (
 						// biome-ignore lint/suspicious/noArrayIndexKey: bans only grow, in order.
-						<li key={index} className="max-w-full truncate">
-							<s>{championLabel(options, ban)}</s>
+						<li key={index} title={label} className="flex">
+							<ChampionPortrait id={ban} label={label} size="ban" unavailable />
 						</li>
-					) : (
-						// biome-ignore lint/suspicious/noArrayIndexKey: bans only grow, in order.
-						<li key={index} className="italic">
-							{t("draft.board.noBan")}
-						</li>
-					),
-				)}
+					);
+				})}
 			</ul>
 		</section>
 	);
