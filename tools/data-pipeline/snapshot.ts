@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { mkdir, rename, rm, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import {
 	type RealSnapshot,
@@ -34,6 +34,34 @@ function serialize(snapshot: RealSnapshot) {
 		return `\t"${key}": ${body}`;
 	});
 	return `{\n${blocks.join(",\n")}\n}\n`;
+}
+
+function withoutRetrievalDates(snapshot: RealSnapshot) {
+	const { retrievedAt: _, queries, ...provenance } = snapshot.provenance;
+	return JSON.stringify({
+		...snapshot,
+		provenance: { ...provenance, queries: queries.map(({ url }) => url) },
+	});
+}
+
+async function preserveUnchanged(file: string, snapshot: RealSnapshot) {
+	const existing = await readFile(file, "utf8").catch(
+		(error: NodeJS.ErrnoException) => {
+			if (error.code !== "ENOENT") throw error;
+		},
+	);
+	if (existing === undefined) return serialize(snapshot);
+	try {
+		const previous = realSnapshotSchema.safeParse(JSON.parse(existing));
+		if (
+			previous.success &&
+			withoutRetrievalDates(previous.data) === withoutRetrievalDates(snapshot)
+		)
+			return existing;
+	} catch (error) {
+		if (!(error instanceof SyntaxError)) throw error;
+	}
+	return serialize(snapshot);
 }
 
 async function publish(outputDir: string, files: ReadonlyMap<string, string>) {
@@ -130,7 +158,11 @@ export async function snapshot(options: SnapshotOptions) {
 			),
 			games: leagueGames,
 		});
-		files.set(`${league.id.toLowerCase()}.json`, serialize(validated));
+		const file = `${league.id.toLowerCase()}.json`;
+		files.set(
+			file,
+			await preserveUnchanged(join(options.outputDir, file), validated),
+		);
 		totals.push({
 			league: league.id,
 			teams: validated.teams.length,

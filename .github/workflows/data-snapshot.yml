@@ -1,0 +1,74 @@
+name: Real data snapshot
+
+on:
+  schedule:
+    - cron: "23 5 * * 1"
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: real-data-snapshot
+  cancel-in-progress: false
+
+jobs:
+  snapshot:
+    if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+      - uses: jdx/mise-action@90f833d396d0cc3674b631d2d225e306476c303a # v5.2.10
+      - name: Locate pnpm store
+        id: store
+        run: echo "path=$(pnpm store path)" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ steps.store.outputs.path }}
+          key: pnpm-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('mise.toml', 'pnpm-lock.yaml') }}
+      - run: pnpm install --frozen-lockfile
+      - name: Date the Leaguepedia cache
+        id: date
+        run: |
+          echo "utc=$(date -u +%F)" >> "$GITHUB_OUTPUT"
+          echo "RIFT_LEGENDS_DATA_CACHE=$RUNNER_TEMP/leaguepedia-raw" >> "$GITHUB_ENV"
+      - name: Restore Leaguepedia responses
+        id: raw
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ env.RIFT_LEGENDS_DATA_CACHE }}
+          key: leaguepedia-raw-${{ steps.date.outputs.utc }}
+      - name: Regenerate snapshot
+        run: |
+          cp -R packages/core/content/real "$RUNNER_TEMP/snapshot-before"
+          pnpm data:snapshot
+      - name: Save Leaguepedia responses
+        if: steps.raw.outputs.cache-hit != 'true'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ env.RIFT_LEGENDS_DATA_CACHE }}
+          key: ${{ steps.raw.outputs.cache-primary-key }}
+      - name: Summarize snapshot changes
+        id: changes
+        run: |
+          if [[ -z "$(git status --porcelain -- packages/core/content/real/)" ]]; then
+            exit 0
+          fi
+          node tools/data-pipeline/summary.ts "$RUNNER_TEMP/snapshot-before" packages/core/content/real > "$RUNNER_TEMP/snapshot-pr.md"
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+      - name: Create or update snapshot pull request
+        if: steps.changes.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@15733dbdfeedb4f7fdb73d13c6f5ac83b710fab8 # v8.1.2
+        with:
+          base: ${{ github.event.repository.default_branch }}
+          branch: chore/data-snapshot
+          add-paths: packages/core/content/real/
+          commit-message: "chore(data): refresh the real data snapshot"
+          title: "chore(data): actualizar el snapshot de datos reales"
+          body-path: ${{ runner.temp }}/snapshot-pr.md
