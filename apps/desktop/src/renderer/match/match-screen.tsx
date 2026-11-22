@@ -83,7 +83,7 @@ function Replay({ match, entry }: { match: MatchView; entry: DraftView }) {
 					{/* Both panes share one cell and stay in the layout, so switching
 					    panels never changes the row height. */}
 					<div
-						className={`grid min-w-0 grid-cols-2 gap-3 [grid-area:1/1] ${panel === "map" ? "" : "invisible"}`}
+						className={`grid min-w-0 grid-cols-2 grid-rows-[auto_auto_1fr_auto_auto_auto] gap-x-3 [grid-area:1/1] ${panel === "map" ? "" : "invisible"}`}
 						inert={panel !== "map"}
 					>
 						{sides.map((side) => (

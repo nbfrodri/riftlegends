@@ -1,4 +1,5 @@
 import type { Side } from "@rift-legends/contracts";
+import { type CSSProperties, useId } from "react";
 import { useTranslation } from "react-i18next";
 import { MapIcon } from "../assets/map-icon";
 import { panel, panelTable, panelTitle } from "./classes";
@@ -22,9 +23,9 @@ function StructureState({
 		<span
 			title={label}
 			data-down={!standing}
-			className={standing ? "text-(--side)" : "text-muted opacity-60"}
+			className={`relative inline-flex align-middle ${standing ? "text-(--side)" : "text-muted [&_svg]:opacity-55 after:absolute after:inset-x-0 after:top-1/2 after:h-0.5 after:-rotate-45 after:rounded-full after:bg-current"}`}
 		>
-			<MapIcon kind={icon} />
+			<MapIcon kind={icon} size="size-6" tinted={standing} />
 			<span className="sr-only">{label}</span>
 		</span>
 	);
@@ -35,10 +36,12 @@ function Structures({ name, view }: { name: string; view: TeamMap }) {
 	return (
 		<table
 			aria-label={t("draft.match.teamStructures", { team: name })}
-			className={`${panelTable} [&_th[scope=row]]:text-left [&_th[scope=row]]:text-muted`}
+			className={`${panelTable} h-full [&_th[scope=row]]:text-left [&_th[scope=row]]:text-muted`}
 		>
 			<colgroup>
 				<col className="w-[26%]" />
+				<col span={3} />
+				<col className="w-16" />
 			</colgroup>
 			<thead>
 				<tr className="sr-only">
@@ -117,7 +120,7 @@ function Objectives({ view }: { view: TeamMap }) {
 	];
 	return (
 		<>
-			<dl className="grid grid-cols-2 gap-x-3 gap-y-1">
+			<dl className="grid grid-cols-2 gap-x-3 gap-y-2">
 				{objectives.map((kind) => (
 					<div key={kind} className="flex items-center gap-1.5">
 						<dt className="flex min-w-0 items-center gap-1.5 text-muted">
@@ -131,11 +134,11 @@ function Objectives({ view }: { view: TeamMap }) {
 			{effects.length > 0 ? (
 				<ul
 					aria-label={t("draft.match.effects")}
-					className="flex flex-wrap gap-x-3 gap-y-1 font-bold text-action"
+					className="flex flex-wrap gap-x-3 gap-y-1 font-bold text-(--side)"
 				>
 					{effects.map(({ icon, text }) => (
 						<li key={icon} className="flex items-center gap-1.5">
-							<MapIcon kind={icon} />
+							<MapIcon kind={icon} tinted />
 							{text}
 						</li>
 					))}
@@ -158,12 +161,23 @@ export function TeamPanel({
 	view: TeamMap;
 }) {
 	const { t } = useTranslation();
+	const tint = useId();
 	return (
 		<section
 			aria-label={t("draft.match.teamMap", { team: name })}
 			data-side={side}
-			className={`${panel} flex flex-col gap-1.5 border-(--side) border-t-[3px]`}
+			className={`${panel} relative row-span-6 grid grid-rows-subgrid gap-y-2 border-(--side) border-t-[3px]`}
+			style={{ "--map-icon-tint": `url(#${tint})` } as CSSProperties}
 		>
+			<svg aria-hidden="true" className="absolute size-0">
+				<defs>
+					<filter id={tint}>
+						{/* A CSS variable only resolves in a style, not an SVG attribute. */}
+						<feFlood style={{ floodColor: "var(--side)" }} />
+						<feComposite in2="SourceAlpha" operator="in" />
+					</filter>
+				</defs>
+			</svg>
 			<h2 className={`${panelTitle} text-(--side) [overflow-wrap:anywhere]`}>
 				{name}
 			</h2>
