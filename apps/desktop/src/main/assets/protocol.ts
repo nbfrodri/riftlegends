@@ -12,11 +12,9 @@ export async function serveAsset(
 	if (request.method !== "GET") return notFound();
 	// Chromium and Electron can remove dot segments before dispatch.
 	// Containment must also hold for the canonical URL we receive.
-	const match = /^rift-asset:\/\/(ddragon|cdragon)\/([^?#]+)$/.exec(
-		request.url,
-	);
-	const [, source, encoded] = match ?? [];
-	if (!source || !encoded) return notFound();
+	const match = /^rift-asset:\/\/cdragon\/([^?#]+)$/.exec(request.url);
+	const encoded = match?.[1];
+	if (!encoded) return notFound();
 
 	try {
 		// Escaped separators must never become path separators. cachePath
@@ -27,7 +25,7 @@ export async function serveAsset(
 		const png = path.endsWith(".png");
 		if (!png && !path.endsWith(".json")) return notFound();
 
-		const sourcePath = `assets/${source}`;
+		const sourcePath = "assets/cdragon";
 		const pointer = await cachePath(userData, `${sourcePath}/current.json`);
 		const version = await readActiveVersion(pointer);
 		if (!version) return notFound();

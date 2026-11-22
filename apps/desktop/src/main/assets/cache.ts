@@ -1,13 +1,16 @@
 import { dirname } from "node:path";
-import type { AssetProgress, AssetStatus } from "@rift-legends/contracts";
-import { communityFiles, isVersion, versionsUrl } from "./catalog";
+import type {
+	AssetProgress,
+	AssetStatus,
+	ChampionCatalog,
+} from "@rift-legends/contracts";
+import { isVersion, versionsUrl } from "./catalog";
 import { cachePath } from "./disk";
 import {
 	activateVersion,
-	activeVersion,
+	activeCatalog,
 	prepareVersion,
 	pruneVersions,
-	verifiesVersion,
 } from "./store";
 import { acquireSyncLock } from "./sync-lock";
 import {
@@ -26,7 +29,7 @@ function newer(version: string, current: string): boolean {
 	return version.localeCompare(current, "en", { numeric: true }) > 0;
 }
 
-async function latestVersion(transport: AssetTransport): Promise<string> {
+async function candidatePatches(transport: AssetTransport): Promise<string[]> {
 	return withResponse(
 		transport,
 		versionsUrl,
@@ -51,9 +54,21 @@ async function latestVersion(transport: AssetTransport): Promise<string> {
 			const versions: unknown = JSON.parse(
 				Buffer.concat(chunks).toString("utf8"),
 			);
-			if (!Array.isArray(versions) || !isVersion(versions[0]))
-				throw new Error("Invalid Data Dragon version");
-			return versions[0];
+			if (!Array.isArray(versions) || !versions.length)
+				throw new Error("Invalid Data Dragon version list");
+			const patches = new Set<string>();
+			for (const version of versions) {
+				if (
+					typeof version !== "string" ||
+					!/^\d{1,4}\.\d{1,4}\.\d{1,4}$/.test(version)
+				)
+					throw new Error("Invalid Data Dragon version");
+				const patch = version.slice(0, version.lastIndexOf("."));
+				if (!isVersion(patch)) throw new Error("Invalid CommunityDragon patch");
+				patches.add(patch);
+				if (patches.size === 2) break;
+			}
+			return [...patches];
 		},
 	);
 }
@@ -63,6 +78,7 @@ export function createAssetCache(
 	{ transport = httpsTransport }: { transport?: AssetTransport } = {},
 ) {
 	let status: CacheStatus = { state: "missing" };
+	let champions: ChampionCatalog | null = null;
 	let running: Promise<CacheStatus> | undefined;
 	const listeners = new Set<(progress: AssetProgress) => void>();
 
@@ -75,67 +91,31 @@ export function createAssetCache(
 		let fallback: CacheStatus = { state: "missing" };
 		let release: (() => Promise<void>) | undefined;
 		try {
-			const ddragon = dirname(
-				await cachePath(userData, "assets/ddragon/current.json", true),
-			);
-			const cdragon = dirname(
+			const root = dirname(
 				await cachePath(userData, "assets/cdragon/current.json", true),
 			);
-			release = await acquireSyncLock(dirname(ddragon));
-			const dataVersion = await activeVersion(ddragon, "ddragon");
-			const iconVersion = await activeVersion(cdragon, "cdragon");
-			// The Data Dragon pointer commits the pair. If only the icon pointer
-			// advanced before a shutdown, the previous verified icons are still on disk.
-			if (
-				dataVersion &&
-				iconVersion &&
-				(dataVersion === iconVersion ||
-					(newer(iconVersion, dataVersion) &&
-						(await verifiesVersion(cdragon, "cdragon", dataVersion))))
-			) {
-				fallback = { state: "ready", version: dataVersion };
-			}
+			release = await acquireSyncLock(dirname(root));
+			const active = await activeCatalog(root);
+			champions = active?.catalog ?? null;
+			if (active) fallback = { state: "ready", version: active.version };
 
-			const version = await latestVersion(transport);
-			if (fallback.state === "ready" && !newer(version, fallback.version)) {
-				return fallback;
-			}
-
-			let dataDone = 0;
-			const sources = [
-				{ root: ddragon, source: "ddragon", active: dataVersion },
-				{ root: cdragon, source: "cdragon", active: iconVersion },
-			] as const;
-			for (const { root, source, active } of sources) {
-				if (active === version) continue;
-				let sourceDone = 0;
-				const pendingIcons =
-					source === "ddragon" && iconVersion !== version
-						? communityFiles.length
-						: 0;
-				await prepareVersion(
+			for (const version of await candidatePatches(transport)) {
+				if (active && !newer(version, active.version)) return fallback;
+				const catalog = await prepareVersion(
 					root,
-					source,
 					version,
 					transport,
-					(completed, total) => {
-						sourceDone = completed;
-						reportProgress({
-							completed: dataDone + completed,
-							total: dataDone + total + pendingIcons,
-						});
-					},
+					(completed, total) => reportProgress({ completed, total }),
 				);
-				dataDone += sourceDone;
+				// Both summaries must exist on the same numbered patch.
+				if (!catalog) continue;
+				await activateVersion(root, version);
+				champions = catalog;
+				await pruneVersions(root, version).catch(() => undefined);
+				return { state: "ready", version };
 			}
-			if (iconVersion !== version) await activateVersion(cdragon, version);
-			if (dataVersion !== version) await activateVersion(ddragon, version);
-			await Promise.all(
-				sources.map(({ root }) =>
-					pruneVersions(root, version).catch(() => undefined),
-				),
-			);
-			return { state: "ready", version };
+			if (active) return fallback;
+			throw new Error("CommunityDragon champion patch unavailable");
 		} catch (error) {
 			if (error instanceof NetworkUnavailable) return fallback;
 			throw error;
@@ -146,6 +126,7 @@ export function createAssetCache(
 
 	return {
 		getStatus: (): CacheStatus => status,
+		getChampions: (): ChampionCatalog | null => champions,
 		subscribe(listener: (progress: AssetProgress) => void): () => void {
 			listeners.add(listener);
 			return () => listeners.delete(listener);

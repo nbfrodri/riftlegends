@@ -19,6 +19,7 @@ export function registerAssetIpc(
 	for (const [channel, handle] of [
 		[assetChannels.status, () => publicStatus(cache.getStatus())],
 		[assetChannels.sync, () => cache.sync().then(publicStatus)],
+		[assetChannels.champions, () => cache.getChampions()],
 	] as const) {
 		ipc.handle(channel, (event, ...args: unknown[]) => {
 			if (!event.senderFrame || event.senderFrame !== webContents.mainFrame) {
@@ -40,5 +41,6 @@ export function registerAssetIpc(
 		stop();
 		ipc.removeHandler(assetChannels.status);
 		ipc.removeHandler(assetChannels.sync);
+		ipc.removeHandler(assetChannels.champions);
 	});
 }

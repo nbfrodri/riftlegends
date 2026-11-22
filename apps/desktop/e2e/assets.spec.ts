@@ -11,12 +11,12 @@ test("the renderer can load an active cached image and cannot load outside the c
 	appWindow,
 }, testInfo) => {
 	const profile = testInfo.outputPath("profile");
-	const source = join(profile, "assets", "ddragon");
-	const active = join(source, "1.2.3");
-	await mkdir(active, { recursive: true });
-	await writeFile(join(active, "pixel.png"), pixel);
+	const source = join(profile, "assets", "cdragon");
+	const active = join(source, "1.2");
+	await mkdir(join(active, "champions"), { recursive: true });
+	await writeFile(join(active, "champions", "Ahri.png"), pixel);
 	await writeFile(join(profile, "outside.png"), pixel);
-	await writeFile(join(source, "current.json"), '{"version":"1.2.3"}');
+	await writeFile(join(source, "current.json"), '{"version":"1.2"}');
 	await symlink(profile, join(active, "linked"), "junction");
 
 	const loadWidth = (path: string) =>
@@ -29,9 +29,9 @@ test("the renderer can load an active cached image and cannot load outside the c
 			} catch {
 				return 0;
 			}
-		}, `rift-asset://ddragon/${path}`);
+		}, `rift-asset://cdragon/${path}`);
 
-	expect(await loadWidth("pixel.png")).toBe(1);
+	expect(await loadWidth("champions/Ahri.png")).toBe(1);
 	expect(await loadWidth("../../../outside.png")).toBe(0);
 	expect(await loadWidth("%2e%2e%2f%2e%2e%2f%2e%2e%2foutside.png")).toBe(0);
 	expect(await loadWidth("linked/outside.png")).toBe(0);
@@ -43,6 +43,9 @@ test("the renderer can query cache status and receive sync progress", async ({
 	await expect
 		.poll(() => appWindow.evaluate(() => window.riftlegends.assets.status()))
 		.toEqual({ state: "missing" });
+	expect(
+		await appWindow.evaluate(() => window.riftlegends.assets.champions()),
+	).toBeNull();
 	expect(
 		await appWindow.evaluate(async () => {
 			const assets = window.riftlegends.assets;

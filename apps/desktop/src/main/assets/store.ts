@@ -1,14 +1,21 @@
 import { readdir, rename, rm } from "node:fs/promises";
 import { join } from "node:path";
 import {
-	type AssetFile,
-	championCatalogs,
+	type ChampionCatalog,
+	type LocalizedChampionAsset,
+	localizedChampionCatalogSchema,
+} from "@rift-legends/contracts";
+import {
+	type ChampionLocale,
+	catalogPath,
+	championSummaryFile,
 	communityFiles,
-	dataDragonFiles,
 	isRecord,
 	isVersion,
 	maxCatalogBytes,
-	portraitPaths,
+	mergeChampionCatalogs,
+	parseChampionSummary,
+	portraitFile,
 } from "./catalog";
 import {
 	cachePath,
@@ -21,79 +28,56 @@ import {
 	writeJson,
 } from "./disk";
 import { downloadFile } from "./download";
-import type { AssetTransport } from "./transport";
+import { AssetHttpError, type AssetTransport } from "./transport";
 
-type Source = "ddragon" | "cdragon";
 type Progress = (completed: number, total: number) => void;
 const manifestLimit = 128 * 1024;
+const locales = ["en", "es"] as const;
 
-async function getPortraits(
+async function verifyCatalog(
 	root: string,
 	version: string,
-): Promise<AssetFile[]> {
-	const [spanish, english] = await Promise.all(
-		championCatalogs.map(async (path) =>
-			portraitPaths(
-				await readJson(await cachePath(root, path), maxCatalogBytes),
-			),
-		),
+): Promise<ChampionCatalog | undefined> {
+	if (!(await statIfPresent(root))?.isDirectory()) return undefined;
+	const manifest = await readJson(
+		await cachePath(root, "manifest.json"),
+		manifestLimit,
 	);
-	if (
-		!spanish ||
-		!english ||
-		spanish.length !== english.length ||
-		spanish.some((path, index) => path !== english[index])
-	) {
-		throw new Error("Champion catalogs disagree");
-	}
-	return dataDragonFiles(version, english);
-}
-
-async function verifies(
-	root: string,
-	source: Source,
-	version: string,
-): Promise<boolean> {
-	const manifest = await readJson(join(root, "manifest.json"), manifestLimit);
 	if (
 		!isRecord(manifest) ||
 		manifest.version !== version ||
 		!isRecord(manifest.files)
 	)
-		return false;
-	const files =
-		source === "ddragon"
-			? [
-					...dataDragonFiles(version, championCatalogs),
-					...(await getPortraits(root, version)),
-				]
-			: communityFiles;
-	if (Object.keys(manifest.files).length !== files.length) return false;
-	for (const { path, limit } of files) {
-		const digest = manifest.files[path];
-		if (
-			!isDigest(digest) ||
-			!(await matches(await cachePath(root, path), digest, limit))
-		)
-			return false;
-	}
-	return true;
-}
-
-export async function verifiesVersion(
-	root: string,
-	source: Source,
-	version: string,
-): Promise<boolean> {
-	const directory = join(root, version);
-	try {
+		return undefined;
+	const digests = manifest.files;
+	async function verifyFile(path: string, limit: number) {
+		const digest = digests[path];
 		return (
-			(await statIfPresent(directory))?.isDirectory() === true &&
-			(await verifies(directory, source, version))
+			isDigest(digest) &&
+			(await matches(await cachePath(root, path), digest, limit))
 		);
-	} catch {
-		return false;
 	}
+	async function readLocale(locale: ChampionLocale) {
+		const path = catalogPath(locale);
+		if (!(await verifyFile(path, maxCatalogBytes)))
+			throw new Error("Invalid cached catalog digest");
+		return localizedChampionCatalogSchema.parse(
+			await readJson(await cachePath(root, path), maxCatalogBytes),
+		);
+	}
+	const english = await readLocale("en");
+	const spanish = await readLocale("es");
+	const catalog = mergeChampionCatalogs(english, spanish);
+	const images = [
+		...communityFiles,
+		...english.map((champion) => portraitFile(version, champion)),
+	];
+	if (Object.keys(digests).length !== images.length + locales.length)
+		return undefined;
+	for (const { path, limit } of images) {
+		if (!(await verifyFile(path, limit))) return undefined;
+	}
+	return catalog;
 }
 
 export async function readActiveVersion(
@@ -105,29 +89,29 @@ export async function readActiveVersion(
 		: undefined;
 }
 
-export async function activeVersion(
-	root: string,
-	source: Source,
-): Promise<string | undefined> {
+export async function activeCatalog(root: string) {
 	try {
-		const version = await readActiveVersion(join(root, "current.json"));
-		if (version && (await verifiesVersion(root, source, version)))
-			return version;
+		const version = await readActiveVersion(
+			await cachePath(root, "current.json"),
+		);
+		if (!version) return undefined;
+		const catalog = await verifyCatalog(join(root, version), version);
+		return catalog ? { version, catalog } : undefined;
 	} catch {
 		// The active cache can be absent, unreadable, or damaged on disk.
+		return undefined;
 	}
-	return undefined;
 }
 
 export async function prepareVersion(
 	root: string,
-	source: Source,
 	version: string,
 	transport: AssetTransport,
 	progress: Progress,
-): Promise<void> {
+): Promise<ChampionCatalog | undefined> {
 	const target = join(root, version);
-	if (await verifiesVersion(root, source, version)) return;
+	const existing = await verifyCatalog(target, version).catch(() => undefined);
+	if (existing) return existing;
 	const staging = await cachePath(
 		root,
 		`staging-${version}/manifest.json`,
@@ -135,46 +119,76 @@ export async function prepareVersion(
 	);
 	const stageRoot = join(root, `staging-${version}`);
 	const manifest: Record<string, Digest> = {};
-	const files =
-		source === "ddragon"
-			? dataDragonFiles(version, championCatalogs)
-			: communityFiles;
 	let completed = 0;
-	let total = files.length;
+	let total = locales.length + communityFiles.length;
 	progress(completed, total);
-	for (const file of files) {
+
+	const summaries = locales.map((locale) =>
+		championSummaryFile(version, locale),
+	);
+	for (const file of summaries) {
+		try {
+			await downloadFile(stageRoot, file, transport);
+		} catch (error) {
+			if (error instanceof AssetHttpError && error.status === 404)
+				return undefined;
+			throw error;
+		}
+		progress(++completed, total);
+	}
+
+	async function parseSummary(locale: ChampionLocale) {
+		const path = championSummaryFile(version, locale).path;
+		return parseChampionSummary(
+			await readJson(await cachePath(stageRoot, path), maxCatalogBytes),
+		);
+	}
+
+	let localized: Record<ChampionLocale, LocalizedChampionAsset[]>;
+	try {
+		const english = await parseSummary("en");
+		const spanish = await parseSummary("es");
+		mergeChampionCatalogs(english, spanish);
+		localized = { en: english, es: spanish };
+	} catch (error) {
+		// Download invalid catalogs again next time, even after a full transfer.
+		for (const { path } of summaries)
+			await rm(await cachePath(stageRoot, path), { force: true });
+		throw error;
+	}
+
+	for (const locale of locales) {
+		const path = catalogPath(locale);
+		manifest[path] = await writeJson(
+			await cachePath(stageRoot, path, true),
+			localized[locale],
+		);
+	}
+	const images = [
+		...localized.en.map((champion) => portraitFile(version, champion)),
+		...communityFiles,
+	];
+	total = completed + images.length;
+	progress(completed, total);
+	for (const file of images) {
 		manifest[file.path] = await downloadFile(stageRoot, file, transport);
 		progress(++completed, total);
 	}
-	if (source === "ddragon") {
-		const portraits = await getPortraits(stageRoot, version).catch(
-			async (error) => {
-				for (const path of championCatalogs) {
-					await rm(await cachePath(stageRoot, path), { force: true });
-				}
-				throw error;
-			},
-		);
-		total += portraits.length;
-		progress(completed, total);
-		for (const file of portraits) {
-			manifest[file.path] = await downloadFile(stageRoot, file, transport);
-			progress(++completed, total);
-		}
-	}
 	await writeJson(staging, { version, files: manifest });
-	if (!(await verifies(stageRoot, source, version)))
-		throw new Error("Staged assets failed verification");
+	const verified = await verifyCatalog(stageRoot, version);
+	if (!verified) throw new Error("Staged assets failed verification");
+	await rm(join(stageRoot, "upstream"), { recursive: true, force: true });
 	await rm(target, { recursive: true, force: true });
 	await rename(stageRoot, target);
 	await syncDirectory(root);
+	return verified;
 }
 
 export async function activateVersion(
 	root: string,
 	version: string,
 ): Promise<void> {
-	await writeJson(join(root, "current.json"), { version });
+	await writeJson(await cachePath(root, "current.json"), { version });
 	await syncDirectory(root);
 }
 
