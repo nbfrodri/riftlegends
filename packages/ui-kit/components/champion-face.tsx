@@ -3,7 +3,7 @@ import { type CSSProperties, useState } from "react";
 const sizes = {
 	pool: "w-full min-h-[18px] flex-1 text-[clamp(19px,3.4vh,31px)]",
 	role: "my-3 min-h-[78px] flex-1 text-[clamp(45px,5.3vw,76px)]",
-	compact: "size-6 shrink-0 text-[12px]",
+	compact: "size-6 shrink-0 text-[10px]",
 };
 
 /** Stable hue of the draft placeholder (FNV-1a). */
