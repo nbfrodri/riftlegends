@@ -147,8 +147,8 @@ describe("draft board (U3)", () => {
 		await renderWithDraftCore(<DraftScreen />);
 		await toBoard(user);
 		const grid = screen.getByRole("group", { name: "Champions" });
-		expect(within(grid).getAllByRole("button")).toHaveLength(40);
-		expect(screen.getByText("40 champions")).toBeTruthy();
+		expect(within(grid).getAllByRole("button")).toHaveLength(70);
+		expect(screen.getByText("70 champions")).toBeTruthy();
 
 		await user.click(screen.getByRole("combobox", { name: "Filter by role" }));
 		await user.click(await screen.findByRole("option", { name: "Jungle" }));
@@ -158,7 +158,7 @@ describe("draft board (U3)", () => {
 
 		await user.type(screen.getByRole("searchbox"), "dusk");
 		expect(within(grid).getAllByRole("button")).toHaveLength(1);
-		expect(screen.getByText("1 of 40")).toBeTruthy();
+		expect(screen.getByText("1 of 70")).toBeTruthy();
 
 		await user.type(screen.getByRole("searchbox"), "zzz");
 		expect(within(grid).queryAllByRole("button")).toHaveLength(0);
