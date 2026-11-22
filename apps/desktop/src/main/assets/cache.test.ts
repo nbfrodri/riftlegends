@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import {
 	mkdir,
 	mkdtemp,
@@ -507,4 +508,32 @@ describe("main asset cache", () => {
 			expect(await readdir(outside)).toEqual([]);
 		},
 	);
+
+	it("A3 downloads team logos under their slug and lists their protocol URLs", async () => {
+		const logo = Buffer.concat([png, Buffer.from("logo")]);
+		const logoUrl =
+			"https://static.wikia.nocookie.net/lolesports_gamepedia_en/images/6/67/A.png/revision/latest?cb=1";
+		override = async (url) =>
+			url.host === "static.wikia.nocookie.net" ? response(logo) : undefined;
+		const cache = create();
+		expect(await cache.getTeamLogos()).toEqual({});
+		const result = await cache.syncTeamLogos([
+			{
+				id: "Gen.G",
+				url: logoUrl,
+				sha1: createHash("sha1").update(logo).digest("hex"),
+				mime: "image/png",
+			},
+			{ id: "Bad", url: logoUrl, sha1: "0".repeat(40), mime: "image/png" },
+		]);
+		expect(result.failed).toEqual(["Bad"]);
+		expect(await cache.getTeamLogos()).toEqual({
+			"Gen.G": "rift-asset://leaguepedia/teams/gen-g.png",
+		});
+		const served = await serveAsset(profile, {
+			url: "rift-asset://leaguepedia/teams/gen-g.png",
+			method: "GET",
+		});
+		expect(Buffer.from(await served.arrayBuffer())).toEqual(logo);
+	});
 });

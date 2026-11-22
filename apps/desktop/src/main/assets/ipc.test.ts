@@ -32,12 +32,21 @@ test("validates the sender and rejects any arguments before handling asset IPC",
 				},
 			],
 		),
+		syncTeamLogos: vi.fn(async () => ({ failed: [] })),
+		getTeamLogos: vi.fn(async () => ({
+			"Gen.G": "rift-asset://leaguepedia/teams/gen-g.png",
+		})),
 		getStatus: vi.fn(() => ({ state: "missing" as const })),
 		sync: vi.fn(async () => ({ state: "missing" as const })),
 		subscribe: vi.fn(() => () => {}),
 	};
 	registerAssetIpc(window as never, ipc as never, cache);
-	for (const channel of ["assets:status", "assets:sync", "assets:champions"]) {
+	for (const channel of [
+		"assets:status",
+		"assets:sync",
+		"assets:champions",
+		"assets:teamLogos",
+	]) {
 		const handle = handlers.get(channel);
 		expect(handle).toBeDefined();
 		expect(() => handle?.({ senderFrame: {} })).toThrow(
@@ -63,6 +72,9 @@ test("validates the sender and rejects any arguments before handling asset IPC",
 			handlers.get(channel)?.({ senderFrame: mainFrame }, ...args),
 		on: vi.fn(),
 		off: vi.fn(),
+	});
+	await expect(bridge.teamLogos()).resolves.toEqual({
+		"Gen.G": "rift-asset://leaguepedia/teams/gen-g.png",
 	});
 	await expect(bridge.champions()).resolves.toEqual(cache.getChampions());
 });

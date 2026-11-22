@@ -1,7 +1,8 @@
+import { createHash } from "node:crypto";
 import { mkdir, mkdtemp, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { afterEach, beforeEach, expect, test } from "vitest";
+import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import { serveAsset } from "./protocol";
 
 let profile: string;
@@ -124,4 +125,61 @@ test("a normalized Request stays inside the active version", async () => {
 	const request = new Request("rift-asset://cdragon/img/../catalog.json");
 	expect(request.url).toBe("rift-asset://cdragon/catalog.json");
 	expect((await serveAsset(profile, request)).status).toBe(200);
+});
+
+describe("leaguepedia team logos", () => {
+	const png = Buffer.concat([
+		Buffer.from("89504e470d0a1a0a", "hex"),
+		Buffer.from("logo"),
+	]);
+	const sha1 = createHash("sha1").update(png).digest("hex");
+	const sha256 = createHash("sha256").update(png).digest("hex");
+	let source: string;
+
+	beforeEach(async () => {
+		source = join(profile, "assets", "leaguepedia");
+		await mkdir(join(source, "teams"), { recursive: true });
+		await writeFile(join(source, "teams", "gen-g.png"), png);
+		await writeFile(
+			join(source, "manifest.json"),
+			JSON.stringify({
+				teams: {
+					"Gen.G": { path: "teams/gen-g.png", size: png.length, sha256, sha1 },
+				},
+			}),
+		);
+	});
+
+	test("serves a manifest-listed logo with its type and no sniffing", async () => {
+		const response = await get("leaguepedia/teams/gen-g.png");
+		expect(response.status).toBe(200);
+		expect(response.headers.get("content-type")).toBe("image/png");
+		expect(response.headers.get("x-content-type-options")).toBe("nosniff");
+		expect(Buffer.from(await response.arrayBuffer())).toEqual(png);
+	});
+
+	test.each([
+		"leaguepedia/teams/other.png",
+		"leaguepedia/teams/gen-g.svg",
+		"leaguepedia/teams/gen-g.jpg",
+		"leaguepedia/teams/Gen-G.png",
+		"leaguepedia/teams/../manifest.json",
+		"leaguepedia/teams/%2e%2e/manifest.json",
+		"leaguepedia/teams%2fgen-g.png",
+		"leaguepedia/manifest.json",
+		"leaguepedia/teams/gen-g.png/x",
+		"leaguepedia//teams/gen-g.png",
+	])("returns 404 for %s", async (url) => {
+		expect((await get(url)).status).toBe(404);
+	});
+
+	test("returns 404 when the file no longer matches the manifest digest", async () => {
+		await writeFile(join(source, "teams", "gen-g.png"), "<svg onload=x>");
+		expect((await get("leaguepedia/teams/gen-g.png")).status).toBe(404);
+	});
+
+	test("returns 404 when there is no manifest", async () => {
+		await rm(join(source, "manifest.json"));
+		expect((await get("leaguepedia/teams/gen-g.png")).status).toBe(404);
+	});
 });

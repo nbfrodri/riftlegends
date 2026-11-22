@@ -39,7 +39,7 @@ test("exposes only ping, the system locale, the window controls, assets and the 
 		await appWindow.evaluate(() =>
 			Object.keys(window.riftlegends.assets).sort(),
 		),
-	).toEqual(["champions", "status", "subscribe", "sync"]);
+	).toEqual(["champions", "status", "subscribe", "sync", "teamLogos"]);
 	expect(
 		await appWindow.evaluate(() => window.riftlegends.systemLocale()),
 	).toBe("en-US");

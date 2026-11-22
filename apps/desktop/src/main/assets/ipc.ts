@@ -20,6 +20,7 @@ export function registerAssetIpc(
 		[assetChannels.status, () => publicStatus(cache.getStatus())],
 		[assetChannels.sync, () => cache.sync().then(publicStatus)],
 		[assetChannels.champions, () => cache.getChampions()],
+		[assetChannels.teamLogos, () => cache.getTeamLogos()],
 	] as const) {
 		ipc.handle(channel, (event, ...args: unknown[]) => {
 			if (!event.senderFrame || event.senderFrame !== webContents.mainFrame) {
@@ -42,5 +43,6 @@ export function registerAssetIpc(
 		ipc.removeHandler(assetChannels.status);
 		ipc.removeHandler(assetChannels.sync);
 		ipc.removeHandler(assetChannels.champions);
+		ipc.removeHandler(assetChannels.teamLogos);
 	});
 }

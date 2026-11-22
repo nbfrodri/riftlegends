@@ -11,6 +11,7 @@ export function fakeAssets(initial: AssetStatus = { state: "missing" }) {
 	const api = {
 		status: vi.fn(async () => current),
 		champions: vi.fn(async () => null),
+		teamLogos: vi.fn(async (): Promise<Record<string, string>> => ({})),
 		sync: vi.fn(() => {
 			current = { state: "syncing", progress: { completed: 0, total: 0 } };
 			return new Promise<AssetStatus>((resolve) => {

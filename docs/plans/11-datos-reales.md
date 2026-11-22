@@ -105,3 +105,11 @@ Queda fuera: ligas menores (plan 24), regens y evolución (plan 16), meta por pa
 - Guarda `catalog/es.json` y `catalog/en.json` normalizados y sirve los retratos por alias en `rift-asset://cdragon/champions/<alias>.png`. El manifiesto comprueba tamaños y SHA-256 antes de activar el parche. Los iconos de rol y objetivos se descargan de `latest`.
 - El renderer obtiene el catálogo bilingüe verificado con `window.riftlegends.assets.champions()`. Devuelve `null` mientras no haya un catálogo disponible.
 - Los tests de R5 comprueban que se omiten las entradas no jugables y se rechazan los ids inválidos, los duplicados y los catálogos que no coinciden.
+
+## Logos de equipos en la caché (#252)
+
+- Origen `leaguepedia` en `userData/assets/leaguepedia/`, con su propio `manifest.json` (tamaño, SHA-256 y SHA-1 por logo). La API de main es `syncTeamLogos(fuentes)` y `getTeamLogos()`; el renderer solo lee `window.riftlegends.assets.teamLogos()` (id de equipo → URL). Quien cargue el modo real (#251) llama a `syncTeamLogos` con los `logo` del snapshot.
+- Los datos del snapshot **no son de confianza**. Se rechaza todo logo que no cumpla: `https` y host exacto `static.wikia.nocookie.net`, sin credenciales, puerto ni fragmento, ruta `/lolesports_gamepedia_en/images/<h>/<hh>/<archivo>/revision/latest` y query solo `?cb=<número>`; mime `image/png`, `image/jpeg` o `image/webp` (nunca SVG), con los magic bytes de ese formato; SHA-1 igual al del snapshot; máximo 512 KB. Los redirects no se siguen. Un logo inválido se descarta y los demás continúan.
+- La ruta local sale de un slug `[a-z0-9-]{1,64}` del id del equipo (nunca del nombre remoto). Los ids que chocan, vacíos o reservados en Windows llevan un hash del id. Se sirve en `rift-asset://leaguepedia/teams/<slug>.<png|jpg|webp>` solo si el manifiesto lo lista y el archivo aún coincide con su SHA-256.
+- `TeamCrest` muestra el logo en la misma caja fija que el escudo propio y vuelve a él si falta o falla la carga.
+- **Sin verificar con red real:** en las pruebas del 22-11-2026 el host respondió **403** (HTML) a peticiones sin cabeceras de navegador, así que la descarga real queda por comprobar antes de #251.

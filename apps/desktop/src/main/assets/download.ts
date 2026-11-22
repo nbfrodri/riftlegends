@@ -217,11 +217,12 @@ export async function downloadFile(
 		);
 
 		if (result && (await matches(part, result, file.limit))) {
+			const bytes = await readBytes(part, file.limit);
 			const validFormat =
-				!file.path.endsWith(".png") ||
-				(await readBytes(part, file.limit, pngSignature.length))?.equals(
-					pngSignature,
-				);
+				!!bytes &&
+				(!file.path.endsWith(".png") ||
+					bytes.subarray(0, pngSignature.length).equals(pngSignature)) &&
+				(file.check?.(bytes) ?? true);
 			if (validFormat) {
 				await writeJson(metadata, { ...result, complete: true });
 				await rename(part, destination);
