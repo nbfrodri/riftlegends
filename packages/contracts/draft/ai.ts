@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { position } from "../envelope";
 import { checkChampionReference, checkDuplicates } from "./content-validation";
+import { PLAYER_ATTRIBUTES } from "./player-attributes";
 
 // Draft AI of plan 07: settings per team, the decision fact and the content
 // it reads. Points are fixed point (scale 10,000, plan 05).
@@ -120,8 +121,13 @@ export const aiContent = z
 				id,
 				team: id,
 				role: roles,
-				/** Esports-style nickname shown instead of team and role. */
-				handle: z.string().regex(/^[A-Za-z0-9]{2,16}$/),
+				/** Esports-style nickname shown instead of team and role. Letters of any script, digits, spaces and . _ -; 1 to 24 characters, no edge spaces. */
+				handle: z
+					.string()
+					.regex(/^[\p{L}\p{N}](?:[\p{L}\p{N} ._-]{0,22}[\p{L}\p{N}._-])?$/u),
+				sub: z.boolean().optional(),
+				estimated: z.array(z.enum(PLAYER_ATTRIBUTES)).optional(),
+				placeholder: z.literal(true).optional(),
 				level: z.int().min(0).max(100),
 				mains: z.array(id),
 				secondary: z.array(id),

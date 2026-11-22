@@ -3,6 +3,10 @@ import { position } from "../envelope";
 import { PERSONALITIES } from "./ai";
 import { checkChampionReference, checkDuplicates } from "./content-validation";
 import { teamStrategy } from "./plan";
+import { PLAYER_ATTRIBUTES, type PlayerAttribute } from "./player-attributes";
+import { snapshotLogo } from "./snapshot-content";
+
+export { PLAYER_ATTRIBUTES, type PlayerAttribute } from "./player-attributes";
 
 // Match simulation of plan 08: its facts and the content it reads. Points
 // and chances are fixed point (scale 10,000, plan 05).
@@ -36,37 +40,6 @@ export const MAP_ZONES = [
 	"base-blue",
 	"base-red",
 ] as const;
-
-/** Twenty ratings from 0 to 100, by area (plan 08, "Atributos de jugador"). */
-export const PLAYER_ATTRIBUTES = [
-	// Lane
-	"lanes",
-	"farming",
-	"waves",
-	// Map
-	"macro",
-	"roaming",
-	"vision",
-	"anticipation",
-	"objectiveControl",
-	// Fight
-	"teamfight",
-	"mechanics",
-	"positioning",
-	"aggression",
-	// Mental
-	"composure",
-	"resilience",
-	"experience",
-	"consistency",
-	"focus",
-	// Team
-	"shotcalling",
-	"communication",
-	"versatility",
-] as const;
-
-export type PlayerAttribute = (typeof PLAYER_ATTRIBUTES)[number];
 
 const id = z.string().min(1).max(64);
 const side = z.enum(["blue", "red"]);
@@ -163,6 +136,9 @@ export const matchContent = z
 				id,
 				/** Proper name shown in the UI; it is not translated. */
 				name: z.string().min(1).max(64),
+				short: id.optional(),
+				league: id.optional(),
+				logo: snapshotLogo.optional(),
 				/** Seeding order, with 1 as the best seed. */
 				seed: z.int().positive(),
 				/** Decides the team's draft AI. */
