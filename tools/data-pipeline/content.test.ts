@@ -87,7 +87,7 @@ test("older snapshots without nationality data still produce player content", as
 	const legacy = await mkdtemp(join(tmpdir(), "rift-legacy-content-"));
 	try {
 		const files = [
-			...season2026.map(({ id }) => `${id.toLowerCase()}.json`),
+			...leagues.map(({ id }) => `${id.toLowerCase()}.json`),
 			"history.json",
 		];
 		await Promise.all(

@@ -4,10 +4,9 @@ import { COUNTRY_CODES } from "@rift-legends/contracts/country-codes";
 import { realSnapshotSchema } from "@rift-legends/contracts/real-snapshot";
 import { mergeSamePlayers } from "./canonical-players.ts";
 import { type CargoRow, Client, type ClientOptions } from "./client.ts";
-import { idResolver } from "./history.ts";
-import { person } from "./normalization.ts";
+import { idResolver, person } from "./normalization.ts";
 import { compare } from "./queries.ts";
-import { season2026 } from "./scope.ts";
+import { leagues } from "./scope.ts";
 
 /** Leaguepedia names that `Intl.DisplayNames` writes differently. */
 const aliases = new Map(
@@ -207,7 +206,7 @@ export async function nationalities(
 ) {
 	const snapshots = mergeSamePlayers(
 		await Promise.all(
-			season2026.map(async ({ id }) =>
+			leagues.map(async ({ id }) =>
 				realSnapshotSchema.parse(
 					JSON.parse(
 						await readFile(
@@ -224,7 +223,7 @@ export async function nationalities(
 	);
 	const rows = await acquireNationalities(
 		client,
-		season2026.flatMap(({ pages }) => pages),
+		snapshots.flatMap((snapshot) => snapshot.tournaments.map(({ id }) => id)),
 	);
 	const { players, unmapped } = buildNationalities(rows, ids);
 	const file: NationalitiesFile = {
