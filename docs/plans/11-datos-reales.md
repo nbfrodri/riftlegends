@@ -50,7 +50,7 @@ Queda fuera: ligas menores (plan 24), regens y evolución (plan 16), meta por pa
 | A3 | Retratos en draft, roles y resultados; logos de equipo con caída al escudo propio | Imagen que no carga: placeholder sin saltos |
 | A4 | La calibración K1–K5 sigue en verde con el contenido real | Bandas revisadas solo si el contenido real lo justifica, con nota |
 | A5 | E2E de una Bo5 con fearless hard en modo real con una caché de prueba | Sin red |
-| A6 | Créditos visibles en Ajustes: Leaguepedia (CC BY-SA), Data Dragon y CommunityDragon | — |
+| A6 | Créditos visibles en Ajustes: Leaguepedia (CC BY-SA) y CommunityDragon | — |
 
 ## Diseño
 
@@ -66,7 +66,7 @@ Queda fuera: ligas menores (plan 24), regens y evolución (plan 16), meta por pa
 ## Decisiones del usuario (22-11-2026)
 
 1. **Temporada:** la foto de datos cubre **2026 completa** (todos los splits); se regenera con un comando.
-2. **Nombres de campeón:** salen de la **caché** (Data Dragon, ES y EN); el repo no guarda texto de Riot. El modo real exige haber descargado la caché una vez.
+2. **Nombres de campeón:** salen de la **caché** en ES y EN. El modo real exige haber descargado la caché una vez.
 3. **Atributos no medibles** (comunicación, shotcalling, temple, resistencia mental): **estimados** desde la media del rol, ajustados por experiencia y resultados, y **marcados como estimados** en la UI.
 4. **Coaches:** la personalidad sale del **estilo de draft** del equipo.
 5. **Fuerza de liga:** coeficientes fijos y editables, LCK y LPL los más altos y CBLOL el más bajo.
@@ -96,3 +96,10 @@ Queda fuera: ligas menores (plan 24), regens y evolución (plan 16), meta por pa
 - **Disponibilidad de Leaguepedia** (cambios de esquema o límites): el snapshot va al repo, así que el juego no depende de la API; solo regenerarlo.
 - **Atributos poco creíbles** para jugadores concretos: fórmulas documentadas, revisión de una muestra a mano y ajuste de coeficientes.
 - **Legal:** Riot prohíbe usar su PI en juegos (riesgo ya asumido, [ADR 0001](../decisions/0001-stack-tecnologico.md)); los datos de la comunidad se atribuyen según su licencia.
+
+## Catálogo de campeones en la app
+
+- #265 usa `champion-summary.json` de CommunityDragon en `es_es` y `en_gb`. Selecciona los dos primeros parches distintos del listado de Data Dragon (por ejemplo, `16.23.1` → `16.23`). Si alguno de los dos catálogos del primer parche devuelve 404, prueba el anterior.
+- Guarda `catalog/es.json` y `catalog/en.json` normalizados y sirve los retratos por alias en `rift-asset://cdragon/champions/<alias>.png`. El manifiesto comprueba tamaños y SHA-256 antes de activar el parche. Los iconos de rol y objetivos se descargan de `latest`.
+- El renderer obtiene el catálogo bilingüe verificado con `window.riftlegends.assets.champions()`. Devuelve `null` mientras no haya un catálogo disponible.
+- Los tests de R5 comprueban que se omiten las entradas no jugables y se rechazan los ids inválidos, los duplicados y los catálogos que no coinciden.

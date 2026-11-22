@@ -3,6 +3,8 @@
 - **Estado:** hecho (22-11-2026): #230–#236, PR #237–#245. Aprobado el 22-11-2026.
 - **Fase:** 2 · Draft rápido completo ([plan general](../../plans/00-plan-general.md)).
 
+Desde [#265](../../plans/11-datos-reales.md#catálogo-de-campeones-en-la-app), el catálogo y los retratos vienen de CommunityDragon y se activan junto con los iconos.
+
 ## Objetivo
 
 1. Jugar una **Bo5 con fearless hard** contra la IA con el contenido ficticio empaquetado (hoy, 41 campeones no llegan).
