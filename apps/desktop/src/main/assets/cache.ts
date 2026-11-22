@@ -126,9 +126,7 @@ export function createAssetCache(
 	}
 
 	const logoRoot = async () =>
-		dirname(
-			await cachePath(userData, "assets/leaguepedia/manifest.json", true),
-		);
+		dirname(await cachePath(userData, "assets/logos/manifest.json", true));
 
 	return {
 		/** Logos of the given teams (untrusted snapshot input); failures are per logo. */
@@ -149,7 +147,7 @@ export function createAssetCache(
 			return Object.fromEntries(
 				Object.entries(logos).map(([id, path]) => [
 					id,
-					`rift-asset://leaguepedia/${path}`,
+					`rift-asset://logos/${path}`,
 				]),
 			);
 		},

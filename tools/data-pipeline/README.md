@@ -7,7 +7,7 @@ mise exec -- pnpm data:snapshot
 mise exec -- pnpm data:snapshot --offline
 ```
 
-El comando escribe un JSON por liga en `packages/core/content/real/`, tras validar las seis ligas. Usa la lista de torneos principales de 2026 de [scope.ts](scope.ts) y el catálogo EN de Data Dragon fijado allí. Descarga solo datos y metadatos de los logos.
+El comando escribe un JSON por liga en `packages/core/content/real/`, tras validar las seis ligas. Usa la lista de torneos principales de 2026 de [scope.ts](scope.ts) y el catálogo EN de Data Dragon fijado allí. Descarga solo datos y metadatos de los logos (el campo `logo` de Leaguepedia ya no lo usa la app; los logos salen de `data:logos`).
 
 | Opción | Uso |
 | --- | --- |
@@ -38,6 +38,15 @@ Lee solo los JSON de `packages/core/content/real/` (sin red) y escribe `players.
 Los valores que el snapshot no mide quedan por defecto: química 40–80 según partidas juntos, estrategia equilibrada, adaptación 50 y valoración de coach 2,5.
 
 Datos de los colaboradores de Leaguepedia, **CC BY-SA 3.0 Unported**. El [aviso de licencia](../../packages/core/content/real/LICENSE) explica la atribución. Las [capturas de prueba](fixtures/leaguepedia/README.md) se completan con filas y respuestas sintéticas etiquetadas en los tests.
+
+## Logos de equipos
+
+```sh
+mise exec -- pnpm data:logos
+mise exec -- pnpm data:logos --offline
+```
+
+Lee los equipos de los JSON del snapshot, los empareja con la API web pública de lolesports.com (`getTeams`) y escribe `packages/core/content/real/logos.json` con la URL, el SHA-256, el tamaño y el tipo de cada logo. Acepta las mismas opciones y la misma caché que `data:snapshot`. Pausa de 1 s entre peticiones, sin redirects. Los equipos sin logo se listan en la salida. Los bytes de los logos no se guardan. Detalles y capturas: [plan 11](../../docs/plans/11-datos-reales.md#logos-de-equipos-en-la-caché-252-284) y [fixtures/lolesports](fixtures/lolesports/README.md).
 
 ## Actualización semanal
 

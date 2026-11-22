@@ -5,7 +5,6 @@ import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
 	logoFile,
-	parseLogoUrl,
 	readTeamLogos,
 	sniffImage,
 	syncTeamLogos,
@@ -23,44 +22,19 @@ const webp = Buffer.concat([
 	Buffer.from([4, 0, 0, 0]),
 	Buffer.from("WEBPVP8 "),
 ]);
-const sha1 = (bytes: Buffer) => createHash("sha1").update(bytes).digest("hex");
-const base = "https://static.wikia.nocookie.net/lolesports_gamepedia_en/images";
-const urlOf = (name: string) => `${base}/6/67/${name}/revision/latest?cb=1`;
+const sha256 = (bytes: Buffer) =>
+	createHash("sha256").update(bytes).digest("hex");
+const urlOf = (name: string) => `https://static.lolesports.com/teams/${name}`;
 
 function source(id: string, bytes = png, mime = "image/png", name = "A.png") {
-	return { id, url: urlOf(name), sha1: sha1(bytes), mime };
+	return {
+		id,
+		url: urlOf(name),
+		sha256: sha256(bytes),
+		size: bytes.length,
+		mime,
+	};
 }
-
-describe("parseLogoUrl", () => {
-	it("accepts the Leaguepedia image URL shape", () => {
-		expect(parseLogoUrl(urlOf("FURIAlogo_profile.png"))).toBeInstanceOf(URL);
-		expect(
-			parseLogoUrl(`${base}/a/0f/X_(y).png/revision/latest`),
-		).toBeDefined();
-	});
-	it.each([
-		["http scheme", urlOf("A.png").replace("https", "http")],
-		["another host", urlOf("A.png").replace("static.wikia", "evil.example")],
-		[
-			"a look-alike host",
-			urlOf("A.png").replace("nocookie.net", "nocookie.net.evil.io"),
-		],
-		["credentials", urlOf("A.png").replace("https://", "https://u:p@")],
-		["a port", urlOf("A.png").replace(".net", ".net:8443")],
-		[
-			"another path prefix",
-			"https://static.wikia.nocookie.net/other/images/6/67/A.png/revision/latest",
-		],
-		["traversal", `${base}/6/67/%2e%2e/revision/latest`],
-		["a nested path", `${base}/6/67/A.png/../../x/revision/latest`],
-		["a fragment", `${urlOf("A.png")}#x`],
-		["an unexpected query", `${base}/6/67/A.png/revision/latest?x=1`],
-		["a missing revision suffix", `${base}/6/67/A.png`],
-		["garbage", "not a url"],
-	])("rejects %s", (_name, value) => {
-		expect(parseLogoUrl(value)).toBeUndefined();
-	});
-});
 
 describe("sniffImage", () => {
 	it("recognises PNG, JPEG and WebP by magic bytes", () => {
@@ -129,7 +103,21 @@ describe("logoFile", () => {
 		expect(file).toBeUndefined();
 		const ok = logoFile("gen-g", source("Gen.G"));
 		expect(ok?.path).toBe("teams/gen-g.png");
-		expect(ok?.url.host).toBe("static.wikia.nocookie.net");
+		expect(ok?.url.host).toBe("static.lolesports.com");
+	});
+	it.each([
+		[
+			"another host",
+			urlOf("A.png").replace("static.lolesports", "evil.example"),
+		],
+		["http", urlOf("A.png").replace("https", "http")],
+		[
+			"a Fandom image",
+			"https://static.wikia.nocookie.net/x/images/6/67/A.png/revision/latest",
+		],
+		["a query", `${urlOf("A.png")}?x=1`],
+	])("rejects %s", (_name, url) => {
+		expect(logoFile("a", { ...source("A"), url })).toBeUndefined();
 	});
 	it.each(["image/svg+xml", "image/gif", "text/html", "image/png; x"])(
 		"rejects mime %s",
@@ -137,18 +125,24 @@ describe("logoFile", () => {
 			expect(logoFile("a", { ...source("A"), mime })).toBeUndefined();
 		},
 	);
-	it("rejects a malformed sha1", () => {
-		expect(logoFile("a", { ...source("A"), sha1: "zz" })).toBeUndefined();
+	it("rejects a malformed digest and an invalid size", () => {
+		expect(logoFile("a", { ...source("A"), sha256: "zz" })).toBeUndefined();
+		expect(logoFile("a", { ...source("A"), size: 0 })).toBeUndefined();
+		expect(
+			logoFile("a", { ...source("A"), size: 512 * 1024 + 1 }),
+		).toBeUndefined();
 	});
-	it("checks hash, magic bytes and agreement with the declared type", () => {
+	it("checks SHA-256, size, magic bytes and agreement with the declared type", () => {
 		const file = logoFile("a", source("A"));
 		expect(file?.check?.(png)).toBe(true);
 		expect(file?.check?.(Buffer.concat([png, Buffer.from("!")]))).toBe(false);
 		const svg = Buffer.from("<svg onload=alert(1)></svg>");
-		const lying = logoFile("a", { ...source("A"), sha1: sha1(svg) });
+		const lying = logoFile("a", source("A", svg));
 		expect(lying?.check?.(svg)).toBe(false);
-		const jpegAsPng = logoFile("a", { ...source("A"), sha1: sha1(jpeg) });
+		const jpegAsPng = logoFile("a", source("A", jpeg));
 		expect(jpegAsPng?.check?.(jpeg)).toBe(false);
+		const wrongSize = logoFile("a", { ...source("A"), size: png.length + 1 });
+		expect(wrongSize?.check?.(png)).toBe(false);
 	});
 });
 
@@ -158,7 +152,7 @@ describe("syncTeamLogos", () => {
 	let bodies: Map<string, Buffer>;
 	const transport: AssetTransport = async (url) => {
 		requests.push(url);
-		const bytes = bodies.get(url.pathname.split("/").at(-3) ?? "");
+		const bytes = bodies.get(url.pathname.split("/").at(-1) ?? "");
 		if (!bytes)
 			return { status: 404, headers: {}, body: (async function* () {})() };
 		return {
@@ -188,7 +182,7 @@ describe("syncTeamLogos", () => {
 		expect(await readTeamLogos(root)).toEqual({ "Gen.G": "teams/gen-g.png" });
 	});
 
-	it("rejects a SHA-1 mismatch and keeps going", async () => {
+	it("rejects a SHA-256 mismatch and keeps going", async () => {
 		bodies.set("A.png", png);
 		bodies.set("B.png", Buffer.concat([png, Buffer.from("tampered")]));
 		const result = await syncTeamLogos(
@@ -225,9 +219,9 @@ describe("syncTeamLogos", () => {
 			transport,
 		);
 		expect(result.failed.sort()).toEqual(["Big", "Evil"]);
-		expect(
-			requests.every((url) => url.host === "static.wikia.nocookie.net"),
-		).toBe(true);
+		expect(requests.every((url) => url.host === "static.lolesports.com")).toBe(
+			true,
+		);
 	});
 
 	it("treats a redirect as a failure instead of following it", async () => {
@@ -240,7 +234,7 @@ describe("syncTeamLogos", () => {
 		expect(result.failed).toEqual(["R"]);
 	});
 
-	it("does not download again when the SHA-1 is unchanged, and replaces a changed logo", async () => {
+	it("does not download again when the SHA-256 is unchanged, and replaces a changed logo", async () => {
 		bodies.set("A.png", png);
 		const first = source("T", png, "image/png", "A.png");
 		await syncTeamLogos(root, [first], transport);

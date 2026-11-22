@@ -1,0 +1,150 @@
+{
+	"data": {
+		"teams": [
+			{
+				"id": "100725845018863243",
+				"slug": "dwg-kia",
+				"name": "Dplus KIA",
+				"code": "DK",
+				"image": "http://static.lolesports.com/teams/1673260049703_DPlusKIALOGO11.png",
+				"alternativeImage": "http://static.lolesports.com/teams/1673260049704_DPlusKIALOGO2.png",
+				"backgroundImage": "http://static.lolesports.com/teams/DamwonGamingDWG.png",
+				"status": "active",
+				"homeLeague": {
+					"name": "LCK",
+					"region": "KOREA"
+				},
+				"players": []
+			},
+			{
+				"id": "105550049871017396",
+				"slug": "kt-challengers",
+				"name": "kt Challengers",
+				"code": "KT",
+				"image": "http://static.lolesports.com/teams/kt_darkbackground.png",
+				"alternativeImage": "http://static.lolesports.com/teams/kt_whitebackground.png",
+				"backgroundImage": null,
+				"status": "active",
+				"homeLeague": {
+					"name": "LCK Challengers",
+					"region": "KOREA"
+				},
+				"players": []
+			},
+			{
+				"id": "108203154514683518",
+				"slug": "t1-rookies",
+				"name": "T1 Rookies",
+				"code": "T1",
+				"image": "http://static.lolesports.com/teams/1651078718919_download99.png",
+				"alternativeImage": "http://static.lolesports.com/teams/1651078718920_download98.png",
+				"backgroundImage": "http://static.lolesports.com/teams/1651078718921_download-2022-04-27T095627.377.png",
+				"status": "archived",
+				"homeLeague": null,
+				"players": []
+			},
+			{
+				"id": "109546405520674816",
+				"slug": "red-canids",
+				"name": "RED Canids",
+				"code": "RED",
+				"image": "http://static.lolesports.com/teams/1671545496840_RED_Canidslogo_square.webp",
+				"alternativeImage": null,
+				"backgroundImage": null,
+				"status": "archived",
+				"homeLeague": {
+					"name": "CBLOL",
+					"region": "BRAZIL"
+				},
+				"players": []
+			},
+			{
+				"id": "98767991853197861",
+				"slug": "t1",
+				"name": "T1",
+				"code": "T1",
+				"image": "http://static.lolesports.com/teams/1726801573959_539px-T1_2019_full_allmode.png",
+				"alternativeImage": "http://static.lolesports.com/teams/1726801573959_539px-T1_2019_full_allmode.png",
+				"backgroundImage": "http://static.lolesports.com/teams/1596305556675_T1T1.png",
+				"status": "active",
+				"homeLeague": {
+					"name": "LCK",
+					"region": "KOREA"
+				},
+				"players": []
+			},
+			{
+				"id": "98926509885559666",
+				"slug": "team-liquid",
+				"name": "Team Liquid Alienware",
+				"code": "TLAW",
+				"image": "http://static.lolesports.com/teams/1769357207762_TLAlienware_Minimal_Bug-White.png",
+				"alternativeImage": null,
+				"backgroundImage": "https://lolstatic-a.akamaihd.net/esports-assets/production/team/team-liquid-4bj1d6p9.png",
+				"status": "active",
+				"homeLeague": {
+					"name": "LCS",
+					"region": "NORTH AMERICA"
+				},
+				"players": []
+			},
+			{
+				"id": "99566404579461230",
+				"slug": "kt-rolster",
+				"name": "kt Rolster",
+				"code": "KT",
+				"image": "http://static.lolesports.com/teams/kt_darkbackground.png",
+				"alternativeImage": "http://static.lolesports.com/teams/kt_whitebackground.png",
+				"backgroundImage": null,
+				"status": "active",
+				"homeLeague": {
+					"name": "LCK",
+					"region": "KOREA"
+				},
+				"players": []
+			},
+			{
+				"id": "99566405124618295",
+				"slug": "tl-academy",
+				"name": "Team Liquid Honda Challengers",
+				"code": "TLC",
+				"image": "http://static.lolesports.com/teams/1717424526172_TLXHONDALCSLockup_White.png",
+				"alternativeImage": "http://static.lolesports.com/teams/1717424526172_TLXHONDALCSLockup.png",
+				"backgroundImage": "https://lolstatic-a.akamaihd.net/esports-assets/production/team/team-liquid-academy-cfvpmwxh.png",
+				"status": "active",
+				"homeLeague": null,
+				"players": []
+			},
+			{
+				"id": "99566408221961358",
+				"slug": "red-kalunga",
+				"name": "RED Kalunga",
+				"code": "RED",
+				"image": "http://static.lolesports.com/teams/1631820575924_red-2021-worlds.png",
+				"alternativeImage": null,
+				"backgroundImage": "http://static.lolesports.com/teams/REDCanidsRED.png",
+				"status": "active",
+				"homeLeague": {
+					"name": "CBLOL",
+					"region": "BRAZIL"
+				},
+				"players": []
+			},
+			{
+				"id": "113865949879534620",
+				"slug": "we-can-win",
+				"name": "We Can Win",
+				"code": "WIN",
+				"image": "http://static.lolesports.com/teams/1739961936847_win_white.svg",
+				"alternativeImage": null,
+				"backgroundImage": null,
+				"status": "active",
+				"homeLeague": {
+					"name": "LJL",
+					"region": "JAPAN"
+				},
+				"players": []
+			}
+		]
+	}
+}
