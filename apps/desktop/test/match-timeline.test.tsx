@@ -292,6 +292,11 @@ test("face to face shows each lane's numbers for the current minute and advances
 	await renderInLocale(<Match />);
 	faceToFace();
 	const table = screen.getByRole("table", { name: "Face to face" });
+	for (const name of ["K/D/A", "CS", "Gold"]) {
+		for (const header of within(table).getAllByRole("columnheader", { name })) {
+			expect(header.querySelector("svg")).toBeTruthy();
+		}
+	}
 	advance(5000);
 	expect(within(table).getAllByRole("row")).toHaveLength(lanes.length + 2);
 	let top = lane("Top");

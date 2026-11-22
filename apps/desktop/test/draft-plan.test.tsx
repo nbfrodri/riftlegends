@@ -1,8 +1,10 @@
+import type { AssetStatus } from "@rift-legends/contracts";
 import { CONTRACT_VERSION, type MatchPlan } from "@rift-legends/contracts";
 import { cleanup, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useEffect, useRef } from "react";
 import { afterEach, describe, expect, test } from "vitest";
+import { AssetsProvider } from "../src/renderer/assets";
 import { suggestRoles } from "../src/renderer/draft/roles-proposal";
 import {
 	DraftSessionProvider,
@@ -10,6 +12,7 @@ import {
 } from "../src/renderer/draft/session";
 import { draftStages, stageOf } from "../src/renderer/draft/stages";
 import { renderWithDraftCore } from "./draft-core";
+import { fakeAssets } from "./fake-assets";
 
 afterEach(cleanup);
 
@@ -68,12 +71,14 @@ function Flow() {
 	);
 }
 
-const render = () =>
+const render = (assets: AssetStatus = { state: "missing" }) =>
 	renderWithDraftCore(
-		<DraftSessionProvider>
-			<Driver />
-			<Flow />
-		</DraftSessionProvider>,
+		<AssetsProvider api={fakeAssets(assets).api}>
+			<DraftSessionProvider>
+				<Driver />
+				<Flow />
+			</DraftSessionProvider>
+		</AssetsProvider>,
 	);
 
 type Core = Awaited<ReturnType<typeof render>>;
@@ -131,6 +136,32 @@ describe("game plan (U12)", () => {
 		// Every reason is a sentence, not a raw key.
 		for (const item of screen.getAllByRole("listitem")) {
 			expect(item.textContent).not.toMatch(/^(tempo|objectives|risk)\./);
+		}
+	});
+
+	test("dragon and baron show their official icons, or the own ones without the cache", async () => {
+		const option = (name: string) =>
+			choice("objectives")
+				.getByRole("radio", { name: new RegExp(`^${name}`) })
+				.closest("label");
+		const view = await render({ state: "ready", version: "16.23" });
+		await screen.findByRole("button", { name: "Play" });
+		for (const [name, path] of [
+			["Dragons", "objectives/dragon.png"],
+			["Baron", "objectives/baron.png"],
+		] as const) {
+			const image = await within(option(name) as HTMLElement).findByRole(
+				"presentation",
+				{ hidden: true },
+			);
+			expect(image.getAttribute("src")).toBe(`rift-asset://cdragon/${path}`);
+		}
+		view.unmount();
+		await render();
+		await screen.findByRole("button", { name: "Play" });
+		for (const name of ["Dragons", "Baron"]) {
+			expect(option(name)?.querySelector("img")).toBeNull();
+			expect(option(name)?.querySelector("svg.lucide")).toBeTruthy();
 		}
 	});
 

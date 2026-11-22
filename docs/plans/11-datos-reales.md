@@ -117,7 +117,7 @@ Queda fuera: ligas menores (plan 24), regens y evolución (plan 16), meta por pa
 ## Catálogo de campeones en la app
 
 - #265 usa `champion-summary.json` de CommunityDragon en `es_es` y `en_gb`. Selecciona los dos primeros parches distintos del listado de Data Dragon (por ejemplo, `16.23.1` → `16.23`). Si alguno de los dos catálogos del primer parche devuelve 404, prueba el anterior.
-- Guarda `catalog/es.json` y `catalog/en.json` normalizados y sirve los retratos por alias en `rift-asset://cdragon/champions/<alias>.png`. El manifiesto comprueba tamaños y SHA-256 antes de activar el parche. Los iconos de rol y objetivos se descargan de `latest`.
+- Guarda `catalog/es.json` y `catalog/en.json` normalizados y sirve los retratos por alias en `rift-asset://cdragon/champions/<alias>.png`. El manifiesto comprueba tamaños y SHA-256 antes de activar el parche. Los iconos de rol y objetivos se descargan de `latest`, igual que los de estadísticas (KDA, oro, súbditos, daño y visión): el set SVG del marcador de fin de partida del cliente, que se sirve como `image/svg+xml` con `default-src 'none'` (#293).
 - El renderer obtiene el catálogo bilingüe verificado con `window.riftlegends.assets.champions()`. Devuelve `null` mientras no haya un catálogo disponible.
 - Los tests de R5 comprueban que se omiten las entradas no jugables y se rechazan los ids inválidos, los duplicados y los catálogos que no coinciden.
 

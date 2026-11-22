@@ -3,6 +3,7 @@ import { Button } from "@rift-legends/ui-kit/components/button";
 import { animate as fade } from "motion/mini";
 import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { isObjectiveKind, MapIcon } from "../assets/map-icon";
 import { panelTitle } from "./classes";
 import { clockTime } from "./playback";
 import type { TeamNames } from "./scoreboard";
@@ -69,7 +70,8 @@ const EventRow = memo(function EventRow({
 						zone: t(`draft.match.zone.${event.zone}`),
 					})}
 				</p>
-				<h3 className="my-0.5 font-bold text-[16px]">
+				<h3 className="my-0.5 flex items-center gap-1.5 font-bold text-[16px]">
+					{isObjectiveKind(event.kind) && <MapIcon kind={event.kind} />}
 					{t(`draft.match.kind.${event.kind}`)}
 				</h3>
 				{event.kills.map(({ killer, victim, assists }, index) => (

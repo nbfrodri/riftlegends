@@ -1,5 +1,10 @@
-import type { AssetStatus } from "@rift-legends/contracts";
+import type {
+	AssetStatus,
+	MatchEvent,
+	MatchView,
+} from "@rift-legends/contracts";
 import {
+	act,
 	cleanup,
 	fireEvent,
 	render,
@@ -7,10 +12,12 @@ import {
 	waitFor,
 } from "@testing-library/react";
 import type { ReactElement } from "react";
-import { afterEach, describe, expect, test } from "vitest";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { AssetsProvider } from "../src/renderer/assets";
 import { GameRoleIcon } from "../src/renderer/assets/game-role-icon";
-import { MapIcon } from "../src/renderer/match/map-icon";
+import { MapIcon } from "../src/renderer/assets/map-icon";
+import { StatIcon } from "../src/renderer/assets/stat-icon";
+import { EventFeed } from "../src/renderer/match/event-feed";
 import { fakeAssets } from "./fake-assets";
 
 afterEach(cleanup);
@@ -62,6 +69,63 @@ describe("U2: official role icons", () => {
 		render(<GameRoleIcon role={positions.top} label="Top" />);
 		expect(screen.getByRole("img", { name: "Top" }).tagName.toLowerCase()).toBe(
 			"svg",
+		);
+	});
+});
+
+describe("official stat icons", () => {
+	/** Stands in for the browser's Image so a test can fail the preload. */
+	const preloads: { src: string; onerror: (() => void) | null }[] = [];
+	beforeEach(() => {
+		preloads.length = 0;
+		vi.stubGlobal(
+			"Image",
+			class {
+				src = "";
+				onerror: (() => void) | null = null;
+				constructor() {
+					preloads.push(this);
+				}
+			},
+		);
+	});
+	afterEach(() => vi.unstubAllGlobals());
+
+	test.each(["kda", "gold", "cs", "damage", "vision"] as const)(
+		"%s paints the cached client icon in the text colour and falls back if it fails",
+		async (stat) => {
+			const url = `rift-asset://cdragon/stats/${stat}.svg`;
+			const { container } = renderWith(ready, <StatIcon stat={stat} />);
+			const icon = await waitFor(() => {
+				const found = container.querySelector<HTMLElement>("[data-stat-icon]");
+				if (!found) throw new Error("no official icon yet");
+				return found;
+			});
+			expect(icon.getAttribute("aria-hidden")).toBe("true");
+			expect(icon.style.backgroundColor).toBe("currentcolor");
+			expect(icon.style.maskImage).toBe(`url(${url})`);
+			expect(icon.style.width).toBe("14px");
+			expect(icon.style.height).toBe("14px");
+			expect(container.querySelector("img")).toBeNull();
+			const preload = preloads.find((image) => image.src === url);
+			act(() => preload?.onerror?.());
+			expect(container.querySelector("[data-stat-icon]")).toBeNull();
+			const fallback = container.querySelector("svg");
+			expect(fallback?.getAttribute("aria-hidden")).toBe("true");
+			expect(fallback?.getAttribute("width")).toBe("14");
+			expect(fallback?.getAttribute("height")).toBe("14");
+		},
+	);
+
+	test("without the cache the own icon is used", async () => {
+		const { container } = renderWith(
+			{ state: "missing" },
+			<StatIcon stat="gold" />,
+		);
+		await Promise.resolve();
+		expect(container.querySelector("img")).toBeNull();
+		expect(container.querySelector("svg")?.getAttribute("aria-hidden")).toBe(
+			"true",
 		);
 	});
 });
@@ -122,5 +186,47 @@ describe("U2: official objective icons", () => {
 		await Promise.resolve();
 		expect(container.querySelector("img")).toBeNull();
 		expect(container.querySelector("svg")).toBeTruthy();
+	});
+});
+
+describe("objective events in the feed", () => {
+	const event = (
+		kind: MatchEvent["kind"],
+		second: number,
+	): MatchView["facts"][number] => ({
+		type: "match.event",
+		game: 1,
+		minute: 1,
+		second,
+		kind,
+		side: "blue",
+		zone: "dragon-pit",
+		kills: [],
+		gold: { blue: 0, red: 0 },
+		chance: 5000,
+		causes: [],
+	});
+
+	test("show the objective's official icon next to the title", async () => {
+		renderWith(
+			ready,
+			<EventFeed
+				facts={[event("dragon", 10), event("tower", 20), event("kill", 30)]}
+				second={60}
+				names={{ blue: "Blue", red: "Red" }}
+				championByPlayer={new Map()}
+				ended
+			/>,
+		);
+		const rows = await waitFor(() => {
+			const found = screen.getAllByRole("listitem");
+			if (!found[1]?.querySelector("img")) throw new Error("no image yet");
+			return found;
+		});
+		const icon = (row: HTMLElement | undefined) =>
+			row?.querySelector("h3 img")?.getAttribute("src");
+		expect(icon(rows[0])).toBeUndefined();
+		expect(icon(rows[1])).toBe("rift-asset://cdragon/objectives/tower.png");
+		expect(icon(rows[2])).toBe("rift-asset://cdragon/objectives/dragon.png");
 	});
 });

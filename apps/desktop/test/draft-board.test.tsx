@@ -300,6 +300,9 @@ describe("player card (U5)", () => {
 			expect(within(card).getByRole("heading", { name: area })).toBeTruthy();
 		}
 		expect(within(card).getAllByRole("definition")).toHaveLength(20);
+		for (const label of ["Vision", "Farming"]) {
+			expect(within(card).getByText(label).querySelector("svg")).toBeTruthy();
+		}
 		const composure = within(card).getByText("Composure").nextSibling;
 		expect(composure?.textContent).toBe(String(forgeMid?.attributes.composure));
 	});

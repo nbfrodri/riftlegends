@@ -21,6 +21,7 @@ const gameData = "plugins/rcp-be-lol-game-data/global";
 const positions = "plugins/rcp-fe-lol-parties/global/default";
 const scoreboard = "game/assets/ux/scoreboard";
 const minimap = "game/assets/ux/minimap/icons";
+const postgame = "plugins/rcp-fe-lol-postgame/global/default";
 
 // CommunityDragon's stable latest alias. Keep upstream filenames here so a
 // moved icon can be fixed without changing the local paths used by the game.
@@ -37,6 +38,18 @@ const communityIcons = {
 	"objectives/tower.png": `${minimap}/icon_ui_tower_minimap.png`,
 	"objectives/inhibitor.png": `${minimap}/inhibitor.png`,
 	"objectives/nexus.png": `${minimap}/nexus.png`,
+	// The client's end-of-game scoreboard icons: one matching set, as SVG.
+	"stats/kda.svg": `${postgame}/scoreboard-kda-icon.svg`,
+	"stats/gold.svg": `${postgame}/scoreboard-coins-icon.svg`,
+	"stats/cs.svg": `${postgame}/scoreboard-stat-switcher-minions-slain.svg`,
+	"stats/damage.svg": `${postgame}/scoreboard-sword-icon.svg`,
+	"stats/vision.svg": `${postgame}/scoreboard-stat-switcher-eye.svg`,
+};
+
+/** An SVG document, not an error page served with a 200. */
+const isSvg = (bytes: Buffer) => {
+	const text = bytes.toString("utf8").trim();
+	return /^(<\?xml[^>]*>\s*)?<svg[\s>]/.test(text) && text.endsWith("</svg>");
 };
 
 export const communityFiles = Object.entries(communityIcons).map(
@@ -44,6 +57,7 @@ export const communityFiles = Object.entries(communityIcons).map(
 		path,
 		url: new URL(`/latest/${upstream}`, communityDragon),
 		limit: maxImageBytes,
+		...(path.endsWith(".svg") && { check: isSvg }),
 	}),
 );
 
