@@ -81,4 +81,3 @@ export const season2026: readonly LeagueScope[] = leagues.map(
 
 export const dataDragonVersion = "16.23.1";
 export const dataDragonUrl = `https://ddragon.leagueoflegends.com/cdn/${dataDragonVersion}/data/en_US/champion.json`;
-

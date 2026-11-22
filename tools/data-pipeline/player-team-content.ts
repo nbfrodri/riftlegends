@@ -125,11 +125,7 @@ function together(games: readonly Game[]) {
 
 export type CareerHistory = ReadonlyMap<string, readonly Season[]>;
 
-function build(
-	snapshot: RealSnapshot,
-	careers: CareerHistory,
-	season: number,
-) {
+function build(snapshot: RealSnapshot, careers: CareerHistory, season: number) {
 	const profileOf = attributeProfiles(snapshot);
 	const styleOf = coachStyles(snapshot.games);
 	const pools = rolePools(snapshot.games);

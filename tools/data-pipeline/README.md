@@ -30,6 +30,7 @@ Lee solo los JSON de `packages/core/content/real/` (sin red) y escribe `players.
 | Pieza | Dónde | Resumen |
 | --- | --- | --- |
 | Atributos (J1, P4) | [attributes.ts](attributes.ts) | Cada atributo medible sale del percentil de una métrica por minuto dentro de su rol y liga, con 12 partidas previas que acercan las muestras pequeñas a la media (65). Los que no se miden (temple, resistencia, concentración, shotcalling, comunicación) y los proxies parten de esa media, ajustada por experiencia y resultados; van en `estimated`. Sin partidas: todo estimado |
+| Trayectoria (J1) | [career.ts](career.ts), [history.ts](history.ts) | `history.json` guarda, por jugador del snapshot, una fila por temporada previa: partidas en ligas principales, eventos internacionales jugados (Worlds, MSI, First Stand), títulos de liga e internacionales. `careerStrength` suma por temporada (partidas/80 con tope 1 + 0,5 por evento + 1 por título + 2 por título internacional), la pondera 0,85 por cada año de antigüedad y satura como p/(p+4). Esa fuerza (0–1) suma hasta +20 a experiencia, +6 a temple, +5 a resistencia, +4 a constancia y hasta +8 al nivel. Sin historial, nada cambia |
 | Fuerza de liga (J2) | [league-strength.ts](league-strength.ts) | Puntos de liga para los atributos (LCK +4 · LPL +3 · LEC 0 · LCP −2 · LCS −3 · CBLOL −6) y prior Elo para el sembrado global (LCK +150 … CBLOL −190), editables; ver [plan 11](../../docs/plans/11-datos-reales.md) |
 | Pools y maestría (J3) | [player-team-content.ts](player-team-content.ts) | Mains: el más jugado y los de ≥3 partidas y ≥20 %. Con menos de 3 campeones, el resto sale de los más jugados del rol (maestría 30) |
 | Equipos (J4) | [player-team-content.ts](player-team-content.ts) | Sembrado global: % de victorias suavizado (6 victorias y 6 derrotas previas) por la fuerza de su liga. Coach: el head coach de su última plantilla; sin coach, «—» y `balanced`. Roles sin jugador: relleno con `placeholder` y todo estimado |
@@ -38,6 +39,10 @@ Lee solo los JSON de `packages/core/content/real/` (sin red) y escribe `players.
 Los valores que el snapshot no mide quedan por defecto: química 40–80 según partidas juntos, estrategia equilibrada, adaptación 50 y valoración de coach 2,5.
 
 Datos de los colaboradores de Leaguepedia, **CC BY-SA 3.0 Unported**. El [aviso de licencia](../../packages/core/content/real/LICENSE) explica la atribución. Las [capturas de prueba](fixtures/leaguepedia/README.md) se completan con filas y respuestas sintéticas etiquetadas en los tests.
+
+## Trayectoria de los jugadores
+
+`pnpm data:snapshot` también escribe `packages/core/content/real/history.json` (tras el snapshot, con la misma caché y el mismo límite de Cargo). Mira los 7 años anteriores a la temporada del snapshot (`snapshotSeason` e `historySpan` en [scope.ts](scope.ts); al avanzar la temporada, la ventana se mueve sola). Son tres consultas agregadas por año con `GROUP BY` (partidas por jugador, eventos internacionales y títulos), unas 1 500 filas por año y nada partida a partida. Los años cerrados no cambian: su caché va aparte (`RIFT_LEGENDS_HISTORY_CACHE`, por defecto `<caché>/history`) y el workflow la restaura con clave estable, de modo que cada lunes solo se pide el año nuevo. Solo se guardan los ids del snapshot (con huellas); los demás nombres se descartan antes de escribir la caché. Después, `pnpm data:content` regenera jugadores y equipos.
 
 ## Logos de equipos
 

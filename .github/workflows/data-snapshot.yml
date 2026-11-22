@@ -38,12 +38,21 @@ jobs:
         run: |
           echo "utc=$(date -u +%F)" >> "$GITHUB_OUTPUT"
           echo "RIFT_LEGENDS_DATA_CACHE=$RUNNER_TEMP/leaguepedia-raw" >> "$GITHUB_ENV"
+          echo "RIFT_LEGENDS_HISTORY_CACHE=$RUNNER_TEMP/leaguepedia-history" >> "$GITHUB_ENV"
       - name: Restore Leaguepedia responses
         id: raw
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ${{ env.RIFT_LEGENDS_DATA_CACHE }}
           key: leaguepedia-raw-${{ steps.date.outputs.utc }}
+      # Past seasons never change: a stable key, so the weekly run only asks for new years.
+      - name: Restore career history responses
+        id: history
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ env.RIFT_LEGENDS_HISTORY_CACHE }}
+          key: leaguepedia-history-${{ hashFiles('tools/data-pipeline/history.ts', 'tools/data-pipeline/scope.ts') }}
+          restore-keys: leaguepedia-history-
       - name: Regenerate snapshot
         run: |
           cp -R packages/core/content/real "$RUNNER_TEMP/snapshot-before"
@@ -55,6 +64,12 @@ jobs:
         with:
           path: ${{ env.RIFT_LEGENDS_DATA_CACHE }}
           key: ${{ steps.raw.outputs.cache-primary-key }}
+      - name: Save career history responses
+        if: steps.history.outputs.cache-hit != 'true'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ env.RIFT_LEGENDS_HISTORY_CACHE }}
+          key: ${{ steps.history.outputs.cache-primary-key }}
       - name: Summarize snapshot changes
         id: changes
         run: |

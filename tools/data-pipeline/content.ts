@@ -26,9 +26,9 @@ export async function buildContent(inputDir = dir) {
 		),
 	);
 	const careers = new Map(
-		parseHistory(await readFile(join(inputDir, "history.json"), "utf8")).players.map(
-			({ id, seasons }) => [id, seasons],
-		),
+		parseHistory(
+			await readFile(join(inputDir, "history.json"), "utf8"),
+		).players.map(({ id, seasons }) => [id, seasons]),
 	);
 	const { players, teams, provenance } = buildPlayerTeamContent(
 		snapshots,

@@ -2,7 +2,7 @@ import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
-import { cacheFile, Client } from "./client.ts";
+import { Client, cacheFile } from "./client.ts";
 import {
 	acquireYear,
 	buildHistory,
@@ -174,7 +174,9 @@ test("the serialized file round-trips and only retrieval dates are ignored", asy
 	expect(await preserveHistory(path, later)).toBe(text);
 	const changed = { ...later, players: [] };
 	expect(await preserveHistory(path, changed)).toBe(serializeHistory(changed));
-	expect(() => parseHistory('{"players":[{"id":"a","seasons":[{}]}]}')).toThrow();
+	expect(() =>
+		parseHistory('{"players":[{"id":"a","seasons":[{}]}]}'),
+	).toThrow();
 	expect(await readFile(path, "utf8")).toBe(text);
 });
 

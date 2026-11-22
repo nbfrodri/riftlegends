@@ -75,6 +75,8 @@ test("the level bonus is capped", () => {
 });
 
 test("the career ignores seasons outside the history window", () => {
-	expect(careerStrength([season(2018), season(2026), season(2027)], 2026)).toBe(0);
+	expect(careerStrength([season(2018), season(2026), season(2027)], 2026)).toBe(
+		0,
+	);
 	expect(careerStrength([season(2019)], 2026)).toBeGreaterThan(0);
 });

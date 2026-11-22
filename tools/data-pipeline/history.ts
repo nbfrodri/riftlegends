@@ -73,8 +73,7 @@ export async function acquireYear(client: Client, year: number) {
 		`${official(year)} AND TR.Place_Number='1' AND T.League IN (${quote([...domesticLeagues, ...internationalLeagues])}) AND (T.IsPlayoffs='1' OR T.League IN (${quote(internationalLeagues)}))`,
 		"TP.Link,T.OverviewPage",
 		{
-			join_on:
-				"TP.PageAndTeam=TR.PageAndTeam,TP.OverviewPage=T.OverviewPage",
+			join_on: "TP.PageAndTeam=TR.PageAndTeam,TP.OverviewPage=T.OverviewPage",
 			group_by: "TP.Link,T.OverviewPage",
 			cacheRow,
 		},
@@ -253,7 +252,10 @@ interface HistoryOptions extends ClientOptions {
  * Career history of the players in the snapshot: the `span` seasons before
  * `season`. Those seasons are over, so their cached responses never expire.
  */
-export async function history(options: HistoryOptions, client = new Client(options)) {
+export async function history(
+	options: HistoryOptions,
+	client = new Client(options),
+) {
 	const season = options.season ?? snapshotSeason;
 	const years = historyYears(season, options.span);
 	const snapshots = mergeSamePlayers(

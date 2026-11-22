@@ -48,7 +48,7 @@ Queda fuera: ligas menores (plan 24), regens y evolución (plan 16), meta por pa
 
 | # | Comportamiento | Caso límite |
 | --- | --- | --- |
-| J1 | Los 20 atributos salen de estadísticas por rol y liga (percentiles), con una fórmula documentada por atributo | Muestra pequeña: el atributo se acerca a la media de su rol y liga |
+| J1 | Los 20 atributos salen de estadísticas por rol y liga (percentiles) y de la trayectoria previa (#287), con una fórmula documentada por atributo | Muestra pequeña: el atributo se acerca a la media de su rol y liga |
 | J2 | Ajuste por fuerza de liga: un percentil en LCK vale más que en LCS (coeficiente por liga, configurable) | Coeficientes en un solo fichero con su justificación |
 | J3 | Pools de campeones (mains, secundarios y débiles) y maestría salen de lo jugado | Jugador con menos de 3 campeones: el resto del pool viene de su rol |
 | J4 | Cada equipo tiene nombre, sembrado (por resultados de la temporada), coach y logo | Equipo sin coach en Leaguepedia: coach «sin nombre» con personalidad equilibrada |

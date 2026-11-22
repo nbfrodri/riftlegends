@@ -246,12 +246,16 @@ export class Client {
 		await mkdir(this.#options.cacheDir, { recursive: true, mode: 0o700 });
 		const temp = `${file}.${randomUUID()}.tmp`;
 		try {
-			await writeFile(temp, JSON.stringify({
+			await writeFile(
+				temp,
+				JSON.stringify({
 					retrievedAt,
 					body: cacheBody ? cacheBody(result) : body,
-				}), {
-				mode: 0o600,
-			});
+				}),
+				{
+					mode: 0o600,
+				},
+			);
 			await rename(temp, file);
 		} finally {
 			await rm(temp, { force: true });
@@ -269,7 +273,8 @@ export class Client {
 		let reason = "";
 		for (let attempt = 1; attempt <= this.#maxAttempts; attempt++) {
 			const wait =
-				Math.max(nextAttempt, spacing ? this.#queue.nextRequest : 0) - this.#now();
+				Math.max(nextAttempt, spacing ? this.#queue.nextRequest : 0) -
+				this.#now();
 			if (wait > 0) await this.#sleep(wait);
 			if (spacing) this.#queue.nextRequest = this.#now() + spacing;
 
