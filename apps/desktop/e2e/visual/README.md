@@ -10,6 +10,8 @@ La tipografía se rasteriza distinto en cada distribución, así que las captura
 
 `maxDiffPixelRatio: 0.002` (0,2 % de los píxeles, unos 2.100 a 1366x768): absorbe el ruido de suavizado de bordes, pero no un elemento movido ni un color distinto. Las animaciones están desactivadas y el cursor de texto oculto. Se configura en `playwright.visual.config.ts`.
 
+Playwright fija el tamaño del área visible del renderer. Antes de cada captura, `captureScreen` comprueba que las fuentes Caja estén cargadas y espera a que se decodifiquen las imágenes de la pantalla.
+
 ## Puesta en marcha (referencias iniciales)
 
 Mientras no exista `__screenshots__/`, el paso visual del CI se omite (no hay nada con qué comparar). Para crearlas:

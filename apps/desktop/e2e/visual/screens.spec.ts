@@ -1,6 +1,7 @@
 import type { Page } from "@playwright/test";
 import { expect, test } from "../fixtures";
 import { playQuickDraftBo5 } from "../quick-draft-flow";
+import { captureScreen } from "./capture";
 
 test.skip(
 	process.platform !== "linux",
@@ -9,24 +10,11 @@ test.skip(
 
 test.use({ systemLocale: "es-ES" });
 
-const size = { width: 1366, height: 768 };
-
-test.beforeEach(async ({ electronApp, appWindow }) => {
-	await electronApp.evaluate(({ BrowserWindow }, { width, height }) => {
-		BrowserWindow.getAllWindows()[0]?.setContentSize(width, height);
-	}, size);
-	await expect
-		.poll(() => appWindow.evaluate(() => [innerWidth, innerHeight]))
-		.toEqual([size.width, size.height]);
+test.beforeEach(async ({ appWindow }) => {
+	await appWindow.setViewportSize({ width: 1366, height: 768 });
 	await expect(appWindow.getByRole("heading", { level: 1 })).toHaveText(
 		"Configurar serie",
 	);
-	// Cold start: the font files are read lazily, so the screenshot's own
-	// font wait can time out on the first test (#258). Load every face first.
-	await appWindow.evaluate(async () => {
-		await Promise.all(Array.from(document.fonts, (face) => face.load()));
-		await document.fonts.ready;
-	});
 });
 
 const goTo = async (page: Page, section: string) => {
@@ -45,7 +33,7 @@ const expandSidebar = async (page: Page) => {
 };
 
 test("Draft with the sidebar collapsed", async ({ appWindow }) => {
-	await expect(appWindow).toHaveScreenshot("draft-collapsed.png");
+	await captureScreen(appWindow, "draft-collapsed.png");
 });
 
 test("Mercado with the sidebar expanded", async ({ appWindow }) => {
@@ -54,7 +42,7 @@ test("Mercado with the sidebar expanded", async ({ appWindow }) => {
 	await expect(
 		appWindow.getByRole("table", { name: "Jugadores disponibles" }),
 	).toBeVisible();
-	await expect(appWindow).toHaveScreenshot("mercado-expanded.png");
+	await captureScreen(appWindow, "mercado-expanded.png");
 });
 
 test("Ajustes", async ({ appWindow }) => {
@@ -63,8 +51,8 @@ test("Ajustes", async ({ appWindow }) => {
 	// Offline E2E: the startup sync settles on "not downloaded".
 	const content = appWindow.getByRole("region", { name: "Contenido" });
 	await expect(content.getByText(/^Sin descargar\./)).toBeVisible();
-	await expect(appWindow).toHaveScreenshot("ajustes.png");
-	await expect(content).toHaveScreenshot("ajustes-contenido.png");
+	await captureScreen(appWindow, "ajustes.png");
+	await captureScreen(appWindow, "ajustes-contenido.png", content);
 });
 
 test.describe("Quick draft", () => {
@@ -87,7 +75,7 @@ test.describe("Quick draft", () => {
 			}
 			// The draft timer is off, and the match clock stops at the final frame.
 			await appWindow.mouse.move(0, 0);
-			await expect(appWindow).toHaveScreenshot(`quick-draft-${screen}.png`);
+			await captureScreen(appWindow, `quick-draft-${screen}.png`);
 			// Reduced motion starts the replay at its final frame. Re-enable
 			// motion before playing so the shared flow can use Skip to end.
 			if (screen === "game-plan") {
