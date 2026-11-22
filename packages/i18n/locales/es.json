@@ -228,6 +228,7 @@
 	"draft.setup.timerNote": "Límite para confirmar una elección.",
 	"draft.setup.timer.off": "Apagado",
 	"draft.setup.timer.on": "Activado",
+	"draft.setup.seed": "Sembrado {{n}}",
 	"draft.setup.seedingNote": "Mapa 1: el sembrado decide quién elige lado.",
 	"draft.setup.start": "Empezar serie",
 	"draft.coach.label": "Cuerpo técnico rival",

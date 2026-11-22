@@ -13,7 +13,7 @@ async function startAs(
 	await screen.findByRole("heading", { level: 1, name: "Set up series" });
 	if (team === "Shoal") {
 		await user.click(screen.getByRole("combobox", { name: "My team" }));
-		await user.click(await screen.findByRole("option", { name: "Shoal" }));
+		await user.click(await screen.findByRole("option", { name: /^Shoal\b/ }));
 	}
 	await user.click(screen.getByRole("button", { name: "Start series" }));
 	await screen.findByRole("heading", { level: 1, name: "Side choice" });

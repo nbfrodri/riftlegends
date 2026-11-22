@@ -8,7 +8,7 @@ import {
 	SelectValue,
 } from "@rift-legends/ui-kit/components/select";
 import { ArrowRight } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDraftSession } from "./session";
 import { TeamCrest } from "./team-crest";
@@ -39,8 +39,8 @@ function Rule(props: {
 
 function TeamCard(props: {
 	label: string;
-	team: { id: string; name: string };
-	teams: readonly { id: string; name: string }[];
+	team: { id: string; name: string; seed: number };
+	teams: readonly { id: string; name: string; seed: number }[];
 	onChange: (id: string) => void;
 	side: "blue" | "red";
 }) {
@@ -63,6 +63,9 @@ function TeamCard(props: {
 					<h2 className="mt-1 font-bold font-display text-[42px] text-text leading-none tracking-team">
 						{props.team.name}
 					</h2>
+					<p className="mt-1.5 text-[13px] text-muted">
+						{t("draft.setup.seed", { n: props.team.seed })}
+					</p>
 				</div>
 				<TeamCrest id={props.team.id} name={props.team.name} />
 			</div>
@@ -77,9 +80,12 @@ function TeamCard(props: {
 						<SelectValue />
 					</SelectTrigger>
 					<SelectContent>
-						{items.map((item) => (
-							<SelectItem key={item.value} value={item.value}>
-								{item.label}
+						{props.teams.map((team) => (
+							<SelectItem key={team.id} value={team.id}>
+								{team.name}
+								<span className="ml-3 text-[13px] text-muted">
+									{t("draft.setup.seed", { n: team.seed })}
+								</span>
 							</SelectItem>
 						))}
 					</SelectContent>
@@ -93,7 +99,12 @@ function TeamCard(props: {
 export function SetupScreen() {
 	const { t, i18n } = useTranslation();
 	const { options, send, setMine } = useDraftSession();
-	const [first, second] = options.teams;
+	// Best seed first: the selectors and the default pairing follow it.
+	const teams = useMemo(
+		() => options.teams.slice().sort((a, b) => a.seed - b.seed),
+		[options.teams],
+	);
+	const [first, second] = teams;
 	const [mineId, setMineId] = useState(first?.id);
 	const [rivalId, setRivalId] = useState(second?.id);
 	const [format, setFormat] = useState<Format>("bo3");
@@ -101,8 +112,8 @@ export function SetupScreen() {
 	const [timer, setTimer] = useState<Timer>("off");
 	const [starting, setStarting] = useState(false);
 
-	const mine = options.teams.find((team) => team.id === mineId);
-	const rival = options.teams.find((team) => team.id === rivalId);
+	const mine = teams.find((team) => team.id === mineId);
+	const rival = teams.find((team) => team.id === rivalId);
 	if (!mine || !rival) return null;
 
 	// A team cannot face itself: taking the rival's team gives it mine.
@@ -145,14 +156,14 @@ export function SetupScreen() {
 				<TeamCard
 					label={t("draft.setup.myTeam")}
 					team={mine}
-					teams={options.teams}
+					teams={teams}
 					onChange={chooseMine}
 					side="blue"
 				/>
 				<TeamCard
 					label={t("draft.setup.rivalTeam")}
 					team={rival}
-					teams={options.teams}
+					teams={teams}
 					onChange={chooseRival}
 					side="red"
 				/>

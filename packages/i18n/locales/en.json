@@ -228,6 +228,7 @@
 	"draft.setup.timerNote": "Limit to confirm a choice.",
 	"draft.setup.timer.off": "Off",
 	"draft.setup.timer.on": "On",
+	"draft.setup.seed": "Seed {{n}}",
 	"draft.setup.seedingNote": "Game 1: seeding decides who chooses the side.",
 	"draft.setup.start": "Start series",
 	"draft.coach.label": "Rival staff",
