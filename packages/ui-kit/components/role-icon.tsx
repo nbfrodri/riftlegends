@@ -13,7 +13,7 @@ export type RoleIconProps = {
 	size?: 16 | 20 | 24;
 	label?: string;
 	/** Official image; the own icon replaces it while missing or broken. */
-	src?: string;
+	src?: string | undefined;
 };
 
 export function RoleIcon({ role, size = 20, label, src }: RoleIconProps) {

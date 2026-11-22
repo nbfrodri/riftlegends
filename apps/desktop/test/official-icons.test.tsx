@@ -21,11 +21,19 @@ function renderWith(status: AssetStatus, ui: ReactElement) {
 	);
 }
 
+// Named positions: a literal `role="…"` reads as an ARIA role to the linter.
+const positions = {
+	top: "top",
+	jungle: "jungle",
+	mid: "mid",
+	bot: "bot",
+} as const;
+
 const ready: AssetStatus = { state: "ready", version: "15.4.1" };
 
 describe("U2: official role icons", () => {
 	test("use the cached CommunityDragon image when the cache is ready", async () => {
-		renderWith(ready, <GameRoleIcon role="jungle" label="Jungle" />);
+		renderWith(ready, <GameRoleIcon role={positions.jungle} label="Jungle" />);
 		await waitFor(() =>
 			expect(screen.getByRole("img", { name: "Jungle" }).tagName).toBe("IMG"),
 		);
@@ -42,7 +50,7 @@ describe("U2: official role icons", () => {
 	] satisfies AssetStatus[])(
 		"keep the own icon while the cache is $state",
 		async (status) => {
-			renderWith(status, <GameRoleIcon role="mid" label="Mid" />);
+			renderWith(status, <GameRoleIcon role={positions.mid} label="Mid" />);
 			await Promise.resolve();
 			expect(
 				screen.getByRole("img", { name: "Mid" }).tagName.toLowerCase(),
@@ -51,7 +59,7 @@ describe("U2: official role icons", () => {
 	);
 
 	test("keep the own icon outside a provider", () => {
-		render(<GameRoleIcon role="top" label="Top" />);
+		render(<GameRoleIcon role={positions.top} label="Top" />);
 		expect(screen.getByRole("img", { name: "Top" }).tagName.toLowerCase()).toBe(
 			"svg",
 		);

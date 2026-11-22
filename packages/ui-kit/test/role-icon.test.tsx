@@ -37,11 +37,19 @@ test.each([
 	expect(icon.getAttribute("height")).toBe(String(size));
 });
 
+// Named positions: a literal `role="…"` reads as an ARIA role to the linter.
+const positions = {
+	top: "top",
+	jungle: "jungle",
+	mid: "mid",
+	bot: "bot",
+} as const;
+
 describe("official image", () => {
 	test("shows the image in the same box and keeps the accessible name", () => {
 		const { container } = render(
 			<RoleIcon
-				role="mid"
+				role={positions.mid}
 				size={16}
 				label="Mid"
 				src="rift-asset://cdragon/roles/mid.png"
@@ -57,7 +65,10 @@ describe("official image", () => {
 
 	test("hides an unlabelled image from assistive technology", () => {
 		const { container } = render(
-			<RoleIcon role="top" src="rift-asset://cdragon/roles/top.png" />,
+			<RoleIcon
+				role={positions.top}
+				src="rift-asset://cdragon/roles/top.png"
+			/>,
 		);
 		const image = container.querySelector("img");
 		expect(image?.getAttribute("alt")).toBe("");
@@ -67,7 +78,7 @@ describe("official image", () => {
 	test("falls back to the own icon, same size, when the image fails", () => {
 		render(
 			<RoleIcon
-				role="bot"
+				role={positions.bot}
 				size={24}
 				label="ADC"
 				src="rift-asset://cdragon/roles/bot.png"

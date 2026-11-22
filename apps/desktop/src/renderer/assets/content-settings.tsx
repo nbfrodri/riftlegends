@@ -23,7 +23,10 @@ const looks: Record<State, { icon: LucideIcon; tone: string }> = {
 	error: { icon: CircleAlert, tone: "text-side-red" },
 };
 
-const actions: Record<State, { label: string; icon: LucideIcon }> = {
+const actions: Record<
+	State,
+	{ label: "download" | "retry" | "update"; icon: LucideIcon }
+> = {
 	checking: { label: "download", icon: Download },
 	missing: { label: "download", icon: Download },
 	syncing: { label: "download", icon: Download },

@@ -81,3 +81,16 @@ test("T9: the language choice survives a relaunch and beats the system locale", 
 		await second.close();
 	}
 });
+
+test("U3: Settings shows the content cache as not downloaded when offline", async ({
+	appWindow,
+}) => {
+	await appWindow
+		.getByRole("navigation", { name: "Club sections" })
+		.getByRole("button", { name: "Settings" })
+		.click();
+	const content = appWindow.getByRole("region", { name: "Content" });
+	await expect(content.getByText(/^Not downloaded\./)).toBeVisible();
+	await expect(content.getByRole("progressbar")).toHaveCount(0);
+	await expect(content.getByRole("button", { name: "Download" })).toBeEnabled();
+});
