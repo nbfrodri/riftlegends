@@ -2,6 +2,7 @@
 	"extends": "./tsconfig.base.json",
 	"compilerOptions": {
 		"types": ["node"],
+		"allowImportingTsExtensions": true,
 		"jsx": "react-jsx"
 	},
 	"include": [
@@ -9,6 +10,7 @@
 		"apps/**/*.tsx",
 		"packages/**/*.ts",
 		"packages/**/*.tsx",
+		"tools/data-pipeline/**/*.ts",
 		"vitest.config.ts",
 		"vitest.goldens.config.ts"
 	],

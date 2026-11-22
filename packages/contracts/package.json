@@ -2,7 +2,10 @@
 	"name": "@rift-legends/contracts",
 	"private": true,
 	"type": "module",
-	"exports": "./index.ts",
+	"exports": {
+		".": "./index.ts",
+		"./real-snapshot": "./draft/snapshot-content.ts"
+	},
 	"dependencies": {
 		"zod": "4.6.7"
 	},

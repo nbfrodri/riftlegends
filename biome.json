@@ -9,6 +9,7 @@
 			"!docs/research",
 			"!packages/core/test/fixtures",
 			"!tools/data-pipeline/fixtures/leaguepedia",
+			"!packages/core/content/real/*.json",
 			"!pnpm-lock.yaml",
 			"!.claude/settings.local.json",
 			"!.claude/skills",

@@ -1,0 +1,9 @@
+{
+	"name": "@rift-legends/data-pipeline",
+	"private": true,
+	"type": "module",
+	"devDependencies": {
+		"@rift-legends/contracts": "workspace:*",
+		"vitest": "5.1.1"
+	}
+}
