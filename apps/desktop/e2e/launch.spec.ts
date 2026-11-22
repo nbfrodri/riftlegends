@@ -1,4 +1,5 @@
 import { expect, test } from "./fixtures";
+import { waitForCaptureAssets } from "./visual/capture";
 
 test("opens the Rift Legends window", async ({ appWindow }) => {
 	await expect(appWindow).toHaveTitle("Rift Legends");
@@ -68,23 +69,35 @@ test("T3: loads both bundled Caja fonts while offline", async ({
 	context.on("request", (request) => requests.push(request.url()));
 	await context.setOffline(true);
 	await appWindow.reload();
-	const loaded = await appWindow.evaluate(async () => {
-		await Promise.all(Array.from(document.fonts, (face) => face.load()));
-		return Promise.all(
-			['700 24px "Unbounded Variable"', '400 16px "Archivo Variable"'].map(
-				async (font) => {
-					const faces = await document.fonts.load(font, "Ajustes 0123");
-					return (
-						faces.length > 0 &&
-						faces.every((face) => face.status === "loaded") &&
-						document.fonts.check(font)
-					);
-				},
-			),
-		);
+	await expect(appWindow.getByRole("main")).toBeAttached();
+	await waitForCaptureAssets(appWindow);
+	const loaded = await appWindow.evaluate(() => {
+		return [...document.fonts]
+			.filter((face) => face.status === "loaded")
+			.map((face) => face.family.replaceAll('"', ""));
 	});
-	expect(loaded).toEqual([true, true]);
+	expect(loaded).toEqual(
+		expect.arrayContaining(["Unbounded Variable", "Archivo Variable"]),
+	);
 	expect(requests.filter((url) => !/^(file:|rl-asset:)/.test(url))).toEqual([]);
+});
+
+test("visual readiness rejects missing Caja fonts even when the font set is ready", async ({
+	appWindow,
+}) => {
+	await expect(appWindow.getByRole("main")).toBeAttached();
+	await appWindow.evaluate(async () => {
+		for (const stylesheet of document.querySelectorAll(
+			'link[rel="stylesheet"]',
+		)) {
+			stylesheet.remove();
+		}
+		await document.fonts.ready;
+	});
+
+	await expect(waitForCaptureAssets(appWindow)).rejects.toThrow(
+		/Caja font is unavailable/,
+	);
 });
 
 test("shows the title bar with the bundled game icon before the title", async ({
