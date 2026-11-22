@@ -31,6 +31,19 @@ Queda fuera: ligas menores (plan 24), regens y evolución (plan 16), meta por pa
 | R4 | Los nombres y retratos salen de la caché en tiempo de ejecución, en el idioma de la UI | Sin caché: el modo real no está disponible y la UI lo explica |
 | R5 | Nombres (ES y EN), retratos y clase de cada campeón salen de `champion-summary.json` de CommunityDragon | Campeón sin partidas pro ni entrada en la tabla curada: arquetipos por defecto según su clase |
 
+#### Campeones reales: cómo se generan (#249)
+
+`pnpm data:champions` (offline desde `packages/core/content/real/*.json`; solo descarga el `champion-summary.json` de CommunityDragon fijado en el parche 16.23, a la caché cruda) escribe `packages/core/content/real/champions/`: `champions.json`, `matchups.json`, `synergies.json` y `provenance.json`. Misma forma que los ficheros ficticios. `name` repite el id (no se guarda ningún nombre de Riot).
+
+- **Lista:** los campeones jugables del catálogo (sin `None` ni variantes Jade): ids alias, clave numérica y clases.
+- **Daño, curva, arquetipos, CC, movilidad y línea frontal:** [curated-champions.ts](../../tools/data-pipeline/curated-champions.ts), solo ids. Las entradas con `true` son dudosas y quedan en `estimated` de la procedencia. Sin entrada: valores por defecto según su clase, tier C y marca `classFallbacks` (R5).
+- **Rol (R2):** el rol cuenta con ≥ 5 % de los picks del campeón (picks sin rol resoluble no cuentan para ningún rol). Sin picks suficientes: roles de la tabla curada.
+- **Tier (R2):** `presencia = 100 × (picks + bans) / partidas × (picks del rol / picks totales)`. Los bans no llevan rol, así que se reparten según los picks. Cortes: ≥ 70 S+, ≥ 45 S, ≥ 30 A, ≥ 10 B, ≥ 1 C, menos D.
+- **Matchups (R3):** mismo rol, cara a cara, partidas con ganador. `valor = round(20 × victorias / partidas − 10)` (−10 a 10), simétrico.
+- **Sinergias (R3):** parejas aliadas en la misma partida. `valor = max(0, round(12 × victorias / partidas − 6))` (0 a 6).
+- **Muestra mínima:** 20 partidas (`--min-sample`). Por debajo no se genera nada.
+- **Determinismo:** orden estable por id; dos ejecuciones dan los mismos bytes.
+
 ### Jugadores y equipos
 
 | # | Comportamiento | Caso límite |

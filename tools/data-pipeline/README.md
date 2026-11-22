@@ -46,3 +46,11 @@ El [workflow](../../.github/workflows/data-snapshot.yml) se ejecuta los lunes a 
 Cuando cambia la carpeta del snapshot, el workflow abre o actualiza el PR de `chore/data-snapshot`. El resumen compara con la rama por defecto. Cuenta los cambios de equipo en las plantillas de temporada, los equipos nuevos, los campeones que aparecen por primera vez en picks, bans o estadísticas y las partidas por liga. La revisión y la fusión son manuales.
 
 En **Settings → Actions → General**, el repositorio debe permitir que GitHub Actions cree pull requests. El `GITHUB_TOKEN` integrado no inicia el CI automáticamente. Si el PR muestra **Approve workflows to run**, aprueba la ejecución. Puedes volver a lanzar una ejecución existente desde Actions. Si GitHub no creó ninguna, cierra y vuelve a abrir el PR con una cuenta con permiso de escritura. [Comportamiento de `GITHUB_TOKEN`](https://docs.github.com/en/actions/concepts/security/github_token)
+
+## Campeones reales
+
+```sh
+mise exec -- pnpm data:champions [--offline] [--min-sample <n>] [--cache-dir <ruta>]
+```
+
+Lee los JSON de `packages/core/content/real/` y el `champion-summary.json` de CommunityDragon (parche fijado en [champions.ts](champions.ts), solo ids, claves y clases; se cachea como el resto). Escribe `packages/core/content/real/champions/` con `champions.json`, `matchups.json`, `synergies.json` y `provenance.json`. Las fórmulas y la muestra mínima están en el [plan 11](../../docs/plans/11-datos-reales.md#campeones-reales-cómo-se-generan-249).

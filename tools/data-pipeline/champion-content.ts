@@ -3,14 +3,19 @@ import type { RealSnapshot } from "@rift-legends/contracts/real-snapshot";
 import { championProfile } from "./curated-champions.ts";
 import { orderBy } from "./normalization.ts";
 
-type Champion = AiContent["champions"][number] & MatchContent["champions"][number];
+type Champion = AiContent["champions"][number] &
+	MatchContent["champions"][number];
 type Game = RealSnapshot["games"][number];
 type Position = Champion["positions"][number];
 type Role = Position["role"];
 const roles: readonly Role[] = ["top", "jungle", "mid", "bot", "support"];
 const minimumPairGames = 20;
 const tiers: readonly [number, Position["tier"]][] = [
-	[70, "S+"], [45, "S"], [30, "A"], [10, "B"], [1, "C"],
+	[70, "S+"],
+	[45, "S"],
+	[30, "A"],
+	[10, "B"],
+	[1, "C"],
 ];
 
 export interface CatalogChampion {
@@ -25,14 +30,21 @@ interface Presence {
 	roles: Map<Role, number>;
 }
 
-function positions(presence: Presence, games: number, fallback: readonly Role[], classFallback: boolean) {
+function positions(
+	presence: Presence,
+	games: number,
+	fallback: readonly Role[],
+	classFallback: boolean,
+) {
 	const { picks, bans } = presence;
 	const observed = roles.flatMap((role): Position[] => {
 		const rolePicks = presence.roles.get(role) ?? 0;
 		if (rolePicks === 0 || rolePicks * 20 < picks) return [];
-		const tier = tiers.find(([threshold]) =>
-			100 * rolePicks * (picks + bans) >= threshold * picks * games,
-		)?.[1] ?? "D";
+		const tier =
+			tiers.find(
+				([threshold]) =>
+					100 * rolePicks * (picks + bans) >= threshold * picks * games,
+			)?.[1] ?? "D";
 		return [{ role, tier: classFallback ? "C" : tier }];
 	});
 	return observed.length
@@ -67,7 +79,11 @@ function inRole(picks: ReturnType<typeof teamPicks>, role: Role) {
 type Pair<R> = { a: string; b: string; role: R; games: number; wins: number };
 
 function recordPair<R extends Role | undefined>(
-	pairs: Map<string, Pair<R>>, a: string, b: string, won: boolean, role: R,
+	pairs: Map<string, Pair<R>>,
+	a: string,
+	b: string,
+	won: boolean,
+	role: R,
 ) {
 	const id = JSON.stringify([a, b, role]);
 	const row = pairs.get(id) ?? { a, b, role, games: 0, wins: 0 };
@@ -77,11 +93,14 @@ function recordPair<R extends Role | undefined>(
 }
 
 function recordAllies(
-	pairs: Map<string, Pair<undefined>>, picks: ReturnType<typeof teamPicks>, won: boolean,
+	pairs: Map<string, Pair<undefined>>,
+	picks: ReturnType<typeof teamPicks>,
+	won: boolean,
 ) {
 	const ids = [...picks.keys()].sort();
 	for (const [index, a] of ids.entries()) {
-		for (const b of ids.slice(index + 1)) recordPair(pairs, a, b, won, undefined);
+		for (const b of ids.slice(index + 1))
+			recordPair(pairs, a, b, won, undefined);
 	}
 }
 
@@ -104,7 +123,8 @@ export function deriveChampionContent(
 	);
 	function lookup(id: string) {
 		const counts = presence.get(id);
-		if (!counts) throw new Error(`Snapshot champion missing from catalog: ${id}`);
+		if (!counts)
+			throw new Error(`Snapshot champion missing from catalog: ${id}`);
 		return counts;
 	}
 	const opponents = new Map<string, Pair<Role>>();
@@ -139,18 +159,34 @@ export function deriveChampionContent(
 	}
 	const estimated: string[] = [];
 	const classFallbacks: string[] = [];
-	const champions = orderBy(catalog, ({ id }) => id).map(({ id, classes }): Champion => {
-		const { roles, damage, power, archetypes, cc, mobility, frontline, estimate } =
-			championProfile(id, classes);
-		if (estimate) estimated.push(id);
-		const classFallback = estimate === "class";
-		if (classFallback) classFallbacks.push(id);
-		return {
-			id, name: id,
-			positions: positions(lookup(id), games.length, roles, classFallback),
-			damage, power, archetypes: [...archetypes], cc, mobility, frontline,
-		};
-	});
+	const champions = orderBy(catalog, ({ id }) => id).map(
+		({ id, classes }): Champion => {
+			const {
+				roles,
+				damage,
+				power,
+				archetypes,
+				cc,
+				mobility,
+				frontline,
+				estimate,
+			} = championProfile(id, classes);
+			if (estimate) estimated.push(id);
+			const classFallback = estimate === "class";
+			if (classFallback) classFallbacks.push(id);
+			return {
+				id,
+				name: id,
+				positions: positions(lookup(id), games.length, roles, classFallback),
+				damage,
+				power,
+				archetypes: [...archetypes],
+				cc,
+				mobility,
+				frontline,
+			};
+		},
+	);
 	const matchups: AiContent["matchups"] = orderBy(
 		sampled(opponents, minimumSample).flatMap(({ a, b, role, wins, games }) => {
 			const value = Math.round((20 * wins - 10 * games) / games) || 0;
@@ -163,8 +199,17 @@ export function deriveChampionContent(
 	);
 	const synergies: AiContent["synergies"] = sampled(allies, minimumSample).map(
 		({ a, b, wins, games }) => ({
-			a, b, value: Math.max(0, Math.round((12 * wins - 6 * games) / games)),
+			a,
+			b,
+			value: Math.max(0, Math.round((12 * wins - 6 * games) / games)),
 		}),
 	);
-	return { champions, matchups, synergies, estimated, classFallbacks, minimumSample };
+	return {
+		champions,
+		matchups,
+		synergies,
+		estimated,
+		classFallbacks,
+		minimumSample,
+	};
 }

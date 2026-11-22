@@ -10,6 +10,7 @@
 			"!packages/core/test/fixtures",
 			"!tools/data-pipeline/fixtures/leaguepedia",
 			"!packages/core/content/real/*.json",
+			"!packages/core/content/real/champions/*.json",
 			"!pnpm-lock.yaml",
 			"!.claude/settings.local.json",
 			"!.claude/skills",
