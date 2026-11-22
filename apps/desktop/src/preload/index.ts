@@ -5,12 +5,14 @@ import {
 	systemLocaleChannel,
 	windowChannels,
 } from "../shared/bridge";
+import { createAssetsApi } from "./assets";
 import { createCoreApi } from "./core";
 
 contextBridge.exposeInMainWorld("riftlegends", {
 	ping: () => ipcRenderer.invoke(pingChannel),
 	systemLocale: () => ipcRenderer.invoke(systemLocaleChannel),
 	core: createCoreApi(ipcRenderer),
+	assets: createAssetsApi(ipcRenderer),
 	window: {
 		minimize: () => ipcRenderer.invoke(windowChannels.minimize),
 		toggleMaximize: () => ipcRenderer.invoke(windowChannels.toggleMaximize),

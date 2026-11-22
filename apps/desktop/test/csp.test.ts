@@ -20,7 +20,7 @@ test("restricts the renderer to local resources and cached asset images", () => 
 		"default-src 'none'",
 		"font-src 'self'",
 		"form-action 'none'",
-		"img-src 'self' rl-asset:",
+		"img-src 'self' rl-asset: rift-asset:",
 		"script-src 'self'",
 		"style-src 'self'",
 	]);

@@ -12,7 +12,7 @@ test("preserves the exact CSP in the distributed renderer", async ({
 		appWindow.locator('meta[http-equiv="Content-Security-Policy"]'),
 	).toHaveAttribute(
 		"content",
-		"default-src 'none'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' rl-asset:; base-uri 'none'; form-action 'none'",
+		"default-src 'none'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' rl-asset: rift-asset:; base-uri 'none'; form-action 'none'",
 	);
 });
 
@@ -26,15 +26,20 @@ test("keeps Node globals out of the renderer", async ({ appWindow }) => {
 	).toEqual(["undefined", "undefined", "undefined"]);
 });
 
-test("exposes only ping, the system locale, the window controls and the core", async ({
+test("exposes only ping, the system locale, the window controls, assets and the core", async ({
 	appWindow,
 }) => {
 	expect(
 		await appWindow.evaluate(() => Object.keys(window.riftlegends).sort()),
-	).toEqual(["core", "ping", "systemLocale", "window"]);
+	).toEqual(["assets", "core", "ping", "systemLocale", "window"]);
 	expect(
 		await appWindow.evaluate(() => Object.keys(window.riftlegends.core).sort()),
 	).toEqual(["open", "query", "send", "subscribe"]);
+	expect(
+		await appWindow.evaluate(() =>
+			Object.keys(window.riftlegends.assets).sort(),
+		),
+	).toEqual(["status", "subscribe", "sync"]);
 	expect(
 		await appWindow.evaluate(() => window.riftlegends.systemLocale()),
 	).toBe("en-US");

@@ -2,7 +2,7 @@ export const dataDragon = "https://ddragon.leagueoflegends.com";
 export const communityDragon = "https://raw.communitydragon.org";
 export const versionsUrl = new URL("/api/versions.json", dataDragon);
 export const maxCatalogBytes = 4 * 1024 * 1024;
-const maxImageBytes = 1024 * 1024;
+export const maxImageBytes = 1024 * 1024;
 const maxChampions = 512;
 
 export const championCatalogs = [
