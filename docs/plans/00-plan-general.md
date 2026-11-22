@@ -84,6 +84,13 @@ Cada fase termina con un hito verificable y un commit o PR fusionado en `main`. 
 - Formatos: liga, grupos, Swiss propio (restricciones de región, sin revanchas) y eliminatorias simple y doble; calendario y ligas top; First Stand, MSI y Worlds.
 - **Formatos como datos, configurables al crear la carrera** (decisión del 22-11-2026): por defecto, el formato real de la temporada de cada competición (p. ej. tres splits con round robin y playoffs de doble eliminación; Swiss en Worlds). Al crear la carrera, el usuario puede cambiar por competición: número de splits, vueltas del round robin, Bo1/Bo3/Bo5 por fase, grupos o Swiss, eliminación simple o doble y plazas internacionales por región. Queda fijo durante la carrera salvo para temporadas futuras. Los mismos bloques sirven al modo Torneo.
 - Modo **Torneo** (IDEA §6) como primer consumidor.
+- **Sección «Competición» (petición del usuario, 22-11-2026):**
+  - temporada actual de todas las ligas, no solo la propia;
+  - clasificación de cada split;
+  - calendario y resultados;
+  - cuadros visuales de los playoffs (simple o doble eliminación) y de los internacionales (grupos, Swiss y eliminatorias);
+  - página de cada equipo: plantilla, racha y forma, partidos y estadísticas.
+- **Todas las partidas con el mismo motor** (decisión del 22-11-2026): las de otras regiones y equipos se juegan con el draft de la IA y la simulación por minuto, pero sin animación. Así sus picks, resultados y estadísticas son reales y alimentan el meta y el historial. La partida solo se ve animada si el usuario la abre. El presupuesto de tiempo de esta fase lo comprueba. Si no se cumple, se optimiza el motor antes que inventar un modo «rápido» que falsee los datos.
 - **Salida:** simular un año competitivo completo IA contra IA de forma determinista y en un tiempo acotado (presupuesto a fijar en su plan).
 
 ### Fase 5 — Carrera v1
@@ -91,6 +98,10 @@ Cada fase termina con un hito verificable y un commit o PR fusionado en `main`. 
 - **Gestor de carreras:** carreras ilimitadas (un SQLite por carrera, cada una con su propio equipo), pantalla de cargar y crear carrera, autoguardado, modo ironman opcional, backups rotativos con restauración, y exportar e importar el fichero de una carrera.
 - Proyecciones: clasificación, estadísticas, palmarés y head-to-head.
 - Pantallas densas: plantilla, calendario, clasificación y perfil de jugador o equipo.
+- **Ficha de jugador en todas partes (petición del usuario, 22-11-2026):** cualquier sitio donde salga un jugador lleva a su ficha. Esto incluye el mercado, la plantilla, el draft, los roles, los resultados, las noticias y el historial.
+  - **Ficha rápida:** al pasar el ratón o con clic derecho, con nivel, rol, nacionalidad, los 20 atributos y sus campeones principales con su maestría.
+  - **Perfil completo:** con un clic, en su propia pantalla, con atributos, estadísticas, maestrías, contrato, trayectoria y palmarés.
+  - **Una sola pieza:** es el mismo componente en todas las pantallas, con la misma pista visible de que se puede abrir (como la ficha de campeón, #318).
 - **Salida:** jugar un split completo y playoffs; cerrar y reabrir la carrera con un resultado idéntico al de continuar sin cerrar.
 
 ### Fase 6 — Jugadores, mercado y temporadas
@@ -103,10 +114,20 @@ Cada fase termina con un hito verificable y un commit o PR fusionado en `main`. 
 
 ### Fase 7 — Profundidad de gestión
 - Meta y parches entre splits (tiers dinámicos, notas de parche generadas).
+- **Petición del usuario (22-11-2026), parches y maestría:**
+  - **Parches:** cada cierto tiempo, un parche sube o baja el tier de algunos campeones y cambia sus counters y sinergias. Las notas del parche explican qué cambió.
+  - **Cómo evoluciona el meta:**
+    - **Meta que emerge:** el tier de cada campeón sale de las partidas simuladas de la propia carrera (presencia y % de victorias, por región y global). Cada región tiene su tendencia y los internacionales las mezclan.
+    - **Parches:** como Riot, nerfean lo que domina (mucha presencia o % de victorias alto) y mejoran lo olvidado. La IA de draft reacciona al tier nuevo.
+  - **Meta propio de cada carrera:** cada carrera parte de la tier list del contenido con el que empezó, y sus parches salen de su propia semilla. Dos carreras acaban con metas distintas; el draft rápido usa la tier list actual del contenido.
+  - **Maestría:** cada jugador tiene una maestría de 0 a 100 con cada campeón. Sube jugando partidas oficiales y scrims, y entrenándolo (plan 20), con coste de oportunidad: pocos campeones por semana. Baja despacio si no se juega.
+  - **Límites de la maestría:** el techo depende de su rol y su versatilidad. Un parche fuerte o un rework puede bajarla.
+  - **Efecto y dónde se ve:** pesa en la partida y en la IA de draft (comfort picks), y se ve en el perfil del jugador, en el draft y en la ficha de campeón.
 - **Propuesta del usuario (21-11-2026):** dirigir la partida como coach más allá del «Plan de partida» del plan 09: pausas tácticas en momentos clave (p. ej. minutos 15 y 25) para cambiar de plan (el «pivote estratégico»), ejecutadas mejor o peor según el shotcalling; y palancas nuevas (línea a la que se juega, invadir o defender la jungla, splitpush o agruparse), cada una con su efecto en la simulación y su calibración.
 - Scouting e información imperfecta.
 - Entrenamiento con coste de oportunidad (elegir qué atributos de cada jugador mejorar) y **scrims** ([IDEA §8](../../IDEA.md#8-novedades-respecto-a-draftsim)).
 - Moral, química y vestuario.
+- **Composiciones contra el rival (#320):** reparto de daño frente a resistencias especializadas (p. ej. todo mágico contra Galio) y estilos que se cruzan (engage, poke, splitpush, scaling), explicados en el desglose.
 - **Salida:** cada sistema influye en resultados de forma explicable (visible en el desglose) y probada con tests de propiedades.
 
 ### Fase 8 — Narrativa e historial
@@ -117,11 +138,16 @@ Cada fase termina con un hito verificable y un commit o PR fusionado en `main`. 
 ### Fase 9 — Presentación avanzada
 - Minimapa animado 2D (PixiJS) que reproduce los hechos de partida, celebraciones, pulido broadcast del draft y sonido.
 - **Propuesta del usuario para el plan 23 (21-11-2026):** inventario de objetos **visual** en el timeline, el minimapa y el resultado. Cada jugador acumula oro durante la partida y compra componentes, objetos y botas según su campeón; la build sale de un flujo de RNG propio y **no cambia la simulación**. Requisitos: oro por jugador durante la partida (en eventos o snapshots), objetos de Data Dragon en el modo real y objetos inventados en el ficticio. Los objetos como mecánica quedan descartados; solo se valorarían «picos de objeto» abstractos si la calibración o los playtests lo piden.
+- **Petición del usuario (22-11-2026):** el minimapa refleja el estado del mapa por equipo (torres, inhibidores, nexo y objetivos), el mismo que muestra el panel por equipo de «Partida en curso» (#310).
 - **Salida:** presupuestos de fluidez (60 fps en el PC gaming medio) en Windows y Arch Wayland.
 
 ### Fase 10 — Expansión de alcance
 - Ligas menores y ascensos, modo **Sandbox/Realidades** (edición de meta y plantillas, simulación IA contra IA).
 - **Salida:** subir desde una liga menor hasta una liga top en una carrera.
+
+### Fase 10b — Tutorial guiado (al final)
+- **Petición del usuario (22-11-2026):** tutorial guiado del juego, al final del desarrollo, cuando las pantallas estén estables. Recorre el draft rápido, la ficha de campeón, la partida y la carrera, y se puede repetir desde Ajustes.
+- **Librería candidata:** [Driver.js](https://driverjs.com/) (MIT, sin dependencias, sin framework, funciona sin red). React Joyride (MIT) es la alternativa; Shepherd.js (AGPL o comercial) e Intro.js (GPL o comercial) quedan descartadas por licencia. Se confirma con Context7 y se añade a `docs/libraries.md` en su plan.
 
 ### Fase 11 — Distribución
 - electron-builder (NSIS, AppImage, tar.gz) y un workflow que publica en el repo público `riftlegends-releases` con notas en inglés, guía de SmartScreen y aviso de Riot.

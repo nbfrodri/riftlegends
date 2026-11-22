@@ -18,7 +18,7 @@ Es una **app de escritorio instalable** (Electron) que funciona sin conexión, n
 ## Idioma
 
 - Código, identificadores, nombres de ramas y mensajes de commit: **inglés**.
-- Documentación, ADR, planes, issues y PR: **español** (el repo es privado).
+- Documentación, ADR, planes, issues y PR: **español**.
 - Textos de la UI: siempre en los catálogos i18n (ES y EN).
 
 ## Estilo de escritura

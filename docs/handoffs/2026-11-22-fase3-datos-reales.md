@@ -49,3 +49,17 @@ Revisado el 22-11: el CI de los PR #131, #245, #246 y #262 pasó. Lo que falló 
 - **Reglas de UI del usuario:** iconos y nunca glifos; nada de «Δ» ni números con signo, salvo + y − en el oro; campeones no disponibles en gris con raya diagonal; desplegables con estilo Caja.
 - **Datos:** no se falsean cabeceras de navegador; nunca se publican nombres reales de jugadores (huellas); los logos nunca van al repo.
 - **Comprobaciones:** `mise exec -- pnpm verify` (`VITEST_MAX_WORKERS=2` si la máquina va cargada) y `mise exec -- pnpm e2e`.
+
+## Delegaciones en Codex (22-11)
+
+Eventos e informes en `~/.cache/rift-tmp/codex/NN-events.jsonl` y `NN-report.json`. Se revisan antes de abrir PR.
+
+| Issue | Rama | Worktree | Modelo | Estado |
+| --- | --- | --- | --- | --- |
+| #291 | `perf/291-confirm-rerender` | `../riftlegends-291` | Codex sin uso (hasta 23:17) → Claude Sonnet medium | en curso |
+| #292 | `feat/292-series-panel` | `../riftlegends-292` | Codex sin uso → Claude Opus medium | en curso |
+| #293 | `feat/293-official-stat-icons` | `../riftlegends-293` | Codex sin uso → Claude Opus medium | en curso |
+| #251 | `feat/251-real-mode` | `../riftlegends-251` | Codex sin uso → Claude Opus medium | en curso |
+| #287 | `feat/287-career-component` | `../riftlegends-287` | Codex sin uso → Claude Sonnet medium | en curso |
+| #294 | — | — | gpt-6.2-astra high | espera a #293 |
+| #297 | — | — | — | espera a #287 y #292 |
