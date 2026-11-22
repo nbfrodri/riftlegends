@@ -1,7 +1,7 @@
 import type { SeriesSummary } from "@rift-legends/contracts";
 import { ChampionFace } from "@rift-legends/ui-kit/components/champion-face";
-import { RoleIcon } from "@rift-legends/ui-kit/components/role-icon";
 import { useTranslation } from "react-i18next";
+import { GameRoleIcon } from "../assets/game-role-icon";
 import {
 	clock,
 	type GameResult,
@@ -101,7 +101,7 @@ function Stats({
 								<span
 									className={`inline-flex items-center gap-1.5 ${line.side === "blue" ? "text-side-blue" : "text-side-red"}`}
 								>
-									<RoleIcon role={line.role} size={16} />
+									<GameRoleIcon role={line.role} size={16} />
 									{t("draft.result.stats.playerName", {
 										team: teamName(options, line.team),
 										role: t(`draft.roles.role.${line.role}`),

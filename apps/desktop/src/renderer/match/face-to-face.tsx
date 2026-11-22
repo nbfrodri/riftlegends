@@ -1,7 +1,7 @@
 import type { MapSnapshot, Side } from "@rift-legends/contracts";
-import { RoleIcon } from "@rift-legends/ui-kit/components/role-icon";
 import { Fragment } from "react";
 import { useTranslation } from "react-i18next";
+import { GameRoleIcon } from "../assets/game-role-icon";
 import { panel, panelTable, panelTitle } from "./classes";
 import {
 	sides,
@@ -149,7 +149,7 @@ export function FaceToFace({
 								<th scope="row">
 									<span className="flex flex-col items-center gap-px">
 										<span className="inline-flex items-center gap-1.5">
-											<RoleIcon role={role} size={16} />
+											<GameRoleIcon role={role} size={16} />
 											{t(`draft.roles.role.${role}`)}
 										</span>
 										<small className="font-normal text-[11px] text-muted leading-[1.2]">

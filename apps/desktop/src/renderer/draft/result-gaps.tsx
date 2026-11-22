@@ -1,6 +1,6 @@
 import type { Role, SeriesOptions } from "@rift-legends/contracts";
-import { RoleIcon } from "@rift-legends/ui-kit/components/role-icon";
 import { useTranslation } from "react-i18next";
+import { GameRoleIcon } from "../assets/game-role-icon";
 import { useGoldDiff } from "../match/scoreboard";
 import type { RoleGap } from "./result-data";
 import { teamName } from "./session";
@@ -72,7 +72,7 @@ export function GapsTable(props: {
 						>
 							<th scope="row" className="p-1.5 text-left font-semibold">
 								<span className="inline-flex items-center gap-1.5">
-									<RoleIcon role={gap.role} size={16} />
+									<GameRoleIcon role={gap.role} size={16} />
 									{roleLabel(gap.role)}
 								</span>
 							</th>
