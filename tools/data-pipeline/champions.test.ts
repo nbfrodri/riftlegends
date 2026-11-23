@@ -3,6 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { expect, it } from "vitest";
 import { catalogUrl, championFiles, readCatalog } from "./champions.ts";
+import { Client } from "./client.ts";
 
 const summary = [
 	{ id: -1, alias: "None", name: "None", roles: [] },
@@ -84,40 +85,84 @@ it("R1-R3 writes reproducible files from the cache and the snapshot", async () =
 		join(snapshotDir, "lpl.json"),
 		JSON.stringify(league("LPL", "b")),
 	);
+	await writeFile(join(snapshotDir, "history.json"), "{}");
 	let requests = 0;
 	const options = {
 		cacheDir: join(dir, "cache"),
 		snapshotDir,
 		outputDir,
-		minimumSample: 2,
+		priorGames: 2,
 		now: () => Date.UTC(2026, 10, 22),
 		fetch: async (url: string | URL | Request) => {
 			requests++;
-			expect(String(url)).toBe(catalogUrl);
-			return Response.json(summary);
+			if (String(url) === catalogUrl) return Response.json(summary);
+			const query = new URL(String(url)).searchParams;
+			const historicalPicks = query
+				.get("tables")
+				?.startsWith("ScoreboardPlayers");
+			const year = query.get("where")?.includes("2025") ? 2025 : 2024;
+			const rows = historicalPicks
+				? [
+						{
+							Champion: "Wukong",
+							Role: "jungle",
+							Games: year === 2025 ? "40" : "0",
+						},
+					]
+				: [{ Games: "100" }];
+			return Response.json({ cargoquery: rows.map((title) => ({ title })) });
 		},
+		sleep: async () => {},
 	};
+	await new Client(options).get(catalogUrl, readCatalog);
+	const offlineWithoutHistory = await championFiles({
+		...options,
+		offline: true,
+	});
+	expect(offlineWithoutHistory.missingSeasons).toEqual([2025, 2024]);
+	expect(requests).toBe(1);
 	await championFiles(options);
 	const first = await Promise.all(
-		["champions", "matchups", "synergies", "provenance"].map((name) =>
-			readFile(join(outputDir, `${name}.json`), "utf8"),
+		["champions", "matchups", "synergies", "provenance", "counters"].map(
+			(name) => readFile(join(outputDir, `${name}.json`), "utf8"),
 		),
 	);
 	await championFiles({ ...options, offline: true });
 	const second = await Promise.all(
-		["champions", "matchups", "synergies", "provenance"].map((name) =>
-			readFile(join(outputDir, `${name}.json`), "utf8"),
+		["champions", "matchups", "synergies", "provenance", "counters"].map(
+			(name) => readFile(join(outputDir, `${name}.json`), "utf8"),
 		),
 	);
 	expect(second).toEqual(first);
-	expect(requests).toBe(1);
+	expect(requests).toBe(5);
 	expect(JSON.parse(first[1] ?? "")).toEqual([
-		{ champion: "Annie", against: "MonkeyKing", role: "mid", value: 0 },
-		{ champion: "MonkeyKing", against: "Annie", role: "mid", value: 0 },
+		{
+			champion: "Annie",
+			against: "MonkeyKing",
+			role: "mid",
+			value: 2,
+			reasons: ["range", "lockdownVsDash"],
+		},
+		{
+			champion: "MonkeyKing",
+			against: "Annie",
+			role: "mid",
+			value: -2,
+			reasons: ["range", "lockdownVsDash"],
+		},
 	]);
 	const provenance = JSON.parse(first[3] ?? "");
 	expect(provenance.snapshot.retrievedAt).toBe("2026-11-21T00:00:00Z");
 	expect(provenance.catalog.url).toBe(catalogUrl);
 	expect(provenance.games).toBe(2);
+	expect(provenance.tierSeasons).toEqual({
+		current: 2026,
+		available: [2026, 2025, 2024],
+		missing: [],
+	});
+	expect(JSON.parse(first[0] ?? "")[1].positions).toContainEqual({
+		role: "jungle",
+		tier: "B",
+	});
 	expect(first[3]).not.toContain('"name"');
 });

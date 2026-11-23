@@ -39,6 +39,7 @@ export interface ImageDigest {
 }
 
 class Permanent extends Error {}
+export class OfflineCacheMiss extends Error {}
 
 function requestHeaders(url: string): Record<string, string> {
 	return new URL(url).hostname === "esports-api.lolesports.com"
@@ -239,7 +240,8 @@ export class Client {
 			this.queries.set(url, retrievedAt);
 			return result;
 		}
-		if (this.#options.offline) throw new Error(`Offline cache miss: ${url}`);
+		if (this.#options.offline)
+			throw new OfflineCacheMiss(`Offline cache miss: ${url}`);
 		const body = await this.#download(url, reader);
 		const result = parse(body);
 		const retrievedAt = new Date(this.#now()).toISOString();

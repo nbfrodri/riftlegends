@@ -1,4 +1,5 @@
 import type { AiContent, MatchContent } from "@rift-legends/contracts";
+import { championTraits } from "./champion-traits.ts";
 
 type DraftChampion = AiContent["champions"][number];
 type MatchChampion = MatchContent["champions"][number];
@@ -135,7 +136,7 @@ const curated: Readonly<Record<string, Profile>> = {
 	Jax: [["top"], "physical", "late", ["splitpush", "skirmish"], 6, 7, 7],
 	Jayce: [["top", "mid"], "physical", "early", ["poke", "skirmish"], 4, 5, 4],
 	Jhin: [["bot"], "physical", "mid", ["pick", "poke", "carry"], 7, 4, 2],
-	Jinx: [["bot"], "physical", "late", ["hypercarry", "carry"], 4, 4, 2],
+	Jinx: [["bot"], "physical", "late", ["hypercarry", "carry"], 4, 3, 2],
 	KSante: [["top"], "physical", "mid", ["tank", "peel", "skirmish"], 9, 7, 9],
 	Kaisa: [["bot"], "mixed", "late", ["dive", "hypercarry"], 1, 7, 2],
 	Kalista: [
@@ -465,6 +466,7 @@ export function championProfile(id: string, classes: readonly string[]) {
 	const fallback = classes.find((tag) => Object.hasOwn(classDefaults, tag));
 	const [roles, damage, power, archetypes, cc, mobility, frontline, uncertain] =
 		profile ?? (fallback ? classDefaults[fallback] : undefined) ?? generic;
+	const { estimate, ...traits } = championTraits(id, classes);
 	return {
 		roles,
 		damage,
@@ -473,6 +475,11 @@ export function championProfile(id: string, classes: readonly string[]) {
 		cc,
 		mobility,
 		frontline,
-		estimate: profile ? (uncertain ? "curation" : undefined) : "class",
+		...traits,
+		estimate: profile
+			? uncertain || estimate
+				? "curation"
+				: undefined
+			: "class",
 	};
 }

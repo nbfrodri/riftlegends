@@ -16,8 +16,11 @@ import {
 	type CatalogChampion,
 	deriveChampionContent,
 } from "./champion-content.ts";
+import { championHistory } from "./champion-history.ts";
 import { Client, type ClientOptions } from "./client.ts";
 import { compare } from "./queries.ts";
+import { leagues } from "./scope.ts";
+import { seasonOf } from "./season.ts";
 
 // Pinned patch of the CommunityDragon catalog. Only ids, numeric keys and
 // classes are read from it; names and titles never reach the repository.
@@ -27,7 +30,7 @@ export const catalogUrl = `https://raw.communitydragon.org/${communityDragonPatc
 interface ChampionOptions extends ClientOptions {
 	snapshotDir: string;
 	outputDir: string;
-	minimumSample?: number | undefined;
+	priorGames?: number | undefined;
 }
 
 function record(value: unknown): Record<string, unknown> {
@@ -70,8 +73,11 @@ const rows = (values: readonly unknown[]) =>
 export async function championFiles(options: ChampionOptions) {
 	const client = new Client(options);
 	const catalog = await client.get(catalogUrl, readCatalog);
+	const leagueFiles = new Set(
+		leagues.map(({ id }) => `${id.toLowerCase()}.json`),
+	);
 	const files = (await readdir(options.snapshotDir))
-		.filter((file) => file.endsWith(".json"))
+		.filter((file) => leagueFiles.has(file))
 		.sort(compare);
 	const snapshots: RealSnapshot[] = [];
 	for (const file of files) {
@@ -82,17 +88,43 @@ export async function championFiles(options: ChampionOptions) {
 		);
 	}
 	const games = snapshots.flatMap((snapshot) => snapshot.games);
+	const season = seasonOf(snapshots);
+	if (!season) throw new Error("Cannot determine the season of the snapshot");
+	let picks = 0;
+	let bans = 0;
+	for (const game of games) {
+		if (Number(game.date.slice(0, 4)) !== season) continue;
+		for (const team of game.teams) {
+			picks += team.picks.filter(Boolean).length;
+			bans += team.bans.filter(Boolean).length;
+		}
+	}
+	const history = await championHistory(
+		client.withCache(join(options.cacheDir, "history")),
+		catalog,
+		season,
+		picks ? bans / picks : 0,
+	);
+	const tierSeasons = {
+		current: season,
+		available: [season, ...history.seasons.map(({ year }) => year)],
+		missing: history.missing,
+	};
 	const {
 		champions,
 		matchups,
+		counters,
 		synergies,
 		estimated,
 		classFallbacks,
-		minimumSample,
-	} = deriveChampionContent(catalog, games, options.minimumSample);
+		priorGames,
+	} = deriveChampionContent(catalog, games, {
+		priorGames: options.priorGames,
+		season,
+		history: history.seasons,
+	});
 	const provenance = {
-		source:
-			"Derived from the Leaguepedia 2026 snapshot (CC BY-SA 3.0); see real/LICENSE",
+		source: `Derived from champion kit profiles and Leaguepedia (CC BY-SA 3.0); see real/LICENSE`,
 		catalog: {
 			url: catalogUrl,
 			retrievedAt: client.queries.get(catalogUrl),
@@ -109,10 +141,12 @@ export async function championFiles(options: ChampionOptions) {
 			attribution: snapshots[0]?.provenance.attribution,
 		},
 		games: games.length,
-		minimumSample,
+		priorGames,
+		tierSeasons,
 		counts: {
 			champions: champions.length,
 			matchups: matchups.length,
+			counters: counters.length,
 			synergies: synergies.length,
 		},
 		estimated,
@@ -121,6 +155,7 @@ export async function championFiles(options: ChampionOptions) {
 	const output = new Map([
 		["champions.json", rows(champions)],
 		["matchups.json", rows(matchups)],
+		["counters.json", rows(counters)],
 		["synergies.json", rows(synergies)],
 		["provenance.json", `${JSON.stringify(provenance, null, "\t")}\n`],
 	]);
@@ -138,5 +173,5 @@ export async function championFiles(options: ChampionOptions) {
 	} finally {
 		await rm(staging, { recursive: true, force: true });
 	}
-	return provenance.counts;
+	return { counts: provenance.counts, missingSeasons: history.missing };
 }
