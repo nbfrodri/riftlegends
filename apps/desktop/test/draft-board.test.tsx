@@ -367,12 +367,12 @@ describe("draft board (U3)", () => {
 		expect(tierOf("Gravelspan")).toBe("B");
 	});
 
-	test("#376: the card hint shows a card icon on the tile and right click plus card in the pool header", async () => {
+	test("#398: the card hint shows the right-click icon on the tile and right click plus card in the pool header", async () => {
 		const user = userEvent.setup();
 		await renderWithDraftCore(<DraftScreen />);
 		await toBoard(user);
 		const hint = tile("Cragbell").querySelector('[data-slot="card-hint"]');
-		expect(hint?.classList.contains("lucide-id-card")).toBe(true);
+		expect(hint?.classList.contains("lucide-mouse-right")).toBe(true);
 		const header = screen.getByRole("button", { name: "Right click: card" });
 		expect(
 			[...header.querySelectorAll("svg")].map((icon) =>

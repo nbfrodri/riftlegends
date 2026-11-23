@@ -1,6 +1,6 @@
 import { type Role, TIERS } from "@rift-legends/contracts";
 import { Tooltip } from "@rift-legends/ui-kit/components/tooltip";
-import { IdCard, LayoutGrid } from "lucide-react";
+import { LayoutGrid, MouseRight } from "lucide-react";
 import { type KeyboardEvent, memo, useCallback, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { GameRoleIcon } from "../../assets/game-role-icon";
@@ -90,7 +90,7 @@ const Tile = memo(function Tile(props: {
 						{props.tier}
 					</span>
 				)}
-				<IdCard
+				<MouseRight
 					data-slot="card-hint"
 					aria-hidden
 					className="pointer-events-none absolute right-1 top-1 hidden size-5 rounded-control bg-panel/85 p-0.5 text-action group-hover:block group-focus-visible:block"
