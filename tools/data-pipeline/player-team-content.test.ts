@@ -277,3 +277,72 @@ test("a player has a nationality only when the data has one", () => {
 		buildPlayerTeamContent([source]).players.some((p) => "nationality" in p),
 	).toBe(false);
 });
+
+function splits() {
+	const source = snapshot([]);
+	const played = (tournament: string, day: number, a: string, b: string) => ({
+		...game(day, [line("Starter", { team: a })]),
+		id: `${tournament}-${a}-${b}`,
+		tournament,
+		teams: [
+			{ id: a, side: "blue" as const, picks: [], bans: [] },
+			{ id: b, side: "red" as const, picks: [], bans: [] },
+		] as Game["teams"],
+	});
+	return {
+		...source,
+		tournaments: [
+			{ id: "spring", name: "Spring", startsOn: "2026-02-01" },
+			{ id: "summer", name: "Summer", startsOn: "2026-07-01" },
+			{ id: "summer-po", name: "Summer Playoffs", startsOn: "2026-09-01" },
+		],
+		teams: ["Alpha", "Beta", "Guest"].map((id) => ({
+			id,
+			name: id,
+			league: "LCK",
+		})),
+		rosters: [],
+		seasonPlayers: [
+			{
+				id: "Starter",
+				name: "Starter",
+				team: "Alpha",
+				role: "bot" as const,
+				sub: false,
+			},
+			{
+				id: "Visitor",
+				name: "Visitor",
+				team: "Guest",
+				role: "top" as const,
+				sub: false,
+			},
+		],
+		games: [
+			played("spring", 1, "Alpha", "Guest"),
+			played("spring", 2, "Alpha", "Beta"),
+			played("summer", 3, "Alpha", "Beta"),
+			played("summer-po", 4, "Alpha", "Beta"),
+		],
+	} satisfies RealSnapshot;
+}
+
+test("league teams are those of the latest split; guests stay out with their players", () => {
+	const { teams, players } = buildPlayerTeamContent([splits()]);
+	expect(teams.map((t) => t.id).sort()).toEqual(["Alpha", "Beta"]);
+	expect(players.some((p) => p.team === "Guest")).toBe(false);
+	expect(players.some((p) => p.id === "Visitor")).toBe(false);
+});
+
+test("league member exceptions can add or drop a team", () => {
+	const ids = (exceptions: Parameters<typeof buildPlayerTeamContent>[3]) =>
+		buildPlayerTeamContent([splits()], new Map(), new Map(), exceptions)
+			.teams.map((t) => t.id)
+			.sort();
+	expect(ids({ include: { LCK: ["Guest"] }, exclude: {} })).toEqual([
+		"Alpha",
+		"Beta",
+		"Guest",
+	]);
+	expect(ids({ include: {}, exclude: { LCK: ["Beta"] } })).toEqual(["Alpha"]);
+});

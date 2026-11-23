@@ -101,6 +101,16 @@ test("older snapshots without nationality data still produce player content", as
 	}
 });
 
+test("each league has the teams of its latest split (#368)", async () => {
+	const teams: { id: string; league: string }[] = await read("teams.json");
+	const count = (league: string) =>
+		teams.filter((team) => team.league === league).length;
+	expect(count("LEC")).toBe(10);
+	expect(count("LPL")).toBe(12);
+	expect(teams.some((team) => team.id === "Los Ratones")).toBe(false);
+	expect(teams.some((team) => team.id === "Karmine Corp Blue")).toBe(false);
+});
+
 test("real players and teams have the shape of the fictional content", async () => {
 	const players: Record<string, unknown>[] = await read("players.json");
 	const teams: { id: string; seed: number }[] = await read("teams.json");

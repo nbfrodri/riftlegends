@@ -2,6 +2,11 @@ import type { RealSnapshot } from "@rift-legends/contracts/real-snapshot";
 import { attributeProfiles, playerLevel, type Role } from "./attributes.ts";
 import { careerStrength, type Season } from "./career.ts";
 import { coachStyles } from "./coach-style.ts";
+import {
+	type LeagueMemberExceptions,
+	leagueMemberExceptions,
+	leagueTeamIds,
+} from "./league-members.ts";
 import { eloOf, leagueRating } from "./league-strength.ts";
 import { groupBy } from "./normalization.ts";
 import { compare } from "./queries.ts";
@@ -125,7 +130,13 @@ function together(games: readonly Game[]) {
 
 export type CareerHistory = ReadonlyMap<string, readonly Season[]>;
 
-function build(snapshot: RealSnapshot, careers: CareerHistory, season: number) {
+function build(
+	snapshot: RealSnapshot,
+	careers: CareerHistory,
+	season: number,
+	exceptions: LeagueMemberExceptions,
+) {
+	const inLeague = leagueTeamIds(snapshot, exceptions);
 	const profileOf = attributeProfiles(snapshot);
 	const styleOf = coachStyles(snapshot.games);
 	const pools = rolePools(snapshot.games);
@@ -176,6 +187,7 @@ function build(snapshot: RealSnapshot, careers: CareerHistory, season: number) {
 	};
 
 	const members = snapshot.seasonPlayers.flatMap((player) => {
+		if (!inLeague.has(player.team)) return [];
 		const seen = [
 			...groupBy(rolesByPlayer.get(player.id) ?? [], (line) => line.role ?? ""),
 		].sort((a, b) => b[1].length - a[1].length || compare(a[0], b[0]))[0]?.[0];
@@ -200,92 +212,96 @@ function build(snapshot: RealSnapshot, careers: CareerHistory, season: number) {
 	);
 	const games = (id: string) =>
 		snapshot.games.filter((game) => game.teams.some((t) => t.id === id));
-	const teams = snapshot.teams.map((team: Team) => {
-		const played = games(team.id);
-		const roster = members.filter((member) => member.team === team.id);
-		for (const role of roles) {
-			if (!roster.some((member) => member.row.role === role))
-				roster.push({
-					team: team.id,
-					...make(`${team.id}-${role}`, team.id, role, {
-						handle: `${team.short ?? team.id} ${role}`,
-						placeholder: true,
-					}),
-				});
-		}
-		roster.sort(
-			(a, b) =>
-				roles.indexOf(a.row.role) - roles.indexOf(b.row.role) ||
-				Number(b.row.sub ?? false) - Number(a.row.sub ?? false) ||
-				a.games - b.games ||
-				compare(a.row.id, b.row.id),
-		);
-		// The last player of a role is the one the core uses (see content-index).
-		const starters = roles.flatMap(
-			(role) => roster.filter((m) => m.row.role === role).at(-1) ?? [],
-		);
-		const leader = starters.reduce((best, member) =>
-			member.row.attributes.shotcalling > best.row.attributes.shotcalling ||
-			(member.row.attributes.shotcalling === best.row.attributes.shotcalling &&
-				leaderOrder.indexOf(member.row.role) <
-					leaderOrder.indexOf(best.row.role))
-				? member
-				: best,
-		);
-		leader.row.leader = true;
-		const starter = (role: Role) =>
-			starters.find((member) => member.row.role === role)?.row.id ?? "";
-		const link = (a: Role, b: Role) => ({
-			a: starter(a),
-			b: starter(b),
-			value: Math.round(
-				40 +
-					(40 * gamesTogether(starter(a), starter(b))) /
-						(gamesTogether(starter(a), starter(b)) + 20),
-			),
-		});
-		const coach = coachOf(snapshot, team.id);
-		// Elo-like rating: league prior plus the smoothed win rate (12 prior
-		// games at 50 %, playoff games count double), rounded to whole points.
-		const weight = (game: Game) => (playoffs.has(game.tournament) ? 2 : 1);
-		const total = played.reduce((sum, game) => sum + weight(game), 0);
-		const won = played
-			.filter((game) => game.winner === team.id)
-			.reduce((sum, game) => sum + weight(game), 0);
-		const rating = Math.round(
-			(leagueRating[snapshot.league.id] ?? 0) + eloOf((won + 6) / (total + 12)),
-		);
-		return {
-			score: rating,
-			players: roster.map((member) => member.row),
-			team: {
-				id: team.id,
-				name: team.name,
-				...(team.short ? { short: team.short } : {}),
-				league: team.league,
-				...(team.logo ? { logo: team.logo } : {}),
-				seed: 0,
-				coach: {
-					name: coach?.name ?? "—",
-					personality: coach
-						? styleOf(team.id)
-						: ("balanced" as ReturnType<typeof styleOf>),
-					rating: 25,
+	const teams = snapshot.teams
+		.filter((team) => inLeague.has(team.id))
+		.map((team: Team) => {
+			const played = games(team.id);
+			const roster = members.filter((member) => member.team === team.id);
+			for (const role of roles) {
+				if (!roster.some((member) => member.row.role === role))
+					roster.push({
+						team: team.id,
+						...make(`${team.id}-${role}`, team.id, role, {
+							handle: `${team.short ?? team.id} ${role}`,
+							placeholder: true,
+						}),
+					});
+			}
+			roster.sort(
+				(a, b) =>
+					roles.indexOf(a.row.role) - roles.indexOf(b.row.role) ||
+					Number(b.row.sub ?? false) - Number(a.row.sub ?? false) ||
+					a.games - b.games ||
+					compare(a.row.id, b.row.id),
+			);
+			// The last player of a role is the one the core uses (see content-index).
+			const starters = roles.flatMap(
+				(role) => roster.filter((m) => m.row.role === role).at(-1) ?? [],
+			);
+			const leader = starters.reduce((best, member) =>
+				member.row.attributes.shotcalling > best.row.attributes.shotcalling ||
+				(member.row.attributes.shotcalling ===
+					best.row.attributes.shotcalling &&
+					leaderOrder.indexOf(member.row.role) <
+						leaderOrder.indexOf(best.row.role))
+					? member
+					: best,
+			);
+			leader.row.leader = true;
+			const starter = (role: Role) =>
+				starters.find((member) => member.row.role === role)?.row.id ?? "";
+			const link = (a: Role, b: Role) => ({
+				a: starter(a),
+				b: starter(b),
+				value: Math.round(
+					40 +
+						(40 * gamesTogether(starter(a), starter(b))) /
+							(gamesTogether(starter(a), starter(b)) + 20),
+				),
+			});
+			const coach = coachOf(snapshot, team.id);
+			// Elo-like rating: league prior plus the smoothed win rate (12 prior
+			// games at 50 %, playoff games count double), rounded to whole points.
+			const weight = (game: Game) => (playoffs.has(game.tournament) ? 2 : 1);
+			const total = played.reduce((sum, game) => sum + weight(game), 0);
+			const won = played
+				.filter((game) => game.winner === team.id)
+				.reduce((sum, game) => sum + weight(game), 0);
+			const rating = Math.round(
+				(leagueRating[snapshot.league.id] ?? 0) +
+					eloOf((won + 6) / (total + 12)),
+			);
+			return {
+				score: rating,
+				players: roster.map((member) => member.row),
+				team: {
+					id: team.id,
+					name: team.name,
+					...(team.short ? { short: team.short } : {}),
+					league: team.league,
+					...(team.logo ? { logo: team.logo } : {}),
+					seed: 0,
+					coach: {
+						name: coach?.name ?? "—",
+						personality: coach
+							? styleOf(team.id)
+							: ("balanced" as ReturnType<typeof styleOf>),
+						rating: 25,
+					},
+					chemistry: [
+						link("top", "jungle"),
+						link("mid", "jungle"),
+						link("bot", "support"),
+					],
+					strategy: {
+						tempo: "balanced",
+						objectives: "balanced",
+						risk: "balanced",
+					} as const,
+					adaptation: 50,
 				},
-				chemistry: [
-					link("top", "jungle"),
-					link("mid", "jungle"),
-					link("bot", "support"),
-				],
-				strategy: {
-					tempo: "balanced",
-					objectives: "balanced",
-					risk: "balanced",
-				} as const,
-				adaptation: 50,
-			},
-		};
-	});
+			};
+		});
 	return teams;
 }
 
@@ -334,12 +350,15 @@ export function buildPlayerTeamContent(
 	snapshots: readonly RealSnapshot[],
 	careers: CareerHistory = new Map(),
 	nationalities: ReadonlyMap<string, string> = new Map(),
+	exceptions: LeagueMemberExceptions = leagueMemberExceptions,
 ) {
 	const season = seasonOf(snapshots);
 	const built =
 		season === undefined
 			? []
-			: snapshots.flatMap((snapshot) => build(snapshot, careers, season));
+			: snapshots.flatMap((snapshot) =>
+					build(snapshot, careers, season, exceptions),
+				);
 	const ids = new Set<string>();
 	for (const { team, players } of built) {
 		for (const id of [team.id, ...players.map((p) => p.id)]) {
