@@ -117,16 +117,21 @@ const EventRow = memo(function EventRow({
 					{t(`draft.match.kind.${event.kind}`)}
 				</h3>
 				{event.kills.map(({ killer, victim, assists }, index) => (
-					<p
+					<div
 						// biome-ignore lint/suspicious/noArrayIndexKey: kills retain the order recorded in the event.
 						key={index}
-						className="flex flex-wrap items-center gap-x-1.5 gap-y-1"
+						data-kill
 					>
-						<Participant player={players.get(killer)} id={killer} />
-						{t("draft.match.killVerb")}
-						<Participant player={players.get(victim)} id={victim} />
+						<p className="flex flex-wrap items-center gap-x-1.5 gap-y-1">
+							<Participant player={players.get(killer)} id={killer} />
+							{t("draft.match.killVerb")}
+							<Participant player={players.get(victim)} id={victim} />
+						</p>
 						{assists.length > 0 && (
-							<>
+							<p
+								data-assists
+								className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-[12px]"
+							>
 								<span className="text-muted">
 									{t("draft.match.assistedBy")}
 								</span>
@@ -137,9 +142,9 @@ const EventRow = memo(function EventRow({
 										id={player}
 									/>
 								))}
-							</>
+							</p>
 						)}
-					</p>
+					</div>
 				))}
 				{causes.length > 2 ? (
 					<details className="text-muted">

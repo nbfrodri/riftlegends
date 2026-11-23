@@ -292,6 +292,9 @@ describe("fight events in the feed", () => {
 		expect(within(row).getAllByRole("img", { name: "Mid" })).toHaveLength(2);
 		expect(within(row).getByRole("img", { name: "Jungle" })).toBeTruthy();
 		expect(within(row).getByRole("img", { name: "Ahri" })).toBeTruthy();
+		const assists = row.querySelector("[data-assists]");
+		expect(assists?.textContent).toContain("Oner");
+		expect(assists?.textContent).not.toContain("Faker");
 		const team = within(row).getByRole("img", { name: "T1" });
 		await waitFor(() =>
 			expect(team.querySelector("img")?.getAttribute("src")).toBe(
