@@ -132,3 +132,67 @@ test("the draft fits and keeps the player card right under the board", async ({
 		).toEqual({ page: 0, main: 0 });
 	}
 });
+
+// #398: opening the champion card from the pool keeps the pool where it was.
+test("opening a champion card keeps the pool's scroll position", async ({
+	appWindow,
+	electronApp,
+}) => {
+	await seedNextSeries(electronApp, 7);
+	await appWindow.getByRole("button", { name: "Start series" }).click();
+	await appWindow.getByRole("button", { name: "Confirm choice" }).click();
+	await appWindow.getByRole("button", { name: "Go to draft" }).click();
+	const grid = appWindow.getByRole("group", { name: "Champions" });
+	const scrollTop = () => grid.evaluate((node) => node.scrollTop);
+	await grid.evaluate((node) => {
+		node.scrollTop = node.scrollHeight;
+	});
+	const before = await scrollTop();
+	expect(before).toBeGreaterThan(0);
+	const last = grid.getByRole("button").last();
+	await last.click({ button: "right" });
+	await expect(appWindow.locator("[data-champion-card]")).toBeVisible();
+	expect(await scrollTop()).toBe(before);
+	await appWindow.keyboard.press("Escape");
+	await expect(appWindow.locator("[data-champion-card]")).toHaveCount(0);
+	expect(await scrollTop()).toBe(before);
+	await last.press("i");
+	await expect(appWindow.locator("[data-champion-card]")).toBeVisible();
+	expect(await scrollTop()).toBe(before);
+});
+
+// #396: the open player card and AI read do not push the page down.
+test("the open player card and AI read fit without scrolling the page", async ({
+	appWindow,
+	electronApp,
+}) => {
+	await seedNextSeries(electronApp, 7);
+	await appWindow.getByRole("button", { name: "Start series" }).click();
+	await appWindow.getByRole("button", { name: "Confirm choice" }).click();
+	await appWindow.getByRole("button", { name: "Go to draft" }).click();
+	const player = appWindow.getByRole("group", { name: "Player card" });
+	await player.getByText("Player card", { exact: true }).click();
+	await expect(
+		player.getByRole("img", { name: "Portrait of Kilnara" }),
+	).toBeVisible();
+	await appWindow
+		.getByRole("group", { name: "AI decisions" })
+		.getByText("AI decisions", { exact: true })
+		.click();
+	for (const viewport of [
+		{ width: 1280, height: 720 },
+		{ width: 1366, height: 768 },
+	]) {
+		await appWindow.setViewportSize(viewport);
+		await expect(player.getByText("Composure")).toBeInViewport({ ratio: 1 });
+		expect(
+			await appWindow.evaluate(() => {
+				const main = document.querySelector("main");
+				return {
+					page: document.documentElement.scrollHeight - innerHeight,
+					main: main ? main.scrollHeight - main.clientHeight : 0,
+				};
+			}),
+		).toEqual({ page: 0, main: 0 });
+	}
+});

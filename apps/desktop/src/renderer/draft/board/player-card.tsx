@@ -58,7 +58,10 @@ function levelOf(value: number) {
 }
 const levelColor = { high: "text-good", mid: "", low: "text-bad" } as const;
 
-/** A collapsible panel under the board, as in the mockup. */
+/**
+ * A collapsible panel under the board, as in the mockup. Open, its content
+ * rises over the lower board and scrolls inside, so the page never grows (#396).
+ */
 export function InspectionPanel(props: {
 	id: string;
 	title: string;
@@ -74,7 +77,7 @@ export function InspectionPanel(props: {
 			aria-labelledby={`${props.id}-title`}
 			open={props.open}
 			onToggle={(event) => props.onOpenChange(event.currentTarget.open)}
-			className={`group min-w-0 border-t-2 bg-panel px-[15px] py-3 ${props.accent}`}
+			className={`group relative min-w-0 border-t-2 bg-panel px-[15px] py-3 ${props.accent}`}
 		>
 			<summary className="flex cursor-default list-none items-center gap-2 [&::-webkit-details-marker]:hidden">
 				<ChevronRight
@@ -93,7 +96,14 @@ export function InspectionPanel(props: {
 					</span>
 				)}
 			</summary>
-			{props.children}
+			<div
+				data-slot="panel-body"
+				className={`absolute inset-x-0 bottom-full z-30 max-h-[min(62vh,440px)] overflow-y-auto overscroll-contain border-t-2 bg-panel px-[15px] pb-3 shadow-[0_-12px_32px_rgb(0_0_0/0.45)] ${props.accent}`}
+				// biome-ignore lint/a11y/noNoninteractiveTabindex: the panel's body scrolls by keyboard.
+				tabIndex={0}
+			>
+				{props.children}
+			</div>
 		</details>
 	);
 }

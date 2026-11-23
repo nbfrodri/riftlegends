@@ -40,8 +40,11 @@ export function ChampionInspection({ children }: { children: ReactNode }) {
 		if (id) setOpen({ id, trigger });
 	}
 	return (
-		<fieldset
-			className="relative m-0 grid min-h-0 min-w-0 grid-cols-[minmax(0,1fr)_minmax(0,2fr)_minmax(0,1fr)] gap-3 border-0 p-0"
+		// A div, not a fieldset: Chromium rebuilds a fieldset's content box when a
+		// child is added, and the pool lost its scroll on opening the card (#398).
+		// biome-ignore lint/a11y/noStaticElementInteractions: delegates right click and I from the board's own buttons.
+		<div
+			className="relative grid min-h-0 min-w-0 grid-cols-[minmax(0,1fr)_minmax(0,2fr)_minmax(0,1fr)] gap-3"
 			onContextMenu={(e) => {
 				const trigger = triggerOf(e.target);
 				if (trigger) {
@@ -77,6 +80,6 @@ export function ChampionInspection({ children }: { children: ReactNode }) {
 					onClose={close}
 				/>
 			)}
-		</fieldset>
+		</div>
 	);
 }
