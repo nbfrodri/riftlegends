@@ -1,5 +1,5 @@
+import { useReducedMotion } from "@rift-legends/ui-kit/lib/use-reduced-motion";
 import { useEffect, useState } from "react";
-import { useReducedMotion } from "../use-reduced-motion";
 
 export const clockTime = (seconds: number) =>
 	[Math.floor(seconds / 60), seconds % 60]

@@ -1,7 +1,7 @@
+import { useReducedMotion } from "@rift-legends/ui-kit/lib/use-reduced-motion";
 import { animate } from "motion/mini";
 import { useEffect, useLayoutEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { useReducedMotion } from "../../use-reduced-motion";
 import { championLabel, teamName, useDraftSession } from "../session";
 import { pacing } from "./pacing";
 

@@ -4,6 +4,7 @@
 	"type": "module",
 	"exports": {
 		"./components/*": "./components/*.tsx",
+		"./lib/use-reduced-motion": "./lib/use-reduced-motion.ts",
 		"./lib/utils": "./lib/utils.ts",
 		"./styles.css": "./styles.css"
 	},
