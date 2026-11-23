@@ -139,7 +139,12 @@ test.describe("Quick draft", () => {
 				if (!wasOpen) await playerCard.locator("summary").click();
 				await expect(playerCard.getByText("Mecánicas")).toBeVisible();
 				await appWindow.mouse.move(0, 0);
-				await captureScreen(appWindow, "quick-draft-player-card.png");
+				await playerCard.scrollIntoViewIfNeeded();
+				await captureScreen(
+					appWindow,
+					"quick-draft-player-card.png",
+					playerCard,
+				);
 				if (!wasOpen) await playerCard.locator("summary").click();
 			}
 			if (screen === "match") {
