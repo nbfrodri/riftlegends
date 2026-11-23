@@ -1,6 +1,6 @@
 # Handoff · Fase 3, datos reales
 
-Estado: en curso (actualizado el 23-11 de madrugada)
+Estado: en curso (actualizado el 23-11 por la tarde)
 
 Para retomar en una sesión nueva. Decisiones en el [registro](../decisions/README.md); detalle en el [plan 11](../plans/11-datos-reales.md) y el [plan general](../plans/00-plan-general.md).
 
@@ -37,25 +37,26 @@ Para retomar en una sesión nueva. Decisiones en el [registro](../decisions/READ
   - tutorial con Driver.js al final;
   - fichajes de la IA (PR #333).
 
+## Hecho el 23-11
+
+- **Fusionado:** #305 elección dividida (#336), #321 counters y sinergias (#335), #315 tooltip Caja (#343), #318 ficha de campeón (#342), #365 ficha solo con clic derecho y campeón seleccionado (#369), #368 equipos del último split o de la mayoría de splits (#371), #367 retratos en alta resolución (#373) y #337 pantalla de partida con cara a cara en espejo (#372). Arreglo del test U3 (#359).
+- **Diseño:** plan 08 ampliado para la **Fase 3.5** (#341). Scouting, segundas divisiones y leyendas (#344). Ascensos y descensos (#370).
+- **Milestone Fase 3.5** con #320, #326, #338, #339, #345–#358, #361–#364, #366 y #374.
+
 ## En curso
 
-| Issue | Rama / PR | Estado | Cómo seguir |
+| Issue | Rama / worktree | Estado | Cómo seguir |
 | --- | --- | --- | --- |
-| #300 nacionalidad | PR #324 | Capturas subidas, CI en marcha | Fusionar si está en verde |
-| #333 fichajes IA (docs) | PR #333 | CI en marcha | Fusionar |
-| #305 elección dividida | `feat/305-split-side-choice`, `../riftlegends-305` | Codex gpt-6.2-astra high (desde el 23-11 ~4:20) | Leer `~/.cache/rift-tmp/codex/305-report.json`; revisar, `verify`/`e2e`, push, PR, capturas |
-| #321 counters, sinergias y tier para todos | `feat/321-champion-coverage`, `../riftlegends-321` | Codex gpt-6.2-sol high | Igual, con `321-report.json`. Comprobar la calibración K1–K5 |
+| #319 pantalla de Campeones | `feat/319-champions-screen`, `../riftlegends-319` | Codex gpt-6.2-astra high, cortado por límite; reanudación programada a las 22:50 | `~/.cache/rift-tmp/codex/319-report.json` o `319-events2.jsonl`; revisar, capturas, PR |
+| #360 fotos de jugadores | `feat/360-player-photos`, `../riftlegends-360` | Codex gpt-6.2-sol high, igual | Igual. Codex no tiene red: lanzar después el comando que regenera `photos.json` |
 
-Si Codex se corta, `tail -1 ~/.cache/rift-tmp/codex/NN-events.jsonl` dice por qué. Se retoma con `cd ../riftlegends-NN && codex exec resume <thread_id> ...` (el `thread_id` va en la primera línea de los eventos) o con un subagente de Claude desde el worktree.
+Para reanudar a mano: `~/.cache/rift-tmp/codex/resume.sh NN MODELO EFFORT` (usa el `thread_id` guardado en `NN.thread`).
 
 ## Siguiente (por orden)
 
-1. **#315:** tooltip Caja único para toda la app y guarda contra `title=`.
-2. **#318:** ficha de campeón (con pista visible de clic derecho). Después, **#319**: pantalla de Campeones con tier list por rol. Dependen de #321.
-3. **#326:** bajas, daño y nota realistas por rol y tipo de campeón (bandas sacadas del snapshot), junto con **#320**: composiciones contra las resistencias del rival. Necesitan una sección de diseño en el plan 08.
-4. **#297:** partir los módulos grandes. **#253:** calibración con contenido real, E2E en modo real y créditos; cierra el plan 11.
-
-## Cómo trabajar
+1. Cerrar la Fase 3: #319, #360, #340 (rasgos desde los datos del juego), #297 (partir módulos) y #253 (calibración real, E2E real, modo real por defecto y créditos).
+2. Subir el tiempo límite del test que parsea el contenido real (`packages/core/content/real.test.ts`): pasa de 5 s con la máquina cargada.
+3. Fase 3.5, en el orden de dependencias de sus issues.
 
 ## Cómo trabajar
 
