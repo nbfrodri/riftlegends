@@ -2,6 +2,14 @@
 // rule base reads (#340, plan 11). A trait the game data decides is never
 // replaced by the curated estimate; only the traits it cannot decide are kept
 // from the table and listed for review.
+
+import {
+	ccLevel,
+	damageOf,
+	isHardCc as hardCc,
+	mobilityOf,
+	needsAirborne,
+} from "./champion-kit-profile.ts";
 import type { ChampionKit, KitSlot } from "./champion-kit-source.ts";
 import { estimatedTraits, type Kit } from "./champion-traits.ts";
 
@@ -12,6 +20,13 @@ interface TraitSources {
 	cc: TraitSource;
 	split: TraitSource;
 	kit: TraitSource;
+	damage: TraitSource;
+	ccLevel: TraitSource;
+	mobility: TraitSource;
+	// The game data does not decide these; they always come from the table.
+	frontline: TraitSource;
+	power: TraitSource;
+	archetypes: TraitSource;
 }
 
 /** Canonical order of the kit traits in the generated content. */
@@ -55,34 +70,10 @@ const decided: ReadonlySet<Kit> = new Set([
 	"hook",
 ]);
 
-const hardStatuses = new Set([
-	"knockup",
-	"knockback",
-	"pull",
-	"stun",
-	"root",
-	"charm",
-	"fear",
-	"taunt",
-	"suppress",
-	"sleep",
-	"polymorph",
-	"disable",
-]);
 const castSlots = ["q", "w", "e", "r"] as const;
-
 const hasTag = (slot: KitSlot, ...tags: string[]) =>
 	tags.some((tag) => slot.tags.includes(tag));
-const hasStatus = (slot: KitSlot) =>
-	slot.statuses.some((s) => hardStatuses.has(s));
 
-/** An ultimate or spell that only acts on an airborne target is no crowd control. */
-const needsAirborne = (slot: KitSlot) =>
-	slot.statuses.includes("airborne") && !hasStatus(slot);
-const hardCc = (slot: KitSlot) =>
-	!needsAirborne(slot) &&
-	(hasStatus(slot) ||
-		hasTag(slot, "ImmobilizingCCSpell", "ImmobilizingCCAbility"));
 const areaTags = ["AoE", "Target_Area"];
 const missileTags = ["Ranged_StopsFirstHit", "Ranged_Piercing"];
 const skillshotTags = [...missileTags, "Target_Directional"];
@@ -205,7 +196,18 @@ export function kitTraits(
 				cc: "estimated",
 				split: "estimated",
 				kit: "estimated",
+				damage: "estimated",
+				ccLevel: "estimated",
+				mobility: "estimated",
+				frontline: "estimated",
+				power: "estimated",
+				archetypes: "estimated",
 			} satisfies TraitSources,
+			profile: {} as {
+				damage?: "physical" | "magic" | "mixed" | "utility";
+				cc?: number;
+				mobility?: number;
+			},
 			estimatedKit: [...estimate.kit],
 		};
 	}
@@ -220,12 +222,27 @@ export function kitTraits(
 		split: split ?? estimate.split,
 		kit: kitOrder.filter((trait) => merged.has(trait)),
 		estimate: estimate.estimate,
+		profile: {
+			damage: split ? damageOf(split, derived.has("enchanter")) : undefined,
+			cc: ccLevel(kit),
+			mobility: mobilityOf(kit),
+		} as {
+			damage?: "physical" | "magic" | "mixed" | "utility";
+			cc?: number;
+			mobility?: number;
+		},
 		sources: {
 			range: "source",
 			sustain: "rule",
 			cc: "rule",
 			split: split ? "rule" : "estimated",
 			kit: "rule",
+			damage: split ? "rule" : "estimated",
+			ccLevel: "rule",
+			mobility: "rule",
+			frontline: "estimated",
+			power: "estimated",
+			archetypes: "estimated",
 		} satisfies TraitSources,
 		estimatedKit: kitOrder.filter((trait) => kept.includes(trait)),
 	};

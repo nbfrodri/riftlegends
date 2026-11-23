@@ -469,9 +469,21 @@ export function championProfile(
 ) {
 	const profile = Object.hasOwn(curated, id) ? curated[id] : undefined;
 	const fallback = classes.find((tag) => Object.hasOwn(classDefaults, tag));
-	const [roles, damage, power, archetypes, cc, mobility, frontline, uncertain] =
-		profile ?? (fallback ? classDefaults[fallback] : undefined) ?? generic;
-	const { estimate, ...traits } = kitTraits(id, classes, kit);
+	const [
+		roles,
+		curatedDamage,
+		power,
+		archetypes,
+		curatedCc,
+		curatedMobility,
+		frontline,
+		uncertain,
+	] = profile ?? (fallback ? classDefaults[fallback] : undefined) ?? generic;
+	const { estimate, profile: derived, ...traits } = kitTraits(id, classes, kit);
+	// What the game data decides is never replaced by the curated table.
+	const damage = derived.damage ?? curatedDamage;
+	const cc = derived.cc ?? curatedCc;
+	const mobility = derived.mobility ?? curatedMobility;
 	return {
 		roles,
 		damage,

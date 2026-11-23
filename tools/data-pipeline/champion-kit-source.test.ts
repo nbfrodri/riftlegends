@@ -79,6 +79,19 @@ it("reads the main spell even when the ability does not list it as a child", () 
 	]);
 });
 
+it("reads movement speed and teleports as mobility signals", () => {
+	const custom = { ...tooltips, spell_galioq_tooltip: "<speed>x</speed>" };
+	const galio = readKit("Galio", fixture("galio.bin.json"), custom);
+	expect(galio.slots.q.marks).toEqual(["speed"]);
+	const moving = {
+		...tooltips,
+		spell_galioq_tooltip: "Galio dashes forward, then Blinks away.",
+	};
+	expect(
+		readKit("Galio", fixture("galio.bin.json"), moving).slots.q.marks,
+	).toEqual(["dash"]);
+});
+
 it("rejects a response without a character record", () => {
 	expect(() => readKit("Galio", {}, tooltips)).toThrow(/character record/i);
 });

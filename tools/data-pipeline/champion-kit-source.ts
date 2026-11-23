@@ -5,7 +5,7 @@
 
 type SlotId = "q" | "w" | "e" | "r" | "p";
 type DamageType = "physical" | "magic" | "true";
-type Mark = "heal" | "shield" | "antiheal";
+type Mark = "heal" | "shield" | "antiheal" | "speed" | "dash";
 
 export interface KitSlot {
 	/** Spell tags without the `Trait_` prefix, limited to {@link tagWhitelist}. */
@@ -43,6 +43,7 @@ const tagWhitelist = new Set([
 	"PassiveShield",
 	"ActiveHeal",
 	"SelfHeal",
+	"PositiveEffect_Teleport",
 ]);
 
 const slotIds = ["q", "w", "e", "r"] as const;
@@ -127,6 +128,10 @@ function describe(text: string) {
 	if (text.includes("<healing>")) marks.push("heal");
 	if (text.includes("<shield>")) marks.push("shield");
 	if (/grievous wounds/i.test(text)) marks.push("antiheal");
+	if (text.includes("<speed>")) marks.push("speed");
+	// The champion moves itself: dashes, blinks, leaps and jumps.
+	if (/\b(dash(es|ing)?|blinks?|leaps?|jumps?)\b/i.test(text))
+		marks.push("dash");
 	return { statuses: [...statuses], damage, marks };
 }
 

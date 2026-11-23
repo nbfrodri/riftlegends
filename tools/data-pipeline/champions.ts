@@ -166,9 +166,12 @@ export async function championFiles(options: ChampionOptions) {
 				.filter(({ ultCooldown }) => !ultCooldown)
 				.map(({ id }) => id),
 		},
-		// Champions with at least one trait that is still an estimate.
+		// Champions whose data-decidable traits include an estimate. Frontline,
+		// power and archetypes are always estimates and not listed here.
 		traitsToReview: traits
-			.filter(({ sources }) => Object.values(sources).includes("estimated"))
+			.filter(({ sources: { frontline, power, archetypes, ...decidable } }) =>
+				Object.values(decidable).includes("estimated"),
+			)
 			.map(({ id }) => id),
 		games: games.length,
 		priorGames,

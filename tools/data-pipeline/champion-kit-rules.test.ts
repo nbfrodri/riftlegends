@@ -105,6 +105,12 @@ it("falls back to the estimates, marked, when there is no kit data", () => {
 		cc: "estimated",
 		split: "estimated",
 		kit: "estimated",
+		damage: "estimated",
+		ccLevel: "estimated",
+		mobility: "estimated",
+		frontline: "estimated",
+		power: "estimated",
+		archetypes: "estimated",
 	});
 	expect(fallback.kit).toEqual(estimatedTraits("Galio", []).kit);
 });
@@ -126,4 +132,48 @@ it("orders the kit traits canonically and knows every curated trait", () => {
 	expect(
 		[...galio].sort((a, b) => kitOrder.indexOf(a) - kitOrder.indexOf(b)),
 	).toEqual([...galio]);
+});
+
+it("derives the damage type from the damage split", () => {
+	expect(traits("Galio").profile.damage).toBe("magic");
+	expect(traits("Soraka").profile.damage).toBe("magic");
+	expect(traits("Yasuo").profile.damage).toBe("physical");
+	expect(traits("Jinx", ["marksman"]).profile.damage).toBe("physical");
+	expect(traits("Malphite").profile.damage).toBe("magic");
+	expect(traits("Soraka", ["support"]).profile.damage).toBe("utility");
+	expect(traits("Yasuo", []).split).toEqual([75, 25, 0]);
+	expect(traits("Galio").sources.damage).toBe("rule");
+});
+
+it("scores crowd control by ability: hard, in an area and in the ultimate weigh more", () => {
+	// Galio: knock-up 3, taunt in an area 4, ultimate knock-up in an area 5, capped at 10.
+	expect(traits("Galio").profile.cc).toBe(10);
+	// Yasuo: one knock-up in an area; the ultimate only needs an airborne target.
+	expect(traits("Yasuo").profile.cc).toBe(4);
+	// Jinx: root in an area 4, slow 1.
+	expect(traits("Jinx").profile.cc).toBe(5);
+	expect(traits("Galio").sources.ccLevel).toBe("rule");
+});
+
+it("scores mobility from dashes, speed buffs and melee range", () => {
+	const galio = traits("Galio").profile.mobility;
+	expect(galio).toBeGreaterThan(traits("Thresh").profile.mobility ?? 0);
+	expect(galio).toBeLessThanOrEqual(10);
+	expect(traits("Galio").sources.mobility).toBe("rule");
+});
+
+it("keeps frontline, power and archetypes as estimates", () => {
+	expect(traits("Galio").sources).toMatchObject({
+		frontline: "estimated",
+		power: "estimated",
+		archetypes: "estimated",
+	});
+});
+
+it("falls back to the curated damage when the tooltips list none", () => {
+	const bare = kit("Galio");
+	for (const slot of Object.values(bare.slots)) slot.damage = [];
+	const result = kitTraits("Galio", [], bare);
+	expect(result.profile.damage).toBeUndefined();
+	expect(result.sources.damage).toBe("estimated");
 });
