@@ -1,13 +1,8 @@
 import type { Role } from "@rift-legends/contracts";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@rift-legends/ui-kit/components/select";
+import { LayoutGrid } from "lucide-react";
 import { type KeyboardEvent, memo, useCallback, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { GameRoleIcon } from "../../assets/game-role-icon";
 import { ChampionPortrait } from "../champion-portrait";
 
 /** Why a champion cannot be chosen; `null` when it is free. */
@@ -31,7 +26,6 @@ const NEXT: Record<string, number> = {
 	ArrowUp: -COLUMNS,
 };
 
-/** A champion of the grid; unavailable ones are grey and struck, with the reason only in their name. */
 const Tile = memo(function Tile(props: {
 	id: string;
 	name: string;
@@ -54,53 +48,51 @@ const Tile = memo(function Tile(props: {
 			aria-label={reason ? `${name}. ${reason}` : name}
 			title={reason ?? undefined}
 			onClick={() => !unavailable && props.onSelect(id)}
-			className={`relative flex min-h-0 min-w-0 flex-col rounded-control bg-surface text-left outline-offset-[-3px] focus-visible:z-1 focus-visible:outline-3 focus-visible:outline-action ${props.selected ? "outline-2 outline-action" : ""} ${unavailable ? "cursor-default" : ""}`}
+			className={`relative flex min-h-0 min-w-0 flex-col overflow-hidden rounded-control bg-surface outline-offset-[-3px] focus-visible:z-1 focus-visible:outline-3 focus-visible:outline-action ${props.selected ? "outline-2 outline-action" : ""} ${unavailable ? "cursor-default" : ""}`}
 		>
 			<ChampionPortrait
 				id={id}
 				size="pool"
 				unavailable={unavailable !== null}
 			/>
-			<b
-				className={`truncate px-1.5 py-1 text-[clamp(12px,0.95vw,14px)] ${unavailable ? "font-medium text-muted" : ""}`}
-			>
-				{name}
-			</b>
 		</button>
 	);
 });
 
-/** The role filter, a Caja select. */
-const RoleSelect = memo(function RoleSelect(props: {
+const RoleFilterButtons = memo(function RoleFilterButtons(props: {
 	value: RoleFilter;
 	onChange: (value: RoleFilter) => void;
 }) {
 	const { t } = useTranslation();
-	const items = ROLE_FILTER.map((value) => ({
-		value,
-		label:
-			value === "all" ? t("draft.board.allRoles") : t(`market.role.${value}`),
-	}));
 	return (
-		<Select
-			items={items}
-			value={props.value}
-			onValueChange={(value) => value && props.onChange(value as RoleFilter)}
+		<fieldset
+			aria-label={t("draft.board.roleFilter")}
+			className="m-0 flex shrink-0 gap-1 border-0 p-0"
 		>
-			<SelectTrigger
-				aria-label={t("draft.board.roleFilter")}
-				className="min-w-40 text-[13px]"
-			>
-				<SelectValue />
-			</SelectTrigger>
-			<SelectContent>
-				{items.map((item) => (
-					<SelectItem key={item.value} value={item.value}>
-						{item.label}
-					</SelectItem>
-				))}
-			</SelectContent>
-		</Select>
+			{ROLE_FILTER.map((value) => {
+				const label =
+					value === "all"
+						? t("draft.board.allRoles")
+						: t(`market.role.${value}`);
+				return (
+					<button
+						key={value}
+						type="button"
+						aria-pressed={props.value === value}
+						aria-label={label}
+						title={label}
+						onClick={() => props.onChange(value)}
+						className="grid size-[30px] place-items-center rounded-control border border-line bg-surface text-muted outline-offset-2 hover:text-text focus-visible:outline-2 focus-visible:outline-action aria-pressed:border-action aria-pressed:bg-action/15 aria-pressed:text-text"
+					>
+						{value === "all" ? (
+							<LayoutGrid size={16} aria-hidden />
+						) : (
+							<GameRoleIcon role={value} size={16} />
+						)}
+					</button>
+				);
+			})}
+		</fieldset>
 	);
 });
 
@@ -165,7 +157,7 @@ export const ChampionPool = memo(function ChampionPool(props: {
 							: t("draft.board.filtered", { shown: shown.length, total })}
 				</span>
 			</div>
-			<div className="my-2 flex gap-2">
+			<div className="my-2 flex items-center gap-2">
 				<input
 					type="search"
 					value={query}
@@ -175,9 +167,9 @@ export const ChampionPool = memo(function ChampionPool(props: {
 					}}
 					aria-label={t("draft.board.search")}
 					placeholder={t("draft.board.searchPlaceholder")}
-					className="min-w-0 flex-1 rounded-control border border-line bg-surface px-2.5 py-[5px] text-[13px] text-text placeholder:text-muted hover:border-muted focus-visible:border-action"
+					className="min-w-0 max-w-60 flex-1 rounded-control border border-line bg-surface px-2.5 py-[5px] text-[13px] text-text placeholder:text-muted hover:border-muted focus-visible:border-action"
 				/>
-				<RoleSelect value={role} onChange={chooseRole} />
+				<RoleFilterButtons value={role} onChange={chooseRole} />
 			</div>
 			<fieldset
 				ref={grid}
