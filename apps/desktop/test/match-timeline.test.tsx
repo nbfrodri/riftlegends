@@ -8,6 +8,8 @@ import {
 } from "@testing-library/react";
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { draftStages } from "../src/renderer/draft/stages";
+import { teamMap } from "../src/renderer/match/team-map";
+import { TeamPanel } from "../src/renderer/match/team-panel";
 import { renderInLocale } from "./render-in-locale";
 
 const present = vi.fn();
@@ -241,17 +243,99 @@ test("reveals facts at their second and updates the map and gold from the comple
 	expect(feed.getByText(/visión/i)).toBeTruthy();
 	expect(feed.getByText(/future-factor/)).toBeTruthy();
 	expect(feed.queryByText("Nexo")).toBeNull();
-	const top = within(screen.getByRole("row", { name: /Top/ }));
-	expect(top.queryAllByTitle("Torre destruida")).toHaveLength(0);
+	const shoal = within(
+		screen.getByRole("region", { name: "Shoal · estructuras y objetivos" }),
+	);
+	const top = () => within(shoal.getByRole("row", { name: /Top/ }));
+	expect(top().queryAllByTitle("Torre destruida")).toHaveLength(0);
+	expect(shoal.getByText("11 de 11")).toBeTruthy();
 	advance(4000);
-	expect(top.getAllByTitle("Torre destruida")).toHaveLength(2);
-	expect(top.getByText("02:00")).toBeTruthy();
+	expect(top().getAllByTitle("Torre destruida")).toHaveLength(2);
+	expect(top().getByTitle("Inhibidor destruido")).toBeTruthy();
+	expect(top().getByText("02:00")).toBeTruthy();
+	expect(shoal.getByText("9 de 11")).toBeTruthy();
 	expect(screen.getByText("+3.200 oro")).toBeTruthy();
-	expect(screen.getByText("3 de 4")).toBeTruthy();
+	const forge = within(
+		screen.getByRole("region", { name: "Forge · estructuras y objetivos" }),
+	);
+	expect(forge.getByText("11 de 11")).toBeTruthy();
+	expect(forge.getByText("3 de 4")).toBeTruthy();
 	expect(
-		within(screen.getByRole("row", { name: /Barones/ })).getByText("02:00"),
+		within(forge.getByRole("list", { name: "Efectos activos" })).getByText(
+			/Barón.*02:00/,
+		),
 	).toBeTruthy();
+	expect(shoal.getByText("Sin efectos activos")).toBeTruthy();
 });
+
+test("each team's panel shows its own structures and objectives in its colour", async () => {
+	await renderInLocale(<Match />);
+	advance(5000);
+	for (const [team, side] of [
+		["Forge", "blue"],
+		["Shoal", "red"],
+	] as const) {
+		const panel = screen.getByRole("region", {
+			name: `${team} · structures and objectives`,
+		});
+		expect(panel.getAttribute("data-side")).toBe(side);
+		expect(within(panel).getByRole("heading", { name: team })).toBeTruthy();
+		const table = within(panel).getByRole("table");
+		for (const icon of within(table).getAllByTitle(/^Standing /)) {
+			expect(icon.classList.contains("text-(--side)")).toBe(true);
+			expect(icon.querySelector("svg")?.classList.contains("size-6")).toBe(
+				true,
+			);
+		}
+		for (const name of ["Lane", "Outer", "Inner", "Base", "Inhibitor"])
+			expect(within(table).getByRole("columnheader", { name })).toBeTruthy();
+		expect(within(table).getAllByRole("row")).toHaveLength(5);
+	}
+	const forge = within(
+		screen.getByRole("region", { name: "Forge · structures and objectives" }),
+	);
+	expect(forge.queryAllByTitle(/Destroyed/)).toHaveLength(0);
+	// Each term is followed by its value.
+	const objective = (name: string) =>
+		forge.getByText(name).nextElementSibling?.textContent;
+	expect(objective("Dragons")).toBe("3 of 4");
+	expect(objective("Heralds")).toBe("0");
+	expect(objective("Barons")).toBe("1");
+	expect(objective("Elders")).toBe("0");
+});
+
+test("destroyed structures have a visible strike in addition to their label", async () => {
+	await renderInLocale(<Match />);
+	advance(5000);
+	const struck = (label: string) => {
+		for (const icon of screen.getAllByTitle(label)) {
+			expect(within(icon).getByText(label)).toBeTruthy();
+			expect(icon.classList.contains("after:-rotate-45")).toBe(true);
+		}
+	};
+	struck("Destroyed tower");
+	struck("Destroyed inhibitor");
+	click("Skip to end");
+	struck("Destroyed nexus");
+});
+
+test.each(["blue", "red"] as const)(
+	"active effects inherit the %s side colour",
+	async (owner) => {
+		const view = teamMap(
+			{ ...side, soul: true, buffs: { ...side.buffs, baron: 3 } },
+			60,
+		);
+		await renderInLocale(<TeamPanel side={owner} name="Team" view={view} />);
+		const effects = screen.getByRole("list", { name: "Active effects" });
+		expect(effects.closest("[data-side]")?.getAttribute("data-side")).toBe(
+			owner,
+		);
+		expect(within(effects).getByText("Dragon soul")).toBeTruthy();
+		expect(within(effects).getByText(/Baron.*02:00/)).toBeTruthy();
+		expect(effects.classList.contains("text-(--side)")).toBe(true);
+	},
+);
 
 test("skipping reveals the last partial minute and waits for the result button", async () => {
 	await renderInLocale(<Match />);
@@ -259,7 +343,21 @@ test("skipping reveals the last partial minute and waits for the result button",
 	expect(clock()).toBe("01:18");
 	expect(screen.getByText("Dragon soul")).toBeTruthy();
 	expect(screen.getByText("5,100 gold")).toBeTruthy();
-	expect(screen.getByText("0 standing")).toBeTruthy();
+	const shoal = within(
+		screen.getByRole("region", { name: "Shoal · structures and objectives" }),
+	);
+	const nexus = within(shoal.getByRole("row", { name: /Nexus/ }));
+	expect(nexus.getAllByTitle("Destroyed tower")).toHaveLength(2);
+	expect(nexus.getByTitle("Destroyed nexus")).toBeTruthy();
+	expect(shoal.getByText("9 of 11")).toBeTruthy();
+	const forge = within(
+		screen.getByRole("region", { name: "Forge · structures and objectives" }),
+	);
+	expect(
+		within(forge.getByRole("row", { name: /Nexus/ })).getByTitle(
+			"Standing nexus",
+		),
+	).toBeTruthy();
 	expect(
 		screen
 			.getAllByRole("listitem")
@@ -294,7 +392,7 @@ test("face to face shows each lane's numbers for the current minute and advances
 	const table = screen.getByRole("table", { name: "Face to face" });
 	for (const name of ["K/D/A", "CS", "Gold"]) {
 		for (const header of within(table).getAllByRole("columnheader", { name })) {
-			expect(header.querySelector("svg")).toBeTruthy();
+			expect(header.querySelector("svg")?.getAttribute("width")).toBe("18");
 		}
 	}
 	advance(5000);

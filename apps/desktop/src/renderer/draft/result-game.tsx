@@ -102,7 +102,10 @@ function Stats({
 							>
 								<span className="inline-flex items-center gap-1">
 									{key in statIcons && (
-										<StatIcon stat={statIcons[key as keyof typeof statIcons]} />
+										<StatIcon
+											stat={statIcons[key as keyof typeof statIcons]}
+											size={18}
+										/>
 									)}
 									{t(`draft.result.stats.${key}`)}
 								</span>

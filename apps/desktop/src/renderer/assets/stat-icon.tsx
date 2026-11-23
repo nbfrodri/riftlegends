@@ -38,7 +38,7 @@ export function StatIcon({ stat, size = 14 }: { stat: Stat; size?: number }) {
 				width={size}
 				height={size}
 				onError={() => setFailed(src)}
-				className={`${box} object-contain`}
+				className={`${box} object-contain brightness-200`}
 			/>
 		);
 	}

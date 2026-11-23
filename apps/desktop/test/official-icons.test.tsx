@@ -89,6 +89,8 @@ describe("official stat icons", () => {
 			);
 			expect(image.getAttribute("alt")).toBe("");
 			expect(image.getAttribute("aria-hidden")).toBe("true");
+			// The client's grey icons are brightened to read on the dark panels.
+			expect(image.classList.contains("brightness-200")).toBe(true);
 			expect(image.getAttribute("width")).toBe("14");
 			expect(image.getAttribute("height")).toBe("14");
 			fireEvent.error(image);
@@ -144,6 +146,22 @@ describe("U2: official objective icons", () => {
 			"rift-asset://cdragon/objectives/tower.png",
 		);
 		expect(image.className).toContain("grayscale");
+	});
+
+	test("a tinted map icon paints the cached silhouette and keeps its colour on load failure", async () => {
+		const { container } = renderWith(ready, <MapIcon kind="tower" tinted />);
+		const image = await waitFor(() => {
+			const found = container.querySelector("img");
+			if (!found) throw new Error("no image yet");
+			return found;
+		});
+		expect(image.classList.contains("[filter:var(--map-icon-tint)]")).toBe(
+			true,
+		);
+		fireEvent.error(image);
+		expect(container.querySelector("svg")?.getAttribute("stroke")).toBe(
+			"currentColor",
+		);
 	});
 
 	test("an image that fails falls back to the own drawing in the same box", async () => {

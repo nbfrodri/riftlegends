@@ -1,3 +1,4 @@
+import type { Page } from "@playwright/test";
 import type { DraftView } from "@rift-legends/contracts";
 import type { CoreBridge } from "../src/main/core-bridge";
 import { expect, launchApp, test } from "./fixtures";
@@ -83,6 +84,14 @@ function prepareDraft() {
 	};
 }
 
+/** Both team panels are whole on screen. */
+async function expectTeamPanelsInView(page: Page) {
+	for (const team of ["Forge", "Shoal"])
+		await expect(
+			page.getByRole("region", { name: `${team} · estructuras y objetivos` }),
+		).toBeInViewport({ ratio: 1 });
+}
+
 test("replays a drafted game and continues to its result", async ({
 	playwright,
 }, testInfo) => {
@@ -122,9 +131,7 @@ test("replays a drafted game and continues to its result", async ({
 		});
 		expect(overflow.page).toBeLessThanOrEqual(0);
 		expect(overflow.main).toBeLessThanOrEqual(0);
-		await expect(page.getByRole("table", { name: "Objetivos" })).toBeInViewport(
-			{ ratio: 1 },
-		);
+		await expectTeamPanelsInView(page);
 		await expect(
 			page.getByRole("button", { name: "Ver resultado" }),
 		).toBeInViewport({ ratio: 1 });
@@ -140,9 +147,25 @@ test("replays a drafted game and continues to its result", async ({
 		await expect(faceToFace.getByRole("row")).toHaveCount(7);
 		expect(await height()).toBe(before);
 		await page.getByRole("radio", { name: "Mapa" }).check({ force: true });
-		await expect(page.getByRole("table", { name: "Objetivos" })).toBeInViewport(
-			{ ratio: 1 },
-		);
+		await page.setViewportSize({ width: 1366, height: 768 });
+		await expectTeamPanelsInView(page);
+		for (const team of ["Forge", "Shoal"]) {
+			const panel = page.getByRole("region", {
+				name: `${team} · estructuras y objetivos`,
+			});
+			const unused = await panel.evaluate((section) => {
+				const effects = section.lastElementChild;
+				if (!effects) throw new Error("Missing effects row");
+				return (
+					section.getBoundingClientRect().bottom -
+					effects.getBoundingClientRect().bottom -
+					Number.parseFloat(getComputedStyle(section).paddingBottom)
+				);
+			});
+			expect(Math.abs(unused)).toBeLessThanOrEqual(1);
+			const row = panel.getByRole("row", { name: /^Top/ });
+			expect((await row.boundingBox())?.height).toBeGreaterThan(32);
+		}
 		await page.getByRole("button", { name: "Ver resultado" }).click();
 		await expect(
 			page.getByRole("heading", { level: 1, name: "Resultado" }),

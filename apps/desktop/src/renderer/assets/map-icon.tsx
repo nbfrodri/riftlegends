@@ -8,6 +8,7 @@ const paths = {
 	inhibitor: "M12 2l5 7-5 7-5-7zM6 14l-2 4 8 4 8-4-2-4M8 18l4 2 4-2",
 	inhibitorDown: "m6 7 4 4-2 5-4-5zm10-4 4 5-5 6-2-5zM4 17l8 4 8-4",
 	nexus: "M12 2l6 8-6 9-6-9zM12 2v17M3 11v6l9 5 9-5v-6",
+	nexusDown: "M9 3l-3 7 4 5zm6 0 3 7-4 5zM3 11v6l9 5 9-5v-6",
 	dragon: "M3 18l5-9 5-5-1 5 8-2-3 5 4 2-3 3-7-2-3 4zM13 11h1",
 	herald: "M4 7l4 2 4-5 4 5 4-2-1 9-7 5-7-5zM7 13q5-6 10 0-5 6-10 0zM12 12v2",
 	baron: "M4 4l4 6 4-7 4 7 4-6-1 11-4 5-3-2-3 2-4-5zM7 12l3 1m4 0 3-1M10 16h4",
@@ -27,6 +28,7 @@ const official: Record<Kind, string> = {
 	inhibitor: "inhibitor",
 	inhibitorDown: "inhibitor",
 	nexus: "nexus",
+	nexusDown: "nexus",
 	dragon: "dragon",
 	herald: "herald",
 	baron: "baron",
@@ -38,24 +40,31 @@ export function MapIcon({
 	kind,
 	size = "size-[17px]",
 	fallback,
+	tinted = false,
 }: {
 	kind: Kind;
 	/** A Tailwind size class shared by the image and its fallback. */
 	size?: string;
 	fallback?: ReactNode;
+	/** Paint a cached icon with the owning panel's SVG colour filter. */
+	tinted?: boolean;
 }) {
 	const box = `inline-block shrink-0 ${size} align-middle`;
 	const src = useAssetSrc("cdragon", `objectives/${official[kind]}.png`);
 	const [failed, setFailed] = useState<string>();
 	if (src && src !== failed) {
-		const down = kind === "towerDown" || kind === "inhibitorDown";
+		const paint = kind.endsWith("Down")
+			? "opacity-55 grayscale"
+			: tinted
+				? "[filter:var(--map-icon-tint)]"
+				: "";
 		return (
 			<img
 				src={src}
 				alt=""
 				aria-hidden="true"
 				onError={() => setFailed(src)}
-				className={`${box} object-contain ${down ? "opacity-55 grayscale" : ""}`}
+				className={`${box} object-contain ${paint}`}
 			/>
 		);
 	}

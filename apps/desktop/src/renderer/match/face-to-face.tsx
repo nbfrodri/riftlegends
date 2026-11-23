@@ -134,7 +134,7 @@ export function FaceToFace({
 								{columns.map((column) => (
 									<th scope="col" key={column}>
 										<span className="inline-flex items-center gap-1">
-											<StatIcon stat={column} size={12} />
+											<StatIcon stat={column} size={18} />
 											{t(`draft.match.faceToFace.${column}`)}
 										</span>
 									</th>
