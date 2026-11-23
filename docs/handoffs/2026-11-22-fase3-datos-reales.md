@@ -1,65 +1,72 @@
 # Handoff · Fase 3, datos reales
 
-Estado: en curso
+Estado: en curso (actualizado el 23-11 de madrugada)
 
-Para retomar en una sesión nueva. Decisiones en el [registro](../decisions/README.md); detalle en el [plan 11](../plans/11-datos-reales.md). La Fase 2 está cerrada (Stryker 90,32 %, [handoff anterior](2026-11-21-fase2-draft.md)).
+Para retomar en una sesión nueva. Decisiones en el [registro](../decisions/README.md); detalle en el [plan 11](../plans/11-datos-reales.md) y el [plan general](../plans/00-plan-general.md).
 
-## Hecho el 22-11
+## Hecho (22 y 23-11)
 
-- **Plan 11:** foto de datos de Leaguepedia 2026 (#248). Campeones reales desde CommunityDragon (#265, #249). Jugadores y equipos reales (#250), sin duplicados (#281) y con atributos y sembrado creíbles (#280).
-- **Logos:** desde la API pública de lolesports.com, autorizado por el usuario (#252, #284).
-- **Workflow semanal** que abre un PR con la foto nueva (#266). GitHub Actions ya puede crear PR.
-- **Arreglos de la app:**
-  - #258: fuentes en las capturas.
-  - #259: resultados sin scroll.
-  - #260: razones del plan de partida.
-  - #261: pantalla de elegir lado.
-  - #270: nicks de los jugadores ficticios.
-  - #275: marcador de la cabecera.
-- **Workflow «Visual baselines»:** regenera todas las capturas (`--update-snapshots=all`).
+- **Plan 11:**
+  - modo LoL real en la app (#251);
+  - trayectoria en los atributos (#287; máximo 94);
+  - temporada automática (#288).
+- **Draft:**
+  - rendimiento al confirmar (#291, #329);
+  - panel de serie (#292);
+  - filas fijas por jugador (#294);
+  - pool solo con iconos y botones de rol (#308);
+  - pantalla de lado alineada (#327).
+- **Partida y resultados:**
+  - iconos oficiales de estadísticas y objetivos (#293, #312);
+  - panel por equipo de estructuras y objetivos (#310).
+- **UI:**
+  - barras de scroll Caja (#307);
+  - vetos con retrato.
+- **CI:**
+  - capturas estables (#317, #331);
+  - datos en bruto de los spikes fuera del repo (#296);
+  - el repo pasa a público.
+- **Plan general y decisiones:**
+  - staff y draft delegado (head coach y assistant coach) y finanzas;
+  - nacionalidad e idioma;
+  - formatos configurables;
+  - elección dividida de lado;
+  - meta propio por carrera, con parches y maestría;
+  - sección Competición y el mismo motor para todas las partidas;
+  - ficha de jugador en todas partes;
+  - tutorial con Driver.js al final;
+  - fichajes de la IA (PR #333).
 
-## En curso (worktrees con trabajo sin commitear)
+## En curso
 
-| Issue | Worktree | Estado | Cómo seguir |
+| Issue | Rama / PR | Estado | Cómo seguir |
 | --- | --- | --- | --- |
-| #251 modo real en la app | `../riftlegends-251` | Subagente de Claude (Opus) cortado por el límite: 2 commits (núcleo y select agrupado) y unos 20 ficheros sin commitear | Revisar `git status` y `git diff` y terminar desde ahí. Falta además llamar a `syncTeamLogos` con `packages/core/content/real/logos.json` |
-| #287 trayectoria en los atributos | `../riftlegends-287` | Subagente de Claude (Sonnet) cortado: 11 ficheros sin commitear sobre el commit viejo `29c4fa3` (#280 sin squash) | Commitear lo útil y `git rebase --onto origin/main 29c4fa3`. Requisito: ventana de años relativa a la temporada, dentro del workflow semanal y con caché de años pasados |
+| #300 nacionalidad | PR #324 | Capturas subidas, CI en marcha | Fusionar si está en verde |
+| #333 fichajes IA (docs) | PR #333 | CI en marcha | Fusionar |
+| #305 elección dividida | `feat/305-split-side-choice`, `../riftlegends-305` | Codex gpt-6.2-astra high (desde el 23-11 ~4:20) | Leer `~/.cache/rift-tmp/codex/305-report.json`; revisar, `verify`/`e2e`, push, PR, capturas |
+| #321 counters, sinergias y tier para todos | `feat/321-champion-coverage`, `../riftlegends-321` | Codex gpt-6.2-sol high | Igual, con `321-report.json`. Comprobar la calibración K1–K5 |
 
-## Siguiente
+Si Codex se corta, `tail -1 ~/.cache/rift-tmp/codex/NN-events.jsonl` dice por qué. Se retoma con `cd ../riftlegends-NN && codex exec resume <thread_id> ...` (el `thread_id` va en la primera línea de los eventos) o con un subagente de Claude desde el worktree.
 
-1. Terminar #251 y #287 (arriba).
-2. Issues nuevos, todavía sin empezar, para delegar en Codex (el usuario lo pidió):
-   - **#291:** confirmar un pick vuelve a pintar el tablero. `verify-windows` de `main` falla tras #245, #246 y #262 (0,78 del montaje frente al límite de 0,5). Arreglar la causa, sin relajar el test. Codex sol medium.
-   - **#292:** mejorar el panel «Serie» y las tarjetas de lado en la pantalla de elegir lado. Codex astra high.
-   - **#293:** iconos oficiales de Riot (CommunityDragon) para KDA, oro, súbditos, daño y visión, con caída a los propios. Codex astra high.
-   - **#294:** filas fijas por jugador en el tablero de draft, como en las retransmisiones pro. Hoy `slotRoles` deduce el rol del campeón y los huecos cambian de jugador. Codex astra high, después de #293.
-3. **#288:** cambio de temporada automático en el pipeline (mezclar con la temporada anterior mientras haya pocas partidas). Va después de #287.
-4. **#253:** calibración con contenido real, E2E de una Bo5 en modo real y créditos. Cierra el plan 11.
-5. **PR #290** (carreras aisladas de los datos nuevos): fusionar cuando el CI esté en verde.
+## Siguiente (por orden)
 
-Revisado el 22-11: el CI de los PR #131, #245, #246 y #262 pasó. Lo que falló fue el CI posterior sobre `main`:
-- #131: un E2E del proceso del núcleo que no se ha repetido.
-- #245, #246 y #262: el test de rendimiento del tablero en `verify-windows` (va en #291).
+1. **#315:** tooltip Caja único para toda la app y guarda contra `title=`.
+2. **#318:** ficha de campeón (con pista visible de clic derecho). Después, **#319**: pantalla de Campeones con tier list por rol. Dependen de #321.
+3. **#326:** bajas, daño y nota realistas por rol y tipo de campeón (bandas sacadas del snapshot), junto con **#320**: composiciones contra las resistencias del rival. Necesitan una sección de diseño en el plan 08.
+4. **#297:** partir los módulos grandes. **#253:** calibración con contenido real, E2E en modo real y créditos; cierra el plan 11.
+
+## Cómo trabajar
 
 ## Cómo trabajar
 
 - **Delegación:** Codex (gpt-6.2-sol medium para lógica y datos; gpt-6.2-astra high para lo visual) con la skill `cross-delegate`, un worktree por issue y `TMPDIR=/home/phobos/.cache/rift-tmp`, porque `/tmp` se llena. Si Codex está sin uso, subagentes de Claude (Sonnet medium; Opus medium para lo visual) sin límite de cuántos a la vez; no ofrecer Codex mientras esté sin uso.
+- **Repo público** desde el 22-11 (Actions gratis).
 - **Revisión:** revisar siempre antes de fusionar. Los PR en paralelo chocan en `package.json`, `docs/decisions/README.md`, `tools/data-pipeline/README.md` y los JSON de `packages/core/content/real/`. Fusionar uno a uno y rebasar.
 - **Capturas:** se regeneran en el CI («Visual baselines»), se descargan con `gh run download RUN -n visual-baselines` y se revisan a mano.
 - **Reglas de UI del usuario:** iconos y nunca glifos; nada de «Δ» ni números con signo, salvo + y − en el oro; campeones no disponibles en gris con raya diagonal; desplegables con estilo Caja.
 - **Datos:** no se falsean cabeceras de navegador; nunca se publican nombres reales de jugadores (huellas); los logos nunca van al repo.
 - **Comprobaciones:** `mise exec -- pnpm verify` (`VITEST_MAX_WORKERS=2` si la máquina va cargada) y `mise exec -- pnpm e2e`.
 
-## Delegaciones en Codex (22-11)
-
-Eventos e informes en `~/.cache/rift-tmp/codex/NN-events.jsonl` y `NN-report.json`. Se revisan antes de abrir PR.
-
-| Issue | Rama | Worktree | Modelo | Estado |
-| --- | --- | --- | --- | --- |
-| #291 | `perf/291-confirm-rerender` | `../riftlegends-291` | Codex sin uso (hasta 23:17) → Claude Sonnet medium | en curso |
-| #292 | `feat/292-series-panel` | `../riftlegends-292` | Codex sin uso → Claude Opus medium | en curso |
-| #293 | `feat/293-official-stat-icons` | `../riftlegends-293` | Codex sin uso → Claude Opus medium | en curso |
-| #251 | `feat/251-real-mode` | `../riftlegends-251` | Codex sin uso → Claude Opus medium | en curso |
-| #287 | `feat/287-career-component` | `../riftlegends-287` | Codex sin uso → Claude Sonnet medium | en curso |
-| #294 | — | — | gpt-6.2-astra high | espera a #293 |
-| #297 | — | — | — | espera a #287 y #292 |
+- **Codex primero:** el usuario prefiere delegar en Codex hasta agotar su uso; después, subagentes de Claude (Opus medium para lo visual y Sonnet medium para el resto). Codex no tiene red: las descargas de Leaguepedia o CommunityDragon las lanza Claude.
+- **PR que tocan las mismas pantallas:** fusionarlos de uno en uno. Al rebasar, en las capturas en conflicto se toma la de `main` y se regeneran con «Visual baselines».
+- **Test de rendimiento del tablero:** si falla de forma puntual, relanzarlo. Si se repite, investigar sin relajarlo (#329).
