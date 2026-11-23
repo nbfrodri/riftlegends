@@ -16,6 +16,26 @@ import { namedDraft, renderWithDraftCore } from "./draft-core";
 
 afterEach(cleanup);
 
+// Counts the renders of each pool tile's face, by champion.
+const poolFaces = vi.hoisted(() => ({ renders: new Map<string, number>() }));
+vi.mock("@rift-legends/ui-kit/components/champion-face", async (original) => {
+	const real =
+		await original<
+			typeof import("@rift-legends/ui-kit/components/champion-face")
+		>();
+	return {
+		...real,
+		ChampionFace: (props: Parameters<typeof real.ChampionFace>[0]) => {
+			if (props.size === "pool")
+				poolFaces.renders.set(
+					props.id,
+					(poolFaces.renders.get(props.id) ?? 0) + 1,
+				);
+			return real.ChampionFace(props);
+		},
+	};
+});
+
 type User = ReturnType<typeof userEvent.setup>;
 
 /** Starts a series as Forge on the blue side: Forge bans first. */
@@ -179,6 +199,39 @@ describe("draft board (U3)", () => {
 		expect({ pending, total: renders() }).toEqual({
 			pending: { pool: 0, blue: 0, red: 0 },
 			total: { pool: 1, blue: 1, red: 0 },
+		});
+	});
+
+	test("confirming a ban re-renders no pool tile until the view arrives, then only the banned one", async () => {
+		const user = userEvent.setup();
+		const { api } = await renderWithDraftCore(<DraftScreen />);
+		await toBoard(user);
+		await user.click(tile("Cragbell"));
+		poolFaces.renders.clear();
+
+		let release = () => {};
+		const held = new Promise<void>((resolve) => {
+			release = resolve;
+		});
+		const query = api.query.getMockImplementation();
+		if (!query) throw new Error("no draft query implementation");
+		api.query.mockImplementationOnce(async (request) => {
+			await held;
+			return query(request);
+		});
+		fireEvent.click(confirm());
+		await waitFor(() =>
+			expect(api.send).toHaveLastResolvedWith(
+				expect.objectContaining({ ok: true }),
+			),
+		);
+		const pending = Object.fromEntries(poolFaces.renders);
+		release();
+		await waitFor(() => tile("Cragbell. Banned in this game"));
+
+		expect({ pending, total: Object.fromEntries(poolFaces.renders) }).toEqual({
+			pending: {},
+			total: { cragbell: 1 },
 		});
 	});
 
