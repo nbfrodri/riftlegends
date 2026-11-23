@@ -12,7 +12,6 @@ import { GameRoleIcon } from "../../assets/game-role-icon";
 import { ChampionPortrait } from "../champion-portrait";
 import { championLabel, teamName } from "../session";
 import { TeamCrest } from "../team-crest";
-import { pickRows } from "./champions";
 
 export interface PlayerRef {
 	team: string;
@@ -34,8 +33,10 @@ export const TeamColumn = memo(function TeamColumn(props: {
 	first: boolean;
 	team: DraftView[Side];
 	options: SeriesOptions;
-	/** Index of the pick the user is choosing now, if any; it shows in the first free row. */
+	/** Index of the pick the user is choosing now, if any; it is also the row of the player who picks it. */
 	current: number | null;
+	/** The champion selected in the pool for that pick, shown faded until it is confirmed. */
+	preview?: string | null;
 	/** The role whose player the player card shows, if they are on this team. */
 	selected?: Role | null;
 	onPlayer: (player: PlayerRef) => void;
@@ -44,13 +45,6 @@ export const TeamColumn = memo(function TeamColumn(props: {
 	const { options, team } = props;
 	const name = teamName(options, team.team);
 	const players = options.teams.find(({ id }) => id === team.team)?.players;
-	const rows = pickRows(
-		team.picks,
-		(id) =>
-			options.champions.find((champion) => champion.id === id)?.roles ?? [],
-	);
-	const choosing =
-		props.current === null ? -1 : rows.findIndex((pick) => pick === null);
 	const id = useId();
 	const style = SIDE[props.side];
 	return (
@@ -82,11 +76,12 @@ export const TeamColumn = memo(function TeamColumn(props: {
 					<TeamCrest id={team.team} name={name} />
 				</span>
 			</header>
-			<ol className="my-[7px] grid flex-1 auto-rows-fr">
+			<ol className="my-1 grid flex-1 auto-rows-fr gap-1">
 				{ROLES.map((role, row) => {
-					const current = row === choosing;
-					const pick = current ? props.current : rows[row];
-					const champion = pick == null ? undefined : team.picks[pick];
+					const current = row === props.current;
+					const champion =
+						team.picks[row] ?? (current ? props.preview : undefined);
+					const slot = style.letter + (row + 1);
 					const label = champion
 						? championLabel(options, champion)
 						: current
@@ -98,27 +93,43 @@ export const TeamColumn = memo(function TeamColumn(props: {
 							<Tooltip heading={label} content={handle}>
 								<button
 									type="button"
-									data-card-champion={champion}
+									data-card-champion={champion ?? undefined}
 									aria-keyshortcuts={champion ? "I" : undefined}
 									aria-controls="player-card"
 									aria-pressed={props.selected === role}
 									onClick={() => props.onPlayer({ team: team.team, role })}
-									className={`press flex w-full items-center gap-2.5 border-line border-b px-1 py-[3px] text-left outline-offset-2 hover:bg-surface focus-visible:outline-2 focus-visible:outline-action aria-pressed:bg-action/10 aria-pressed:ring-2 aria-pressed:ring-action aria-pressed:ring-inset ${current ? `bg-surface shadow-[inset_2px_0_currentColor] ${style.text}` : ""}`}
+									className={`press relative isolate flex min-h-[clamp(48px,7.8vh,88px)] w-full items-center gap-2 overflow-hidden border border-line bg-surface/50 px-2 text-left outline-offset-2 hover:bg-surface focus-visible:outline-2 focus-visible:outline-action aria-pressed:bg-action/10 aria-pressed:ring-2 aria-pressed:ring-action aria-pressed:ring-inset ${current ? `bg-surface shadow-[inset_2px_0_currentColor] ${style.text}` : ""}`}
 								>
-									<span className="w-6 text-[12px] text-muted">
-										{pick != null && `${style.letter}${pick + 1}`}
-									</span>
-									<span className={style.text}>
-										<GameRoleIcon role={role} />
-									</span>
 									{champion && (
-										<ChampionPortrait id={champion} size="compact" />
+										<span
+											className={`pointer-events-none absolute inset-y-px right-px -z-10 w-3/5 [mask-image:linear-gradient(to_right,transparent,#000_55%)] motion-safe:transition-opacity motion-safe:duration-300 ${current ? "opacity-50" : "opacity-100 motion-safe:starting:opacity-50"}`}
+										>
+											<ChampionPortrait
+												key={champion}
+												id={champion}
+												size="tile"
+												label={label}
+											/>
+										</span>
 									)}
-									<span className="min-w-0">
-										<strong className="block truncate">{label}</strong>
-										<small className="block truncate text-[12px] text-muted">
-											{handle}
+									<span className={style.text}>
+										<GameRoleIcon
+											role={role}
+											label={t(`market.role.${role}`)}
+										/>
+									</span>
+									<span className="min-w-0 max-w-3/5">
+										<small className="block text-[11px] text-muted">
+											{slot}
 										</small>
+										<strong className="block truncate font-display text-[clamp(16px,1.4vw,23px)] leading-tight">
+											{handle}
+										</strong>
+										{current && (
+											<small className="block text-[11px]">
+												{t("draft.board.yourPick")}
+											</small>
+										)}
 									</span>
 								</button>
 							</Tooltip>
@@ -134,13 +145,13 @@ export const TeamColumn = memo(function TeamColumn(props: {
 			</p>
 			<ul
 				aria-labelledby={`${id}-bans`}
-				className="mt-[3px] flex min-h-8 flex-wrap items-center gap-1.5 text-[13px] text-muted leading-[1.45]"
+				className="mt-[3px] grid min-h-10 grid-cols-5 items-center gap-1 text-[13px] text-muted leading-[1.45]"
 			>
 				{team.bans.map((ban, index) => {
 					if (!ban)
 						return (
 							// biome-ignore lint/suspicious/noArrayIndexKey: bans only grow, in order.
-							<li key={index} className="italic">
+							<li key={index} className="truncate text-xs italic">
 								{t("draft.board.noBan")}
 							</li>
 						);
@@ -154,12 +165,12 @@ export const TeamColumn = memo(function TeamColumn(props: {
 									data-card-champion={ban}
 									aria-keyshortcuts="I"
 									aria-label={label}
-									className="flex rounded-control focus-visible:outline-action"
+									className="flex h-[clamp(37px,5.4vh,62px)] w-full rounded-control focus-visible:outline-action"
 								>
 									<ChampionPortrait
 										id={ban}
 										label={label}
-										size="ban"
+										size="tile"
 										unavailable
 									/>
 								</button>

@@ -64,7 +64,9 @@ export function draftWith(state: SeriesState) {
 		const champion = wanted[side][next[side]++];
 		current = ok(run(current, "draft.pick", { team, champion })).state;
 	}
-	for (const side of ["blue", "red"] as const) {
+	// The roles turn order depends on who is coached (#379).
+	for (let i = 0; i < 2; i++) {
+		const { side } = turn(current.draft as GameDraft) as Turn;
 		const [top, jungle, mid, bot, support] = wanted[side];
 		current = ok(
 			run(current, "draft.roles", {

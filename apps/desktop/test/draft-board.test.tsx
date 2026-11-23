@@ -137,20 +137,19 @@ describe("draft board (U3)", () => {
 		expect(confirm().hasAttribute("disabled")).toBe(true);
 	});
 
-	test("on my pick turn, confirming sends draft.pick and the pick shows in my column with its role", async () => {
+	test("on my pick turn, confirming sends draft.pick and the preview locks in the same player row", async () => {
 		const user = userEvent.setup();
 		const core = await renderWithDraftCore(<DraftScreen />);
 		await toFirstPick(user);
 		const free = firstAvailable();
 		const name = free.getAttribute("aria-label") ?? "";
 		await user.click(free);
-		await user.click(confirm());
-
-		expect(core.sent.at(-1)).toMatchObject({ kind: "draft.pick" });
 		const blue = screen.getByRole("region", { name: "Blue side Forge" });
-		const first = await within(blue).findByRole("button", {
-			name: new RegExp(`^B1 ${name} Emberjaw`),
-		});
+		const first = within(blue).getAllByRole("button")[0] as HTMLElement;
+		expect(within(first).getByRole("img", { name })).toBeTruthy();
+		await user.click(confirm());
+		expect(core.sent.at(-1)).toMatchObject({ kind: "draft.pick" });
+		expect(within(first).getByRole("img", { name })).toBeTruthy();
 		expect(first.querySelector("svg")).toBeTruthy();
 		expect(tile(`${name}. Already picked in this game`)).toBeTruthy();
 	});

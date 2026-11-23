@@ -9,6 +9,7 @@ import type { AiContext } from "../ai/context";
 import { lookahead } from "../ai/lookahead";
 import { PROFILES } from "../ai/profiles";
 import { decideSide } from "../ai/side-choice";
+import { type Fixed, mul, SCALE } from "../math";
 import { SCOPES } from "../rng/scopes";
 import { deriveSeed } from "../rng/seeds";
 import { createRng } from "../rng/streams";
@@ -55,17 +56,26 @@ const bestRoles = (
 	state: SeriesState,
 	team: string,
 	picks: readonly string[],
+	settings: AiSettings,
 ) => {
 	const index = indexContent(
 		state.content as NonNullable<SeriesState["content"]>,
 	);
 	const roster = index.rosters.get(team);
+	const { weights } = PROFILES[settings.personality];
 	const fit = (champion: string, role: Role) => {
 		const tier = index.champions
 			.get(champion)
 			?.positions.find((p) => p.role === role)?.tier;
+		// Maximise the number of playable lanes first. Even five maximum
+		// tier and comfort scores together are below this penalty.
+		if (!tier) return -1_000 * SCALE;
 		return (
-			(tier ? meta(tier) : -100_000) + comfort(roster?.get(role), champion)
+			mul(meta(tier) as Fixed, weights.meta ?? (SCALE as Fixed)) +
+			mul(
+				comfort(roster?.get(role), champion) as Fixed,
+				weights.comfort ?? (SCALE as Fixed),
+			)
 		);
 	};
 	let best: { score: number; order: string[] } | null = null;
@@ -127,7 +137,7 @@ export const aiTurn: CommandHandler<SeriesState> = (state) => {
 	const settings = settingsOf(state, config, next.team);
 	if (!settings) return fail("wrong-action", { expected: "human" });
 	if (next.action === "roles") {
-		const roles = bestRoles(state, next.team, draft.picks[next.side]);
+		const roles = bestRoles(state, next.team, draft.picks[next.side], settings);
 		return seriesCommands["draft.roles"](state, { team: next.team, roles });
 	}
 

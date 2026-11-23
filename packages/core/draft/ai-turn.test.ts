@@ -1,4 +1,10 @@
-import { CONTRACT_VERSION, PERSONALITIES } from "@rift-legends/contracts";
+import {
+	type AiContent,
+	CONTRACT_VERSION,
+	draftView,
+	PERSONALITIES,
+	type Role,
+} from "@rift-legends/contracts";
 import fc from "fast-check";
 import { describe, expect, it } from "vitest";
 import { fictionalContent } from "../ai/fixtures/content";
@@ -9,6 +15,7 @@ import { type Fact, openSession, type Session } from "../server/dispatcher";
 import { sideChoices } from "../test/take-sides";
 import { draftDispatcher, draftStateWith } from "./index";
 import type { SeriesState } from "./series";
+import { viewDraft } from "./view";
 
 const POOL = fictionalContent.champions.map((c) => c.id);
 type Ai = { personality: string; coachRating?: number; difficulty?: string };
@@ -207,3 +214,113 @@ describe("draft.ai (C1)", () => {
 		).toEqual(["ai.decided", "draft.banned"]);
 	});
 });
+
+it.each(["forge", "shoal"])(
+	"records the AI lineup before the human when %s plays blue",
+	(blue) => {
+		let s = started([null, "coach"]);
+		for (const payload of sideChoices(s.state, blue))
+			s = send(s, "side.choose", payload).session;
+		const lineup = {
+			top: "cragbell",
+			jungle: "duskroot",
+			mid: "prismoth",
+			bot: "rillbow",
+			support: "bronzehook",
+		};
+		const picks = Object.values(lineup).reverse();
+		// Only one playable position per champion, acquired in reverse order.
+		const champions = Object.entries(lineup).map(([role, id]) => ({
+			...(fictionalContent.champions[0] as AiContent["champions"][number]),
+			id,
+			positions: [{ role: role as Role, tier: "S" as const }],
+		}));
+		const aiSide = blue === "shoal" ? "blue" : "red";
+		const draft = s.state.draft as NonNullable<SeriesState["draft"]>;
+		s = {
+			...s,
+			state: {
+				...s.state,
+				content: { ...fictionalContent, champions },
+				draft: {
+					...draft,
+					step: 20,
+					picks: { ...draft.picks, [aiSide]: picks },
+				},
+			},
+		};
+		const assigned = send(s, "draft.ai", {});
+		expect(assigned.response).toMatchObject({
+			ok: true,
+			facts: [{ type: "draft.rolesAssigned", team: "shoal", roles: lineup }],
+		});
+		expect(
+			draftView.parse(viewDraft(assigned.session.state, {})),
+		).toMatchObject({
+			[aiSide]: { roles: lineup, picks },
+			turn: { team: "forge", action: "roles" },
+		});
+	},
+);
+
+it.each([
+	["meta", "a"],
+	["comfort", "b"],
+] as const)(
+	"uses the %s coach's priorities for two flex picks",
+	(personality, top) => {
+		let s = started([{ personality }, null]);
+		for (const payload of sideChoices(s.state, "forge"))
+			s = send(s, "side.choose", payload).session;
+		const champions: AiContent["champions"] = [
+			{
+				id: "a",
+				positions: [
+					{ role: "top", tier: "S" },
+					{ role: "mid", tier: "C" },
+				],
+			},
+			{
+				id: "b",
+				positions: [
+					{ role: "mid", tier: "S" },
+					{ role: "top", tier: "C" },
+				],
+			},
+			...(["jungle", "bot", "support"] as const).map((role) => ({
+				id: role,
+				positions: [{ role, tier: "S" as const }],
+			})),
+		].map((c) => ({
+			...(fictionalContent.champions[0] as AiContent["champions"][number]),
+			...c,
+		})) as AiContent["champions"];
+		const content = {
+			...fictionalContent,
+			champions,
+			players: fictionalContent.players.map((p) => ({
+				...p,
+				mains: p.role === "top" ? ["b"] : [],
+				secondary: [],
+				weak: [],
+			})),
+		};
+		const draft = s.state.draft as NonNullable<SeriesState["draft"]>;
+		s = {
+			...s,
+			state: {
+				...s.state,
+				content,
+				draft: {
+					...draft,
+					step: 20,
+					picks: { ...draft.picks, blue: champions.map((c) => c.id) },
+				},
+			},
+		};
+		expect(send(s, "draft.ai", {}).response).toMatchObject({
+			ok: true,
+			facts: [{ type: "draft.rolesAssigned", roles: { top } }],
+		});
+	},
+);

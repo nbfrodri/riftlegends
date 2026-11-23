@@ -9,6 +9,8 @@ export interface GameDraft {
 	readonly red: string;
 	/** The map side with first pick (issue #305). */
 	readonly first: Side;
+	/** The coach shows its lineup before a human confirms theirs. */
+	readonly firstToAssign: Side;
 	/** Index of the next step in `DRAFT_ORDER`. */
 	readonly step: number;
 	readonly bans: Readonly<Record<Side, readonly (string | null)[]>>;
@@ -35,10 +37,12 @@ export const newGame = (
 	blue: string,
 	red: string,
 	first: Side = "blue",
+	firstToAssign: Side = "blue",
 ): GameDraft => ({
 	blue,
 	red,
 	first,
+	firstToAssign,
 	step: 0,
 	bans: { blue: [], red: [] },
 	picks: { blue: [], red: [] },
@@ -53,9 +57,11 @@ export const turn = (game: GameDraft): Turn | null => {
 		const side = step.order === "first" ? game.first : last;
 		return { team: game[side], side, action: step.action };
 	}
-	if (!game.roles.blue)
-		return { team: game.blue, side: "blue", action: "roles" };
-	if (!game.roles.red) return { team: game.red, side: "red", action: "roles" };
+	const first = game.firstToAssign;
+	const other = first === "blue" ? "red" : "blue";
+	for (const side of [first, other] as const) {
+		if (!game.roles[side]) return { team: game[side], side, action: "roles" };
+	}
 	return null;
 };
 

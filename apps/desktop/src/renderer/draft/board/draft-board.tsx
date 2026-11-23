@@ -145,6 +145,7 @@ export function DraftBoard() {
 				team={team}
 				options={options}
 				current={picking}
+				preview={picking === null ? null : (choice?.id ?? null)}
 				selected={shown?.team === team.team ? shown.role : null}
 				onPlayer={showPlayer}
 			/>

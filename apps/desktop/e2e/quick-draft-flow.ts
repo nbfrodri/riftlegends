@@ -73,7 +73,15 @@ export async function playQuickDraftBo5(
 		await makeDraftMoves(page, game === 1 ? capture : undefined);
 
 		await expect(heading("Roles")).toBeVisible();
-		await expect(page.getByRole("combobox")).toHaveCount(5);
+		const own = page.getByRole("region", { name: "Quinteto de Forge" });
+		const rival = page.getByRole("region", { name: "Quinteto de Shoal" });
+		await expect(rival.getByRole("article")).toHaveCount(5);
+		const swaps = own.getByRole("button", { name: /^Intercambiar / });
+		await expect(swaps).toHaveCount(5);
+		const first = await swaps.first().getAttribute("aria-label");
+		await swaps.first().click();
+		await swaps.nth(1).click();
+		await expect(swaps.nth(1)).toHaveAttribute("aria-label", first ?? "");
 		if (game === 1) await capture?.("roles");
 		await button("Confirmar reparto").click();
 

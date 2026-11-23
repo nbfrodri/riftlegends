@@ -86,13 +86,15 @@ export const chooseSide = (
 		team,
 		choice,
 	});
+	const coached = (team: string) => config.ai?.[config.teams.indexOf(team)];
+	const firstToAssign = coached(red) && !coached(blue) ? "red" : "blue";
 	return done(
 		{
 			...state,
 			choices,
 			phase: "draft",
 			chooser: null,
-			draft: newGame(blue, red, firstSide),
+			draft: newGame(blue, red, firstSide, firstToAssign),
 		},
 		chosen,
 		{ type: "game.started", game: state.game, blue, red, first },
