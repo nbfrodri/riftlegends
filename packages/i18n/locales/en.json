@@ -3,7 +3,7 @@
 	"draft.card.title": "Champion card",
 	"draft.card.hint": "Right click: card",
 	"draft.card.shortcut": "Right click or press I to pin the card. Escape closes it.",
-	"draft.card.help": "Hover or focus a champion to inspect it. Press I to keep its card open.",
+	"draft.card.help": "Hover or focus a champion to see its card. Right click or press I to pin it.",
 	"draft.card.close": "Close champion card",
 	"draft.card.pin": "Pin champion card",
 	"draft.card.tier": "Tier {{tier}}",
