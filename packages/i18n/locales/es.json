@@ -448,7 +448,7 @@
 	"draft.board.level.low": "Bajo",
 	"draft.board.attributeScale": "Atributos sobre 100",
 	"draft.board.estimated": "Estimado",
-	"draft.board.estimatedHint": "Valor estimado: no se puede medir con estadísticas",
+	"draft.board.estimatedWhy": "No se puede medir con estadísticas",
 	"draft.board.area.lane": "Línea",
 	"draft.board.area.map": "Mapa",
 	"draft.board.area.fight": "Pelea",

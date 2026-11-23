@@ -448,7 +448,7 @@
 	"draft.board.level.low": "Low",
 	"draft.board.attributeScale": "Attributes out of 100",
 	"draft.board.estimated": "Estimated",
-	"draft.board.estimatedHint": "Estimated value: it cannot be measured with stats",
+	"draft.board.estimatedWhy": "It cannot be measured with stats",
 	"draft.board.area.lane": "Lane",
 	"draft.board.area.map": "Map",
 	"draft.board.area.fight": "Fight",

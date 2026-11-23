@@ -110,7 +110,7 @@ export function InspectionPanel(props: {
 
 /**
  * U5: a player's attributes by area. Estimated values (not measurable with
- * stats) are italic and muted, with a legend at the bottom; attributes that
+ * stats) are italic and muted, explained in their tooltip (#398); attributes that
  * matter little for the player's role are dimmed and explained.
  */
 export function PlayerAttributes({
@@ -154,7 +154,16 @@ export function PlayerAttributes({
 									<dd
 										className={`font-semibold tabular-nums ${guessed.has(key) ? "font-normal text-muted italic" : levelColor[levelOf(attributes[key])]}`}
 									>
-										{attributes[key]}
+										{guessed.has(key) ? (
+											<Tooltip
+												heading={t("draft.board.estimated")}
+												content={t("draft.board.estimatedWhy")}
+											>
+												<span>{attributes[key]}</span>
+											</Tooltip>
+										) : (
+											attributes[key]
+										)}
 										<span className="sr-only">
 											{" "}
 											{t(`draft.board.level.${levelOf(attributes[key])}`)}
@@ -178,11 +187,6 @@ export function PlayerAttributes({
 					</section>
 				))}
 			</div>
-			{guessed.size > 0 && (
-				<p className="mt-2 text-[12px] text-muted italic">
-					{t("draft.board.estimatedHint")}
-				</p>
-			)}
 		</>
 	);
 }
