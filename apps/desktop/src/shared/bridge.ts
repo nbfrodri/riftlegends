@@ -23,6 +23,7 @@ export const assetChannels = {
 	champions: "assets:champions",
 	teamLogos: "assets:teamLogos",
 	playerPhotos: "assets:playerPhotos",
+	leagueLogos: "assets:leagueLogos",
 	progress: "assets:progress",
 	teamLogosChanged: "assets:teamLogosChanged",
 	playerPhotosChanged: "assets:playerPhotosChanged",
@@ -37,8 +38,10 @@ export interface AssetsApi {
 	teamLogos(): Promise<Record<string, string>>;
 	/** Synchronizes the photo cache and returns verified URLs by player id. */
 	playerPhotos(): Promise<Record<string, string>>;
+	/** League or event id to the URL of its verified logo on disk. */
+	leagueLogos(): Promise<Record<string, string>>;
 	subscribe(listener: (progress: AssetProgress) => void): () => void;
-	/** Main finished downloading team logos: read `teamLogos()` again. */
+	/** Main finished a team or league logo sync: read both logo maps again. */
 	subscribeTeamLogos(listener: () => void): () => void;
 	subscribePlayerPhotos(listener: () => void): () => void;
 }

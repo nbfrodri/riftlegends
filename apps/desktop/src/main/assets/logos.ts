@@ -15,3 +15,11 @@ export const {
 
 export const teamLogoSlugs = (ids: readonly string[]) =>
 	imageSlugs(ids, "team");
+
+export const {
+	readImage: readLeagueLogo,
+	readPaths: readLeagueLogos,
+	sync: syncLeagueLogos,
+} = createRiotImageCache("leagues", (value) =>
+	parseRiotLogoUrl(value, "league"),
+);

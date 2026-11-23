@@ -1,0 +1,20 @@
+import { Trophy } from "lucide-react";
+import { useState } from "react";
+import { useLeagueLogoSrc } from ".";
+
+/** A league or event logo and a fallback with the same footprint. */
+export function LeagueLogo({ id, name }: { id: string; name: string }) {
+	const logo = useLeagueLogoSrc(id);
+	const [failed, setFailed] = useState<string>();
+	if (logo && failed !== logo) {
+		return (
+			<img
+				src={logo}
+				alt={name}
+				className="size-4 shrink-0 object-contain"
+				onError={() => setFailed(logo)}
+			/>
+		);
+	}
+	return <Trophy role="img" aria-label={name} className="size-4 shrink-0" />;
+}

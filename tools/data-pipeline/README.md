@@ -81,6 +81,15 @@ Ejecuta el comando desde la raíz con acceso a los servidores de Riot. Reutiliza
 
 Admite `--cache-dir`, `--max-attempts` y `--offline`. En modo offline solo puede regenerar el manifiesto cuando la caché ya tiene todos los metadatos de las imágenes válidas. [Plan 11](../../docs/plans/11-datos-reales.md#fotos-de-jugadores-en-la-caché-360).
 
+## Logos de ligas y torneos internacionales
+
+```sh
+mise exec -- pnpm data:leagues
+mise exec -- pnpm data:leagues --offline
+```
+
+Consulta `getLeagues` y escribe `packages/core/content/real/leagues.json` con procedencia y metadatos ordenados por id. Usa las mismas opciones, caché y límites que `data:logos`. `--offline` necesita la respuesta y los metadatos de imagen ya cacheados. El comando lista las competiciones que quedan sin logo.
+
 ## Actualización semanal
 
 El [workflow](../../.github/workflows/data-snapshot.yml) se ejecuta los lunes a las 05:23 UTC y también se puede lanzar desde **Actions → Real data snapshot → Run workflow** en la rama por defecto. Las respuestas crudas viven en `actions/cache` (privada del repositorio, con clave por fecha UTC): no se suben como artefacto ni se commitean, porque los desambiguadores de `Link` pueden incluir nombres reales. Un día nuevo consulta de nuevo la fuente. Si solo cambian las fechas de consulta, se conservan los bytes y la procedencia de la última versión publicada.

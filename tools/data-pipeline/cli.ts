@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
 import { Client } from "./client.ts";
 import { history } from "./history.ts";
+import { writeLeagueLogos } from "./league-logos.ts";
 import { writeLogos } from "./logos.ts";
 import { nationalities } from "./nationality.ts";
 import { writePhotos } from "./photos.ts";
@@ -23,7 +24,7 @@ try {
 	});
 	if (values.help) {
 		console.log(
-			"pnpm data:(snapshot|logos|photos) [--offline] [--cache-dir <path>] [--max-attempts <n>]",
+			"pnpm data:(snapshot|logos|photos|leagues) [--offline] [--cache-dir <path>] [--max-attempts <n>]",
 		);
 	} else {
 		const cacheDir = resolve(
@@ -66,6 +67,11 @@ try {
 			console.log(`${result.photos} of ${result.players} player photos`);
 			for (const miss of result.unmatched)
 				console.log(`unmatched ${miss.player}: ${miss.reason}`);
+		} else if (positionals[0] === "leagues") {
+			const result = await writeLeagueLogos(imageOptions);
+			console.log(`${result.logos} of ${result.total} league logos`);
+			for (const miss of result.unmatched)
+				console.log(`unmatched ${miss.id}: ${miss.reason}`);
 		} else if (positionals[0] === "logos") {
 			const result = await writeLogos(imageOptions);
 			console.log(`${result.logos} of ${result.teams.length} logos`);

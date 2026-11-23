@@ -159,6 +159,18 @@ describe("real teams (plan 11, A2)", () => {
 		);
 	});
 
+	test("shows the downloaded league logo in its team selector heading", async () => {
+		const user = userEvent.setup();
+		const { assets } = await setup();
+		await chooseReal(user);
+		const url = "rift-asset://leagues/leagues/cblol.png";
+		assets.api.leagueLogos.mockResolvedValue({ CBLOL: url });
+		await act(async () => assets.logosChanged());
+		await user.click(screen.getByRole("combobox", { name: "My team" }));
+		const group = await screen.findByRole("group", { name: "CBLOL" });
+		expect(group.querySelector("img")?.getAttribute("src")).toBe(url);
+	});
+
 	test("finds a team by typing part of its name", async () => {
 		const user = userEvent.setup();
 		await setup();

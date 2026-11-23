@@ -6,6 +6,7 @@ Respuesta del 22-11-2026 de la API web pública de lolesports.com, recortada a d
 | --- | --- |
 | [getTeams.json](getTeams.json) | `https://esports-api.lolesports.com/persisted/gw/getTeams?hl=en-US` |
 | [player-photos.json](player-photos.json) | Fixture sintética del mismo endpoint, con dos rutas de fotos, alias duplicados y jugadores sin foto. |
+| [get-leagues.json](get-leagues.json) (fixture sintética) | `https://esports-api.lolesports.com/persisted/gw/getLeagues?hl=en-US` |
 
 La cabecera `x-api-key` es la **clave pública que la propia web de lolesports.com publica** en su código; identifica a la web, no a una persona, y no es un secreto. El uso en el pipeline de datos (solo en desarrollo y CI, nunca en la app) está autorizado por el propietario del proyecto desde el 22-11-2026. Las peticiones llevan `User-Agent: RiftLegendsDataPipeline/0.1`, van de una en una con 1 s de pausa y no siguen redirects.
 

@@ -15,6 +15,8 @@ export interface SearchSelectItem {
 export interface SearchSelectGroup {
 	/** Heading of the group; a group without one shows no heading. */
 	label?: string;
+	/** Decorative content to the left of the heading. */
+	icon?: ReactNode;
 	items: SearchSelectItem[];
 }
 
@@ -99,7 +101,10 @@ export function SearchSelect(props: {
 										className="pb-1 last:pb-0"
 									>
 										{group.label && (
-											<Combobox.GroupLabel className="px-2 pt-2 pb-1 font-semibold text-[12px] text-muted uppercase tracking-[0.055em] select-none">
+											<Combobox.GroupLabel className="flex items-center gap-2 px-2 pt-2 pb-1 font-semibold text-[12px] text-muted uppercase tracking-[0.055em] select-none">
+												{group.icon && (
+													<span aria-hidden="true">{group.icon}</span>
+												)}
 												{group.label}
 											</Combobox.GroupLabel>
 										)}

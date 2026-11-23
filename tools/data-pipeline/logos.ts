@@ -174,11 +174,6 @@ export async function buildLogos(
 
 const logosFile = "logos.json";
 
-function serialize(file: RealLogos) {
-	const rows = file.logos.map((logo) => `\t\t${JSON.stringify(logo)}`);
-	return `{\n\t"provenance": ${JSON.stringify(file.provenance)},\n\t"logos": [\n${rows.join(",\n")}\n\t]\n}\n`;
-}
-
 async function readTeams(outputDir: string): Promise<SnapshotTeam[]> {
 	const leagueFiles = new Set(
 		leagues.map(({ id }) => `${id.toLowerCase()}.json`),
@@ -197,7 +192,7 @@ async function readTeams(outputDir: string): Promise<SnapshotTeam[]> {
 	return teams;
 }
 
-const withoutDate = (file: RealLogos) =>
+const withoutDate = (file: { provenance: RealLogos["provenance"] }) =>
 	JSON.stringify({
 		...file,
 		provenance: { ...file.provenance, retrievedAt: "" },
@@ -223,19 +218,46 @@ export async function writeLogos(options: LogosOptions) {
 		},
 		logos,
 	} satisfies RealLogos);
-	const target = join(options.outputDir, logosFile);
+	await writeLogoMetadata(
+		options.outputDir,
+		logosFile,
+		file,
+		"logos",
+		realLogosSchema,
+	);
+	return { logos: logos.length, unmatched, teams };
+}
+
+/** Write a stable snapshot while keeping a previous equivalent retrieval date. */
+export async function writeLogoMetadata<
+	K extends string,
+	T extends { provenance: RealLogos["provenance"] } & Record<
+		K,
+		readonly unknown[]
+	>,
+>(
+	outputDir: string,
+	filename: string,
+	file: T,
+	key: K,
+	schema: {
+		safeParse(value: unknown): { success: true; data: T } | { success: false };
+	},
+) {
+	const target = join(outputDir, filename);
 	const existing = await readFile(target, "utf8").catch(
 		(error: NodeJS.ErrnoException) => {
 			if (error.code !== "ENOENT") throw error;
 		},
 	);
-	let body = serialize(file);
 	try {
-		const previous = realLogosSchema.safeParse(JSON.parse(existing ?? "null"));
+		const previous = schema.safeParse(JSON.parse(existing ?? "null"));
 		if (previous.success && withoutDate(previous.data) === withoutDate(file))
-			body = existing as string;
+			return;
 	} catch {}
-	await mkdir(options.outputDir, { recursive: true });
+	const rows = file[key].map((logo) => `\t\t${JSON.stringify(logo)}`);
+	const body = `{\n\t"provenance": ${JSON.stringify(file.provenance)},\n\t"${key}": [\n${rows.join(",\n")}\n\t]\n}\n`;
+	await mkdir(outputDir, { recursive: true });
 	const temp = `${target}.${randomUUID()}.tmp`;
 	try {
 		await writeFile(temp, body);
@@ -243,5 +265,4 @@ export async function writeLogos(options: LogosOptions) {
 	} finally {
 		await rm(temp, { force: true });
 	}
-	return { logos: logos.length, unmatched, teams };
 }

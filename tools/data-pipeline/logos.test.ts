@@ -219,6 +219,8 @@ describe("writeLogos", () => {
 		);
 		expect(snapshot).not.toBeNull();
 		await writeFile(join(out, "lck.json"), JSON.stringify(snapshot));
+		await writeFile(join(out, "leagues.json"), JSON.stringify({ leagues: [] }));
+		await writeFile(join(out, "history.json"), JSON.stringify({ players: [] }));
 		let now = 0;
 		const run = () =>
 			writeLogos({

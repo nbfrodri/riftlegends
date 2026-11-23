@@ -762,6 +762,89 @@ describe("main asset cache", () => {
 		expect(changed).toHaveBeenCalledTimes(1);
 	});
 
+	it("syncs league logos on cache readiness and refreshes the renderer", async () => {
+		const url = "https://static.lolesports.com/leagues/lck.png";
+		override = async (request) =>
+			request.href === url ? response(png) : undefined;
+		const cache = createAssetCache(profile, {
+			transport,
+			leagueLogos: [
+				{
+					id: "LCK",
+					url,
+					sha256: createHash("sha256").update(png).digest("hex"),
+					size: png.length,
+					mime: "image/png",
+				},
+			],
+		});
+		const changed = vi.fn();
+		cache.subscribeTeamLogos(changed);
+		expect(await cache.sync()).toEqual({ state: "ready", version });
+		expect(await cache.getLeagueLogos()).toEqual({
+			LCK: "rift-asset://leagues/leagues/lck.png",
+		});
+		expect(changed).toHaveBeenCalledTimes(1);
+	});
+
+	it("only serves verified league logos from the league origin", async () => {
+		const goodUrl = "https://static.lolesports.com/leagues/lck.png";
+		override = async (url) => {
+			if (url.pathname.endsWith("/redirect.png"))
+				return { ...response(png), status: 302 };
+			return response(url.pathname.endsWith("/bad.png") ? jpeg : png);
+		};
+		const valid = {
+			id: "LCK",
+			url: goodUrl,
+			sha256: createHash("sha256").update(png).digest("hex"),
+			size: png.length,
+			mime: "image/png",
+		};
+		const cache = create();
+		const result = await cache.syncLeagueLogos([
+			valid,
+			{ ...valid, id: "Host", url: goodUrl.replace(".com", ".com.example") },
+			{ ...valid, id: "Team", url: goodUrl.replace("/leagues/", "/teams/") },
+			{ ...valid, id: "Svg", mime: "image/svg+xml" },
+			{ ...valid, id: "Large", size: 512 * 1024 + 1 },
+			{ ...valid, id: "Size", size: valid.size + 1 },
+			{ ...valid, id: "Digest", sha256: "0".repeat(64) },
+			{
+				...valid,
+				id: "Redirect",
+				url: goodUrl.replace("lck.png", "redirect.png"),
+			},
+			{
+				...valid,
+				id: "Magic",
+				url: goodUrl.replace("lck.png", "bad.png"),
+				size: jpeg.length,
+				sha256: createHash("sha256").update(jpeg).digest("hex"),
+			},
+		]);
+		expect(result.failed).toEqual([
+			"Host",
+			"Team",
+			"Svg",
+			"Large",
+			"Size",
+			"Digest",
+			"Redirect",
+			"Magic",
+		]);
+		const url = "rift-asset://leagues/leagues/lck.png";
+		expect(await cache.getLeagueLogos()).toEqual({ LCK: url });
+		const served = await serveAsset(profile, { url, method: "GET" });
+		expect(served.headers.get("content-type")).toBe("image/png");
+		expect(Buffer.from(await served.arrayBuffer())).toEqual(png);
+		await writeFile(join(profile, "assets/leagues/leagues/lck.png"), jpeg);
+		expect((await serveAsset(profile, { url, method: "GET" })).status).toBe(
+			404,
+		);
+		expect(await cache.getLeagueLogos()).toEqual({});
+	});
+
 	it("A3 downloads team logos under their slug and lists their protocol URLs", async () => {
 		const logo = Buffer.concat([png, Buffer.from("logo")]);
 		const logoUrl = "https://static.lolesports.com/teams/A.png";

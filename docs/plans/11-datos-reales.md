@@ -216,3 +216,9 @@ Cada regla tiene un **id** que viaja en `reasons` para que la ficha explique el 
 - El pipeline lee `teams.json` y `players.json`, reutiliza el emparejamiento de equipos y la caché de `getTeams` de los logos, y escribe `photos.json` con procedencia, id del jugador, URL, SHA-256, tamaño y tipo. [Comando y opciones](../../tools/data-pipeline/README.md#fotos-de-jugadores).
 - Se aplican los mismos límites que a los logos, salvo el tamaño: las fotos admiten hasta 2 MB (`maxPlayerPhotoBytes`) y los logos 512 KB. Las rutas remotas permitidas son `static.lolesports.com/players/<archivo>` y `lolstatic-a.akamaihd.net/esports-assets/production/player/<archivo>`. [Contrato](../../packages/contracts/draft/real-photos.ts).
 - Al entrar en el modo real, main sincroniza `userData/assets/photos/` en segundo plano. El renderer recibe un mapa de id de jugador a URL local mediante `window.riftlegends.assets.playerPhotos()`. El protocolo sirve las imágenes verificadas en `rift-asset://photos/players/<slug>.<png|jpg|webp>`.
+
+## Logos de ligas y torneos internacionales (#387)
+
+- `pnpm data:leagues` toma de `getLeagues` los logos de LCK, LPL, LEC, LCP, LCS, CBLOL, First Stand, MSI y Worlds. Guarda la procedencia, URL, SHA-256, tamaño y tipo por id en `content/real/leagues.json`. La app descarga las imágenes en tiempo de ejecución.
+- El origen `leagues` usa los mismos límites y verificaciones que los logos de equipo. Admite `static.lolesports.com/leagues/` y `lolstatic-a.akamaihd.net/esports-assets/production/league/`. Sirve archivos listados en su propio manifiesto por `rift-asset://leagues/leagues/<slug>.<png|jpg|webp>`.
+- El renderer vuelve a leer el mapa de logos al recibir `assets:teamLogosChanged`. Las etiquetas de liga del selector de equipos y la ficha de cada equipo muestran un icono propio si falta el logo o falla la carga.

@@ -42,6 +42,7 @@ test("exposes only ping, the system locale, the window controls, assets and the 
 		),
 	).toEqual([
 		"champions",
+		"leagueLogos",
 		"playerPhotos",
 		"status",
 		"subscribe",
