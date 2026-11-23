@@ -9,6 +9,7 @@ import {
 	render,
 	screen,
 	waitFor,
+	within,
 } from "@testing-library/react";
 import type { ReactElement } from "react";
 import { afterEach, describe, expect, test } from "vitest";
@@ -17,7 +18,10 @@ import { GameRoleIcon } from "../src/renderer/assets/game-role-icon";
 import { MapIcon } from "../src/renderer/assets/map-icon";
 import { StatIcon } from "../src/renderer/assets/stat-icon";
 import { EventFeed } from "../src/renderer/match/event-feed";
+import { teamMap } from "../src/renderer/match/team-map";
+import { TeamPanel } from "../src/renderer/match/team-panel";
 import { fakeAssets } from "./fake-assets";
+import { renderInLocale } from "./render-in-locale";
 
 afterEach(cleanup);
 
@@ -229,5 +233,64 @@ describe("objective events in the feed", () => {
 		expect(icon(rows[0])).toBeUndefined();
 		expect(icon(rows[1])).toBe("rift-asset://cdragon/objectives/tower.png");
 		expect(icon(rows[2])).toBe("rift-asset://cdragon/objectives/dragon.png");
+	});
+});
+
+describe("team panel", () => {
+	const side = {
+		gold: 0,
+		kills: 0,
+		towers: { top: 1, mid: 0, bot: 0 },
+		nexusTowers: 0,
+		inhibitors: { top: null, mid: null, bot: null },
+		dragons: 2,
+		soul: false,
+		heralds: 1,
+		barons: 0,
+		elders: 0,
+		buffs: { herald: null, baron: null, elder: null },
+	};
+
+	test("draws structures and objectives with the official icons, tinting the objectives taken", async () => {
+		await renderInLocale(
+			<AssetsProvider api={fakeAssets(ready).api}>
+				<TeamPanel side="blue" name="Blue" view={teamMap(side, 60)} />
+			</AssetsProvider>,
+		);
+		const panel = await waitFor(() => {
+			const found = screen.getByRole("region", { name: /Blue/ });
+			if (!found.querySelector("img")) throw new Error("no image yet");
+			return found;
+		});
+		expect(panel.querySelectorAll("svg path")).toHaveLength(0);
+		const objective = (name: RegExp) =>
+			screen.getByText(name).closest("dt")?.querySelector("img");
+		for (const [name, file] of [
+			[/Dragons/, "dragon"],
+			[/Heralds/, "herald"],
+			[/Barons/, "baron"],
+			[/Elders/, "elder"],
+		] as const)
+			expect(objective(name)?.getAttribute("src")).toBe(
+				`rift-asset://cdragon/objectives/${file}.png`,
+			);
+		const tinted = (name: RegExp) =>
+			objective(name)?.classList.contains("[filter:var(--map-icon-tint)]");
+		expect(tinted(/Dragons/)).toBe(true);
+		expect(tinted(/Heralds/)).toBe(true);
+		expect(tinted(/Barons/)).toBe(false);
+		expect(
+			screen
+				.getByText(/Barons/)
+				.closest("[data-taken]")
+				?.getAttribute("data-taken"),
+		).toBe("false");
+		const structures = screen.getByRole("table");
+		expect(
+			structures.querySelector("thead tr")?.classList.contains("sr-only"),
+		).toBe(false);
+		expect(
+			within(structures).getAllByRole("img", { name: "Destroyed tower" }),
+		).toHaveLength(1);
 	});
 });

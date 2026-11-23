@@ -297,7 +297,7 @@ test("each team's panel shows its own structures and objectives in its colour", 
 	expect(forge.queryAllByLabelText(/Destroyed/)).toHaveLength(0);
 	// Each term is followed by its value.
 	const objective = (name: string) =>
-		forge.getByText(name).nextElementSibling?.textContent;
+		forge.getByText(name).closest("dt")?.nextElementSibling?.textContent;
 	expect(objective("Dragons")).toBe("3 of 4");
 	expect(objective("Heralds")).toBe("0");
 	expect(objective("Barons")).toBe("1");
@@ -435,5 +435,75 @@ test("face to face says even when a lane is tied", async () => {
 	expect(lane("Mid", "Cara a cara").getByText("Igualados")).toBeTruthy();
 	expect(
 		lane("Top", "Cara a cara").getByText("Forge: +300 oro y 18 CS más"),
+	).toBeTruthy();
+});
+
+test("face to face mirrors each role: blue on the left, the role in the centre, red on the right", async () => {
+	await renderInLocale(<Match />);
+	faceToFace();
+	advance(5000);
+	const table = screen.getByRole("table", { name: "Face to face" });
+	const headers = within(table)
+		.getAllByRole("columnheader")
+		.slice(-7)
+		.map((header) => header.textContent);
+	expect(headers).toEqual([
+		"K/D/A",
+		"CS",
+		"Gold",
+		"Lane",
+		"Gold",
+		"CS",
+		"K/D/A",
+	]);
+	for (const role of ["Top", "Jungle", "Mid", "ADC", "Support"]) {
+		const row = within(table).getByRole("row", { name: new RegExp(role) });
+		const cells = [...row.querySelectorAll("th, td")];
+		expect(cells).toHaveLength(7);
+		expect(cells[3]?.getAttribute("scope")).toBe("row");
+		expect(cells[3]?.textContent).toContain(role);
+		expect(cells[0]?.getAttribute("data-side")).toBe("blue");
+		expect(cells[6]?.getAttribute("data-side")).toBe("red");
+	}
+	const top = [
+		...(lane("Top").getByRole("rowheader").closest("tr")?.children ?? []),
+	];
+	expect(top[0]?.textContent).toContain("Ember Crown");
+	expect(top[0]?.textContent).toContain("1/0/2");
+	expect(top[2]?.textContent).toBe("1,500");
+	expect(top[4]?.textContent).toBe("1,200");
+	expect(top[6]?.textContent).toContain("Silver Tide");
+	expect(top[6]?.textContent).toContain("0/1/0");
+});
+
+test("each role's gold lead is a bar that grows towards the side ahead", async () => {
+	await renderInLocale(<Match />);
+	faceToFace();
+	advance(5000);
+	const bar = (role: string) =>
+		lane(role).getByRole("rowheader").querySelector("[data-gold-lead]");
+	expect(bar("Top")?.getAttribute("data-side")).toBe("blue");
+	expect(bar("Jungle")?.getAttribute("data-side")).toBe("red");
+	// Half the row is the biggest lead of the minute, at least 1,000 gold.
+	expect((bar("Jungle") as HTMLElement).style.width).toBe("25%");
+	expect((bar("Top") as HTMLElement).style.width).toBe("15%");
+	expect(bar("Mid")).toBeNull();
+});
+
+const chartLabels = () =>
+	[...screen.getByRole("figure").querySelectorAll("[data-axis]")].map(
+		(label) => label.textContent,
+	);
+
+test("the gold chart scales to the gold difference, with a minimum range", async () => {
+	await renderInLocale(<Match />);
+	expect(chartLabels()).toEqual(["2,000", "0", "2,000"]);
+	advance(5000);
+	// A 3,200 lead rounds the range up to the next thousand.
+	expect(chartLabels()).toEqual(["4,000", "0", "4,000"]);
+	const line = screen.getByRole("figure").querySelector("[data-lead-line]");
+	expect(line?.getAttribute("d")).toMatch(/ 10$/);
+	expect(
+		screen.getByRole("img", { name: /Gold lead over time.*\+3,200 gold/ }),
 	).toBeTruthy();
 });

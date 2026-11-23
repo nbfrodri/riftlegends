@@ -47,8 +47,10 @@ function Structures({ name, view }: { name: string; view: TeamMap }) {
 				<col className="w-16" />
 			</colgroup>
 			<thead>
-				<tr className="sr-only">
-					<th scope="col">{t("draft.match.lane")}</th>
+				<tr className="text-[11px] [&_th]:font-normal">
+					<th scope="col">
+						<span className="sr-only">{t("draft.match.lane")}</span>
+					</th>
 					{TIERS.map((tier) => (
 						<th scope="col" key={tier}>
 							{t(`draft.match.column.${tier}`)}
@@ -123,16 +125,32 @@ function Objectives({ view }: { view: TeamMap }) {
 	];
 	return (
 		<>
-			<dl className="grid grid-cols-2 gap-x-3 gap-y-2">
-				{objectives.map((kind) => (
-					<div key={kind} className="flex items-center gap-1.5">
-						<dt className="flex min-w-0 items-center gap-1.5 text-muted">
-							<MapIcon kind={kind} />
-							{t(`draft.match.objective.${kind}`)}
-						</dt>
-						<dd className="ml-auto font-bold">{value(kind)}</dd>
-					</div>
-				))}
+			<dl className="grid grid-cols-4 gap-x-2 text-center">
+				{objectives.map((kind) => {
+					const taken = view.objectives[`${kind}s`] > 0;
+					return (
+						<div
+							key={kind}
+							data-taken={taken}
+							className="grid min-w-0 grid-cols-[auto_auto] items-center justify-center gap-x-1.5"
+						>
+							{/* Icon and count share a line; the name sits below. */}
+							<dt className="contents">
+								<span className={`row-start-1 ${taken ? "" : "opacity-45"}`}>
+									<MapIcon kind={kind} size="size-6" tinted={taken} />
+								</span>
+								<span className="col-span-2 row-start-2 truncate text-[12px] text-muted">
+									{t(`draft.match.objective.${kind}`)}
+								</span>
+							</dt>
+							<dd
+								className={`row-start-1 whitespace-nowrap font-bold text-[15px] ${taken ? "text-(--side)" : ""}`}
+							>
+								{value(kind)}
+							</dd>
+						</div>
+					);
+				})}
 			</dl>
 			{effects.length > 0 ? (
 				<ul

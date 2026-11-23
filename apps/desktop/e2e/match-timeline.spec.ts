@@ -146,8 +146,10 @@ test("replays a drafted game and continues to its result", async ({
 		await expect(faceToFace).toBeInViewport({ ratio: 1 });
 		await expect(faceToFace.getByRole("row")).toHaveCount(7);
 		expect(await height()).toBe(before);
-		await page.getByRole("radio", { name: "Mapa" }).check({ force: true });
+		await expect(page.getByRole("figure")).toBeInViewport({ ratio: 1 });
 		await page.setViewportSize({ width: 1366, height: 768 });
+		await expect(faceToFace).toBeInViewport({ ratio: 1 });
+		await page.getByRole("radio", { name: "Mapa" }).check({ force: true });
 		await expectTeamPanelsInView(page);
 		for (const team of ["Forge", "Shoal"]) {
 			const panel = page.getByRole("region", {
