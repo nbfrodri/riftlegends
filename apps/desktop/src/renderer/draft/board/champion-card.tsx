@@ -2,7 +2,7 @@ import {
 	type ChampionCardView,
 	CONTRACT_VERSION,
 } from "@rift-legends/contracts";
-import { Pin, X } from "lucide-react";
+import { X } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { GameRoleIcon } from "../../assets/game-role-icon";
@@ -44,15 +44,11 @@ function Profile({ card }: { card: ChampionCardView }) {
 
 export function ChampionCard({
 	id,
-	pinned,
 	left,
-	onPin,
 	onClose,
 }: {
 	id: string;
-	pinned: boolean;
 	left: boolean;
-	onPin: () => void;
 	onClose: () => void;
 }) {
 	const { t } = useTranslation();
@@ -68,8 +64,8 @@ export function ChampionCard({
 	);
 	const panel = useRef<HTMLElement>(null);
 	useEffect(() => {
-		if (pinned) panel.current?.focus({ preventScroll: true });
-	}, [pinned]);
+		panel.current?.focus({ preventScroll: true });
+	}, []);
 	const nameOf = (champion: string) => championLabel(options, champion);
 	const name = nameOf(id);
 	const own = view?.blue.team === mine ? view?.blue : view?.red;
@@ -99,17 +95,17 @@ export function ChampionCard({
 				</div>
 				<button
 					type="button"
-					tabIndex={pinned ? 0 : -1}
-					aria-label={t(pinned ? "draft.card.close" : "draft.card.pin")}
-					onClick={pinned ? onClose : onPin}
+					aria-label={t("draft.card.close")}
+					onClick={onClose}
 					className="grid size-7 shrink-0 place-items-center rounded-control text-muted hover:bg-panel hover:text-action"
 				>
-					{pinned ? <X size={16} aria-hidden /> : <Pin size={16} aria-hidden />}
+					<X size={16} aria-hidden />
 				</button>
 			</header>
 			<div
 				className="min-h-0 overflow-y-auto overscroll-contain"
-				tabIndex={pinned ? 0 : -1}
+				// biome-ignore lint/a11y/noNoninteractiveTabindex: the card's body scrolls by keyboard.
+				tabIndex={0}
 			>
 				{card.data ? (
 					<>

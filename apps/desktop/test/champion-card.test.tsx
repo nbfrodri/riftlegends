@@ -4,7 +4,6 @@ import {
 	cleanup,
 	fireEvent,
 	screen,
-	waitFor,
 	within,
 } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -62,12 +61,20 @@ async function board() {
 	};
 }
 
-it("lazily previews one named card on hover, pins by right click and closes on Escape", async () => {
+it("hovering a pool tile shows the right-click icon but no card; right click opens it and Escape closes it", async () => {
 	const { user, core, tile, next } = await board();
+	await user.hover(tile);
+	await act(() => new Promise((resolve) => setTimeout(resolve, 400)));
+	expect(queryCard()).toBeNull();
 	expect(
 		core.api.query.mock.calls.some(([q]) => q.kind === "draft.champion"),
 	).toBe(false);
-	await user.hover(tile);
+	const icon = tile.querySelector('[data-slot="card-hint"]');
+	expect(icon?.tagName.toLowerCase()).toBe("svg");
+	expect(icon?.getAttribute("class")).toMatch(/group-hover:block/);
+	expect(icon?.getAttribute("class")).toMatch(/group-focus-visible:block/);
+
+	fireEvent.contextMenu(tile);
 	const card = within(
 		await screen.findByRole("region", { name: "Champion card: Rimefoil" }),
 	);
@@ -99,8 +106,6 @@ it("lazily previews one named card on hover, pins by right click and closes on E
 		section("In this game").getByText("No related picks yet."),
 	).toBeTruthy();
 	await user.unhover(tile);
-	await waitFor(() => expect(queryCard()).toBeNull());
-	fireEvent.contextMenu(tile);
 	await user.hover(next);
 	expect(queryCard()?.getAttribute("aria-label")).toBe(
 		"Champion card: Rimefoil",
@@ -110,34 +115,47 @@ it("lazily previews one named card on hover, pins by right click and closes on E
 	expect(queryCard()).toBeNull();
 });
 
-it("opens on focus, closes on blur and lets the keyboard pin and dismiss it", async () => {
+it("focus alone opens no card; the key I opens it and Escape closes it and returns focus", async () => {
 	const { user, tile, next } = await board();
-	fireEvent.focus(tile);
-	expect(
-		await screen.findByRole("region", { name: "Champion card: Rimefoil" }),
-	).toBeTruthy();
-	fireEvent.blur(tile);
-	await waitFor(() => expect(queryCard()).toBeNull());
 	tile.focus();
+	fireEvent.focus(tile);
+	await act(() => new Promise((resolve) => setTimeout(resolve, 400)));
+	expect(queryCard()).toBeNull();
 	await user.keyboard("i");
-	fireEvent.focus(next);
 	expect(
 		await screen.findByRole("button", { name: "Close champion card" }),
 	).toBeTruthy();
+	fireEvent.focus(next);
 	expect(queryCard()?.getAttribute("aria-label")).toBe(
 		"Champion card: Rimefoil",
 	);
 	await user.keyboard("{Escape}");
 	expect(queryCard()).toBeNull();
+	expect(document.activeElement).toBe(tile);
+});
+
+it("a ban in the team column opens its card by right click, not on hover", async () => {
+	const { core, user } = await board();
+	await act(async () => {
+		core.act("draft.ban", { team: "forge", champion: "waxblade" });
+	});
+	const ban = await screen.findByRole("button", { name: "Waxblade" });
+	await user.hover(ban);
+	await act(() => new Promise((resolve) => setTimeout(resolve, 400)));
+	expect(queryCard()).toBeNull();
+	fireEvent.contextMenu(ban);
+	expect(
+		await screen.findByRole("region", { name: "Champion card: Waxblade" }),
+	).toBeTruthy();
 });
 
 it("keeps the shortcut discoverable after the first visit", async () => {
 	localStorage.clear();
 	const first = await board();
-	expect(screen.getByText(/Hover or focus a champion/)).toBeTruthy();
+	expect(screen.getByText(/Right click a champion or press I/)).toBeTruthy();
 	first.core.unmount();
 	await board();
-	expect(screen.queryByText(/Hover or focus a champion/)).toBeNull();
+	expect(screen.queryByText(/Right click a champion or press I/)).toBeNull();
 	expect(screen.getByText("Right click: card")).toBeTruthy();
 });
 
@@ -186,14 +204,14 @@ it("can click through a draft turn without loading an incidental card on pointer
 	).toBe(false);
 });
 
-it("explains the pin shortcut in the Caja tooltip of the hint", async () => {
+it("explains the card shortcut in the Caja tooltip of the hint", async () => {
 	const { user } = await board();
 	const hint = screen.getByRole("button", { name: "Right click: card" });
 	expect(hint.hasAttribute("title")).toBe(false);
 	await user.hover(hint);
 	const tooltip = await screen.findByRole("tooltip");
 	expect(tooltip.textContent).toBe(
-		"Pin the card with right click or the key. Escape closes it.I",
+		"Open the card with right click or the key. Escape closes it.I",
 	);
 	expect(within(tooltip).getByText("I").tagName).toBe("KBD");
 });
@@ -205,8 +223,8 @@ it("opens pool tooltips away from the side where the card appears", async () => 
 });
 
 it("shows no filler text for a relation without reasons", async () => {
-	const { user, tile } = await board();
-	await user.hover(tile);
+	const { tile } = await board();
+	fireEvent.contextMenu(tile);
 	const card = within(
 		await screen.findByRole("region", { name: "Champion card: Rimefoil" }),
 	);
