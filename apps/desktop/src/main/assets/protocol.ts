@@ -8,6 +8,7 @@ export const assetScheme = "rift-asset";
 
 const cdragonTypes = {
 	".png": "image/png",
+	".jpg": "image/jpeg",
 	".svg": "image/svg+xml",
 	".json": "application/json",
 } as const;

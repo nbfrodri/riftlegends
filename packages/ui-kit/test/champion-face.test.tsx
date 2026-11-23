@@ -41,6 +41,28 @@ test("a failed portrait falls back in its reserved space and a replacement URL c
 	);
 });
 
+test("a failed large art falls back to the icon, then to the initials", () => {
+	render(
+		<ChampionFace
+			id="cragbell"
+			label="Guardian of the Crag"
+			size="pool"
+			src="tile.jpg"
+			fallbackSrc="icon.png"
+		/>,
+	);
+	const face = screen.getByRole("img", { name: "Guardian of the Crag" });
+	const image = () => face.querySelector("img");
+	expect(image()?.getAttribute("src")).toBe("tile.jpg");
+	// Square art in a wide box: keep the face, which sits above the centre.
+	expect(image()?.className).toContain("object-[50%_30%]");
+	fireEvent.error(image() as HTMLImageElement);
+	expect(image()?.getAttribute("src")).toBe("icon.png");
+	fireEvent.error(image() as HTMLImageElement);
+	expect(image()).toBeNull();
+	expect(face.textContent).toBe("CR");
+});
+
 test("an unavailable champion is greyed with a diagonal stripe and no extra label", () => {
 	render(
 		<ChampionFace

@@ -18,6 +18,7 @@ export function ChampionFace({
 	id,
 	label,
 	src,
+	fallbackSrc,
 	size,
 	unavailable = false,
 }: {
@@ -25,10 +26,15 @@ export function ChampionFace({
 	/** Omit when adjacent text already names the champion. */
 	label?: string;
 	src?: string;
+	/** Shown when `src` fails, before the initials. */
+	fallbackSrc?: string;
 	size: keyof typeof sizes;
 	unavailable?: boolean;
 }) {
-	const [failed, setFailed] = useState<string>();
+	const [failed, setFailed] = useState<readonly string[]>([]);
+	const shown = [src, fallbackSrc].find(
+		(url): url is string => !!url && !failed.includes(url),
+	);
 	return (
 		<span
 			role="img"
@@ -42,13 +48,14 @@ export function ChampionFace({
 			}`}
 		>
 			{id.slice(0, 2).toUpperCase()}
-			{src && src !== failed && (
+			{shown && (
 				<img
-					key={src}
-					src={src}
+					key={shown}
+					src={shown}
 					alt=""
-					onError={() => setFailed(src)}
-					className={`absolute inset-0 size-full object-cover ${unavailable ? "grayscale" : ""}`}
+					onError={() => setFailed((urls) => [...urls, shown])}
+					// Square art in a wide box: the face sits above the centre.
+					className={`absolute inset-0 size-full object-cover object-[50%_30%] ${unavailable ? "grayscale" : ""}`}
 				/>
 			)}
 		</span>

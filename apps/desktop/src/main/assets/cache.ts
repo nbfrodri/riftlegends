@@ -108,7 +108,10 @@ export function createAssetCache(
 			if (active) fallback = { state: "ready", version: active.version };
 
 			for (const version of await candidatePatches(transport)) {
-				if (active && !newer(version, active.version)) return fallback;
+				// A cache made before tiles is fetched again on its own patch.
+				const refresh = active && !active.tiles && version === active.version;
+				if (active && !newer(version, active.version) && !refresh)
+					return fallback;
 				const catalog = await prepareVersion(
 					root,
 					version,

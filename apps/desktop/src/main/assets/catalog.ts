@@ -6,6 +6,7 @@ import {
 	localizedChampionAssetSchema,
 	localizedChampionCatalogSchema,
 	maxAssetChampions,
+	sniffImageMime,
 } from "@rift-legends/contracts";
 
 export const dataDragon = "https://ddragon.leagueoflegends.com";
@@ -14,6 +15,7 @@ export const versionsUrl = new URL("/api/versions.json", dataDragon);
 export const maxCatalogBytes = 4 * 1024 * 1024;
 export const maxImageBytes = 1024 * 1024;
 export const maxLogoBytes = 512 * 1024;
+export const maxChampionDataBytes = 1024 * 1024;
 const championLocales = { en: "en_gb", es: "es_es" } as const;
 export type ChampionLocale = keyof typeof championLocales;
 const gameData = "plugins/rcp-be-lol-game-data/global";
@@ -109,6 +111,64 @@ export function portraitFile(
 			communityDragon,
 		),
 		limit: maxImageBytes,
+	};
+}
+
+/** One champion's full game data, read only to find its base skin art. */
+export function championDataFile(
+	version: string,
+	champion: Pick<LocalizedChampionAsset, "key">,
+): AssetFile {
+	return {
+		path: `upstream/champions/${champion.key}.json`,
+		url: new URL(
+			`/${version}/${gameData}/default/v1/champions/${champion.key}.json`,
+			communityDragon,
+		),
+		limit: maxChampionDataBytes,
+	};
+}
+
+export function tilePath(champion: Pick<LocalizedChampionAsset, "id">) {
+	return `tiles/${champion.id}.jpg`;
+}
+
+// Upstream folder and file names vary in case and name (XinZhaoRework, Skin0),
+// so only their shape is fixed; the champion folder must be the champion's.
+const tilePattern =
+	/^\/lol-game-data\/assets\/assets\/characters\/([a-z0-9]{1,64})\/skins\/(base|skin0)\/images\/([a-z0-9]{1,64})_splash_tile_0\.jpg$/;
+
+/**
+ * The base skin's square splash tile (380×380 JPEG) named by the champion's
+ * untrusted game data, or undefined when the data does not match the shape
+ * CommunityDragon serves.
+ */
+export function tileFile(
+	version: string,
+	champion: Pick<LocalizedChampionAsset, "id" | "key">,
+	data: unknown,
+): AssetFile | undefined {
+	if (!isRecord(data) || data.id !== champion.key) return undefined;
+	const skin = Array.isArray(data.skins) ? data.skins[0] : undefined;
+	if (
+		!isRecord(skin) ||
+		skin.isBase !== true ||
+		skin.id !== champion.key * 1000 ||
+		typeof skin.tilePath !== "string" ||
+		skin.tilePath.length > 256
+	)
+		return undefined;
+	const match = tilePattern.exec(skin.tilePath.toLowerCase());
+	if (!match || match[1] !== champion.id.toLowerCase()) return undefined;
+	const [, folder, variant, name] = match;
+	return {
+		path: tilePath(champion),
+		url: new URL(
+			`/${version}/${gameData}/default/assets/characters/${folder}/skins/${variant}/images/${name}_splash_tile_0.jpg`,
+			communityDragon,
+		),
+		limit: maxImageBytes,
+		check: (bytes) => sniffImageMime(bytes) === "image/jpeg",
 	};
 }
 
