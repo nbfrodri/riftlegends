@@ -3,6 +3,28 @@ import { seedNextSeries } from "./quick-draft-flow";
 
 test.use({ appEnv: { RIFT_E2E_CORE: "1" } });
 
+test("pins a champion card without selecting a ban", async ({
+	appWindow,
+	electronApp,
+}) => {
+	await seedNextSeries(electronApp, 7);
+	await appWindow.getByRole("button", { name: "Start series" }).click();
+	await appWindow.getByRole("button", { name: "Confirm choice" }).click();
+	await appWindow.getByRole("button", { name: "Go to draft" }).click();
+	const tile = appWindow.getByRole("button", { name: "Cragbell", exact: true });
+	await tile.click({ button: "right" });
+	const card = appWindow.getByRole("region", {
+		name: "Champion card: Cragbell",
+	});
+	await expect(card.getByText("Rimefoil")).toBeVisible();
+	await expect(
+		appWindow.getByRole("button", { name: "Confirm ban" }),
+	).toBeDisabled();
+	await appWindow.keyboard.press("Escape");
+	await expect(card).toHaveCount(0);
+	await expect(tile).toBeFocused();
+});
+
 // Plan 09, U3 in the real app: from the setup, the user's first ban reaches
 // the core and the board shows it.
 test("makes the user's first ban from the setup", async ({

@@ -85,6 +85,21 @@ test.describe("Quick draft", () => {
 			// The draft timer is off, and the match clock stops at the final frame.
 			await appWindow.mouse.move(0, 0);
 			await captureScreen(appWindow, `quick-draft-${screen}.png`);
+			if (screen === "draft") {
+				const tile = appWindow
+					.getByRole("group", { name: "Campeones", exact: true })
+					.getByRole("button", { name: /^Rimefoil/ });
+				await tile.focus();
+				await appWindow.keyboard.press("i");
+				const card = appWindow.getByRole("region", {
+					name: "Ficha de campeón: Rimefoil",
+				});
+				await expect(
+					card.getByRole("heading", { name: "Pierde contra" }),
+				).toBeVisible();
+				await captureScreen(appWindow, "quick-draft-champion-card.png");
+				await appWindow.keyboard.press("Escape");
+			}
 			// Reduced motion starts the replay at its final frame. Re-enable
 			// motion before playing so the shared flow can use Skip to end.
 			if (screen === "game-plan") {

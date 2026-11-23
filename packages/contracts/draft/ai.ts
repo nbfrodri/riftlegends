@@ -301,6 +301,22 @@ export const aiContent = z
 	});
 
 export type AiContent = z.infer<typeof aiContent>;
+/** A relation viewed from the inspected champion. Positive values favor it. */
+export type ChampionRelation = {
+	other: string;
+	value: number;
+	reasons: ChampionReason[];
+} & (
+	| { kind: "lane"; role: AiContent["matchups"][number]["role"] }
+	| { kind: "counter" | "synergy" }
+);
+
+export type ChampionCardView = AiContent["champions"][number] & {
+	cc: number;
+	mobility: number;
+	frontline: number;
+	relations: ChampionRelation[];
+};
 export type AiSettings = z.infer<typeof aiSettings>;
 export type AiOfTeam = z.infer<typeof aiOfTeam>;
 export type Personality = (typeof PERSONALITIES)[number];
