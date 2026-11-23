@@ -1,6 +1,5 @@
 import type { Side } from "@rift-legends/contracts";
 import { Tooltip } from "@rift-legends/ui-kit/components/tooltip";
-import { type CSSProperties, useId } from "react";
 import { useTranslation } from "react-i18next";
 import { MapIcon } from "../assets/map-icon";
 import { panel, panelTable, panelTitle } from "./classes";
@@ -26,9 +25,9 @@ function StructureState({
 				role="img"
 				aria-label={label}
 				data-down={!standing}
-				className={`relative inline-flex align-middle ${standing ? "text-(--side)" : "text-muted [&_svg]:opacity-55 after:absolute after:inset-x-0 after:top-1/2 after:h-0.5 after:-rotate-45 after:rounded-full after:bg-current"}`}
+				className={`relative inline-flex rounded-sm align-middle ${standing ? "text-(--side) bg-(--side)/15 ring-1 ring-(--side)" : "text-muted [&_svg]:opacity-55 after:absolute after:inset-x-0 after:top-1/2 after:h-0.5 after:-rotate-45 after:rounded-full after:bg-current"}`}
 			>
-				<MapIcon kind={icon} size="size-6" tinted={standing} />
+				<MapIcon kind={icon} size="size-6" />
 			</span>
 		</Tooltip>
 	);
@@ -136,8 +135,10 @@ function Objectives({ view }: { view: TeamMap }) {
 						>
 							{/* Icon and count share a line; the name sits below. */}
 							<dt className="contents">
-								<span className={`row-start-1 ${taken ? "" : "opacity-45"}`}>
-									<MapIcon kind={kind} size="size-6" tinted={taken} />
+								<span
+									className={`row-start-1 inline-flex rounded-sm ${taken ? "bg-(--side)/15 ring-1 ring-(--side)" : "opacity-45"}`}
+								>
+									<MapIcon kind={kind} size="size-6" />
 								</span>
 								<span className="col-span-2 row-start-2 truncate text-[12px] text-muted">
 									{t(`draft.match.objective.${kind}`)}
@@ -159,7 +160,7 @@ function Objectives({ view }: { view: TeamMap }) {
 				>
 					{effects.map(({ icon, text }) => (
 						<li key={icon} className="flex items-center gap-1.5">
-							<MapIcon kind={icon} tinted />
+							<MapIcon kind={icon} />
 							{text}
 						</li>
 					))}
@@ -182,23 +183,12 @@ export function TeamPanel({
 	view: TeamMap;
 }) {
 	const { t } = useTranslation();
-	const tint = useId();
 	return (
 		<section
 			aria-label={t("draft.match.teamMap", { team: name })}
 			data-side={side}
 			className={`${panel} relative row-span-6 grid grid-rows-subgrid gap-y-3 border-(--side) border-t-[3px]`}
-			style={{ "--map-icon-tint": `url(#${tint})` } as CSSProperties}
 		>
-			<svg aria-hidden="true" className="absolute size-0">
-				<defs>
-					<filter id={tint}>
-						{/* A CSS variable only resolves in a style, not an SVG attribute. */}
-						<feFlood style={{ floodColor: "var(--side)" }} />
-						<feComposite in2="SourceAlpha" operator="in" />
-					</filter>
-				</defs>
-			</svg>
 			<h2 className={`${panelTitle} text-(--side) [overflow-wrap:anywhere]`}>
 				{name}
 			</h2>

@@ -40,24 +40,18 @@ export function MapIcon({
 	kind,
 	size = "size-[17px]",
 	fallback,
-	tinted = false,
 }: {
 	kind: Kind;
 	/** A Tailwind size class shared by the image and its fallback. */
 	size?: string;
 	fallback?: ReactNode;
-	/** Paint a cached icon with the owning panel's SVG colour filter. */
-	tinted?: boolean;
 }) {
 	const box = `inline-block shrink-0 ${size} align-middle`;
 	const src = useAssetSrc("cdragon", `objectives/${official[kind]}.png`);
 	const [failed, setFailed] = useState<string>();
 	if (src && src !== failed) {
-		const paint = kind.endsWith("Down")
-			? "opacity-55 grayscale"
-			: tinted
-				? "[filter:var(--map-icon-tint)]"
-				: "";
+		// The official image is shown as is; only destroyed ones are greyed.
+		const paint = kind.endsWith("Down") ? "opacity-55 grayscale" : "";
 		return (
 			<img
 				src={src}
