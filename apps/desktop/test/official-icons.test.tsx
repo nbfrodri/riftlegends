@@ -221,7 +221,8 @@ describe("objective events in the feed", () => {
 				facts={[event("dragon", 10), event("tower", 20), event("kill", 30)]}
 				second={60}
 				names={{ blue: "Blue", red: "Red" }}
-				championByPlayer={new Map()}
+				ids={{ blue: "blue", red: "red" }}
+				players={new Map()}
 				ended
 			/>,
 		);
@@ -235,6 +236,82 @@ describe("objective events in the feed", () => {
 		expect(icon(rows[0])).toBeUndefined();
 		expect(icon(rows[1])).toBe("rift-asset://cdragon/objectives/tower.png");
 		expect(icon(rows[2])).toBe("rift-asset://cdragon/objectives/dragon.png");
+	});
+});
+
+describe("fight events in the feed", () => {
+	const fight: MatchView["facts"][number] = {
+		type: "match.event",
+		game: 1,
+		minute: 1,
+		second: 10,
+		kind: "fight",
+		side: "blue",
+		zone: "lane-mid",
+		kills: [{ killer: "b-mid", victim: "r-mid", assists: ["b-jungle"] }],
+		gold: { blue: 0, red: 0 },
+		chance: 5000,
+		causes: [],
+	};
+	const players = new Map([
+		[
+			"b-mid",
+			{ handle: "Faker", champion: "ahri", championName: "Ahri", role: "mid" },
+		],
+		[
+			"r-mid",
+			{ handle: "Chovy", champion: "azir", championName: "Azir", role: "mid" },
+		],
+		[
+			"b-jungle",
+			{ handle: "Oner", champion: "vi", championName: "Vi", role: "jungle" },
+		],
+	] as const);
+	const feed = (
+		<EventFeed
+			facts={[fight]}
+			second={60}
+			names={{ blue: "T1", red: "Gen.G" }}
+			ids={{ blue: "T1", red: "Gen.G" }}
+			players={players}
+			ended
+		/>
+	);
+
+	test("name the players with their roles and the team by logo", async () => {
+		const assets = fakeAssets(ready);
+		assets.api.teamLogos.mockResolvedValue({ T1: "rift-asset://logos/t1.png" });
+		await renderInLocale(
+			<AssetsProvider api={assets.api}>{feed}</AssetsProvider>,
+		);
+		const row = screen.getByRole("listitem");
+		expect(within(row).getByText("Faker")).toBeTruthy();
+		expect(within(row).getByText("Chovy")).toBeTruthy();
+		expect(within(row).getByText("Oner")).toBeTruthy();
+		expect(within(row).queryByText("Ahri")).toBeNull();
+		expect(within(row).getAllByRole("img", { name: "Mid" })).toHaveLength(2);
+		expect(within(row).getByRole("img", { name: "Jungle" })).toBeTruthy();
+		expect(within(row).getByRole("img", { name: "Ahri" })).toBeTruthy();
+		const assists = row.querySelector("[data-assists]");
+		expect(assists?.textContent).toContain("Oner");
+		expect(assists?.textContent).not.toContain("Faker");
+		const team = within(row).getByRole("img", { name: "T1" });
+		await waitFor(() =>
+			expect(team.querySelector("img")?.getAttribute("src")).toBe(
+				"rift-asset://logos/t1.png",
+			),
+		);
+	});
+
+	test("fall back to the own crest, still named after the team", async () => {
+		await renderInLocale(
+			<AssetsProvider api={fakeAssets(ready).api}>{feed}</AssetsProvider>,
+		);
+		const team = within(screen.getByRole("listitem")).getByRole("img", {
+			name: "T1",
+		});
+		expect(team.querySelector("svg")).toBeTruthy();
+		expect(team.querySelector("img")).toBeNull();
 	});
 });
 

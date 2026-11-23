@@ -25,22 +25,14 @@ import { sides, TeamTotals } from "./scoreboard";
 import { teamMap } from "./team-map";
 import { TeamPanel } from "./team-panel";
 
+const eventRoles = ["top", "jungle", "mid", "bot", "support"] as const;
+
 function Replay({ match, entry }: { match: MatchView; entry: DraftView }) {
 	const { options, present, mine } = useDraftSession();
 	const { t } = useTranslation();
 	const start = match.facts[0];
 	const last = match.facts.at(-1);
 	const end = last?.type === "match.ended" ? last : undefined;
-	const championByPlayer = useMemo(
-		() =>
-			new Map(
-				end?.players.map(({ player, champion }) => [
-					player,
-					championLabel(options, champion),
-				]),
-			),
-		[end, options],
-	);
 	const lineup = useMemo(
 		() =>
 			new Map(
@@ -54,6 +46,21 @@ function Replay({ match, entry }: { match: MatchView; entry: DraftView }) {
 				]),
 			),
 		[end, options],
+	);
+	const eventPlayers = useMemo(
+		() =>
+			new Map(
+				[...lineup].flatMap(([id, entry]) => {
+					const index = match.snapshots
+						.find((snap) => snap.players.length > 0)
+						?.players.findIndex((p) => p.player === id);
+					const role = eventRoles[(index ?? -1) % eventRoles.length];
+					return index !== undefined && index >= 0 && role
+						? [[id, { ...entry, role }] as const]
+						: [];
+				}),
+			),
+		[lineup, match.snapshots],
 	);
 	const player = usePlayback(end?.duration ?? 0);
 	const [panel, setPanel] = useState<"map" | "faceToFace">("map");
@@ -131,7 +138,8 @@ function Replay({ match, entry }: { match: MatchView; entry: DraftView }) {
 					</div>
 				</div>
 				<EventFeed
-					championByPlayer={championByPlayer}
+					players={eventPlayers}
+					ids={start}
 					facts={match.facts}
 					second={player.second}
 					names={names}
