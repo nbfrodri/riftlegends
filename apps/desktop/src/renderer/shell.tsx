@@ -1,4 +1,3 @@
-import { TooltipProvider } from "@rift-legends/ui-kit/components/tooltip";
 import { Outlet, useRouterState } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 import { Sidebar } from "./sidebar";
@@ -51,13 +50,11 @@ export function Shell() {
 	}, [toggle]);
 
 	return (
-		<TooltipProvider>
-			<div className="flex min-h-0 flex-1">
-				<Sidebar expanded={expanded} onToggle={toggle} pathname={pathname} />
-				<main className="min-w-0 flex-1 overflow-auto">
-					<Outlet />
-				</main>
-			</div>
-		</TooltipProvider>
+		<div className="flex min-h-0 flex-1">
+			<Sidebar expanded={expanded} onToggle={toggle} pathname={pathname} />
+			<main className="min-w-0 flex-1 overflow-auto">
+				<Outlet />
+			</main>
+		</div>
 	);
 }

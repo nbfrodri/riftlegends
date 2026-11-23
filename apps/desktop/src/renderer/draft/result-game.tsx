@@ -1,4 +1,5 @@
 import type { SeriesSummary } from "@rift-legends/contracts";
+import { Tooltip } from "@rift-legends/ui-kit/components/tooltip";
 import { useTranslation } from "react-i18next";
 import { GameRoleIcon } from "../assets/game-role-icon";
 import { isObjectiveKind, MapIcon } from "../assets/map-icon";
@@ -133,9 +134,9 @@ function Stats({
 										<span className="flex w-[18px] shrink-0">
 											<CountryFlag country={player?.nationality} />
 										</span>
-										<span title={t(`draft.roles.role.${line.role}`)}>
-											{player?.handle ?? line.player}
-										</span>
+										<Tooltip content={t(`draft.roles.role.${line.role}`)}>
+											<span>{player?.handle ?? line.player}</span>
+										</Tooltip>
 									</span>
 								</th>
 								<td className="w-1/4 max-w-0 px-1.5 py-1 text-left">

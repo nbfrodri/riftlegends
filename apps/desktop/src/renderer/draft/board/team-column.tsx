@@ -5,6 +5,7 @@ import {
 	type SeriesOptions,
 	type Side,
 } from "@rift-legends/contracts";
+import { Tooltip } from "@rift-legends/ui-kit/components/tooltip";
 import { memo, useId } from "react";
 import { useTranslation } from "react-i18next";
 import { GameRoleIcon } from "../../assets/game-role-icon";
@@ -65,13 +66,14 @@ export const TeamColumn = memo(function TeamColumn(props: {
 							<span className="ml-2 text-text">{t("draft.side.first")}</span>
 						)}
 					</p>
-					<h2
-						id={`${id}-team`}
-						title={name}
-						className="truncate font-bold font-display text-[29px] text-text leading-tight tracking-heading"
-					>
-						{name}
-					</h2>
+					<Tooltip content={name}>
+						<h2
+							id={`${id}-team`}
+							className="truncate font-bold font-display text-[29px] text-text leading-tight tracking-heading"
+						>
+							{name}
+						</h2>
+					</Tooltip>
 				</div>
 				<span className="shrink-0 [&_img]:h-12 [&_img]:w-16 [&_svg]:h-12 [&_svg]:w-16">
 					<TeamCrest id={team.team} name={name} />
@@ -92,33 +94,32 @@ export const TeamColumn = memo(function TeamColumn(props: {
 					const handle = players?.find((p) => p.role === role)?.handle;
 					return (
 						<li key={role} className="flex">
-							<button
-								type="button"
-								aria-controls="player-card"
-								onMouseEnter={show}
-								onFocus={show}
-								onClick={show}
-								className={`flex w-full items-center gap-2.5 border-line border-b px-1 py-[3px] text-left hover:bg-surface ${current ? `bg-surface shadow-[inset_2px_0_currentColor] ${style.text}` : ""}`}
-							>
-								<span className="w-6 text-[12px] text-muted">
-									{pick != null && `${style.letter}${pick + 1}`}
-								</span>
-								<span className={style.text}>
-									<GameRoleIcon role={role} />
-								</span>
-								{champion && <ChampionPortrait id={champion} size="compact" />}
-								<span className="min-w-0">
-									<strong className="block truncate" title={label}>
-										{label}
-									</strong>
-									<small
-										className="block truncate text-[12px] text-muted"
-										title={handle}
-									>
-										{handle}
-									</small>
-								</span>
-							</button>
+							<Tooltip heading={label} content={handle}>
+								<button
+									type="button"
+									aria-controls="player-card"
+									onMouseEnter={show}
+									onFocus={show}
+									onClick={show}
+									className={`flex w-full items-center gap-2.5 border-line border-b px-1 py-[3px] text-left hover:bg-surface ${current ? `bg-surface shadow-[inset_2px_0_currentColor] ${style.text}` : ""}`}
+								>
+									<span className="w-6 text-[12px] text-muted">
+										{pick != null && `${style.letter}${pick + 1}`}
+									</span>
+									<span className={style.text}>
+										<GameRoleIcon role={role} />
+									</span>
+									{champion && (
+										<ChampionPortrait id={champion} size="compact" />
+									)}
+									<span className="min-w-0">
+										<strong className="block truncate">{label}</strong>
+										<small className="block truncate text-[12px] text-muted">
+											{handle}
+										</small>
+									</span>
+								</button>
+							</Tooltip>
 						</li>
 					);
 				})}
@@ -144,9 +145,16 @@ export const TeamColumn = memo(function TeamColumn(props: {
 					const label = championLabel(options, ban);
 					return (
 						// biome-ignore lint/suspicious/noArrayIndexKey: bans only grow, in order.
-						<li key={index} title={label} className="flex">
-							<ChampionPortrait id={ban} label={label} size="ban" unavailable />
-						</li>
+						<Tooltip key={index} content={label}>
+							<li className="flex">
+								<ChampionPortrait
+									id={ban}
+									label={label}
+									size="ban"
+									unavailable
+								/>
+							</li>
+						</Tooltip>
 					);
 				})}
 			</ul>

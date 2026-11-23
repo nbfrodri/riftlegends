@@ -1,4 +1,5 @@
 import { createI18n } from "@rift-legends/i18n";
+import { TooltipProvider } from "@rift-legends/ui-kit/components/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { RouterProvider } from "@tanstack/react-router";
 import { createRoot } from "react-dom/client";
@@ -23,11 +24,13 @@ async function start(root: HTMLElement) {
 			<QueryClientProvider client={new QueryClient()}>
 				<CoreProvider api={window.riftlegends.core}>
 					<AssetsProvider api={window.riftlegends.assets}>
-						<div className="flex h-dvh flex-col">
-							<TitleBar controls={window.riftlegends.window} />
-							{probe && <CoreProbe />}
-							<RouterProvider router={createAppRouter()} />
-						</div>
+						<TooltipProvider>
+							<div className="flex h-dvh flex-col">
+								<TitleBar controls={window.riftlegends.window} />
+								{probe && <CoreProbe />}
+								<RouterProvider router={createAppRouter()} />
+							</div>
+						</TooltipProvider>
 					</AssetsProvider>
 				</CoreProvider>
 			</QueryClientProvider>

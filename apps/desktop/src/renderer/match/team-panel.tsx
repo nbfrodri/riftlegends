@@ -1,4 +1,5 @@
 import type { Side } from "@rift-legends/contracts";
+import { Tooltip } from "@rift-legends/ui-kit/components/tooltip";
 import { type CSSProperties, useId } from "react";
 import { useTranslation } from "react-i18next";
 import { MapIcon } from "../assets/map-icon";
@@ -8,7 +9,7 @@ import { type TeamMap, TIERS } from "./team-map";
 
 type Structure = "tower" | "inhibitor" | "nexus";
 
-/** A structure's icon in the team colour, greyed once destroyed; its state as text. */
+/** A structure's icon in the team colour, greyed once destroyed; its state is its name and tooltip. */
 function StructureState({
 	kind,
 	standing,
@@ -20,14 +21,16 @@ function StructureState({
 	const icon = standing ? kind : (`${kind}Down` as const);
 	const label = t(`draft.match.${icon}`);
 	return (
-		<span
-			title={label}
-			data-down={!standing}
-			className={`relative inline-flex align-middle ${standing ? "text-(--side)" : "text-muted [&_svg]:opacity-55 after:absolute after:inset-x-0 after:top-1/2 after:h-0.5 after:-rotate-45 after:rounded-full after:bg-current"}`}
-		>
-			<MapIcon kind={icon} size="size-6" tinted={standing} />
-			<span className="sr-only">{label}</span>
-		</span>
+		<Tooltip content={label}>
+			<span
+				role="img"
+				aria-label={label}
+				data-down={!standing}
+				className={`relative inline-flex align-middle ${standing ? "text-(--side)" : "text-muted [&_svg]:opacity-55 after:absolute after:inset-x-0 after:top-1/2 after:h-0.5 after:-rotate-45 after:rounded-full after:bg-current"}`}
+			>
+				<MapIcon kind={icon} size="size-6" tinted={standing} />
+			</span>
+		</Tooltip>
 	);
 }
 

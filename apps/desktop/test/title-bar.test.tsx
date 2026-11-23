@@ -1,4 +1,5 @@
 import { act, cleanup, fireEvent, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { afterEach, expect, test, vi } from "vitest";
 import { TitleBar } from "../src/renderer/title-bar";
 import type { WindowControls } from "../src/shared/bridge";
@@ -103,4 +104,13 @@ test("labels the window controls in the system language", async () => {
 test("labels maximize in Spanish while the window is restored", async () => {
 	await renderInLocale(<TitleBar controls={fakeControls().controls} />, "es");
 	expect(await screen.findByRole("button", { name: "Maximizar" })).toBeTruthy();
+});
+
+test("the window controls show their name in the Caja tooltip", async () => {
+	const user = userEvent.setup();
+	await renderInLocale(<TitleBar controls={fakeControls().controls} />);
+	const close = await screen.findByRole("button", { name: "Close" });
+	expect(close.hasAttribute("title")).toBe(false);
+	await user.hover(close);
+	expect((await screen.findByRole("tooltip")).textContent).toBe("Close");
 });

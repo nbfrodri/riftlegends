@@ -9,6 +9,7 @@ import {
 	type SearchSelectGroup,
 } from "@rift-legends/ui-kit/components/search-select";
 import { SegmentedControl } from "@rift-legends/ui-kit/components/segmented-control";
+import { Tooltip } from "@rift-legends/ui-kit/components/tooltip";
 import { ArrowRight } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -86,12 +87,11 @@ function TeamCard(props: {
 					<p className="font-semibold text-[12px] text-muted uppercase tracking-[0.055em]">
 						{props.label}
 					</p>
-					<h2
-						title={props.team.name}
-						className="mt-1 truncate font-bold font-display text-[clamp(28px,3vw,42px)] text-text leading-none tracking-team"
-					>
-						{props.team.name}
-					</h2>
+					<Tooltip content={props.team.name}>
+						<h2 className="mt-1 truncate font-bold font-display text-[clamp(28px,3vw,42px)] text-text leading-none tracking-team">
+							{props.team.name}
+						</h2>
+					</Tooltip>
 					<p className="mt-1.5 text-[13px] text-muted">
 						{props.team.league
 							? t("draft.setup.leagueSeed", {

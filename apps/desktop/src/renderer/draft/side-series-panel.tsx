@@ -1,4 +1,5 @@
 import type { Side } from "@rift-legends/contracts";
+import { Tooltip } from "@rift-legends/ui-kit/components/tooltip";
 import { MousePointer2, Trophy } from "lucide-react";
 import { useId } from "react";
 import { useTranslation } from "react-i18next";
@@ -25,9 +26,9 @@ function SideCells({ map }: { map: MapSides }) {
 		return (
 			<td key={side} className={cell}>
 				<span className="flex min-w-0 items-center gap-1.5">
-					<span className="truncate font-medium" title={name}>
-						{name}
-					</span>
+					<Tooltip content={name}>
+						<span className="truncate font-medium">{name}</span>
+					</Tooltip>
 					{sideChoosers[map.game] === team && (
 						<MousePointer2
 							role="img"

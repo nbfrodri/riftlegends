@@ -247,11 +247,11 @@ test("reveals facts at their second and updates the map and gold from the comple
 		screen.getByRole("region", { name: "Shoal · estructuras y objetivos" }),
 	);
 	const top = () => within(shoal.getByRole("row", { name: /Top/ }));
-	expect(top().queryAllByTitle("Torre destruida")).toHaveLength(0);
+	expect(top().queryAllByLabelText("Torre destruida")).toHaveLength(0);
 	expect(shoal.getByText("11 de 11")).toBeTruthy();
 	advance(4000);
-	expect(top().getAllByTitle("Torre destruida")).toHaveLength(2);
-	expect(top().getByTitle("Inhibidor destruido")).toBeTruthy();
+	expect(top().getAllByLabelText("Torre destruida")).toHaveLength(2);
+	expect(top().getByLabelText("Inhibidor destruido")).toBeTruthy();
 	expect(top().getByText("02:00")).toBeTruthy();
 	expect(shoal.getByText("9 de 11")).toBeTruthy();
 	expect(screen.getByText("+3.200 oro")).toBeTruthy();
@@ -281,7 +281,7 @@ test("each team's panel shows its own structures and objectives in its colour", 
 		expect(panel.getAttribute("data-side")).toBe(side);
 		expect(within(panel).getByRole("heading", { name: team })).toBeTruthy();
 		const table = within(panel).getByRole("table");
-		for (const icon of within(table).getAllByTitle(/^Standing /)) {
+		for (const icon of within(table).getAllByLabelText(/^Standing /)) {
 			expect(icon.classList.contains("text-(--side)")).toBe(true);
 			expect(icon.querySelector("svg")?.classList.contains("size-6")).toBe(
 				true,
@@ -294,7 +294,7 @@ test("each team's panel shows its own structures and objectives in its colour", 
 	const forge = within(
 		screen.getByRole("region", { name: "Forge · structures and objectives" }),
 	);
-	expect(forge.queryAllByTitle(/Destroyed/)).toHaveLength(0);
+	expect(forge.queryAllByLabelText(/Destroyed/)).toHaveLength(0);
 	// Each term is followed by its value.
 	const objective = (name: string) =>
 		forge.getByText(name).nextElementSibling?.textContent;
@@ -308,8 +308,8 @@ test("destroyed structures have a visible strike in addition to their label", as
 	await renderInLocale(<Match />);
 	advance(5000);
 	const struck = (label: string) => {
-		for (const icon of screen.getAllByTitle(label)) {
-			expect(within(icon).getByText(label)).toBeTruthy();
+		for (const icon of screen.getAllByLabelText(label)) {
+			expect(icon.getAttribute("role")).toBe("img");
 			expect(icon.classList.contains("after:-rotate-45")).toBe(true);
 		}
 	};
@@ -347,14 +347,14 @@ test("skipping reveals the last partial minute and waits for the result button",
 		screen.getByRole("region", { name: "Shoal · structures and objectives" }),
 	);
 	const nexus = within(shoal.getByRole("row", { name: /Nexus/ }));
-	expect(nexus.getAllByTitle("Destroyed tower")).toHaveLength(2);
-	expect(nexus.getByTitle("Destroyed nexus")).toBeTruthy();
+	expect(nexus.getAllByLabelText("Destroyed tower")).toHaveLength(2);
+	expect(nexus.getByLabelText("Destroyed nexus")).toBeTruthy();
 	expect(shoal.getByText("9 of 11")).toBeTruthy();
 	const forge = within(
 		screen.getByRole("region", { name: "Forge · structures and objectives" }),
 	);
 	expect(
-		within(forge.getByRole("row", { name: /Nexus/ })).getByTitle(
+		within(forge.getByRole("row", { name: /Nexus/ })).getByLabelText(
 			"Standing nexus",
 		),
 	).toBeTruthy();

@@ -1,4 +1,5 @@
 import { COUNTRY_CODES } from "@rift-legends/contracts/country-codes";
+import { Tooltip } from "@rift-legends/ui-kit/components/tooltip";
 import * as flags from "country-flag-icons/react/3x2";
 import { useTranslation } from "react-i18next";
 
@@ -14,10 +15,10 @@ export function CountryFlag({ country }: { country?: string | undefined }) {
 	}).of(country);
 	if (!name) return null;
 	return (
-		<Flag
-			role="img"
-			aria-label={name}
-			className="inline-block h-3 w-[18px] shrink-0 align-middle"
-		/>
+		<Tooltip content={name}>
+			<span className="inline-flex shrink-0 align-middle">
+				<Flag role="img" aria-label={name} className="h-3 w-[18px]" />
+			</span>
+		</Tooltip>
 	);
 }
