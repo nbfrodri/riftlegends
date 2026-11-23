@@ -1,9 +1,5 @@
 import type { PlayerAttribute, SeriesOptions } from "@rift-legends/contracts";
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipTrigger,
-} from "@rift-legends/ui-kit/components/tooltip";
+import { Tooltip } from "@rift-legends/ui-kit/components/tooltip";
 import { ChevronRight, CircleDashed } from "lucide-react";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
@@ -71,21 +67,14 @@ export function InspectionPanel(props: {
 function EstimatedMark() {
 	const { t } = useTranslation();
 	return (
-		<Tooltip>
-			<TooltipTrigger
-				render={
-					<span
-						role="img"
-						aria-label={t("draft.board.estimated")}
-						className="inline-flex text-muted"
-					/>
-				}
+		<Tooltip content={t("draft.board.estimatedHint")}>
+			<span
+				role="img"
+				aria-label={t("draft.board.estimated")}
+				className="inline-flex text-muted"
 			>
 				<CircleDashed aria-hidden="true" className="size-3" />
-			</TooltipTrigger>
-			<TooltipContent side="top">
-				{t("draft.board.estimatedHint")}
-			</TooltipContent>
+			</span>
 		</Tooltip>
 	);
 }

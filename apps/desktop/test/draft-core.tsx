@@ -14,6 +14,7 @@ import {
 	type Session,
 } from "@rift-legends/core";
 import { createI18n } from "@rift-legends/i18n";
+import { TooltipProvider } from "@rift-legends/ui-kit/components/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render } from "@testing-library/react";
 import type { ReactElement } from "react";
@@ -133,9 +134,11 @@ export async function renderWithDraftCore(
 	const view = render(
 		<I18nextProvider i18n={i18n}>
 			<QueryClientProvider client={client}>
-				<CoreProvider api={core.api}>
-					{assets ? <AssetsProvider api={assets}>{ui}</AssetsProvider> : ui}
-				</CoreProvider>
+				<TooltipProvider>
+					<CoreProvider api={core.api}>
+						{assets ? <AssetsProvider api={assets}>{ui}</AssetsProvider> : ui}
+					</CoreProvider>
+				</TooltipProvider>
 			</QueryClientProvider>
 		</I18nextProvider>,
 	);

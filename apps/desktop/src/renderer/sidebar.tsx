@@ -1,9 +1,5 @@
 import { Kbd } from "@rift-legends/ui-kit/components/kbd";
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipTrigger,
-} from "@rift-legends/ui-kit/components/tooltip";
+import { Tooltip } from "@rift-legends/ui-kit/components/tooltip";
 import { cn } from "@rift-legends/ui-kit/lib/utils";
 import { useNavigate } from "@tanstack/react-router";
 import {
@@ -148,8 +144,14 @@ export function Sidebar({
 					const label = t(key);
 					const current = to !== undefined && pathname === to;
 					return (
-						<Tooltip key={key} disabled={expanded}>
-							<TooltipTrigger
+						<Tooltip
+							key={key}
+							disabled={expanded}
+							side="right"
+							heading={to ? undefined : label}
+							content={to ? label : comingSoon}
+						>
+							<button
 								type="button"
 								aria-label={label}
 								aria-current={current ? "page" : undefined}
@@ -180,18 +182,19 @@ export function Sidebar({
 										)}
 									</span>
 								)}
-							</TooltipTrigger>
-							<TooltipContent>
-								<span>{label}</span>
-								{!to && <span className="text-muted">{comingSoon}</span>}
-							</TooltipContent>
+							</button>
 						</Tooltip>
 					);
 				})}
 			</nav>
 
-			<Tooltip disabled={expanded}>
-				<TooltipTrigger
+			<Tooltip
+				disabled={expanded}
+				side="right"
+				content={toggleLabel}
+				shortcut={t("shell.sidebar.shortcut")}
+			>
+				<button
 					type="button"
 					aria-label={toggleLabel}
 					aria-controls={navId}
@@ -209,10 +212,7 @@ export function Sidebar({
 							<Kbd className="ml-auto">{t("shell.sidebar.shortcut")}</Kbd>
 						</>
 					)}
-				</TooltipTrigger>
-				<TooltipContent>
-					{toggleLabel} <Kbd>{t("shell.sidebar.shortcut")}</Kbd>
-				</TooltipContent>
+				</button>
 			</Tooltip>
 		</aside>
 	);

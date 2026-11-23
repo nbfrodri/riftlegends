@@ -1,8 +1,18 @@
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import {
+	cleanup,
+	render as renderUi,
+	screen,
+	waitFor,
+} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Info } from "lucide-react";
 import { afterEach, expect, test, vi } from "vitest";
 import { IconButton } from "../components/icon-button";
+
+import { TooltipProvider } from "../components/tooltip";
+
+const render = (ui: React.ReactElement) =>
+	renderUi(ui, { wrapper: TooltipProvider });
 
 afterEach(cleanup);
 
