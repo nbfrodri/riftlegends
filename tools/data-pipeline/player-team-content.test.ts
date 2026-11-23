@@ -327,7 +327,7 @@ function splits() {
 	} satisfies RealSnapshot;
 }
 
-test("league teams are those of the latest split; guests stay out with their players", () => {
+test("league teams played the latest split or most splits; guests stay out with their players", () => {
 	const { teams, players } = buildPlayerTeamContent([splits()]);
 	expect(teams.map((t) => t.id).sort()).toEqual(["Alpha", "Beta"]);
 	expect(players.some((p) => p.team === "Guest")).toBe(false);
@@ -345,4 +345,37 @@ test("league member exceptions can add or drop a team", () => {
 		"Guest",
 	]);
 	expect(ids({ include: {}, exclude: { LCK: ["Beta"] } })).toEqual(["Alpha"]);
+});
+
+test("a team that played most splits but not the last one stays (LPL franchises)", () => {
+	const base = splits();
+	const [template] = base.games;
+	if (!template) throw new Error("fixture");
+	const played = (tournament: string, a: string, b: string) => ({
+		...template,
+		id: `${tournament}-${a}-${b}`,
+		tournament,
+		teams: [
+			{ id: a, side: "blue" as const, picks: [], bans: [] },
+			{ id: b, side: "red" as const, picks: [], bans: [] },
+		] as Game["teams"],
+	});
+	const source = {
+		...base,
+		tournaments: [
+			{ id: "s1", name: "Split 1", startsOn: "2026-01-01" },
+			{ id: "s2", name: "Split 2", startsOn: "2026-04-01" },
+			{ id: "s3", name: "Split 3", startsOn: "2026-07-01" },
+			{ id: "s3-po", name: "Split 3 Playoffs", startsOn: "2026-09-01" },
+		],
+		games: [
+			played("s1", "Alpha", "Beta"),
+			played("s1", "Alpha", "Guest"),
+			played("s2", "Alpha", "Beta"),
+			played("s2", "Alpha", "Guest"),
+			played("s3", "Alpha", "Beta"),
+		],
+	};
+	const { teams } = buildPlayerTeamContent([source]);
+	expect(teams.map((t) => t.id).sort()).toEqual(["Alpha", "Beta", "Guest"]);
 });

@@ -20,29 +20,44 @@ export const leagueMemberExceptions: LeagueMemberExceptions = {
 const sideStage = /play-?offs?|play-?in|road to|grand finals?/i;
 
 /**
- * Ids of the teams that belong to the league: those that played its latest
- * split (the tournament with the latest start that is not a side stage),
- * plus the exceptions. A renamed team keeps its id, so it stays. Players of
- * the other teams stay in the games and the history but form no roster.
+ * Ids of the teams that belong to the league: those that played the latest
+ * regular split, or more than half of the season's regular splits (a team
+ * that left before the last split, like an LPL franchise, stays), plus the
+ * exceptions. Regular splits are the tournaments that are not a side stage.
+ * A renamed team keeps its id, so it stays. Players of the other teams stay
+ * in the games and the history but form no roster.
  */
 export function leagueTeamIds(
 	snapshot: RealSnapshot,
 	exceptions: LeagueMemberExceptions = leagueMemberExceptions,
 ) {
 	const dated = snapshot.tournaments.filter((t) => t.startsOn);
-	const splits = dated.filter((t) => !sideStage.test(t.name));
-	const latest = (splits.length ? splits : dated)
+	const regular = dated.filter((t) => !sideStage.test(t.name));
+	const splits = (regular.length ? regular : dated)
 		.slice()
 		.sort(
 			(a, b) =>
 				compare(a.startsOn ?? "", b.startsOn ?? "") || compare(a.id, b.id),
-		)
-		.at(-1);
-	const ids = new Set(
-		latest
-			? snapshot.games
-					.filter((game) => game.tournament === latest.id)
-					.flatMap((game) => game.teams.map((team) => team.id))
+		);
+	const played = new Map<string, Set<string>>();
+	for (const game of snapshot.games)
+		for (const { id } of game.teams) {
+			const set = played.get(id) ?? new Set<string>();
+			set.add(game.tournament);
+			played.set(id, set);
+		}
+	const latest = splits.at(-1);
+	const ids = new Set<string>(
+		splits.length
+			? snapshot.teams
+					.map((team) => team.id)
+					.filter((id) => {
+						const mine = played.get(id);
+						const count = splits.filter((t) => mine?.has(t.id)).length;
+						return (
+							count * 2 > splits.length || (latest && mine?.has(latest.id))
+						);
+					})
 			: snapshot.teams.map((team) => team.id),
 	);
 	const league = snapshot.league.id;

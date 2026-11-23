@@ -101,12 +101,12 @@ test("older snapshots without nationality data still produce player content", as
 	}
 });
 
-test("each league has the teams of its latest split (#368)", async () => {
+test("each league keeps its split teams and drops one-split guests (#368)", async () => {
 	const teams: { id: string; league: string }[] = await read("teams.json");
 	const count = (league: string) =>
 		teams.filter((team) => team.league === league).length;
 	expect(count("LEC")).toBe(10);
-	expect(count("LPL")).toBe(12);
+	expect(count("LPL")).toBe(14);
 	expect(teams.some((team) => team.id === "Los Ratones")).toBe(false);
 	expect(teams.some((team) => team.id === "Karmine Corp Blue")).toBe(false);
 });
