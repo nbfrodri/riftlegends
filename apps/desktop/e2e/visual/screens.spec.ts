@@ -133,11 +133,14 @@ test.describe("Quick draft", () => {
 				const playerCard = appWindow.getByRole("group", {
 					name: /Ficha de jugador/,
 				});
-				await playerCard.locator("summary").click();
+				const wasOpen = await playerCard.evaluate(
+					(element) => (element as HTMLDetailsElement).open,
+				);
+				if (!wasOpen) await playerCard.locator("summary").click();
 				await expect(playerCard.getByText("Mecánicas")).toBeVisible();
 				await appWindow.mouse.move(0, 0);
 				await captureScreen(appWindow, "quick-draft-player-card.png");
-				await playerCard.locator("summary").click();
+				if (!wasOpen) await playerCard.locator("summary").click();
 			}
 			if (screen === "match") {
 				const panel = appWindow.getByRole("radiogroup", { name: "Panel" });
