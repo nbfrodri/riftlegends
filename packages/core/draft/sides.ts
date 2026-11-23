@@ -1,4 +1,9 @@
-import type { Side, SideChoice } from "@rift-legends/contracts";
+import {
+	choiceKind,
+	SIDE_CHOICES,
+	type Side,
+	type SideChoice,
+} from "@rift-legends/contracts";
 import { pick } from "../rng/helpers";
 import { SCOPES } from "../rng/scopes";
 import { deriveSeed } from "../rng/seeds";
@@ -16,17 +21,13 @@ export interface Choice {
 	readonly choice: SideChoice;
 }
 
-const SIDE_KIND = ["blue", "red"] as const;
-const ORDER_KIND = ["first", "last"] as const;
-
-export const kindOf = (choice: SideChoice) =>
-	choice === "blue" || choice === "red" ? "side" : "order";
-
 /** What the team choosing now may take: all four with priority, else the other kind. */
 export const sideOptions = (state: SeriesState): SideChoice[] => {
 	const [taken] = state.choices;
-	if (!taken) return [...SIDE_KIND, ...ORDER_KIND];
-	return kindOf(taken.choice) === "side" ? [...ORDER_KIND] : [...SIDE_KIND];
+	if (!taken) return [...SIDE_CHOICES];
+	return SIDE_CHOICES.filter(
+		(option) => choiceKind(option) !== choiceKind(taken.choice),
+	);
 };
 
 /** Game 1's priority: a draw with the core RNG, without seeding. */
@@ -38,9 +39,11 @@ export const sideSeed = (config: SeriesConfig, state: SeriesState) =>
 	deriveSeed(config.seed, SCOPES.side, state.game, state.choices.length);
 
 /** Who takes each map side and who picks first, from the two choices. */
-const resolve = (config: SeriesConfig, choices: readonly Choice[]) => {
-	const side = choices.find((c) => kindOf(c.choice) === "side") as Choice;
-	const order = choices.find((c) => kindOf(c.choice) === "order") as Choice;
+const resolve = (config: SeriesConfig, priority: Choice, reply: Choice) => {
+	const [side, order] =
+		choiceKind(priority.choice) === "side"
+			? [priority, reply]
+			: [reply, priority];
 	const blue = side.choice === "blue" ? side.team : other(config, side.team);
 	const red = other(config, blue);
 	const first =
@@ -62,7 +65,7 @@ export const chooseSide = (
 	if (team !== state.chooser) return fail("not-your-turn", { team });
 	if (!sideOptions(state).includes(choice)) {
 		return fail("wrong-action", {
-			expected: kindOf(choice) === "side" ? "order" : "side",
+			expected: choiceKind(choice) === "side" ? "order" : "side",
 		});
 	}
 	const [priority] = state.choices;
@@ -72,14 +75,17 @@ export const chooseSide = (
 		type: "side.chosen",
 		game: state.game,
 		team,
-		kind: kindOf(choice),
+		kind: choiceKind(choice),
 		choice,
 		by,
 	};
 	if (!priority) {
 		return done({ ...state, choices, chooser: other(config, team) }, chosen);
 	}
-	const { blue, red, first, firstSide } = resolve(config, choices);
+	const { blue, red, first, firstSide } = resolve(config, priority, {
+		team,
+		choice,
+	});
 	return done(
 		{
 			...state,

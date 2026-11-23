@@ -106,6 +106,35 @@ describe("draft commands", () => {
 
 describe("draft facts", () => {
 	it.each([
+		{ blue: "forge", red: "shoal", first: "another" },
+		{ blue: "forge", red: "forge", first: "forge" },
+	])("requires two distinct map teams and a first pick among them", (teams) => {
+		expect(
+			draftFacts.schema.safeParse({
+				type: "game.started",
+				position: 3,
+				game: 1,
+				...teams,
+			}).success,
+		).toBe(false);
+	});
+	it.each([
+		["side", "first"],
+		["order", "red"],
+	])("rejects %s paired with %s", (kind, choice) => {
+		expect(
+			draftFacts.schema.safeParse({
+				type: "side.chosen",
+				position: 1,
+				game: 1,
+				team: "forge",
+				kind,
+				choice,
+				by: "draw",
+			}).success,
+		).toBe(false);
+	});
+	it.each([
 		{
 			type: "series.started",
 			position: 0,

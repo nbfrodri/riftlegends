@@ -111,7 +111,7 @@ export const draftQueries = defineQueries({
 	"series.options": z.strictObject({ content: contentSet.optional() }),
 });
 
-export const draftFacts = defineFacts({
+const factCatalog = defineFacts({
 	"series.started": {
 		teams: pair(teamId),
 		format: z.enum(FORMATS),
@@ -161,6 +161,25 @@ export const draftFacts = defineFacts({
 	/** `wins` follows the order of `series.started` teams. */
 	"series.finished": { winner: teamId, wins: pair(position) },
 });
+
+export const choiceKind = (choice: SideChoice) =>
+	choice === "blue" || choice === "red" ? "side" : "order";
+
+export const draftFacts = {
+	schema: factCatalog.schema
+		.refine(
+			(fact) =>
+				fact.type !== "side.chosen" || fact.kind === choiceKind(fact.choice),
+			{ path: ["kind"], error: "choice and kind must agree" },
+		)
+		.refine(
+			(fact) =>
+				fact.type !== "game.started" ||
+				(fact.blue !== fact.red &&
+					(fact.first === fact.blue || fact.first === fact.red)),
+			{ error: "first pick must belong to one of two distinct map teams" },
+		),
+};
 
 const sideView = z.strictObject({
 	team: teamId,

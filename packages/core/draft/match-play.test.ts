@@ -58,6 +58,28 @@ describe("match.play", () => {
 		expect(causes(second.facts).has("momentum")).toBe(true);
 	});
 
+	it("keeps the same map sides and match facts when only first pick changes", () => {
+		const state = drafted();
+		if (!state.draft) throw new Error("missing draft");
+		const blueFirst = ok(run(state, "match.play", {}));
+		const redFirst = ok(
+			run(
+				{
+					...state,
+					draft: { ...state.draft, first: "red" },
+				},
+				"match.play",
+				{},
+			),
+		);
+		expect(redFirst.facts[0]).toMatchObject({
+			type: "match.started",
+			blue: "forge",
+			red: "shoal",
+		});
+		expect(redFirst.facts).toEqual(blueFirst.facts);
+	});
+
 	it("is deterministic for the series seed", () => {
 		expect(run(drafted(), "match.play", {})).toEqual(
 			run(drafted(), "match.play", {}),

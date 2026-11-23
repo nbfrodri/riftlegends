@@ -170,7 +170,7 @@ describe("split choice (issue #305)", () => {
 			{ team: rival(first), choice: "first" },
 		]);
 		let current = started.state;
-		for (const step of DRAFT_ORDER.slice(0, 7)) {
+		for (const step of DRAFT_ORDER) {
 			const next = turn(current.draft as NonNullable<typeof current.draft>);
 			expect(next?.side).toBe(step.order === "first" ? "red" : "blue");
 			current =
@@ -184,8 +184,14 @@ describe("split choice (issue #305)", () => {
 							}),
 						).state;
 		}
-		// The last pick still belongs to blue: the 10th pick closes the draft.
-		expect(current.draft?.picks.red).toEqual(["c6"]);
+		expect(current.draft?.picks.red).toEqual(["c6", "c9", "c10", "c17", "c18"]);
+		expect(current.draft?.picks.blue).toEqual([
+			"c7",
+			"c8",
+			"c11",
+			"c16",
+			"c19",
+		]);
 	});
 });
 
