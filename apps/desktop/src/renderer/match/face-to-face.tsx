@@ -1,15 +1,10 @@
 import type { MapSnapshot, Side } from "@rift-legends/contracts";
-import { Fragment } from "react";
 import { useTranslation } from "react-i18next";
 import { GameRoleIcon } from "../assets/game-role-icon";
 import { StatIcon } from "../assets/stat-icon";
+import { ChampionPortrait } from "../draft/champion-portrait";
 import { panel, panelTable, panelTitle } from "./classes";
-import {
-	sides,
-	type TeamNames,
-	useGoldDiff,
-	useGoldFormat,
-} from "./scoreboard";
+import { type TeamNames, useGoldDiff, useGoldFormat } from "./scoreboard";
 
 const roles = ["top", "jungle", "mid", "bot", "support"] as const;
 type Line = MapSnapshot["players"][number];
@@ -75,105 +70,218 @@ function Ahead({
 		});
 }
 
-function Numbers({
-	line,
-	side,
-	champion,
+/** Half the bar is the biggest lead of the minute, and at least this much gold. */
+const MIN_LEAD_SCALE = 1000;
+
+/** The lane's gold lead as a bar from the centre towards the side ahead. */
+function GoldLead({
+	blue,
+	red,
+	scale,
 }: {
-	line: Line;
-	side: Side;
-	champion: string | undefined;
+	blue: Line;
+	red: Line;
+	scale: number;
 }) {
-	const format = useGoldFormat();
+	const side = leader(blue.gold, red.gold);
+	const width = (50 * Math.abs(blue.gold - red.gold)) / scale;
 	return (
-		<>
-			<td data-side={side} className="text-(--side)">
-				{champion && <span className="block truncate text-xs">{champion}</span>}
-				<span>
-					{line.kills}/{line.deaths}/{line.assists}
-				</span>
-			</td>
-			<td>{line.cs}</td>
-			<td>{format.format(line.gold)}</td>
-		</>
+		<span aria-hidden="true" className="relative block h-1.5 w-full bg-surface">
+			<span className="absolute inset-y-[-2px] left-1/2 w-px bg-muted" />
+			{side && (
+				<span
+					data-gold-lead
+					data-side={side}
+					className={`absolute inset-y-0 bg-(--side) ${side === "blue" ? "right-1/2" : "left-1/2"}`}
+					style={{ width: `${width}%` }}
+				/>
+			)}
+		</span>
 	);
 }
 
-export function FaceToFace({
-	snapshot,
-	names,
-	championByPlayer,
+/** Who plays a lane: the player's handle and their champion. */
+export interface LanePlayer {
+	handle: string;
+	champion: string;
+	championName: string;
+}
+
+/** Portrait, handle and champion, with the portrait on the outer edge of the side. */
+function Player({
+	player,
+	side,
 }: {
-	snapshot: MapSnapshot;
-	championByPlayer: ReadonlyMap<string, string>;
+	player: LanePlayer | undefined;
+	side: Side;
+}) {
+	return (
+		<td data-side={side}>
+			{player && (
+				<span
+					className={`flex min-w-0 items-center gap-2 ${side === "blue" ? "text-left" : "flex-row-reverse text-right"}`}
+				>
+					<ChampionPortrait
+						id={player.champion}
+						label={player.championName}
+						size="compact"
+					/>
+					<span className="min-w-0">
+						<span className="block truncate font-bold text-(--side)">
+							{player.handle}
+						</span>
+						<span
+							aria-hidden="true"
+							className="block truncate text-[11px] text-muted"
+						>
+							{player.championName}
+						</span>
+					</span>
+				</span>
+			)}
+		</td>
+	);
+}
+
+const columns = ["kda", "cs", "gold"] as const;
+
+function Kda({ line, side }: { line: Line; side: Side }) {
+	return (
+		<td data-side={side} className="font-bold text-(--side)">
+			{line.kills}/{line.deaths}/{line.assists}
+		</td>
+	);
+}
+
+function StatHeader({ column }: { column: (typeof columns)[number] }) {
+	const { t } = useTranslation();
+	return (
+		<th scope="col">
+			<span className="inline-flex items-center gap-1">
+				<StatIcon stat={column} size={18} />
+				{t(`draft.match.faceToFace.${column}`)}
+			</span>
+		</th>
+	);
+}
+
+/** A gold lead in one line, in the leader's colour; the full reading is for screen readers. */
+function LeadText({
+	blue,
+	red,
+	names,
+}: {
+	blue: Line;
+	red: Line;
 	names: TeamNames;
 }) {
 	const { t } = useTranslation();
-	const columns = ["kda", "cs", "gold"] as const;
+	const goldDiff = useGoldDiff();
+	const side = leader(blue.gold, red.gold);
+	const even = t("draft.match.faceToFace.even");
+	if (!side && blue.cs === red.cs)
+		return (
+			<small className="block font-bold text-[11px] text-muted leading-none">
+				{even}
+			</small>
+		);
+	return (
+		<small className="block truncate font-bold text-[11px] leading-none">
+			<span
+				aria-hidden="true"
+				data-side={side ?? undefined}
+				className={side ? "text-(--side)" : "text-muted"}
+			>
+				{side ? goldDiff(Math.abs(blue.gold - red.gold)) : even}
+			</span>
+			<span className="sr-only">
+				<Ahead blue={blue} red={red} names={names} />
+			</span>
+		</small>
+	);
+}
+
+/** Lane by lane, blue's player on the left and red's on the right, mirrored around the role. */
+export function FaceToFace({
+	snapshot,
+	names,
+	lineup,
+}: {
+	snapshot: MapSnapshot;
+	lineup: ReadonlyMap<string, LanePlayer>;
+	names: TeamNames;
+}) {
+	const { t } = useTranslation();
+	const format = useGoldFormat();
+	const lines = roles.flatMap((role, i) => {
+		const blue = snapshot.players[i];
+		const red = snapshot.players[i + roles.length];
+		return blue && red ? [{ role, blue, red }] : [];
+	});
+	const scale = Math.max(
+		MIN_LEAD_SCALE,
+		...lines.map(({ blue, red }) => Math.abs(blue.gold - red.gold)),
+	);
 	return (
 		<section className={`${panel} h-full`}>
 			<h2 className={panelTitle}>{t("draft.match.faceToFace")}</h2>
 			<table aria-label={t("draft.match.faceToFace")} className={panelTable}>
 				<colgroup>
-					<col style={{ width: "28%" }} />
+					<col className="w-[18.5%]" />
+					<col className="w-[9%]" />
+					<col className="w-[6.5%]" />
+					<col className="w-[9%]" />
+					<col />
+					<col className="w-[9%]" />
+					<col className="w-[6.5%]" />
+					<col className="w-[9%]" />
+					<col className="w-[18.5%]" />
 				</colgroup>
 				<thead>
 					<tr>
-						<th rowSpan={2} scope="col">
-							{t("draft.match.lane")}
+						<th scope="colgroup" data-side="blue" colSpan={4}>
+							{names.blue}
 						</th>
-						{sides.map((side) => (
-							<th key={side} scope="colgroup" data-side={side} colSpan={3}>
-								{names[side]}
-							</th>
-						))}
+						<td />
+						<th scope="colgroup" data-side="red" colSpan={4}>
+							{names.red}
+						</th>
 					</tr>
 					<tr className="text-[12px]">
-						{sides.map((side) => (
-							<Fragment key={side}>
-								{columns.map((column) => (
-									<th scope="col" key={column}>
-										<span className="inline-flex items-center gap-1">
-											<StatIcon stat={column} size={18} />
-											{t(`draft.match.faceToFace.${column}`)}
-										</span>
-									</th>
-								))}
-							</Fragment>
+						<th scope="col">{t("draft.match.faceToFace.player")}</th>
+						{columns.map((column) => (
+							<StatHeader key={column} column={column} />
 						))}
+						<th scope="col">{t("draft.match.lane")}</th>
+						{[...columns].reverse().map((column) => (
+							<StatHeader key={column} column={column} />
+						))}
+						<th scope="col">{t("draft.match.faceToFace.player")}</th>
 					</tr>
 				</thead>
 				<tbody>
-					{roles.map((role, i) => {
-						const blue = snapshot.players[i];
-						const red = snapshot.players[i + roles.length];
-						if (!blue || !red) return null;
-						return (
-							<tr key={role}>
-								<th scope="row">
-									<span className="flex flex-col items-center gap-px">
-										<span className="inline-flex items-center gap-1.5">
-											<GameRoleIcon role={role} size={16} />
-											{t(`draft.roles.role.${role}`)}
-										</span>
-										<small className="font-normal text-[11px] text-muted leading-[1.2]">
-											<Ahead blue={blue} red={red} names={names} />
-										</small>
+					{lines.map(({ role, blue, red }) => (
+						<tr key={role}>
+							<Player player={lineup.get(blue.player)} side="blue" />
+							<Kda line={blue} side="blue" />
+							<td>{blue.cs}</td>
+							<td>{format.format(blue.gold)}</td>
+							<th scope="row">
+								<span className="flex flex-col items-center gap-1.5">
+									<span className="inline-flex items-center gap-1.5">
+										<GameRoleIcon role={role} size={16} />
+										{t(`draft.roles.role.${role}`)}
 									</span>
-								</th>
-								<Numbers
-									line={blue}
-									side="blue"
-									champion={championByPlayer.get(blue.player)}
-								/>
-								<Numbers
-									line={red}
-									side="red"
-									champion={championByPlayer.get(red.player)}
-								/>
-							</tr>
-						);
-					})}
+									<GoldLead blue={blue} red={red} scale={scale} />
+									<LeadText blue={blue} red={red} names={names} />
+								</span>
+							</th>
+							<td>{format.format(red.gold)}</td>
+							<td>{red.cs}</td>
+							<Kda line={red} side="red" />
+							<Player player={lineup.get(red.player)} side="red" />
+						</tr>
+					))}
 				</tbody>
 			</table>
 		</section>

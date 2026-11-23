@@ -10,4 +10,4 @@ export const panelTitle =
 
 /** Centred cells with a bottom rule; muted headers, team headers in their colour. */
 export const panelTable =
-	"mt-1.5 w-full table-fixed border-collapse [&_:is(th,td)]:border-line [&_:is(th,td)]:border-b [&_:is(th,td)]:px-0.5 [&_:is(th,td)]:py-[3px] [&_:is(th,td)]:text-center [&_:is(th,td)]:align-middle [&_thead]:text-muted [&_th[scope=colgroup]]:bg-surface [&_th[scope=colgroup]]:text-(--side)";
+	"mt-1.5 w-full table-fixed border-collapse [&_:is(th,td)]:border-line [&_:is(th,td)]:border-b [&_:is(th,td)]:px-1.5 [&_:is(th,td)]:py-1.5 [&_:is(th,td)]:text-center [&_:is(th,td)]:align-middle [&_thead]:text-muted [&_th[scope=colgroup]]:bg-surface [&_th[scope=colgroup]]:text-(--side)";

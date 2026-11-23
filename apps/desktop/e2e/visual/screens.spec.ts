@@ -100,6 +100,13 @@ test.describe("Quick draft", () => {
 				await captureScreen(appWindow, "quick-draft-champion-card.png");
 				await appWindow.keyboard.press("Escape");
 			}
+			if (screen === "match") {
+				const panel = appWindow.getByRole("radiogroup", { name: "Panel" });
+				await panel.getByRole("radio", { name: "Cara a cara" }).check();
+				await appWindow.mouse.move(0, 0);
+				await captureScreen(appWindow, "quick-draft-face-to-face.png");
+				await panel.getByRole("radio", { name: "Mapa" }).check();
+			}
 			// Reduced motion starts the replay at its final frame. Re-enable
 			// motion before playing so the shared flow can use Skip to end.
 			if (screen === "game-plan") {
