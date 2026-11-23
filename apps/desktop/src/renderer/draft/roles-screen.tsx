@@ -8,7 +8,7 @@ import {
 	SelectValue,
 } from "@rift-legends/ui-kit/components/select";
 import { Tooltip } from "@rift-legends/ui-kit/components/tooltip";
-import { ArrowLeftRight, Check, RotateCcw } from "lucide-react";
+import { Check, RotateCcw } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { GameRoleIcon } from "../assets/game-role-icon";
@@ -170,7 +170,6 @@ function LineupEditor(props: { picks: string[]; sideColor: string }) {
 										className={`w-full ${pending === champion ? "border border-action text-action" : ""}`}
 										onClick={() => swap(champion)}
 									>
-										<ArrowLeftRight aria-hidden="true" className="size-4" />
 										{t("draft.roles.swap")}
 									</Button>
 								</div>

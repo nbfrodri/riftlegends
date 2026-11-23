@@ -11,7 +11,8 @@ interface SegmentedControlProps<Value extends string> {
 }
 
 /**
- * A few mutually exclusive choices side by side (Caja segments). Native radios
+ * A few mutually exclusive choices side by side (Caja segments); the checked
+ * one is filled, never underlined (#376). Native radios
  * underneath, so arrow keys, focus and screen readers behave as expected.
  */
 export function SegmentedControl<Value extends string>({
@@ -34,7 +35,7 @@ export function SegmentedControl<Value extends string>({
 					key={option.value}
 					className={cn(
 						"relative",
-						option.disabled ? "cursor-default" : "cursor-pointer",
+						option.disabled ? "cursor-default" : "press cursor-pointer",
 					)}
 				>
 					<input
@@ -48,7 +49,7 @@ export function SegmentedControl<Value extends string>({
 					/>
 					<span
 						className={cn(
-							"block min-w-12 border border-line px-3 py-[5px] text-center text-text hover:bg-surface peer-checked:bg-surface peer-disabled:text-muted peer-disabled:hover:bg-transparent peer-checked:font-bold peer-checked:text-action peer-checked:shadow-[inset_0_-2px_var(--color-action)] peer-focus-visible:outline-2 peer-focus-visible:outline-action",
+							"block min-w-12 border border-line px-3 py-[5px] text-center text-text peer-not-checked:hover:bg-surface peer-disabled:text-muted peer-disabled:hover:bg-transparent peer-checked:border-action peer-checked:bg-action peer-checked:font-bold peer-checked:text-on-action peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-action",
 							index > 0 && "border-l-0",
 						)}
 					>

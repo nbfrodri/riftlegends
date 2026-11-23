@@ -1,6 +1,6 @@
-import type { Role } from "@rift-legends/contracts";
+import { type Role, TIERS } from "@rift-legends/contracts";
 import { Tooltip } from "@rift-legends/ui-kit/components/tooltip";
-import { LayoutGrid, MouseRight } from "lucide-react";
+import { IdCard, LayoutGrid } from "lucide-react";
 import { type KeyboardEvent, memo, useCallback, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { GameRoleIcon } from "../../assets/game-role-icon";
@@ -10,16 +10,30 @@ import { ChampionCardHelp, ChampionCardHint } from "./champion-card-hint";
 /** Why a champion cannot be chosen; `null` when it is free. */
 type Unavailable = "banned" | "picked" | "fearless" | null;
 
+type Tier = (typeof TIERS)[number];
+
 export interface PoolChampion {
 	id: string;
 	name: string;
 	roles: readonly Role[];
+	/** Its tier in each role it plays, from the draft content. */
+	positions: readonly { role: Role; tier: Tier }[];
 	unavailable: Unavailable;
 }
 
 const COLUMNS = 6;
 const ROLE_FILTER = ["all", "top", "jungle", "mid", "bot", "support"] as const;
 type RoleFilter = (typeof ROLE_FILTER)[number];
+
+/** The tier for the role filter; with no filter, the best of its roles. */
+function tierFor(champion: PoolChampion, role: RoleFilter): Tier | null {
+	if (role !== "all")
+		return champion.positions.find((p) => p.role === role)?.tier ?? null;
+	let best: Tier | null = null;
+	for (const { tier } of champion.positions)
+		if (best === null || TIERS.indexOf(tier) < TIERS.indexOf(best)) best = tier;
+	return best;
+}
 
 const NEXT: Record<string, number> = {
 	ArrowRight: 1,
@@ -32,6 +46,7 @@ const Tile = memo(function Tile(props: {
 	id: string;
 	name: string;
 	unavailable: Unavailable;
+	tier: Tier | null;
 	index: number;
 	selected: boolean;
 	tabbable: boolean;
@@ -55,15 +70,27 @@ const Tile = memo(function Tile(props: {
 				aria-pressed={props.selected}
 				aria-disabled={unavailable ? true : undefined}
 				aria-label={reason ? `${name}. ${reason}` : name}
+				aria-description={
+					props.tier ? t("draft.card.tier", { tier: props.tier }) : undefined
+				}
 				onClick={() => !unavailable && props.onSelect(id)}
-				className={`group relative flex min-h-0 min-w-0 flex-col overflow-hidden rounded-control bg-surface outline-offset-[-3px] focus-visible:z-1 focus-visible:outline-3 focus-visible:outline-action ${unavailable ? "cursor-default" : "hover:brightness-110"}`}
+				className={`press group relative flex min-h-0 min-w-0 flex-col overflow-hidden rounded-control bg-surface outline-offset-[-3px] focus-visible:z-1 focus-visible:outline-3 focus-visible:outline-action ${unavailable ? "cursor-default" : "hover:brightness-110"}`}
 			>
 				<ChampionPortrait
 					id={id}
 					size="pool"
 					unavailable={unavailable !== null}
 				/>
-				<MouseRight
+				{props.tier && (
+					<span
+						data-slot="tier"
+						aria-hidden
+						className="pointer-events-none absolute bottom-1 left-1 min-w-5 rounded-control bg-panel/85 px-1 text-center font-bold font-display text-[11px] text-text leading-[18px]"
+					>
+						{props.tier}
+					</span>
+				)}
+				<IdCard
 					data-slot="card-hint"
 					aria-hidden
 					className="pointer-events-none absolute right-1 top-1 hidden size-5 rounded-control bg-panel/85 p-0.5 text-action group-hover:block group-focus-visible:block"
@@ -103,7 +130,7 @@ const RoleFilterButtons = memo(function RoleFilterButtons(props: {
 							aria-pressed={props.value === value}
 							aria-label={label}
 							onClick={() => props.onChange(value)}
-							className="grid size-[30px] place-items-center rounded-control border border-line bg-surface text-muted outline-offset-2 hover:text-text focus-visible:outline-2 focus-visible:outline-action aria-pressed:border-action aria-pressed:bg-action/15 aria-pressed:text-text"
+							className="press grid size-[30px] place-items-center rounded-control border border-line bg-surface text-muted outline-offset-2 hover:border-muted hover:text-text focus-visible:outline-2 focus-visible:outline-action aria-pressed:border-action aria-pressed:bg-action/15 aria-pressed:text-text"
 						>
 							{value === "all" ? (
 								<LayoutGrid size={16} aria-hidden />
@@ -211,6 +238,7 @@ export const ChampionPool = memo(function ChampionPool(props: {
 						id={champion.id}
 						name={champion.name}
 						unavailable={champion.unavailable}
+						tier={tierFor(champion, role)}
 						index={index}
 						selected={champion.id === props.selected}
 						tabbable={index === focusable}

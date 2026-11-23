@@ -118,7 +118,7 @@ function Option(props: {
 	const { t } = useTranslation();
 	const Icon = props.icon;
 	return (
-		<label className="relative cursor-pointer">
+		<label className="press relative cursor-pointer">
 			<input
 				type="radio"
 				name={props.name}
@@ -127,7 +127,7 @@ function Option(props: {
 				onChange={props.onSelect}
 				className="peer absolute size-px opacity-0"
 			/>
-			<span className="flex h-full flex-col gap-2 border border-line bg-panel p-[14px] hover:bg-surface peer-checked:border-action peer-checked:bg-surface peer-checked:shadow-[inset_0_-3px_var(--color-action)] peer-focus-visible:outline-2 peer-focus-visible:outline-action">
+			<span className="flex h-full flex-col gap-2 border border-line bg-panel p-[14px] hover:bg-surface outline-offset-[-2px] peer-checked:border-action peer-checked:bg-surface peer-checked:outline-2 peer-checked:outline-action peer-focus-visible:outline-3 peer-focus-visible:outline-action">
 				<span className="flex items-center gap-2 font-bold">
 					{props.objective ? (
 						<MapIcon

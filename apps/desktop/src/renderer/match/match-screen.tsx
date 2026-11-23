@@ -4,9 +4,8 @@ import {
 	type MatchView,
 } from "@rift-legends/contracts";
 import { Button } from "@rift-legends/ui-kit/components/button";
-import { IconButton } from "@rift-legends/ui-kit/components/icon-button";
 import { SegmentedControl } from "@rift-legends/ui-kit/components/segmented-control";
-import { ArrowRight, Pause, Play, SkipForward, X } from "lucide-react";
+import { Pause, Play, SkipForward, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { CoreErrorMessage, useCoreQuery } from "../core";
@@ -194,13 +193,9 @@ function Replay({ match, entry }: { match: MatchView; entry: DraftView }) {
 					</>
 				)}
 				{player.ended ? (
-					<IconButton
-						className="ml-auto"
-						variant="default"
-						icon={ArrowRight}
-						label={t("draft.match.result")}
-						onClick={() => present("result")}
-					/>
+					<Button className="ml-auto" onClick={() => present("result")}>
+						{t("draft.match.result")}
+					</Button>
 				) : (
 					<Button className="ml-auto" onClick={player.skip}>
 						{t("draft.match.skip")}

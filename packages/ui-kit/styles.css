@@ -43,3 +43,17 @@
 		background: transparent;
 	}
 }
+
+/* The press state of every Caja control (#376): darker and 1 px lower while
+   held, never when disabled; with reduced motion it only darkens. */
+@utility press {
+	&:active:not(:disabled, [data-disabled], [aria-disabled="true"]) {
+		filter: brightness(0.88);
+		translate: 0 1px;
+	}
+	@media (prefers-reduced-motion: reduce) {
+		&:active {
+			translate: none;
+		}
+	}
+}

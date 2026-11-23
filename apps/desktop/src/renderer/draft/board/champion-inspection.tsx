@@ -14,7 +14,8 @@ interface Inspection {
 }
 
 /**
- * All portraits share one inspector. The card opens only on purpose, by right
+ * The board keeps its own height (no flex growth), so the panels under it stay
+ * right below at any window size (#376). All portraits share one inspector. The card opens only on purpose, by right
  * click or the key I, never on hover or focus (#365); Escape closes it.
  */
 export function ChampionInspection({ children }: { children: ReactNode }) {
@@ -40,7 +41,7 @@ export function ChampionInspection({ children }: { children: ReactNode }) {
 	}
 	return (
 		<fieldset
-			className="relative m-0 grid min-h-0 min-w-0 flex-1 grid-cols-[minmax(0,1fr)_minmax(0,2fr)_minmax(0,1fr)] gap-3 border-0 p-0"
+			className="relative m-0 grid min-h-0 min-w-0 grid-cols-[minmax(0,1fr)_minmax(0,2fr)_minmax(0,1fr)] gap-3 border-0 p-0"
 			onContextMenu={(e) => {
 				const trigger = triggerOf(e.target);
 				if (trigger) {

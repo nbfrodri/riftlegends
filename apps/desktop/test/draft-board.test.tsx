@@ -13,6 +13,7 @@ import { afterEach, describe, expect, test, vi } from "vitest";
 import { pacing } from "../src/renderer/draft/broadcast/pacing";
 import { DraftScreen } from "../src/renderer/draft/draft-screen";
 import { namedDraft, renderWithDraftCore, seedNextSeries } from "./draft-core";
+import { fakeAssets } from "./fake-assets";
 
 afterEach(cleanup);
 
@@ -255,7 +256,8 @@ describe("draft board (U3)", () => {
 		expect((await screen.findByRole("tooltip")).textContent).toContain(
 			"Banned in this game",
 		);
-		expect(banned.textContent).toBe("CR");
+		// Portrait initials and the tier badge only: the reason is in the tooltip.
+		expect(banned.textContent).toBe("CRS");
 		await user.click(banned);
 		expect(banned.getAttribute("aria-pressed")).toBe("false");
 		expect(confirm().hasAttribute("disabled")).toBe(true);
@@ -336,12 +338,48 @@ describe("draft board (U3)", () => {
 		await renderWithDraftCore(<DraftScreen />);
 		await toBoard(user);
 		const cragbell = tile("Cragbell");
-		expect(cragbell.textContent).toBe("CR");
+		const tier = cragbell.querySelector('[data-slot="tier"]');
+		expect(cragbell.textContent).toBe(`CR${tier?.textContent}`);
 		expect(within(cragbell).getByRole("img", { hidden: true })).toBeTruthy();
 		// No info icon: its only icon is the right-click hint for the card.
 		await user.hover(cragbell);
 		const icons = [...cragbell.querySelectorAll("svg")];
 		expect(icons.map((icon) => icon.dataset.slot)).toEqual(["card-hint"]);
+	});
+
+	test("#376: each tile shows its tier for the role filter, or its best role's tier", async () => {
+		const user = userEvent.setup();
+		await renderWithDraftCore(<DraftScreen />);
+		await toBoard(user);
+		const tierOf = (name: string) =>
+			tile(name).querySelector('[data-slot="tier"]')?.textContent;
+		// Rimefoil: Top B, Mid A.
+		expect(tierOf("Rimefoil")).toBe("A");
+		expect(tile("Rimefoil").getAttribute("aria-description")).toBe("Tier A");
+		const filter = within(
+			screen.getByRole("group", { name: "Filter by role" }),
+		);
+		await user.click(filter.getByRole("button", { name: "Top" }));
+		expect(tierOf("Rimefoil")).toBe("B");
+		expect(tierOf("Gravelspan")).toBe("S+");
+		await user.click(filter.getByRole("button", { name: "Mid" }));
+		expect(tierOf("Rimefoil")).toBe("A");
+		await user.click(filter.getByRole("button", { name: "Jungle" }));
+		expect(tierOf("Gravelspan")).toBe("B");
+	});
+
+	test("#376: the card hint shows a card icon on the tile and right click plus card in the pool header", async () => {
+		const user = userEvent.setup();
+		await renderWithDraftCore(<DraftScreen />);
+		await toBoard(user);
+		const hint = tile("Cragbell").querySelector('[data-slot="card-hint"]');
+		expect(hint?.classList.contains("lucide-id-card")).toBe(true);
+		const header = screen.getByRole("button", { name: "Right click: card" });
+		expect(
+			[...header.querySelectorAll("svg")].map((icon) =>
+				[...icon.classList].find((c) => c.startsWith("lucide-")),
+			),
+		).toEqual(["lucide-mouse-right", "lucide-id-card"]);
 	});
 
 	test("the selected tile is pressed and framed in the action colour; only it", async () => {
@@ -443,13 +481,15 @@ describe("player card (U5)", () => {
 		(p) => p.id === "forge-mid",
 	);
 
-	test("hovering a player shows their 20 attributes by area", async () => {
+	test("#376: clicking a player selects them and shows their 20 attributes by area", async () => {
 		const user = userEvent.setup();
 		await renderWithDraftCore(<DraftScreen />);
 		await toBoard(user);
 		const blue = screen.getByRole("region", { name: "Blue side Forge" });
-		await user.hover(within(blue).getByRole("button", { name: /Kilnara/ }));
+		const kilnara = within(blue).getByRole("button", { name: /Kilnara/ });
+		await user.click(kilnara);
 
+		expect(kilnara.getAttribute("aria-pressed")).toBe("true");
 		const card = screen.getByRole("group", { name: /Player card/ });
 		expect(card.hasAttribute("open")).toBe(true);
 		expect(within(card).getByText(/Forge Mid$/)).toBeTruthy();
@@ -464,17 +504,75 @@ describe("player card (U5)", () => {
 		expect(composure?.textContent).toBe(String(forgeMid?.attributes.composure));
 	});
 
-	test("focusing a rival player shows theirs too", async () => {
+	test("#376: hovering or focusing a player does not change the card", async () => {
 		const user = userEvent.setup();
 		await renderWithDraftCore(<DraftScreen />);
 		await toBoard(user);
 		const red = screen.getByRole("region", { name: "Red side Shoal" });
-		fireEvent.focus(within(red).getByRole("button", { name: /Gullix/ }));
+		const gullix = within(red).getByRole("button", { name: /Gullix/ });
+		await user.hover(gullix);
+		fireEvent.focus(gullix);
 
+		const card = screen.getByRole("group", { name: /Player card/ });
+		expect(within(card).getByText(/Forge Mid$/)).toBeTruthy();
+		expect(gullix.getAttribute("aria-pressed")).toBe("false");
+	});
+
+	test("#376: the keyboard selects a rival player with Enter or Space; one row is selected at a time", async () => {
+		const user = userEvent.setup();
+		await renderWithDraftCore(<DraftScreen />);
+		await toBoard(user);
+		const blue = screen.getByRole("region", { name: "Blue side Forge" });
+		const red = screen.getByRole("region", { name: "Red side Shoal" });
+		const pressed = () =>
+			screen
+				.getAllByRole("button", { pressed: true })
+				.filter((row) => blue.contains(row) || red.contains(row));
+		// Before any choice the card shows my mid laner, and its row says so.
+		expect(pressed()).toEqual([
+			within(blue).getByRole("button", { name: /Kilnara/ }),
+		]);
+
+		const gullix = within(red).getByRole("button", { name: /Gullix/ });
+		gullix.focus();
+		await user.keyboard("{Enter}");
 		const card = screen.getByRole("group", { name: /Player card/ });
 		expect(within(card).getByText(/Shoal ADC$/)).toBeTruthy();
 		expect(within(card).getByText("Mechanics").nextSibling?.textContent).toBe(
 			"99",
 		);
+		expect(pressed()).toEqual([gullix]);
+		expect(gullix.className).toMatch(/\baria-pressed:ring-2\b/);
+
+		const pearlin = within(red).getByRole("button", { name: /Pearlin/ });
+		pearlin.focus();
+		await user.keyboard(" ");
+		expect(within(card).getByText(/Shoal Support$/)).toBeTruthy();
+		expect(pressed()).toEqual([pearlin]);
+	});
+});
+
+describe("team logos (#376)", () => {
+	test("the score and both columns show each team's logo; without one, its own crest", async () => {
+		const user = userEvent.setup();
+		const assets = fakeAssets({ state: "ready", version: "1.0" });
+		const logo = "rift-asset://logos/teams/forge.png";
+		assets.api.teamLogos.mockResolvedValue({ forge: logo });
+		await renderWithDraftCore(<DraftScreen />, "en-US", undefined, undefined, {
+			assets: assets.api,
+		});
+		await toBoard(user);
+		const score = screen.getByRole("group", { name: "Series score" });
+		await waitFor(() => expect(score.querySelector("img")).not.toBeNull());
+		expect(
+			[...score.querySelectorAll("img")].map((img) => img.getAttribute("src")),
+		).toEqual([logo]);
+		// Shoal has no logo: its own crest.
+		expect(score.querySelectorAll("svg")).toHaveLength(1);
+		const blue = screen.getByRole("region", { name: "Blue side Forge" });
+		expect(blue.querySelector("header img")?.getAttribute("src")).toBe(logo);
+		const red = screen.getByRole("region", { name: "Red side Shoal" });
+		expect(red.querySelector("header img")).toBeNull();
+		expect(red.querySelector("header svg")).not.toBeNull();
 	});
 });

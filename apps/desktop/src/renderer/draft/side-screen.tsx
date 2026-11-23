@@ -5,8 +5,8 @@ import {
 	type SideChoice,
 } from "@rift-legends/contracts";
 import { Button } from "@rift-legends/ui-kit/components/button";
+import { Tooltip } from "@rift-legends/ui-kit/components/tooltip";
 import {
-	ArrowRight,
 	Circle,
 	CircleCheck,
 	ListEnd,
@@ -26,8 +26,9 @@ const panelTitle = "font-bold font-display text-lg tracking-heading";
 const styles = {
 	blue: { Icon: MapIcon, color: "text-side-blue", border: "border-side-blue" },
 	red: { Icon: MapIcon, color: "text-side-red", border: "border-side-red" },
-	first: { Icon: ListStart, color: "text-action", border: "border-action" },
-	last: { Icon: ListEnd, color: "text-action", border: "border-action" },
+	// Blue and red belong to the map sides only (#376): the draft order is neutral.
+	first: { Icon: ListStart, color: "text-text", border: "border-text" },
+	last: { Icon: ListEnd, color: "text-text", border: "border-text" },
 };
 
 function ChoiceCard({
@@ -47,7 +48,7 @@ function ChoiceCard({
 	const Mark = checked ? CircleCheck : Circle;
 	return (
 		<label
-			className={`relative cursor-pointer ${panel} ${border} hover:bg-surface has-[:checked]:bg-surface has-[:checked]:outline-2 has-[:checked]:outline-action has-[:focus-visible]:outline-3 outline-offset-[-2px]`}
+			className={`press relative cursor-pointer ${panel} ${border} hover:bg-surface has-[:checked]:bg-surface has-[:checked]:outline-2 has-[:checked]:outline-action has-[:focus-visible]:outline-3 outline-offset-[-2px]`}
 		>
 			<input
 				type="radio"
@@ -91,21 +92,25 @@ function PlayedBy(props: { team: string; champions: readonly string[] }) {
 			<h3 id={id} className="font-bold">
 				{t("draft.side.playedBy", { team: teamName(options, props.team) })}
 			</h3>
-			<ul
-				aria-labelledby={id}
-				className="grid grid-cols-[repeat(auto-fill,minmax(64px,1fr))] gap-1.5"
-			>
-				{props.champions.map((champion) => (
-					<li
-						key={champion}
-						className="flex h-[clamp(44px,7vh,56px)] min-w-0 flex-col overflow-hidden rounded-control bg-surface"
-					>
-						<ChampionPortrait id={champion} size="pool" unavailable />
-						<span className="truncate px-1 py-0.5 font-medium text-[12px] text-muted">
-							{championLabel(options, champion)}
-						</span>
-					</li>
-				))}
+			<ul aria-labelledby={id} className="flex flex-wrap gap-1.5">
+				{props.champions.map((champion) => {
+					const name = championLabel(options, champion);
+					// Greyed portraits like the bans, named by their tooltip (#376).
+					return (
+						<li key={champion} className="flex">
+							<Tooltip content={name}>
+								<span className="flex rounded-control">
+									<ChampionPortrait
+										id={champion}
+										label={name}
+										size="ban"
+										unavailable
+									/>
+								</span>
+							</Tooltip>
+						</li>
+					);
+				})}
 			</ul>
 		</div>
 	);
@@ -259,20 +264,19 @@ export function SideScreen() {
 							))}
 						</div>
 					)}
+					{rules && rules.fearless !== "off" && view.game > 1 && (
+						<LockedChampions
+							games={games}
+							teams={teams[1] === mine ? teams.reverse() : teams}
+						/>
+					)}
 				</div>
 				{rules && <SideSeriesPanel rules={rules} games={games} />}
 			</div>
-			{rules && rules.fearless !== "off" && view.game > 1 && (
-				<LockedChampions
-					games={games}
-					teams={teams[1] === mine ? teams.reverse() : teams}
-				/>
-			)}
 			{(!turn || turn.team === mine) && (
 				<footer className="mt-auto flex justify-end border-line border-t pt-2">
 					<Button onClick={() => (turn ? void confirm() : present(null))}>
 						{t(turn ? "draft.side.confirm" : "draft.side.continue")}
-						<ArrowRight aria-hidden="true" className="size-4" />
 					</Button>
 				</footer>
 			)}

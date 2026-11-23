@@ -28,9 +28,10 @@ function usePool(view: DraftView, options: SeriesOptions) {
 			id: entry.champion,
 			name: byId.get(entry.champion)?.name ?? entry.champion,
 			roles: byId.get(entry.champion)?.roles ?? [],
+			positions: options.positions[entry.champion] ?? [],
 			unavailable: entry.status === "free" ? null : entry.status,
 		}));
-	}, [view.availability, options.champions]);
+	}, [view.availability, options.champions, options.positions]);
 }
 
 /** The bar under the grid: whose turn it is, the selection and Confirm. */
@@ -114,6 +115,7 @@ export function DraftBoard() {
 		setCardOpen(true);
 	}, []);
 
+	const shown = player ?? myMid;
 	const turn = draftTurn(view);
 	const myTurn = turn !== null && turn.team === mine;
 	const choice = pool.find((c) => c.id === selected && c.unavailable === null);
@@ -138,6 +140,7 @@ export function DraftBoard() {
 				team={team}
 				options={options}
 				current={picking}
+				selected={shown?.team === team.team ? shown.role : null}
 				onPlayer={showPlayer}
 			/>
 		);
@@ -169,7 +172,7 @@ export function DraftBoard() {
 				{column("red")}
 			</ChampionInspection>
 			<Inspection
-				player={player ?? myMid}
+				player={shown}
 				red={view.red.team}
 				rivalSide={mine ? (mine === view.blue.team ? "red" : "blue") : null}
 				rival={mine === view.blue.team ? view.red.team : view.blue.team}

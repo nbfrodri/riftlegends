@@ -21,7 +21,7 @@ test("configures a series and goes on to the draft after choosing a side", async
 	await appWindow.getByRole("button", { name: "Start series" }).click();
 
 	await expect(
-		appWindow.getByRole("heading", { level: 1, name: "Side choice" }),
+		appWindow.getByRole("heading", { level: 1, name: "Side and order" }),
 	).toBeVisible();
 	await appWindow
 		.getByRole("radio", { name: "Red side" })

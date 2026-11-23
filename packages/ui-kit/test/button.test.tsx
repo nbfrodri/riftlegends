@@ -65,3 +65,20 @@ test("an icon-only ghost button is named by its label", () => {
 		screen.getByRole("button", { name: "Collapse sidebar" }),
 	).toBeDefined();
 });
+
+test("#376: every variant shows hover and a press, and a disabled button neither", () => {
+	render(
+		<>
+			<Button>Confirm</Button>
+			<Button variant="ghost">Back</Button>
+		</>,
+	);
+	const confirm = screen.getByRole("button", { name: "Confirm" }).className;
+	expect(confirm).toMatch(/\bhover:not-data-disabled:bg-text\b/);
+	expect(confirm).toMatch(/\bhover:not-data-disabled:border-text\b/);
+	const back = screen.getByRole("button", { name: "Back" }).className;
+	expect(back).toMatch(/\bhover:not-data-disabled:bg-surface\b/);
+	for (const className of [confirm, back]) {
+		expect(className).toMatch(/(^|\s)press(\s|$)/);
+	}
+});

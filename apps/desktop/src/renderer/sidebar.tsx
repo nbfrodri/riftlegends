@@ -165,7 +165,7 @@ export function Sidebar({
 								className={cn(
 									"flex h-[clamp(38px,4.8vh,44px)] shrink-0 items-center gap-[11px] whitespace-nowrap px-3 text-left font-[550]",
 									to
-										? "text-text hover:bg-surface"
+										? "press text-text hover:bg-surface"
 										: "cursor-default text-muted",
 									current &&
 										"bg-surface text-action shadow-[inset_2px_0_var(--color-action)]",

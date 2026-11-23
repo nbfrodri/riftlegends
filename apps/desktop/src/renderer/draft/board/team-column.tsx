@@ -26,8 +26,8 @@ const SIDE = {
 
 /**
  * A side of the draft: a fixed row per player, top to support, with the pick
- * placed in it, and its bans as greyed portraits. Hovering or focusing a row
- * shows its player.
+ * placed in it, and its bans as greyed portraits. Clicking a row (or Enter and
+ * Space) selects its player for the player card; hover and focus do not (#376).
  */
 export const TeamColumn = memo(function TeamColumn(props: {
 	side: Side;
@@ -36,6 +36,8 @@ export const TeamColumn = memo(function TeamColumn(props: {
 	options: SeriesOptions;
 	/** Index of the pick the user is choosing now, if any; it shows in the first free row. */
 	current: number | null;
+	/** The role whose player the player card shows, if they are on this team. */
+	selected?: Role | null;
 	onPlayer: (player: PlayerRef) => void;
 }) {
 	const { t } = useTranslation();
@@ -85,8 +87,6 @@ export const TeamColumn = memo(function TeamColumn(props: {
 					const current = row === choosing;
 					const pick = current ? props.current : rows[row];
 					const champion = pick == null ? undefined : team.picks[pick];
-					const player = { team: team.team, role };
-					const show = () => props.onPlayer(player);
 					const label = champion
 						? championLabel(options, champion)
 						: current
@@ -101,10 +101,9 @@ export const TeamColumn = memo(function TeamColumn(props: {
 									data-card-champion={champion}
 									aria-keyshortcuts={champion ? "I" : undefined}
 									aria-controls="player-card"
-									onMouseEnter={show}
-									onFocus={show}
-									onClick={show}
-									className={`flex w-full items-center gap-2.5 border-line border-b px-1 py-[3px] text-left hover:bg-surface ${current ? `bg-surface shadow-[inset_2px_0_currentColor] ${style.text}` : ""}`}
+									aria-pressed={props.selected === role}
+									onClick={() => props.onPlayer({ team: team.team, role })}
+									className={`press flex w-full items-center gap-2.5 border-line border-b px-1 py-[3px] text-left outline-offset-2 hover:bg-surface focus-visible:outline-2 focus-visible:outline-action aria-pressed:bg-action/10 aria-pressed:ring-2 aria-pressed:ring-action aria-pressed:ring-inset ${current ? `bg-surface shadow-[inset_2px_0_currentColor] ${style.text}` : ""}`}
 								>
 									<span className="w-6 text-[12px] text-muted">
 										{pick != null && `${style.letter}${pick + 1}`}

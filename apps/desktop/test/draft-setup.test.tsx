@@ -106,7 +106,7 @@ describe("series setup (U1)", () => {
 		await user.click(screen.getByRole("button", { name: "Start series" }));
 
 		expect(
-			await screen.findByRole("heading", { level: 1, name: "Side choice" }),
+			await screen.findByRole("heading", { level: 1, name: "Side and order" }),
 		).toBeTruthy();
 		const start = core.sent.find(
 			(c) => c.kind === "series.start",
@@ -135,7 +135,7 @@ describe("series setup (U1)", () => {
 		await user.click(screen.getByRole("radio", { name: "Bo5" }));
 		await user.click(screen.getByRole("button", { name: "Start series" }));
 		expect(
-			await screen.findByRole("heading", { level: 1, name: "Side choice" }),
+			await screen.findByRole("heading", { level: 1, name: "Side and order" }),
 		).toBeTruthy();
 		expect(screen.queryByRole("alert")).toBeNull();
 	});
