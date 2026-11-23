@@ -2,7 +2,7 @@
 	"draft.card.name": "Ficha de campeón: {{name}}",
 	"draft.card.title": "Ficha de campeón",
 	"draft.card.hint": "Clic derecho: ficha",
-	"draft.card.shortcut": "Clic derecho o tecla I para fijar la ficha. Escape la cierra.",
+	"draft.card.shortcut": "Fija la ficha con clic derecho o con la tecla. Escape la cierra.",
 	"draft.card.help": "Pasa el ratón por un campeón o enfócalo con el teclado para ver su ficha. Clic derecho o tecla I para fijarla.",
 	"draft.card.close": "Cerrar ficha de campeón",
 	"draft.card.pin": "Fijar ficha de campeón",

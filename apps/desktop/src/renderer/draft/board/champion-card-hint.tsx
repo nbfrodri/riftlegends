@@ -1,8 +1,4 @@
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipTrigger,
-} from "@rift-legends/ui-kit/components/tooltip";
+import { Tooltip } from "@rift-legends/ui-kit/components/tooltip";
 import { Info } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -33,20 +29,16 @@ export function ChampionCardHelp() {
 
 export function ChampionCardHint() {
 	const { t } = useTranslation();
+	// Left, so the tooltip never covers the card on the right.
 	return (
-		<Tooltip>
-			<TooltipTrigger
-				render={
-					<button
-						type="button"
-						className="ml-auto inline-flex items-center gap-1 text-xs text-muted"
-					/>
-				}
+		<Tooltip content={t("draft.card.shortcut")} shortcut="I" side="left">
+			<button
+				type="button"
+				className="ml-auto inline-flex items-center gap-1 text-xs text-muted"
 			>
 				<Info aria-hidden size={14} />
 				{t("draft.card.hint")}
-			</TooltipTrigger>
-			<TooltipContent side="top">{t("draft.card.shortcut")}</TooltipContent>
+			</button>
 		</Tooltip>
 	);
 }

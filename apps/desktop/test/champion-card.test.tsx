@@ -184,3 +184,21 @@ it("can click through a draft turn without loading an incidental card on pointer
 		core.api.query.mock.calls.some(([q]) => q.kind === "draft.champion"),
 	).toBe(false);
 });
+
+it("explains the pin shortcut in the Caja tooltip of the hint", async () => {
+	const { user } = await board();
+	const hint = screen.getByRole("button", { name: "Right click: card" });
+	expect(hint.hasAttribute("title")).toBe(false);
+	await user.hover(hint);
+	const tooltip = await screen.findByRole("tooltip");
+	expect(tooltip.textContent).toBe(
+		"Pin the card with right click or the key. Escape closes it.I",
+	);
+	expect(within(tooltip).getByText("I").tagName).toBe("KBD");
+});
+
+it("opens pool tooltips away from the side where the card appears", async () => {
+	const { tile } = await board();
+	expect(tile.hasAttribute("title")).toBe(false);
+	expect(tile.dataset.tooltipSide).toBe("left");
+});
