@@ -5,7 +5,6 @@ import { useNavigate } from "@tanstack/react-router";
 import {
 	ArrowLeftRight,
 	Binoculars,
-	BookOpen,
 	CalendarDays,
 	Columns2,
 	Dumbbell,
@@ -17,6 +16,7 @@ import {
 	PanelLeftClose,
 	PanelLeftOpen,
 	SlidersHorizontal,
+	Swords,
 	Trophy,
 	Users,
 } from "lucide-react";
@@ -48,7 +48,7 @@ const sections: readonly Section[] = [
 	{ label: "shell.nav.home", icon: House },
 	{ label: "shell.nav.calendar", icon: CalendarDays },
 	{ label: "shell.nav.draft", icon: Columns2, to: "/draft" },
-	{ label: "shell.nav.champions", icon: BookOpen, to: "/campeones" },
+	{ label: "shell.nav.champions", icon: Swords, to: "/campeones" },
 	{ label: "shell.nav.roster", icon: Users },
 	{ label: "shell.nav.market", icon: ArrowLeftRight, to: "/mercado" },
 	{ label: "shell.nav.scouting", icon: Binoculars },

@@ -56,6 +56,18 @@ describe("T5: sidebar sections", () => {
 		).toEqual(sectionsEs);
 	});
 
+	// #399: Draft and Campeones looked alike at 16 px (BookOpen and Columns2).
+	test("every section has its own icon; Campeones uses swords", async () => {
+		await renderShell();
+		const iconOf = (name: string) =>
+			[...(section(name).querySelector("svg")?.classList ?? [])].find(
+				(name) => name.startsWith("lucide-"),
+			);
+		const icons = sectionsEs.map(iconOf);
+		expect(new Set(icons).size).toBe(sectionsEs.length);
+		expect(iconOf("Campeones")).toBe("lucide-swords");
+	});
+
 	// The Draft screen is titled after its current stage (plan 09).
 	test.each([
 		["Draft", "Configurar serie", "/draft"],
