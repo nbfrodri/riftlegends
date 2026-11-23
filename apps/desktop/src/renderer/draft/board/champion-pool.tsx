@@ -1,4 +1,5 @@
 import type { Role } from "@rift-legends/contracts";
+import { Tooltip } from "@rift-legends/ui-kit/components/tooltip";
 import { LayoutGrid } from "lucide-react";
 import { type KeyboardEvent, memo, useCallback, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -39,23 +40,24 @@ const Tile = memo(function Tile(props: {
 	const { id, name, unavailable } = props;
 	const reason = unavailable ? t(`draft.board.status.${unavailable}`) : null;
 	return (
-		<button
-			type="button"
-			data-index={props.index}
-			tabIndex={props.tabbable ? 0 : -1}
-			aria-pressed={props.selected}
-			aria-disabled={unavailable ? true : undefined}
-			aria-label={reason ? `${name}. ${reason}` : name}
-			title={reason ?? undefined}
-			onClick={() => !unavailable && props.onSelect(id)}
-			className={`relative flex min-h-0 min-w-0 flex-col overflow-hidden rounded-control bg-surface outline-offset-[-3px] focus-visible:z-1 focus-visible:outline-3 focus-visible:outline-action ${props.selected ? "outline-2 outline-action" : ""} ${unavailable ? "cursor-default" : ""}`}
-		>
-			<ChampionPortrait
-				id={id}
-				size="pool"
-				unavailable={unavailable !== null}
-			/>
-		</button>
+		<Tooltip heading={reason ? name : undefined} content={reason ?? name}>
+			<button
+				type="button"
+				data-index={props.index}
+				tabIndex={props.tabbable ? 0 : -1}
+				aria-pressed={props.selected}
+				aria-disabled={unavailable ? true : undefined}
+				aria-label={reason ? `${name}. ${reason}` : name}
+				onClick={() => !unavailable && props.onSelect(id)}
+				className={`relative flex min-h-0 min-w-0 flex-col overflow-hidden rounded-control bg-surface outline-offset-[-3px] focus-visible:z-1 focus-visible:outline-3 focus-visible:outline-action ${props.selected ? "outline-2 outline-action" : ""} ${unavailable ? "cursor-default" : ""}`}
+			>
+				<ChampionPortrait
+					id={id}
+					size="pool"
+					unavailable={unavailable !== null}
+				/>
+			</button>
+		</Tooltip>
 	);
 });
 
@@ -75,21 +77,21 @@ const RoleFilterButtons = memo(function RoleFilterButtons(props: {
 						? t("draft.board.allRoles")
 						: t(`market.role.${value}`);
 				return (
-					<button
-						key={value}
-						type="button"
-						aria-pressed={props.value === value}
-						aria-label={label}
-						title={label}
-						onClick={() => props.onChange(value)}
-						className="grid size-[30px] place-items-center rounded-control border border-line bg-surface text-muted outline-offset-2 hover:text-text focus-visible:outline-2 focus-visible:outline-action aria-pressed:border-action aria-pressed:bg-action/15 aria-pressed:text-text"
-					>
-						{value === "all" ? (
-							<LayoutGrid size={16} aria-hidden />
-						) : (
-							<GameRoleIcon role={value} size={16} />
-						)}
-					</button>
+					<Tooltip key={value} content={label}>
+						<button
+							type="button"
+							aria-pressed={props.value === value}
+							aria-label={label}
+							onClick={() => props.onChange(value)}
+							className="grid size-[30px] place-items-center rounded-control border border-line bg-surface text-muted outline-offset-2 hover:text-text focus-visible:outline-2 focus-visible:outline-action aria-pressed:border-action aria-pressed:bg-action/15 aria-pressed:text-text"
+						>
+							{value === "all" ? (
+								<LayoutGrid size={16} aria-hidden />
+							) : (
+								<GameRoleIcon role={value} size={16} />
+							)}
+						</button>
+					</Tooltip>
 				);
 			})}
 		</fieldset>

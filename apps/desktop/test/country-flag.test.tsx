@@ -1,4 +1,5 @@
 import { cleanup, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { afterEach, expect, test } from "vitest";
 import { CountryFlag } from "../src/renderer/draft/country-flag";
 import { renderWithDraftCore } from "./draft-core";
@@ -10,7 +11,10 @@ test.each([
 	["es-ES", "Corea del Sur"],
 ])("shows a bundled SVG with the country name in %s", async (locale, name) => {
 	await renderWithDraftCore(<CountryFlag country="KR" />, locale);
-	expect(screen.getByRole("img", { name }).tagName.toLowerCase()).toBe("svg");
+	const flag = screen.getByRole("img", { name });
+	expect(flag.tagName.toLowerCase()).toBe("svg");
+	await userEvent.setup().hover(flag);
+	expect((await screen.findByRole("tooltip")).textContent).toBe(name);
 });
 
 test.each([undefined, "ZZ", "xx", "XK"])(

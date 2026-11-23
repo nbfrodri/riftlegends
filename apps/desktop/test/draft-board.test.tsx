@@ -120,7 +120,8 @@ describe("draft board (U3)", () => {
 		const bans = within(blue).getByRole("list", { name: "Bans" });
 		const ban = await within(bans).findByRole("img", { name });
 		expect(ban.className).toContain("after:bg-[linear-gradient");
-		expect(within(bans).getByRole("listitem").getAttribute("title")).toBe(name);
+		await user.hover(ban);
+		expect((await screen.findByRole("tooltip")).textContent).toBe(name);
 		expect(bans.querySelector("s")).toBeNull();
 	});
 
@@ -239,7 +240,7 @@ describe("draft board (U3)", () => {
 		});
 	});
 
-	test("an unavailable champion cannot be confirmed and says why only in its accessible name", async () => {
+	test("an unavailable champion cannot be confirmed and gives its reason in its tooltip and accessible name", async () => {
 		const user = userEvent.setup();
 		await renderWithDraftCore(<DraftScreen />);
 		await toBoard(user);
@@ -248,11 +249,36 @@ describe("draft board (U3)", () => {
 
 		const banned = await waitFor(() => tile("Cragbell. Banned in this game"));
 		expect(banned.getAttribute("aria-disabled")).toBe("true");
-		expect(banned.getAttribute("title")).toBe("Banned in this game");
+		// The pointer is still on the tile from the first click.
+		await user.unhover(banned);
+		await user.hover(banned);
+		expect((await screen.findByRole("tooltip")).textContent).toContain(
+			"Banned in this game",
+		);
 		expect(banned.textContent).toBe("CR");
 		await user.click(banned);
 		expect(banned.getAttribute("aria-pressed")).toBe("false");
 		expect(confirm().hasAttribute("disabled")).toBe(true);
+	});
+
+	test("pool tiles and role filters name themselves in the Caja tooltip", async () => {
+		const user = userEvent.setup();
+		await renderWithDraftCore(<DraftScreen />);
+		await toBoard(user);
+		const grid = screen.getByRole("group", { name: "Champions" });
+		const [tile] = within(grid).getAllByRole("button");
+		if (!tile) throw new Error("The pool has no champions");
+		await user.hover(tile);
+		expect((await screen.findByRole("tooltip")).textContent).toBe(
+			tile.getAttribute("aria-label"),
+		);
+		const jungle = within(
+			screen.getByRole("group", { name: "Filter by role" }),
+		).getByRole("button", { name: "Jungle" });
+		await user.hover(jungle);
+		await waitFor(() =>
+			expect(screen.getByRole("tooltip").textContent).toBe("Jungle"),
+		);
 	});
 
 	test("filters by role with icon buttons and searches by name", async () => {

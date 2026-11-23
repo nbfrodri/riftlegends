@@ -1,3 +1,4 @@
+import { Tooltip } from "@rift-legends/ui-kit/components/tooltip";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { WindowControls } from "../shared/bridge";
@@ -72,36 +73,41 @@ export function TitleBar({ controls }: { controls: WindowControls }) {
 			</div>
 			<div className="flex h-full [app-region:no-drag]">
 				{canMinimize && (
+					<Tooltip content={minimizeLabel} side="bottom">
+						<button
+							type="button"
+							className={controlButton}
+							aria-label={minimizeLabel}
+							onClick={() => void controls.minimize()}
+						>
+							<Glyph path="M5 12h14" />
+						</button>
+					</Tooltip>
+				)}
+				<Tooltip content={toggleLabel} side="bottom">
 					<button
 						type="button"
 						className={controlButton}
-						aria-label={minimizeLabel}
-						title={minimizeLabel}
-						onClick={() => void controls.minimize()}
+						aria-label={toggleLabel}
+						onClick={() => void controls.toggleMaximize()}
 					>
-						<Glyph path="M5 12h14" />
+						<Glyph
+							path={
+								maximized ? "M8 8V4h12v12h-4 M4 8h12v12H4z" : "M5 5h14v14H5z"
+							}
+						/>
 					</button>
-				)}
-				<button
-					type="button"
-					className={controlButton}
-					aria-label={toggleLabel}
-					title={toggleLabel}
-					onClick={() => void controls.toggleMaximize()}
-				>
-					<Glyph
-						path={maximized ? "M8 8V4h12v12h-4 M4 8h12v12H4z" : "M5 5h14v14H5z"}
-					/>
-				</button>
-				<button
-					type="button"
-					className={controlButton}
-					aria-label={closeLabel}
-					title={closeLabel}
-					onClick={() => void controls.close()}
-				>
-					<Glyph path="M5 5l14 14 M19 5 5 19" />
-				</button>
+				</Tooltip>
+				<Tooltip content={closeLabel} side="bottom">
+					<button
+						type="button"
+						className={controlButton}
+						aria-label={closeLabel}
+						onClick={() => void controls.close()}
+					>
+						<Glyph path="M5 5l14 14 M19 5 5 19" />
+					</button>
+				</Tooltip>
 			</div>
 		</header>
 	);

@@ -7,6 +7,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@rift-legends/ui-kit/components/select";
+import { Tooltip } from "@rift-legends/ui-kit/components/tooltip";
 import { ArrowLeftRight, Check, RotateCcw } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -130,9 +131,9 @@ function LineupEditor(props: { picks: string[]; sideColor: string }) {
 								{player && (
 									<p className="flex min-w-0 items-center gap-1.5 text-[13px] text-muted">
 										<CountryFlag country={player.nationality} />
-										<span className="truncate" title={player.handle}>
-											{player.handle}
-										</span>
+										<Tooltip content={player.handle}>
+											<span className="truncate">{player.handle}</span>
+										</Tooltip>
 									</p>
 								)}
 								<div className="mt-[10px] flex flex-col gap-[7px]">
