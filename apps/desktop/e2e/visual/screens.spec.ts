@@ -36,6 +36,15 @@ test("Draft with the sidebar collapsed", async ({ appWindow }) => {
 	await captureScreen(appWindow, "draft-collapsed.png");
 });
 
+test("Collapsed sidebar with the Caja tooltip and its shortcut", async ({
+	appWindow,
+}) => {
+	await appWindow.emulateMedia({ reducedMotion: "reduce" });
+	await appWindow.getByRole("button", { name: "Expandir" }).hover();
+	await expect(appWindow.getByRole("tooltip")).toContainText("Alt+B");
+	await captureScreen(appWindow, "sidebar-tooltip.png");
+});
+
 test("Mercado with the sidebar expanded", async ({ appWindow }) => {
 	await expandSidebar(appWindow);
 	await goTo(appWindow, "Mercado");
