@@ -204,8 +204,9 @@ describe("real champions on the board (R4, A3)", () => {
 		photos: Record<string, string> = {},
 	) {
 		const { assets } = await setup(ready, testCatalog(realIds), locale);
-		expect(assets.api.playerPhotos).not.toHaveBeenCalled();
+		// Main emits this when the photos finish downloading.
 		assets.api.playerPhotos.mockResolvedValue(photos);
+		act(() => assets.photosChanged());
 		seedNextSeries();
 		await chooseReal(user, locale === "en-US" ? "Real LoL" : "LoL real");
 		await user.click(

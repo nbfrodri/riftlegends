@@ -40,18 +40,20 @@ afterEach(async () => {
 	await rm(root, { recursive: true, force: true });
 });
 
-test("loads photos on demand, coalesces simultaneous reads, and serves only verified files", async () => {
+test("downloads photos once, reads them from disk, and serves only verified files", async () => {
 	const transport = vi.fn<AssetTransport>(async () => response(png));
 	const cache = createAssetCache(root, {
 		transport,
 		photos: [source("portrait")],
 	});
 	expect(transport).not.toHaveBeenCalled();
+	await expect(cache.getPlayerPhotos()).resolves.toEqual({});
+	await cache.syncPlayerPhotos();
 	await expect(
 		Promise.all([cache.getPlayerPhotos(), cache.getPlayerPhotos()]),
 	).resolves.toEqual([{ portrait: local }, { portrait: local }]);
 	expect(transport).toHaveBeenCalledTimes(1);
-	await expect(cache.getPlayerPhotos()).resolves.toEqual({ portrait: local });
+	await cache.syncPlayerPhotos();
 	expect(transport).toHaveBeenCalledTimes(1);
 
 	const get = (url: string) => serveAsset(root, { url, method: "GET" });
@@ -82,6 +84,7 @@ test.each([
 				},
 			],
 		});
+		await cache.syncPlayerPhotos();
 		expect((await cache.getPlayerPhotos()).CON).toMatch(
 			new RegExp(`^rift-asset://photos/players/con-[a-f0-9]{8}\\.${suffix}$`),
 		);
@@ -111,6 +114,7 @@ test.each([
 		transport,
 		photos: [{ ...source("portrait"), ...changes }],
 	});
+	await cache.syncPlayerPhotos();
 	await expect(cache.getPlayerPhotos()).resolves.toEqual({});
 	expect(transport).not.toHaveBeenCalled();
 });
@@ -135,6 +139,7 @@ test.each([
 ] as const)("rejects a response with %s", async (_, photo, bytes, status) => {
 	const transport = vi.fn<AssetTransport>(async () => response(bytes, status));
 	const cache = createAssetCache(root, { transport, photos: [photo] });
+	await cache.syncPlayerPhotos();
 	await expect(cache.getPlayerPhotos()).resolves.toEqual({});
 	expect(transport).toHaveBeenCalled();
 	if (status === 302) expect(transport).toHaveBeenCalledTimes(1);

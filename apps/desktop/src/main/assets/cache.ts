@@ -173,6 +173,8 @@ export function createAssetCache(
 	}
 
 	const cache = {
+		/** Photos of the snapshot (untrusted input); failures are per photo. */
+		syncPlayerPhotos: syncPhotos,
 		/** Logos of the given teams (untrusted snapshot input); failures are per logo. */
 		async syncTeamLogos(
 			sources: readonly TeamLogoSource[],
@@ -254,7 +256,8 @@ export function createAssetCache(
 					}
 					// Same for the photos: read again when they land.
 					if (result.state === "ready" && photos.length && !syncingPhotos) {
-						syncingPhotos = syncPhotos()
+						syncingPhotos = cache
+							.syncPlayerPhotos()
 							.catch(() => undefined)
 							.finally(() => {
 								syncingPhotos = undefined;

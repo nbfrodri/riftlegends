@@ -724,6 +724,33 @@ describe("main asset cache", () => {
 		);
 	});
 
+	it("A3 downloads player photos after the cache is ready and tells subscribers", async () => {
+		const photo = Buffer.concat([png, Buffer.from("verified player photo")]);
+		const url = "https://static.lolesports.com/players/MID.png";
+		override = async (request) =>
+			request.href === url ? response(photo) : undefined;
+		const cache = createAssetCache(profile, {
+			transport,
+			photos: [
+				{
+					player: "mid",
+					url,
+					sha256: createHash("sha256").update(photo).digest("hex"),
+					size: photo.length,
+					mime: "image/png",
+				},
+			],
+		});
+		const changed = vi.fn();
+		cache.subscribePlayerPhotos(changed);
+		expect(await cache.getPlayerPhotos()).toEqual({});
+		expect(await cache.sync()).toEqual({ state: "ready", version });
+		expect(await cache.getPlayerPhotos()).toEqual({
+			mid: "rift-asset://photos/players/mid.png",
+		});
+		expect(changed).toHaveBeenCalledTimes(1);
+	});
+
 	it("A3 tells subscribers when a logo sync finishes", async () => {
 		const cache = createAssetCache(profile, { transport });
 		const changed = vi.fn();
