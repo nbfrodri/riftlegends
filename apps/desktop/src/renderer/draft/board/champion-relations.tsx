@@ -79,15 +79,13 @@ function RelationList({
 							</span>
 							{t(`draft.card.${tone}.${level}`)}
 						</div>
-						<p className="mt-1 text-muted">
-							{row.reasons.length
-								? row.reasons
-										.map((reason) =>
-											t(`draft.card.reason.${reason}`, { winner }),
-										)
-										.join(" ")
-								: t("draft.card.noReason")}
-						</p>
+						{row.reasons.length > 0 && (
+							<p className="mt-1 text-muted">
+								{row.reasons
+									.map((reason) => t(`draft.card.reason.${reason}`, { winner }))
+									.join(" ")}
+							</p>
+						)}
 					</li>
 				);
 			})}

@@ -36,6 +36,7 @@ async function board() {
 		],
 		synergies: [
 			{ a: "duskroot", b: "rimefoil", value: 6, reasons: ["chainCc"] },
+			{ a: "rimefoil", b: "waxblade", value: 5 },
 		],
 	};
 	const user = userEvent.setup();
@@ -201,4 +202,17 @@ it("opens pool tooltips away from the side where the card appears", async () => 
 	const { tile } = await board();
 	expect(tile.hasAttribute("title")).toBe(false);
 	expect(tile.dataset.tooltipSide).toBe("left");
+});
+
+it("shows no filler text for a relation without reasons", async () => {
+	const { user, tile } = await board();
+	await user.hover(tile);
+	const card = within(
+		await screen.findByRole("region", { name: "Champion card: Rimefoil" }),
+	);
+	const synergies = within(
+		await card.findByRole("region", { name: "Synergies" }),
+	);
+	expect(synergies.getByText("Waxblade")).toBeTruthy();
+	expect(card.queryByText("No specific interaction listed.")).toBeNull();
 });
