@@ -511,7 +511,7 @@ describe("player card (U5)", () => {
 		await renderWithDraftCore(<DraftScreen />);
 		await toBoard(user);
 		const blue = screen.getByRole("region", { name: "Blue side Forge" });
-		await user.hover(within(blue).getByRole("button", { name: /Kilnara/ }));
+		await user.click(within(blue).getByRole("button", { name: /Kilnara/ }));
 		const card = screen.getByRole("group", { name: /Player card/ });
 		const pool = within(card).getByRole("region", { name: "Champion pool" });
 		const source = packagedDraftContent.players.find(
@@ -534,7 +534,7 @@ describe("player card (U5)", () => {
 		await renderWithDraftCore(<DraftScreen />);
 		await toBoard(user);
 		const red = screen.getByRole("region", { name: "Red side Shoal" });
-		await user.hover(within(red).getByRole("button", { name: /Gullix/ }));
+		await user.click(within(red).getByRole("button", { name: /Gullix/ }));
 		const card = screen.getByRole("group", { name: /Player card/ });
 		const roaming = within(card).getByText("Roaming").closest("div");
 		expect(roaming?.className).toContain("opacity-50");
@@ -548,7 +548,7 @@ describe("player card (U5)", () => {
 		await renderWithDraftCore(<DraftScreen />);
 		await toBoard(user);
 		const blue = screen.getByRole("region", { name: "Blue side Forge" });
-		await user.hover(within(blue).getByRole("button", { name: /Kilnara/ }));
+		await user.click(within(blue).getByRole("button", { name: /Kilnara/ }));
 		const card = screen.getByRole("group", { name: /Player card/ });
 		const cells = within(card).getAllByRole("definition");
 		const level = (value: number) =>
