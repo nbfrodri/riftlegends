@@ -154,16 +154,17 @@ describe("U2: official objective icons", () => {
 		expect(image.className).toContain("grayscale");
 	});
 
-	test("a tinted map icon paints the cached silhouette and keeps its colour on load failure", async () => {
-		const { container } = renderWith(ready, <MapIcon kind="tower" tinted />);
+	test("#380: a standing structure or taken objective shows the official image unmasked", async () => {
+		const { container } = renderWith(ready, <MapIcon kind="tower" />);
 		const image = await waitFor(() => {
 			const found = container.querySelector("img");
 			if (!found) throw new Error("no image yet");
 			return found;
 		});
-		expect(image.classList.contains("[filter:var(--map-icon-tint)]")).toBe(
-			true,
+		expect(image.getAttribute("src")).toBe(
+			"rift-asset://cdragon/objectives/tower.png",
 		);
+		expect(image.className).not.toMatch(/filter|mask|grayscale/);
 		fireEvent.error(image);
 		expect(container.querySelector("svg")?.getAttribute("stroke")).toBe(
 			"currentColor",
@@ -344,7 +345,7 @@ describe("team panel", () => {
 		buffs: { herald: null, baron: null, elder: null },
 	};
 
-	test("draws structures and objectives with the official icons, tinting the objectives taken", async () => {
+	test("draws structures and objectives with the official icons, never as a silhouette", async () => {
 		await renderInLocale(
 			<AssetsProvider api={fakeAssets(ready).api}>
 				<TeamPanel side="blue" name="Blue" view={teamMap(side, 60)} />
@@ -367,11 +368,9 @@ describe("team panel", () => {
 			expect(objective(name)?.getAttribute("src")).toBe(
 				`rift-asset://cdragon/objectives/${file}.png`,
 			);
-		const tinted = (name: RegExp) =>
-			objective(name)?.classList.contains("[filter:var(--map-icon-tint)]");
-		expect(tinted(/Dragons/)).toBe(true);
-		expect(tinted(/Heralds/)).toBe(true);
-		expect(tinted(/Barons/)).toBe(false);
+		for (const img of panel.querySelectorAll("img"))
+			expect(img.className).not.toMatch(/filter|mask/);
+		expect(panel.querySelector("filter")).toBeNull();
 		expect(
 			screen
 				.getByText(/Barons/)

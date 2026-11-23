@@ -46,6 +46,31 @@ test("#259 #310: the setup, match and results fit the default window", async ({
 			}
 			if (screen === "game-result") {
 				await expectToFit(appWindow);
+				for (const size of [
+					{ width: 1280, height: 720 },
+					{ width: 1366, height: 768 },
+				]) {
+					await appWindow.setViewportSize(size);
+					await expectToFit(appWindow);
+					// #380: the right column spans exactly the stats table's height.
+					const edges = await appWindow.evaluate(() => {
+						const heading = [...document.querySelectorAll("h2")].find((h) =>
+							/disputas decisivas/i.test(h.textContent ?? ""),
+						);
+						const column = heading?.closest("section")?.parentElement;
+						const stats = column?.previousElementSibling;
+						if (!column || !stats) return null;
+						const a = stats.getBoundingClientRect();
+						const b = column.getBoundingClientRect();
+						const last = column.lastElementChild?.getBoundingClientRect();
+						return {
+							top: Math.round(a.top - b.top),
+							bottom: Math.round(a.bottom - b.bottom),
+							lastBottom: Math.round((last?.bottom ?? 0) - b.bottom),
+						};
+					});
+					expect(edges).toEqual({ top: 0, bottom: 0, lastBottom: 0 });
+				}
 				checked++;
 			}
 			if (screen !== "series-result") return;

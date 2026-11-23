@@ -119,7 +119,7 @@ function Player({
 		<td data-side={side}>
 			{player && (
 				<span
-					className={`flex min-w-0 items-center gap-2 ${side === "blue" ? "text-left" : "flex-row-reverse text-right"}`}
+					className={`flex min-w-0 items-center justify-center gap-2 ${side === "blue" ? "text-left" : "flex-row-reverse text-right"}`}
 				>
 					<ChampionPortrait
 						id={player.champion}
