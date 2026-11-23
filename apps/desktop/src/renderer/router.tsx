@@ -3,13 +3,10 @@ import {
 	createRootRoute,
 	createRoute,
 	createRouter,
-	Outlet,
 	redirect,
 } from "@tanstack/react-router";
 import { ChampionsScreen } from "./champions-screen";
-import { DraftFlow } from "./draft/draft-screen";
-import { DraftSessionProvider } from "./draft/session";
-import { MarketScreen, SettingsScreen } from "./screens";
+import { DraftScreen, MarketScreen, SettingsScreen } from "./screens";
 import { Shell } from "./shell";
 
 // A desktop app has no URLs: the router keeps its history in memory, so the
@@ -25,24 +22,14 @@ const indexRoute = createRoute({
 	},
 });
 
-const sessionRoute = createRoute({
-	getParentRoute: () => rootRoute,
-	id: "draftSession",
-	component: () => (
-		<DraftSessionProvider>
-			<Outlet />
-		</DraftSessionProvider>
-	),
-});
-
 const draftRoute = createRoute({
-	getParentRoute: () => sessionRoute,
+	getParentRoute: () => rootRoute,
 	path: "draft",
-	component: DraftFlow,
+	component: DraftScreen,
 });
 
 const championsRoute = createRoute({
-	getParentRoute: () => sessionRoute,
+	getParentRoute: () => rootRoute,
 	path: "campeones",
 	component: ChampionsScreen,
 });
@@ -61,7 +48,8 @@ const settingsRoute = createRoute({
 
 const routeTree = rootRoute.addChildren([
 	indexRoute,
-	sessionRoute.addChildren([draftRoute, championsRoute]),
+	draftRoute,
+	championsRoute,
 	marketRoute,
 	settingsRoute,
 ]);

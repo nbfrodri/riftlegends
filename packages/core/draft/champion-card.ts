@@ -64,5 +64,9 @@ export function viewChampion(
 					: [],
 			),
 		].sort((a, b) => abs(b.value) - abs(a.value)),
+		identities: content.identities.flatMap(({ id: plan, archetypes }) => {
+			const shared = archetypes.filter((a) => champion.archetypes.includes(a));
+			return shared.length ? [{ id: plan, archetypes: shared }] : [];
+		}),
 	};
 }

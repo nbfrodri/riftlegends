@@ -102,3 +102,17 @@ it("keeps the real matchup and team counter separate without duplicating mirrore
 		]),
 	);
 });
+
+it("names the team plans each champion contributes to, from the content identities", () => {
+	expect(card("cragbell")).toMatchObject({
+		identities: [{ id: "collapse", archetypes: ["engage"] }],
+	});
+	expect(card("rimefoil")).toMatchObject({
+		identities: [{ id: "siege", archetypes: ["poke"] }],
+	});
+	const tankOnly = {
+		...packagedDraftContent,
+		identities: [{ id: "wall", archetypes: ["tank" as const], threshold: 1 }],
+	};
+	expect(card("rimefoil", tankOnly)).toMatchObject({ identities: [] });
+});

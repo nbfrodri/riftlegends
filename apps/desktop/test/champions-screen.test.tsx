@@ -1,25 +1,24 @@
 import { loadRealContent } from "@rift-legends/core";
 import { RouterProvider } from "@tanstack/react-router";
-import {
-	cleanup,
-	fireEvent,
-	screen,
-	waitFor,
-	within,
-} from "@testing-library/react";
+import { cleanup, fireEvent, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, expect, it } from "vitest";
 import { createAppRouter } from "../src/renderer/router";
 import { renderWithDraftCore } from "./draft-core";
 import { fakeAssets, testCatalog } from "./fake-assets";
 
-afterEach(cleanup);
+afterEach(() => {
+	cleanup();
+	window.history.replaceState(null, "", "/");
+});
 
 const tier = (rank: string) =>
 	within(screen.getByRole("region", { name: `Tier ${rank}` }));
 const button = (name: string) => screen.getByRole("button", { name });
 
+/** Fictional content only through the test seam: the UI never offers it. */
 async function open(ready = false) {
+	if (!ready) window.history.replaceState(null, "", "?content=fictional");
 	const ids = ready ? loadRealContent().draft.champions.map((c) => c.id) : [];
 	const assets = ready
 		? fakeAssets({ state: "ready", version: "16.23" }, testCatalog(ids))
@@ -33,13 +32,6 @@ async function open(ready = false) {
 	);
 	const user = userEvent.setup();
 	await screen.findByRole("heading", { name: "Set up series" });
-	if (ready) {
-		const real = screen.getByRole("radio", {
-			name: "Real LoL",
-		}) as HTMLInputElement;
-		await waitFor(() => expect(real.disabled).toBe(false));
-		await user.click(real);
-	}
 	await user.click(
 		within(screen.getByRole("navigation", { name: "Club sections" })).getByRole(
 			"button",
@@ -71,6 +63,42 @@ it("orders all six tiers and ranks flex champions for the chosen role", async ()
 	expect(screen.getByText("No matches")).toBeTruthy();
 });
 
+it("shows portraits without names: the name is the label and the tooltip", async () => {
+	const user = await open();
+	const tile = await screen.findByRole("button", { name: "Cragbell" });
+	expect(within(tile).queryByText("Cragbell")).toBeNull();
+	await user.hover(tile);
+	expect((await screen.findByRole("tooltip")).textContent).toContain(
+		"Cragbell",
+	);
+});
+
+it("never offers the fictional content and asks to download the real one", async () => {
+	const user = userEvent.setup();
+	await renderWithDraftCore(
+		<RouterProvider router={createAppRouter("/campeones")} />,
+		"en-US",
+		undefined,
+		undefined,
+		{ assets: fakeAssets().api },
+	);
+	// Loading the real set takes a while the first time.
+	await screen.findByRole(
+		"heading",
+		{ name: "Champions", level: 1 },
+		{ timeout: 8000 },
+	);
+	const go = await screen.findByRole("button", { name: "Go to Settings" });
+	expect(screen.getByText(/Download the game content/)).toBeTruthy();
+	expect(screen.queryByRole("radio")).toBeNull();
+	expect(screen.queryByText(/fictional/i)).toBeNull();
+	expect(screen.queryByRole("region", { name: "Tier S" })).toBeNull();
+	await user.click(go);
+	expect(
+		await screen.findByRole("heading", { name: "Settings", level: 1 }),
+	).toBeTruthy();
+}, 15_000);
+
 it("opens the full card and returns focus to the tile on Escape", async () => {
 	const user = await open();
 	const tile = await screen.findByRole("button", { name: "Cragbell" });
@@ -87,7 +115,7 @@ it("opens the full card and returns focus to the tile on Escape", async () => {
 	expect(document.activeElement).toBe(tile);
 });
 
-it("uses the selected real content, its season, localized tile art and relations before a series starts", async () => {
+it("uses the real content by default, its season, localized tile art and relations before a series starts", async () => {
 	const user = await open(true);
 	const tile = await screen.findByRole("button", { name: "Aatrox EN" });
 	expect(screen.getByText(`Season ${loadRealContent().season}`)).toBeTruthy();
@@ -107,4 +135,45 @@ it("uses the selected real content, its season, localized tile art and relations
 	).toBeTruthy();
 	expect(card.getAllByText(/ EN$/).length).toBeGreaterThan(3);
 	expect(screen.queryByText(/leaguepedia|communitydragon/i)).toBeNull();
+});
+
+it("opens a detail view with every relation by role, team counters and the team plans", async () => {
+	const { draft } = loadRealContent();
+	const synergies = draft.synergies.filter(
+		({ a, b, value }) => (a === "Aatrox" || b === "Aatrox") && value > 0,
+	).length;
+	const user = await open(true);
+	await user.click(await screen.findByRole("button", { name: "Aatrox EN" }));
+	const card = within(
+		screen.getByRole("region", { name: "Champion card: Aatrox EN" }),
+	);
+	const section = async (name: string) =>
+		within(await card.findByRole("region", { name }));
+	const wins = await section("Wins against");
+	expect(wins.getByRole("heading", { name: "Top", level: 5 })).toBeTruthy();
+	expect(
+		wins.getByRole("heading", { name: "Team counters", level: 5 }),
+	).toBeTruthy();
+	expect((await section("Synergies")).getAllByRole("listitem")).toHaveLength(
+		synergies,
+	);
+	expect(synergies).toBeGreaterThan(3);
+	const plans = await section("Contributes to comps");
+	const aatrox = draft.champions.find((c) => c.id === "Aatrox");
+	const expected = draft.identities.filter(({ archetypes }) =>
+		archetypes.some((a) => aatrox?.archetypes.includes(a)),
+	);
+	expect(plans.getAllByRole("listitem")).toHaveLength(expected.length);
+	expect(expected.length).toBeGreaterThan(0);
+}, 15_000);
+
+it("names each team plan with the archetypes the champion brings", async () => {
+	const user = await open();
+	await user.click(await screen.findByRole("button", { name: "Cragbell" }));
+	const plans = within(
+		await screen.findByRole("region", { name: "Contributes to comps" }),
+	);
+	const item = plans.getByRole("listitem");
+	expect(item.textContent).toContain("Engage and dive");
+	expect(item.textContent).toContain("Engage");
 });
