@@ -7,6 +7,7 @@ import {
 import { contentVersionOf } from "../version";
 import { identities, rules } from "./data";
 import champions from "./real/champions/champions.json";
+import counters from "./real/champions/counters.json";
 import matchups from "./real/champions/matchups.json";
 import synergies from "./real/champions/synergies.json";
 import players from "./real/players.json";
@@ -26,13 +27,14 @@ export interface PackagedContent {
  * the real names from the asset cache (R4).
  */
 function load(): PackagedContent {
-	const source = { champions, matchups, synergies, players, teams };
+	const source = { champions, matchups, counters, synergies, players, teams };
 	const draft = aiContent.parse({
 		champions: champions.map(
 			({ cc: _cc, mobility: _mobility, frontline: _frontline, ...rest }) =>
 				rest,
 		),
 		matchups,
+		counters,
 		synergies,
 		identities,
 		players: players.map(

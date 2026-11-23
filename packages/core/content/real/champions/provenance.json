@@ -1,5 +1,5 @@
 {
-	"source": "Derived from the Leaguepedia 2026 snapshot (CC BY-SA 3.0); see real/LICENSE",
+	"source": "Derived from champion kit profiles and Leaguepedia (CC BY-SA 3.0); see real/LICENSE",
 	"catalog": {
 		"url": "https://raw.communitydragon.org/16.23/plugins/rcp-be-lol-game-data/global/en_gb/v1/champion-summary.json",
 		"retrievedAt": "2026-11-22T12:50:40.341Z",
@@ -20,11 +20,22 @@
 		"attribution": "Datos normalizados de los colaboradores de Leaguepedia (https://lol.fandom.com/wiki/Leaguepedia), CC BY-SA 3.0 Unported."
 	},
 	"games": 2378,
-	"minimumSample": 20,
+	"priorGames": 20,
+	"tierSeasons": {
+		"current": 2026,
+		"available": [
+			2026
+		],
+		"missing": [
+			2025,
+			2024
+		]
+	},
 	"counts": {
 		"champions": 173,
-		"matchups": 334,
-		"synergies": 771
+		"matchups": 10782,
+		"counters": 11638,
+		"synergies": 9732
 	},
 	"estimated": [
 		"Kayn",
@@ -33,6 +44,8 @@
 		"Naafiri",
 		"Shaco",
 		"Shyvana",
+		"Smolder",
+		"TwistedFate",
 		"Udyr",
 		"Yunara",
 		"Zaahen"
