@@ -244,8 +244,10 @@ test("reveals facts at their second and updates the map and gold from the comple
 	advance(750);
 	expect(feed.queryAllByRole("listitem")).toHaveLength(0);
 	advance(250);
-	expect(feed.getByText(/Ember Crown.*Silver Tide/)).toBeTruthy();
-	expect(feed.getByText(/Bright Moon/)).toBeTruthy();
+	expect(feed.getByText("Bluetop")).toBeTruthy();
+	expect(feed.getByText("Redtop")).toBeTruthy();
+	expect(feed.getByRole("img", { name: "Ember Crown" })).toBeTruthy();
+	expect(feed.getByRole("img", { name: "Bright Moon" })).toBeTruthy();
 	expect(feed.getByText("Dragón")).toBeTruthy();
 	expect(feed.getByText(/Foso del dragón/)).toBeTruthy();
 	expect(feed.getByText(/visión/i)).toBeTruthy();

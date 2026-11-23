@@ -3,22 +3,60 @@ import { Button } from "@rift-legends/ui-kit/components/button";
 import { animate as fade } from "motion/mini";
 import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { GameRoleIcon } from "../assets/game-role-icon";
 import { isObjectiveKind, MapIcon } from "../assets/map-icon";
+import { ChampionPortrait } from "../draft/champion-portrait";
+import { TeamCrest } from "../draft/team-crest";
 import { panelTitle } from "./classes";
+import type { LanePlayer } from "./face-to-face";
 import { clockTime } from "./playback";
 import type { TeamNames } from "./scoreboard";
+
+/** A player in the feed: who they are, what they play and in which role. */
+export interface EventPlayer extends LanePlayer {
+	role: "top" | "jungle" | "mid" | "bot" | "support";
+}
+
+/** Role icon, player handle and champion portrait; the handle is the name. */
+function Participant({
+	player,
+	id,
+}: {
+	player: EventPlayer | undefined;
+	id: string;
+}) {
+	const { t } = useTranslation();
+	if (!player) return <b>{id}</b>;
+	return (
+		<span className="inline-flex items-center gap-1 align-middle">
+			<GameRoleIcon
+				role={player.role}
+				size={16}
+				label={t(`draft.roles.role.${player.role}`)}
+			/>
+			<ChampionPortrait
+				id={player.champion}
+				label={player.championName}
+				size="compact"
+			/>
+			<b>{player.handle}</b>
+		</span>
+	);
+}
 
 const when = (e: MatchEvent) => (e.minute - 1) * 60 + e.second;
 
 const EventRow = memo(function EventRow({
 	event,
 	team,
-	championByPlayer,
+	teamId,
+	players,
 	animate,
 }: {
 	event: MatchEvent;
 	team: string;
-	championByPlayer: ReadonlyMap<string, string>;
+	teamId: string;
+	players: ReadonlyMap<string, EventPlayer>;
 	animate: boolean;
 }) {
 	const { t, i18n } = useTranslation();
@@ -64,33 +102,41 @@ const EventRow = memo(function EventRow({
 				{clockTime(when(event))}
 			</time>
 			<div>
-				<p className="font-bold text-(--side) text-[11px] uppercase tracking-[0.04em]">
-					{t("draft.match.location", {
-						team,
-						zone: t(`draft.match.zone.${event.zone}`),
-					})}
+				<p className="flex items-center gap-1.5 font-bold text-(--side) text-[11px] uppercase tracking-[0.04em]">
+					<span role="img" aria-label={team} className="flex">
+						<TeamCrest
+							id={teamId}
+							name={team}
+							className="h-[22px] w-[30px] object-contain"
+						/>
+					</span>
+					{t(`draft.match.zone.${event.zone}`)}
 				</p>
 				<h3 className="my-0.5 flex items-center gap-1.5 font-bold text-[16px]">
 					{isObjectiveKind(event.kind) && <MapIcon kind={event.kind} />}
 					{t(`draft.match.kind.${event.kind}`)}
 				</h3>
 				{event.kills.map(({ killer, victim, assists }, index) => (
-					// biome-ignore lint/suspicious/noArrayIndexKey: kills retain the order recorded in the event.
-					<p key={index} className="truncate">
-						{t("draft.match.kill", {
-							killer: championByPlayer.get(killer) ?? killer,
-							victim: championByPlayer.get(victim) ?? victim,
-						})}
+					<p
+						// biome-ignore lint/suspicious/noArrayIndexKey: kills retain the order recorded in the event.
+						key={index}
+						className="flex flex-wrap items-center gap-x-1.5 gap-y-1"
+					>
+						<Participant player={players.get(killer)} id={killer} />
+						{t("draft.match.killVerb")}
+						<Participant player={players.get(victim)} id={victim} />
 						{assists.length > 0 && (
 							<>
-								{" "}
-								{t("draft.match.assists", {
-									champions: list.format(
-										assists.map(
-											(player) => championByPlayer.get(player) ?? player,
-										),
-									),
-								})}
+								<span className="text-muted">
+									{t("draft.match.assistedBy")}
+								</span>
+								{assists.map((player) => (
+									<Participant
+										key={player}
+										player={players.get(player)}
+										id={player}
+									/>
+								))}
 							</>
 						)}
 					</p>
@@ -112,13 +158,15 @@ export function EventFeed({
 	facts,
 	second,
 	names,
-	championByPlayer,
+	ids,
+	players,
 	ended,
 }: {
 	facts: MatchView["facts"];
 	second: number;
 	names: TeamNames;
-	championByPlayer: ReadonlyMap<string, string>;
+	ids: TeamNames;
+	players: ReadonlyMap<string, EventPlayer>;
 	ended: boolean;
 }) {
 	const { t } = useTranslation();
@@ -151,8 +199,9 @@ export function EventFeed({
 								<EventRow
 									key={index}
 									event={event}
-									championByPlayer={championByPlayer}
+									players={players}
 									team={names[event.side]}
+									teamId={ids[event.side]}
 									animate={!ended}
 								/>
 							))}

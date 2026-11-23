@@ -15,7 +15,15 @@ const box = "h-[100px] w-[135px]";
  * A team's downloaded logo when it has one, else its own crest. Both fill the
  * same fixed box, so a late or failed logo never moves the layout.
  */
-export function TeamCrest({ id, name }: { id: string; name: string }) {
+export function TeamCrest({
+	id,
+	name,
+	className = box,
+}: {
+	id: string;
+	name: string;
+	className?: string;
+}) {
 	const logo = useTeamLogoSrc(id);
 	const [failed, setFailed] = useState<string>();
 	const path = crests[id];
@@ -24,13 +32,13 @@ export function TeamCrest({ id, name }: { id: string; name: string }) {
 			<img
 				src={logo}
 				alt=""
-				className={`${box} object-contain`}
+				className={`${className} object-contain`}
 				onError={() => setFailed(logo)}
 			/>
 		);
 	}
 	return (
-		<svg viewBox="0 0 64 64" aria-hidden="true" className={box}>
+		<svg viewBox="0 0 64 64" aria-hidden="true" className={className}>
 			{path ? (
 				<path fill="currentColor" d={path} />
 			) : (
