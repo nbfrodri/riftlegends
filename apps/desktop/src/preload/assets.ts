@@ -17,4 +17,11 @@ export const createAssetsApi = (
 			ipc.off(assetChannels.progress, notify);
 		};
 	},
+	subscribeTeamLogos(listener) {
+		const notify = () => listener();
+		ipc.on(assetChannels.teamLogosChanged, notify);
+		return () => {
+			ipc.off(assetChannels.teamLogosChanged, notify);
+		};
+	},
 });

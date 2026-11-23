@@ -89,6 +89,7 @@ export function createAssetCache(
 	let running: Promise<CacheStatus> | undefined;
 	let syncingLogos: Promise<void> | undefined;
 	const listeners = new Set<(progress: AssetProgress) => void>();
+	const logoListeners = new Set<() => void>();
 
 	function reportProgress(progress: AssetProgress) {
 		status = { state: "syncing", progress };
@@ -149,6 +150,8 @@ export function createAssetCache(
 				return await syncTeamLogos(root, sources, transport);
 			} finally {
 				await release();
+				// The renderer read the map when the cache turned ready, before this ran.
+				for (const listener of logoListeners) listener();
 			}
 		},
 		/** Team id to `rift-asset://` URL of every verified logo on disk. */
@@ -161,6 +164,10 @@ export function createAssetCache(
 					`rift-asset://logos/${path}`,
 				]),
 			);
+		},
+		subscribeTeamLogos(listener: () => void): () => void {
+			logoListeners.add(listener);
+			return () => logoListeners.delete(listener);
 		},
 		getStatus: (): CacheStatus => status,
 		getChampions: (): ChampionCatalog | null => champions,

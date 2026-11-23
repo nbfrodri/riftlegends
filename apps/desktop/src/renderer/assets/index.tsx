@@ -77,13 +77,20 @@ export function AssetsProvider(props: { api: AssetsApi; children: ReactNode }) {
 		api.sync().then(settle, () => settle({ state: "error" }));
 	}, [api, settle]);
 
+	const readTeamLogos = useCallback(() => {
+		api.teamLogos().then(
+			(logos) => mounted.current && setTeamLogos(logos),
+			() => undefined,
+		);
+	}, [api]);
+
+	// Logos download after the cache is ready: read the map again when they land.
+	useEffect(() => api.subscribeTeamLogos(readTeamLogos), [api, readTeamLogos]);
+
 	useEffect(() => {
 		if (status?.state !== "ready") return;
 		let current = true;
-		api.teamLogos().then(
-			(logos) => current && setTeamLogos(logos),
-			() => undefined,
-		);
+		readTeamLogos();
 		api.champions().then(
 			(champions) => current && setCatalog({ status, champions }),
 			() => current && setCatalog({ status, champions: null }),
@@ -91,7 +98,7 @@ export function AssetsProvider(props: { api: AssetsApi; children: ReactNode }) {
 		return () => {
 			current = false;
 		};
-	}, [api, status]);
+	}, [api, status, readTeamLogos]);
 
 	const value = useMemo(
 		() => ({ status, ready, sync, teamLogos, champions }),

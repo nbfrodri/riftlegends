@@ -28,6 +28,21 @@ describe("A3: team logos in the crest", () => {
 		expect(image?.className).toContain("h-[100px] w-[135px]");
 	});
 
+	test("shows logos downloaded after the cache became ready, without a restart", async () => {
+		const assets = fakeAssets({ state: "ready", version: "1.0" });
+		const { container } = render(
+			<AssetsProvider api={assets.api}>
+				<TeamCrest id="Gen.G" name="Gen.G" />
+			</AssetsProvider>,
+		);
+		await waitFor(() => expect(assets.api.teamLogos).toHaveBeenCalled());
+		expect(container.querySelector("img")).toBeNull();
+		assets.api.teamLogos.mockResolvedValue({ "Gen.G": logo });
+		assets.logosChanged();
+		await waitFor(() => expect(container.querySelector("img")).not.toBeNull());
+		expect(container.querySelector("img")?.getAttribute("src")).toBe(logo);
+	});
+
 	test("falls back to the own crest while there is no logo", () => {
 		const { container } = renderCrest("Gen.G");
 		expect(container.querySelector("img")).toBeNull();

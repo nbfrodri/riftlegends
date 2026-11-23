@@ -724,6 +724,17 @@ describe("main asset cache", () => {
 		);
 	});
 
+	it("A3 tells subscribers when a logo sync finishes", async () => {
+		const cache = createAssetCache(profile, { transport });
+		const changed = vi.fn();
+		const stop = cache.subscribeTeamLogos(changed);
+		await cache.syncTeamLogos([]);
+		expect(changed).toHaveBeenCalledTimes(1);
+		stop();
+		await cache.syncTeamLogos([]);
+		expect(changed).toHaveBeenCalledTimes(1);
+	});
+
 	it("A3 downloads team logos under their slug and lists their protocol URLs", async () => {
 		const logo = Buffer.concat([png, Buffer.from("logo")]);
 		const logoUrl = "https://static.lolesports.com/teams/A.png";

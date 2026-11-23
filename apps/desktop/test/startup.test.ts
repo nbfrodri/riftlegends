@@ -58,6 +58,7 @@ beforeEach(async () => {
 			sync: assetSync,
 			getStatus: vi.fn(),
 			subscribe: () => vi.fn(),
+			subscribeTeamLogos: () => vi.fn(),
 		}),
 	}));
 	await import("../src/main/index");
