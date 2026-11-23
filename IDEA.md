@@ -138,6 +138,9 @@ Inventario basado en DraftSim, que ya validó que estos sistemas funcionan y apo
   - **De dónde salen los jugadores:** segundas divisiones reales (LCK CL, LDL, ERL, NACL, Circuito Desafiante…) desde Leaguepedia, con atributos por liga; **regens** de SoloQ con potencial oculto; y **leyendas** históricas.
   - **Leyendas:** al empezar la carrera, un grupo de jugadores históricos (p. ej. Uzi) vuelve de su retirada como **agentes libres**, y la IA también puede ficharlos. Su versión mezcla su prime (experiencia, temple y lectura, sacados de su mejor año en Leaguepedia) con su edad actual (mecánicas y constancia).
   - **Academias:** las segundas divisiones son también la liga de las academias: el filial juega allí y se suben jugadores.
+- **Ascensos y descensos** (decisión del usuario del 23-11-2026). Se elige por liga al crear la carrera:
+  - **Por defecto, el sistema real:** franquicias, sin descensos. Un equipo de segunda llega a primera **comprando una plaza** (cuando un club la vende o la liga se amplía) o por **invitación por méritos** (p. ej. ganar EMEA Masters o la LCK CL) si queda una plaza libre.
+  - **Con ascensos activados:** al **final de la temporada**, con la clasificación anual (suma de splits). El último de primera baja y el campeón de segunda sube directamente. El penúltimo de primera juega una **serie de promoción** contra el subcampeón de segunda.
 - **Objetivos de directiva y presupuesto**: expectativas por temporada y consecuencias si no se cumplen.
 - **Moral y dinámica de vestuario**: química, egos, conflictos por minutos.
 - **Entrenamiento con coste de oportunidad**: no se puede preparar todo a la vez.

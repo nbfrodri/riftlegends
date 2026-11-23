@@ -154,6 +154,7 @@ Cada fase termina con un hito verificable y un commit o PR fusionado en `main`. 
 
 ### Fase 10 — Expansión de alcance
 - Ligas menores y ascensos, modo **Sandbox/Realidades** (edición de meta y plantillas, simulación IA contra IA).
+- **Ascensos y descensos (23-11-2026):** opción por liga al crear la carrera. Por defecto, franquicias como en la realidad (subir comprando plaza o por invitación por méritos). Con ascensos: al final de la temporada, uno baja y uno sube directo, más una serie de promoción entre el penúltimo de primera y el subcampeón de segunda ([IDEA §8](../../IDEA.md#8-novedades-respecto-a-draftsim)).
 - **Salida:** subir desde una liga menor hasta una liga top en una carrera.
 
 ### Fase 10b — Tutorial guiado (al final)
