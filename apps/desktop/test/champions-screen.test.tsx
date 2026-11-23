@@ -194,12 +194,12 @@ it("uses the real content by default, without a season, localized tile art and r
 it("opens a detail view with every relation by role, team counters and the team plans", async () => {
 	const { draft } = loadRealContent();
 	const synergies = draft.synergies.filter(
-		({ a, b, value }) => (a === "Aatrox" || b === "Aatrox") && value > 0,
+		({ a, b, value }) => (a === "Camille" || b === "Camille") && value > 0,
 	).length;
 	const user = await open(true);
-	await user.click(await screen.findByRole("button", { name: "Aatrox EN" }));
+	await user.click(await screen.findByRole("button", { name: "Camille EN" }));
 	const card = within(
-		screen.getByRole("region", { name: "Champion card: Aatrox EN" }),
+		screen.getByRole("region", { name: "Champion card: Camille EN" }),
 	);
 	const section = async (name: string) =>
 		within(await card.findByRole("region", { name }));
@@ -213,9 +213,9 @@ it("opens a detail view with every relation by role, team counters and the team 
 	);
 	expect(synergies).toBeGreaterThan(3);
 	const plans = await section("Contributes to comps");
-	const aatrox = draft.champions.find((c) => c.id === "Aatrox");
+	const camille = draft.champions.find((c) => c.id === "Camille");
 	const expected = draft.identities.filter(({ archetypes }) =>
-		archetypes.some((a) => aatrox?.archetypes.includes(a)),
+		archetypes.some((a) => camille?.archetypes.includes(a)),
 	);
 	expect(plans.getAllByRole("listitem")).toHaveLength(expected.length);
 	expect(expected.length).toBeGreaterThan(0);
