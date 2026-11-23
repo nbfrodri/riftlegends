@@ -65,6 +65,22 @@ test.describe("Campeones", () => {
 		await appWindow.mouse.move(0, 0);
 		await captureScreen(appWindow, "campeones-top.png");
 	});
+
+	test("Campeones with a champion's detail open", async ({ appWindow }) => {
+		await goTo(appWindow, "Campeones");
+		await appWindow.getByRole("button", { name: "Rimefoil" }).click();
+		const detail = appWindow.getByRole("region", {
+			name: "Ficha de campeón: Rimefoil",
+		});
+		await expect(
+			detail.getByRole("region", { name: "Aporta a composiciones de" }),
+		).toBeVisible();
+		await expect(
+			detail.getByRole("region", { name: "Pierde contra" }),
+		).toContainText("Brassburrow");
+		await appWindow.mouse.move(0, 0);
+		await captureScreen(appWindow, "campeones-detalle.png");
+	});
 });
 
 test("Ajustes", async ({ appWindow }) => {
