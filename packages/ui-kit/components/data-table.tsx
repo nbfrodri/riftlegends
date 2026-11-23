@@ -305,10 +305,16 @@ export function DataTable<Row extends RowData>({
 									data-row-id={row.id}
 									tabIndex={isTabStop ? 0 : -1}
 									data-active={isTabStop}
-									data-fifth={(index + 1) % 5 === 0}
+									data-odd={index % 2 === 1}
 									onFocus={() => setActiveId(row.id)}
 									onKeyDown={(event) => onRowKeyDown(event, index)}
-									className="h-[clamp(24px,3vh,30px)] hover:bg-surface focus-visible:outline-3 focus-visible:outline-action focus-visible:-outline-offset-3 data-[active=true]:bg-surface data-[active=true]:[&>td:first-child]:shadow-[inset_3px_0_var(--color-action)] data-[fifth=true]:[&>td]:border-line data-[fifth=true]:[&>td]:border-b"
+									// Two-tone rows by index (the window moves, positions do not
+									// hold). The darker tone is a plain class so hover and the
+									// active row, both variants, still win over it.
+									className={cn(
+										"h-[clamp(24px,3vh,30px)] hover:bg-surface focus-visible:outline-3 focus-visible:outline-action focus-visible:-outline-offset-3 data-[active=true]:bg-surface data-[active=true]:[&>td:first-child]:shadow-[inset_3px_0_var(--color-action)]",
+										index % 2 === 1 && "bg-canvas/50",
+									)}
 								>
 									{row.getAllCells().map((cell) => (
 										<td
