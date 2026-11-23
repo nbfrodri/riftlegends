@@ -64,6 +64,10 @@ Los rasgos **salen de los datos del juego** y solo lo que estos no deciden queda
 | Enfriamiento de la ulti | `source` | `cooldownTime` de la ulti en los rangos 1 a 3 (la posición 0 repite el rango 1). Sin etiqueta `Ultimate` o con enfriamiento 0 (scripteado): `null`, no se inventa |
 | Sustain | `rule` | Habilidades (con pasiva) que curan (`<healing>`, `ActiveHeal`, `SelfHeal`), máximo 3 |
 | CC | `rule` | Habilidad con CC duro (estado duro o `ImmobilizingCC*`) y: `AoE` o `Target_Area` es área; `Target_Directional`, `PlayerSelectedDashDirection` o proyectil es skillshot; ninguna de las dos, punto y click. Knock-up si un estado lo es. «Airborne» solo como condición (Yasuo R) no es CC |
+| Daño del perfil (`damage`) | `rule` | Del reparto: ≥ 70 % físico es físico, ≥ 70 % mágico es mágico, si no mixto. Los enchanters son `utility`. Sin tipos en los tooltips: `estimated` |
+| CC del perfil (`cc`, 0–10) | `rule` | Por habilidad: CC duro 3, +1 en área, +1 más en la ulti; solo ralentiza o silencia 1. Suma con tope 10 |
+| Movilidad (`mobility`, 0–10) | `rule` | 2, +1 si es melee, +2 por habilidad que hace dash, blink o teletransporte (etiqueta o tooltip: dash, blink, leap, jump) y +1 por otra con velocidad de movimiento (`<speed>`) |
+| `frontline`, `power`, `archetypes` | `estimated` | El dato no los decide: siguen de la tabla curada y la procedencia los marca siempre como estimados (no entran en `traitsToReview`) |
 | Reparto de daño | `rule` | Cada habilidad con daño pesa 12 repartido entre sus tipos; los tiradores suman dos habilidades de físico por sus ataques. Sin tipos en los tooltips: `estimated` |
 | `wombo` | `rule` | La ulti inmoviliza en área |
 | `aoe` | `rule` | Al menos dos habilidades con daño en área |
@@ -75,6 +79,8 @@ Los rasgos **salen de los datos del juego** y solo lo que estos no deciden queda
 | `hook` | `rule` | Estado de arrastre en una habilidad dirigida |
 | `knockupUlt` | `rule` | La ulti necesita un objetivo en el aire (solo «Airborne», sin CC propio) |
 | `siege`, `invade`, `farm`, `vision`, `duel`, `antiDash`, `antiAp`, `antiAd`, `competitive` | `estimated` | El dato del juego no los decide: siguen de la tabla curada y salen en `estimatedKit` para revisarlos |
+
+`damage`, `cc` y `mobility` ya no se leen de la tabla curada cuando hay dato: la tabla solo rellena huecos (Kayn sin tipos de daño, o un campeón sin kit). Calibración K1–K5 con contenido real en verde (pool `real` en `calibration.test.ts`).
 
 Lo que el dato decide no lo sobrescribe la tabla (ni para añadir ni para quitar). Sin kit de un campeón, todos sus rasgos son `estimated`. **Meraki Analytics** (subclases y `attributeRatings`) no se usa: su último dato es de agosto de 2025 y la regla de `enchanter` cubre su único uso.
 
