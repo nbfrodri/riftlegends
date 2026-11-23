@@ -44,6 +44,8 @@ const tables = "ScoreboardPlayers=SP,Tournaments=T";
 const joinGames = { join_on: "SP.OverviewPage=T.OverviewPage" };
 const official = (year: number) =>
 	`T.Year='${year}' AND T.IsOfficial='1' AND T.TournamentLevel='Primary'`;
+export const historicalLeagueFilter = (year: number) =>
+	`${official(year)} AND T.League IN (${quote(domesticLeagues)})`;
 const cacheRow = (row: CargoRow) => ({
 	...row,
 	Link: row.Link ? person(row.Link).id : null,
@@ -54,7 +56,7 @@ export async function acquireYear(client: Client, year: number) {
 	const games = await client.cargo(
 		tables,
 		"SP.Link=Link,COUNT(*)=Games",
-		`${official(year)} AND T.League IN (${quote(domesticLeagues)})`,
+		historicalLeagueFilter(year),
 		"SP.Link",
 		{ ...joinGames, group_by: "SP.Link", cacheRow },
 	);

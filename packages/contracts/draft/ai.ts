@@ -40,6 +40,59 @@ export const ARCHETYPES = [
 	"utility",
 ] as const;
 
+/**
+ * Named rules that explain a matchup, team counter or synergy of the real
+ * content (#321, plan 11). For an advantage, the reasons describe the
+ * champion favored by the sign, regardless of the row's direction.
+ */
+const CHAMPION_REASONS = [
+	// Lane counters
+	"range",
+	"pokeVsLowSustain",
+	"sustainVsPoke",
+	"earlyVsScaling",
+	"mobilityVsSkillshots",
+	"lockdownVsDash",
+	"antiHeal",
+	"shieldVsPoke",
+	"shieldVsSustain",
+	"tankShred",
+	"resistVsDamage",
+	"splitDuel",
+	"tankVsBurst",
+	"invadeVsFarm",
+	"counterGank",
+	"visionVsPick",
+	"engageVsEnchanter",
+	"enchanterVsPoke",
+	"pokeVsEngage",
+	"projectileBlock",
+	// Team counters
+	"assassinVsCarry",
+	"disengageVsEngage",
+	"peelVsDive",
+	"aoeVsGrouped",
+	"engageVsPoke",
+	"lockdownVsCarry",
+	"hookVsImmobile",
+	// Synergies
+	"wombo",
+	"hypercarryPeel",
+	"pokeSiege",
+	"chainCc",
+	"knockupUlt",
+	"earlyDuo",
+	"scalingDuo",
+	"pickVision",
+	"splitPressure",
+	"damageMix",
+	"diveTogether",
+	"enchanterDiver",
+	"frontToBack",
+] as const;
+export type ChampionReason = (typeof CHAMPION_REASONS)[number];
+const reasons = z.array(z.enum(CHAMPION_REASONS)).min(1).optional();
+
 const roles = z.enum(["top", "jungle", "mid", "bot", "support"]);
 const id = z.string().min(1).max(64);
 
@@ -104,10 +157,27 @@ export const aiContent = z
 				against: id,
 				role: roles,
 				value: z.int().min(-10).max(10),
+				reasons,
 			}),
 		),
+		/** Team counters across roles (#321): `champion` against `against`, −10 to 10. */
+		counters: z
+			.array(
+				z.strictObject({
+					champion: id,
+					against: id,
+					value: z.int().min(-10).max(10),
+					reasons,
+				}),
+			)
+			.optional(),
 		synergies: z.array(
-			z.strictObject({ a: id, b: id, value: z.int().min(0).max(6) }),
+			z.strictObject({
+				a: id,
+				b: id,
+				value: z.int().min(0).max(6),
+				reasons,
+			}),
 		),
 		/** Team plans; `threshold` is how many matching archetypes enable one. */
 		identities: z.array(
@@ -157,6 +227,12 @@ export const aiContent = z
 			({ champion, against, role }) =>
 				JSON.stringify([champion, against, role]),
 		);
+		checkDuplicates(
+			ctx,
+			"counters",
+			content.counters ?? [],
+			({ champion, against }) => JSON.stringify([champion, against]),
+		);
 		checkDuplicates(ctx, "synergies", content.synergies, ({ a, b }) =>
 			JSON.stringify([a, b].sort()),
 		);
@@ -182,6 +258,18 @@ export const aiContent = z
 			]);
 			checkChampionReference(ctx, champions, against, [
 				"matchups",
+				index,
+				"against",
+			]);
+		});
+		content.counters?.forEach(({ champion, against }, index) => {
+			checkChampionReference(ctx, champions, champion, [
+				"counters",
+				index,
+				"champion",
+			]);
+			checkChampionReference(ctx, champions, against, [
+				"counters",
 				index,
 				"against",
 			]);

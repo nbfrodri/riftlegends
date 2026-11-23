@@ -388,6 +388,9 @@ importers:
       '@rift-legends/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
+      fast-check:
+        specifier: 4.10.3
+        version: 4.10.3
       vitest:
         specifier: 5.1.1
         version: 5.1.1(@types/node@26.6.6)(happy-dom@21.0.4)(vite@8.3.8(@types/node@26.6.6)(jiti@2.7.0)(yaml@2.9.1))

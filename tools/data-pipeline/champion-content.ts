@@ -1,55 +1,32 @@
 import type { AiContent, MatchContent } from "@rift-legends/contracts";
 import type { RealSnapshot } from "@rift-legends/contracts/real-snapshot";
+import {
+	countsFor,
+	positions,
+	recordPick,
+	roles,
+	type SeasonPresence,
+	tierSeasons,
+} from "./champion-presence.ts";
+import {
+	laneHits,
+	pairPriorGames,
+	score,
+	synergyHits,
+	teamHits,
+} from "./champion-rules.ts";
 import { championProfile } from "./curated-champions.ts";
-import { orderBy } from "./normalization.ts";
+import { key, orderBy } from "./normalization.ts";
 
 type Champion = AiContent["champions"][number] &
 	MatchContent["champions"][number];
 type Game = RealSnapshot["games"][number];
-type Position = Champion["positions"][number];
-type Role = Position["role"];
-const roles: readonly Role[] = ["top", "jungle", "mid", "bot", "support"];
-const minimumPairGames = 20;
-const tiers: readonly [number, Position["tier"]][] = [
-	[70, "S+"],
-	[45, "S"],
-	[30, "A"],
-	[10, "B"],
-	[1, "C"],
-];
+type Role = (typeof roles)[number];
 
 export interface CatalogChampion {
 	id: string;
 	key: number;
 	classes: string[];
-}
-
-interface Presence {
-	picks: number;
-	bans: number;
-	roles: Map<Role, number>;
-}
-
-function positions(
-	presence: Presence,
-	games: number,
-	fallback: readonly Role[],
-	classFallback: boolean,
-) {
-	const { picks, bans } = presence;
-	const observed = roles.flatMap((role): Position[] => {
-		const rolePicks = presence.roles.get(role) ?? 0;
-		if (rolePicks === 0 || rolePicks * 20 < picks) return [];
-		const tier =
-			tiers.find(
-				([threshold]) =>
-					100 * rolePicks * (picks + bans) >= threshold * picks * games,
-			)?.[1] ?? "D";
-		return [{ role, tier: classFallback ? "C" : tier }];
-	});
-	return observed.length
-		? observed
-		: fallback.map((role): Position => ({ role, tier: "C" }));
 }
 
 function teamPicks(game: Game, team: Game["teams"][number]) {
@@ -76,140 +53,213 @@ function inRole(picks: ReturnType<typeof teamPicks>, role: Role) {
 	return candidates.length === 1 && roles?.size === 1 ? id : undefined;
 }
 
-type Pair<R> = { a: string; b: string; role: R; games: number; wins: number };
+type Samples = Map<string, { games: number; wins: number }>;
 
-function recordPair<R extends Role | undefined>(
-	pairs: Map<string, Pair<R>>,
-	a: string,
-	b: string,
-	won: boolean,
-	role: R,
-) {
-	const id = JSON.stringify([a, b, role]);
-	const row = pairs.get(id) ?? { a, b, role, games: 0, wins: 0 };
+function recordPair(pairs: Samples, id: string, won: boolean) {
+	const row = pairs.get(id) ?? { games: 0, wins: 0 };
 	row.games++;
 	if (won) row.wins++;
 	pairs.set(id, row);
 }
 
 function recordAllies(
-	pairs: Map<string, Pair<undefined>>,
+	pairs: Samples,
 	picks: ReturnType<typeof teamPicks>,
 	won: boolean,
 ) {
 	const ids = [...picks.keys()].sort();
 	for (const [index, a] of ids.entries()) {
-		for (const b of ids.slice(index + 1))
-			recordPair(pairs, a, b, won, undefined);
+		for (const b of ids.slice(index + 1)) recordPair(pairs, key(a, b), won);
 	}
 }
 
-function sampled<R>(pairs: Map<string, Pair<R>>, minimumSample: number) {
-	return [...pairs.keys()].sort().flatMap((key) => {
-		const row = pairs.get(key);
-		return row && row.games >= minimumSample ? [row] : [];
-	});
+function recordOpponents(
+	pairs: Samples,
+	blue: string,
+	red: string,
+	blueWon: boolean,
+	role?: Role,
+) {
+	if (blue === red) return;
+	const [a, b, won] = blue < red ? [blue, red, blueWon] : [red, blue, !blueWon];
+	recordPair(pairs, role ? key(a, b, role) : key(a, b), won);
+}
+
+const yearOf = (date: string) => Number(date.slice(0, 4));
+
+function observations(
+	catalog: readonly CatalogChampion[],
+	games: readonly Game[],
+	current: number,
+) {
+	const ids = new Set(catalog.map(({ id }) => id));
+	const seasons = new Map<number, SeasonPresence>();
+	const opponents: Samples = new Map();
+	const teamOpponents: Samples = new Map();
+	const allies: Samples = new Map();
+	const ensureKnown = (id: string) => {
+		if (!ids.has(id))
+			throw new Error(`Snapshot champion missing from catalog: ${id}`);
+	};
+	for (const game of games) {
+		const year = yearOf(game.date);
+		const season = seasons.get(year) ?? {
+			year,
+			games: 0,
+			champions: new Map(),
+		};
+		seasons.set(year, season);
+		season.games++;
+		const [blue, red] = game.teams;
+		const bluePicks = teamPicks(game, blue);
+		const redPicks = teamPicks(game, red);
+		for (const id of new Set([...blue.bans, ...red.bans])) {
+			if (!id) continue;
+			ensureKnown(id);
+			countsFor(season, id).bans++;
+		}
+		for (const picks of [bluePicks, redPicks]) {
+			for (const [id, candidates] of picks) {
+				ensureKnown(id);
+				recordPick(season, id, onlyRole(candidates));
+			}
+		}
+		if (!game.winner || year !== current) continue;
+		const blueWon = game.winner === blue.id;
+		recordAllies(allies, bluePicks, blueWon);
+		recordAllies(allies, redPicks, !blueWon);
+		const lanes = roles.map((role) => ({
+			role,
+			a: inRole(bluePicks, role),
+			b: inRole(redPicks, role),
+		}));
+		for (const { role, a, b } of lanes) {
+			if (!a) continue;
+			if (b) recordOpponents(opponents, a, b, blueWon, role);
+			for (const enemy of lanes) {
+				if (enemy.role !== role && enemy.b)
+					recordOpponents(teamOpponents, a, enemy.b, blueWon);
+			}
+		}
+	}
+	return { seasons, opponents, teamOpponents, allies };
+}
+
+interface ContentOptions {
+	priorGames?: number | undefined;
+	season?: number | undefined;
+	history?: readonly SeasonPresence[] | undefined;
 }
 
 export function deriveChampionContent(
 	catalog: readonly CatalogChampion[],
 	games: readonly Game[],
-	minimumSample = minimumPairGames,
+	options: ContentOptions = {},
 ) {
-	if (!Number.isSafeInteger(minimumSample) || minimumSample < 1)
-		throw new Error("Minimum pair sample must be a positive integer");
-	const presence = new Map<string, Presence>(
-		catalog.map(({ id }) => [id, { picks: 0, bans: 0, roles: new Map() }]),
+	const {
+		priorGames = pairPriorGames,
+		season = games.reduce((year, game) => Math.max(year, yearOf(game.date)), 0),
+		history = [],
+	} = options;
+	if (!Number.isSafeInteger(priorGames) || priorGames < 1)
+		throw new Error("Pair prior games must be a positive integer");
+	const { seasons, opponents, teamOpponents, allies } = observations(
+		catalog,
+		games,
+		season,
 	);
-	function lookup(id: string) {
-		const counts = presence.get(id);
-		if (!counts)
-			throw new Error(`Snapshot champion missing from catalog: ${id}`);
-		return counts;
+	for (const past of history) {
+		if (past.year < season && !seasons.has(past.year))
+			seasons.set(past.year, past);
 	}
-	const opponents = new Map<string, Pair<Role>>();
-	const allies = new Map<string, Pair<undefined>>();
-	for (const game of games) {
-		const [blue, red] = game.teams;
-		const bluePicks = teamPicks(game, blue);
-		const redPicks = teamPicks(game, red);
-		const bans = new Set([...blue.bans, ...red.bans]);
-		for (const id of bans) {
-			if (id) lookup(id).bans++;
-		}
-		for (const picks of [bluePicks, redPicks]) {
-			for (const [id, candidates] of picks) {
-				const counts = lookup(id);
-				counts.picks++;
-				const role = onlyRole(candidates);
-				if (role) counts.roles.set(role, (counts.roles.get(role) ?? 0) + 1);
+	const presence = tierSeasons(seasons.values(), season);
+	const entries = orderBy(catalog, ({ id }) => id).map(({ id, classes }) => {
+		const profile = championProfile(id, classes);
+		const { damage, power, archetypes, cc, mobility, frontline } = profile;
+		const champion: Champion = {
+			id,
+			name: id,
+			positions: positions(id, profile, presence),
+			damage,
+			power,
+			archetypes: [...archetypes],
+			cc,
+			mobility,
+			frontline,
+		};
+		return {
+			champion,
+			profile,
+			roles: new Set(champion.positions.map(({ role }) => role)),
+		};
+	});
+	const matchups: AiContent["matchups"] = [];
+	const counters: NonNullable<AiContent["counters"]> = [];
+	const synergies: AiContent["synergies"] = [];
+	for (const [index, left] of entries.entries()) {
+		const a = left.champion.id;
+		for (const right of entries.slice(index + 1)) {
+			const b = right.champion.id;
+			for (const role of left.roles) {
+				if (!right.roles.has(role)) continue;
+				const lane = score(
+					laneHits(left.profile, right.profile, role),
+					20,
+					priorGames,
+					opponents.get(key(a, b, role)),
+				);
+				if (lane.value) {
+					matchups.push(
+						{ champion: a, against: b, role, ...lane },
+						{ champion: b, against: a, role, ...lane, value: -lane.value },
+					);
+				}
 			}
-		}
-		if (!game.winner) continue;
-		const blueWon = game.winner === blue.id;
-		recordAllies(allies, bluePicks, blueWon);
-		recordAllies(allies, redPicks, !blueWon);
-		for (const role of roles) {
-			const a = inRole(bluePicks, role);
-			const b = inRole(redPicks, role);
-			if (!a || !b || a === b) continue;
-			if (a < b) recordPair(opponents, a, b, blueWon, role);
-			else recordPair(opponents, b, a, !blueWon, role);
+			const teamRules = teamHits(left.profile, right.profile);
+			if (teamRules.length) {
+				const team = score(
+					teamRules,
+					12,
+					priorGames,
+					teamOpponents.get(key(a, b)),
+				);
+				if (team.value)
+					counters.push(
+						{ champion: a, against: b, ...team },
+						{ champion: b, against: a, ...team, value: -team.value },
+					);
+			}
+			if (
+				left.roles.size === 1 &&
+				right.roles.size === 1 &&
+				[...left.roles].some((role) => right.roles.has(role))
+			)
+				continue;
+			const duo = score(
+				synergyHits(left.profile, right.profile, left.roles, right.roles),
+				12,
+				priorGames,
+				allies.get(key(a, b)),
+			);
+			if (duo.value > 0) synergies.push({ a, b, ...duo });
 		}
 	}
-	const estimated: string[] = [];
-	const classFallbacks: string[] = [];
-	const champions = orderBy(catalog, ({ id }) => id).map(
-		({ id, classes }): Champion => {
-			const {
-				roles,
-				damage,
-				power,
-				archetypes,
-				cc,
-				mobility,
-				frontline,
-				estimate,
-			} = championProfile(id, classes);
-			if (estimate) estimated.push(id);
-			const classFallback = estimate === "class";
-			if (classFallback) classFallbacks.push(id);
-			return {
-				id,
-				name: id,
-				positions: positions(lookup(id), games.length, roles, classFallback),
-				damage,
-				power,
-				archetypes: [...archetypes],
-				cc,
-				mobility,
-				frontline,
-			};
-		},
-	);
-	const matchups: AiContent["matchups"] = orderBy(
-		sampled(opponents, minimumSample).flatMap(({ a, b, role, wins, games }) => {
-			const value = Math.round((20 * wins - 10 * games) / games) || 0;
-			return [
-				{ champion: a, against: b, role, value },
-				{ champion: b, against: a, role, value: -value || 0 },
-			];
-		}),
-		({ champion, against, role }) => JSON.stringify([champion, against, role]),
-	);
-	const synergies: AiContent["synergies"] = sampled(allies, minimumSample).map(
-		({ a, b, wins, games }) => ({
-			a,
-			b,
-			value: Math.max(0, Math.round((12 * wins - 6 * games) / games)),
-		}),
-	);
+	const champions = entries.map(({ champion }) => champion);
 	return {
 		champions,
-		matchups,
+		matchups: orderBy(matchups, ({ champion, against, role }) =>
+			key(champion, against, role),
+		),
+		counters: orderBy(counters, ({ champion, against }) =>
+			key(champion, against),
+		),
 		synergies,
-		estimated,
-		classFallbacks,
-		minimumSample,
+		estimated: entries
+			.filter(({ profile }) => profile.estimate)
+			.map(({ champion }) => champion.id),
+		classFallbacks: entries
+			.filter(({ profile }) => profile.estimate === "class")
+			.map(({ champion }) => champion.id),
+		priorGames,
 	};
 }

@@ -82,7 +82,9 @@ En **Settings → Actions → General**, el repositorio debe permitir que GitHub
 ## Campeones reales
 
 ```sh
-mise exec -- pnpm data:champions [--offline] [--min-sample <n>] [--cache-dir <ruta>]
+mise exec -- pnpm data:champions [--offline] [--prior-games <n>] [--cache-dir <ruta>]
 ```
 
-Lee los JSON de `packages/core/content/real/` y el `champion-summary.json` de CommunityDragon (parche fijado en [champions.ts](champions.ts), solo ids, claves y clases; se cachea como el resto). Escribe `packages/core/content/real/champions/` con `champions.json`, `matchups.json`, `synergies.json` y `provenance.json`. Las fórmulas y la muestra mínima están en el [plan 11](../../docs/plans/11-datos-reales.md#campeones-reales-cómo-se-generan-249).
+Lee los snapshots de las seis ligas y el `champion-summary.json` de CommunityDragon (parche fijado en [champions.ts](champions.ts), solo ids, claves y clases). Escribe `champions.json`, `matchups.json`, `counters.json`, `synergies.json` y `provenance.json` en `packages/core/content/real/champions/`. `--prior-games` fija cuántas partidas dan el mismo peso al kit y a los resultados pro (20 por defecto).
+
+El tier aprovecha dos temporadas anteriores con agregados de Cargo en la subcarpeta `history` de la caché. En modo offline el catálogo es obligatorio. Si faltan agregados históricos, el comando avisa, registra los años que faltan en la procedencia y genera con las temporadas disponibles. Las reglas, la mezcla y los mínimos de cobertura están en el [plan 11](../../docs/plans/11-datos-reales.md#base-de-reglas-y-mezcla-con-los-datos-pro-321).

@@ -148,6 +148,23 @@ describe("AiContent", () => {
 		expect(aiContent.parse(content)).toEqual(content);
 	});
 
+	it("accepts the reasons of matchups and synergies and team counters (#321)", () => {
+		const explained = {
+			...content,
+			matchups: [{ ...content.matchups[0], reasons: ["range"] }],
+			synergies: [{ ...content.synergies[0], reasons: ["wombo", "chainCc"] }],
+			counters: [
+				{
+					champion: "rell",
+					against: "azir",
+					value: 2,
+					reasons: ["engageVsPoke"],
+				},
+			],
+		};
+		expect(aiContent.parse(explained)).toEqual(explained);
+	});
+
 	it.each([
 		[
 			"an unknown tier",
@@ -170,6 +187,30 @@ describe("AiContent", () => {
 			{
 				...content,
 				champions: [{ ...content.champions[0], archetypes: ["wizard"] }],
+			},
+		],
+		[
+			"an unknown reason",
+			{
+				...content,
+				matchups: [{ ...content.matchups[0], reasons: ["luck"] }],
+			},
+		],
+		[
+			"a counter against an unknown champion",
+			{
+				...content,
+				counters: [{ champion: "azir", against: "teemo", value: 2 }],
+			},
+		],
+		[
+			"a duplicated counter",
+			{
+				...content,
+				counters: [
+					{ champion: "azir", against: "rell", value: 2 },
+					{ champion: "azir", against: "rell", value: 1 },
+				],
 			},
 		],
 		[

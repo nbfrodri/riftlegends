@@ -11,11 +11,11 @@ try {
 	const { values } = parseArgs({
 		options: {
 			"cache-dir": { type: "string" },
-			"min-sample": { type: "string" },
+			"prior-games": { type: "string" },
 			offline: { type: "boolean", default: false },
 		},
 	});
-	const counts = await championFiles({
+	const { counts, missingSeasons } = await championFiles({
 		cacheDir: resolve(
 			values["cache-dir"] ??
 				process.env.RIFT_LEGENDS_DATA_CACHE ??
@@ -28,11 +28,16 @@ try {
 		snapshotDir: realDir,
 		outputDir: join(realDir, "champions"),
 		offline: values.offline,
-		minimumSample: values["min-sample"]
-			? Number(values["min-sample"])
-			: undefined,
+		priorGames:
+			values["prior-games"] !== undefined
+				? Number(values["prior-games"])
+				: undefined,
 	});
 	console.table(counts);
+	if (missingSeasons.length)
+		console.warn(
+			`Champion tier history unavailable: ${missingSeasons.join(", ")}`,
+		);
 } catch (error) {
 	console.error(error instanceof Error ? error.message : error);
 	process.exitCode = 1;

@@ -3,6 +3,7 @@ import { expect, it } from "vitest";
 import { indexContent } from "../ai/content-index";
 import { CONTENT_VERSION } from "../version";
 import { loadRealContent } from "./real";
+import counters from "./real/champions/counters.json";
 
 const LEAGUES = ["LCK", "LPL", "LEC", "LCP", "LCS", "CBLOL"];
 
@@ -55,4 +56,8 @@ it("has its own content version, computed once", () => {
 	expect(real.version).toBeGreaterThan(0);
 	expect(real.version).not.toBe(CONTENT_VERSION);
 	expect(loadRealContent()).toBe(real);
+});
+it("loads the generated team counters and their explanations", () => {
+	expect(counters.length).toBeGreaterThan(0);
+	expect(loadRealContent().draft.counters).toEqual(counters);
 });
