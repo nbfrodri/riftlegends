@@ -5,6 +5,7 @@ import {
 	createRouter,
 	redirect,
 } from "@tanstack/react-router";
+import { StartupGate } from "./assets/startup-gate";
 import { ChampionsScreen } from "./champions-screen";
 import { DraftScreen, MarketScreen, SettingsScreen } from "./screens";
 import { Shell } from "./shell";
@@ -12,7 +13,13 @@ import { Shell } from "./shell";
 // A desktop app has no URLs: the router keeps its history in memory, so the
 // window location never changes (plan 02, T7).
 
-const rootRoute = createRootRoute({ component: Shell });
+const rootRoute = createRootRoute({
+	component: () => (
+		<StartupGate>
+			<Shell />
+		</StartupGate>
+	),
+});
 
 const indexRoute = createRoute({
 	getParentRoute: () => rootRoute,

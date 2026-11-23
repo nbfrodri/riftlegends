@@ -45,7 +45,7 @@ async function start() {
 		serveAsset(userData, request),
 	);
 	registerAssetIpc(window, ipcMain, assets);
-	void assets.sync();
+	void assets.sync(true);
 	session.setPermissionCheckHandler(() => false);
 	session.setPermissionRequestHandler((_contents, _permission, reply) =>
 		reply(false),
@@ -80,7 +80,7 @@ async function start() {
 	}
 	const query: Record<string, string> = {
 		...(process.env.RIFT_E2E_PROBE === "1" && { probe: "core" }),
-		// E2E only: the Champions screen with the fictional set (offline tests).
+		// E2E only: the app with the fictional set (offline tests).
 		...(process.env.RIFT_E2E_CONTENT === "fictional" && {
 			content: "fictional",
 		}),

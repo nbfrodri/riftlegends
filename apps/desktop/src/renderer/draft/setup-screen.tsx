@@ -1,8 +1,4 @@
-import {
-	CONTENT_SETS,
-	type ContentSet,
-	type SeriesOptions,
-} from "@rift-legends/contracts";
+import type { SeriesOptions } from "@rift-legends/contracts";
 import { Button } from "@rift-legends/ui-kit/components/button";
 import {
 	SearchSelect,
@@ -130,8 +126,7 @@ function TeamCard(props: {
 /** U1: teams, format, fearless and timer. The rival's coach is information only. */
 export function SetupScreen() {
 	const { t, i18n } = useTranslation();
-	const { options, send, setMine, sessionId, content, setContent } =
-		useDraftSession();
+	const { options, send, setMine, sessionId, content } = useDraftSession();
 	const block = useRealBlock(sessionId);
 	// Best seed first: the selectors and the default pairing follow it.
 	const teams = useMemo(
@@ -165,11 +160,6 @@ export function SetupScreen() {
 	const chooseRival = (id: string) => {
 		setMineId(id === mine.id ? rival.id : mine.id);
 		setRivalId(id);
-	};
-	const chooseContent = (next: ContentSet) => {
-		setMineId(undefined);
-		setRivalId(undefined);
-		setContent(next);
 	};
 
 	const coach = rival.coach;
@@ -219,25 +209,6 @@ export function SetupScreen() {
 					<h2 className="mb-[13px] font-bold font-display text-xl tracking-heading">
 						{t("draft.setup.rules")}
 					</h2>
-					<Rule
-						title={t("draft.setup.content")}
-						note={
-							block
-								? t(`draft.setup.contentBlock.${block}`)
-								: t(`draft.setup.contentNote.${content}`)
-						}
-					>
-						<SegmentedControl
-							label={t("draft.setup.content")}
-							options={CONTENT_SETS.map((value) => ({
-								value,
-								label: t(`draft.setup.content.${value}`),
-								disabled: starting || (value === "real" && block !== null),
-							}))}
-							value={content}
-							onChange={chooseContent}
-						/>
-					</Rule>
 					<Rule
 						title={t("draft.setup.format")}
 						note={t("draft.setup.formatNote")}

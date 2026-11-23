@@ -44,16 +44,3 @@ test.describe("with the fictional set (test seam)", () => {
 		});
 	}
 });
-
-test("asks to download the content instead of showing fictional data", async ({
-	appWindow,
-}) => {
-	await appWindow
-		.getByRole("navigation", { name: "Club sections" })
-		.getByRole("button", { name: "Champions" })
-		.click();
-	await expect(
-		appWindow.getByRole("button", { name: "Go to Settings" }),
-	).toBeVisible();
-	await expect(appWindow.getByRole("radio")).toHaveCount(0);
-});

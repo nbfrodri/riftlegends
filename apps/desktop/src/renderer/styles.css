@@ -3,3 +3,27 @@
 
 /* Short windows (the 1280x720 minimum), as in the approved mockups. */
 @custom-variant short (@media (max-height: 740px));
+
+.startup-screen[hidden] {
+	display: none;
+	opacity: 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	.startup-screen {
+		transition:
+			opacity 160ms ease-out,
+			display 160ms allow-discrete;
+		@starting-style {
+			opacity: 0;
+		}
+	}
+	.startup-progress {
+		animation: startup-scan 1.2s ease-in-out infinite alternate;
+	}
+	@keyframes startup-scan {
+		to {
+			transform: translateX(300%);
+		}
+	}
+}

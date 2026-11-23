@@ -36,8 +36,8 @@ const sideChoice = z.enum(SIDE_CHOICES);
 export const ROLES = ["top", "jungle", "mid", "bot", "support"] as const;
 const FORMATS = ["bo1", "bo3", "bo5"] as const;
 const FEARLESS = ["hard", "soft", "off"] as const;
-/** Packaged content sets: fictional (default, offline) and real LoL (plan 11). */
-export const CONTENT_SETS = ["fictional", "real"] as const;
+/** Packaged content sets: real LoL (the app) and fictional (tests only, plan 11). */
+const CONTENT_SETS = ["fictional", "real"] as const;
 const contentSet = z.enum(CONTENT_SETS);
 const PHASES = [
 	"side",

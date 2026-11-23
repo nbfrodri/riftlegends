@@ -178,6 +178,31 @@ describe("main asset cache", () => {
 		});
 	});
 
+	it("makes the installed catalog available while startup checks for an update", async () => {
+		await create().sync();
+		const cache = create();
+		let release = () => {};
+		const hold = new Promise<void>((resolve) => {
+			release = resolve;
+		});
+		override = async () => {
+			await hold;
+			return response(JSON.stringify(versionsList));
+		};
+		const pending = cache.sync(true);
+		try {
+			await vi.waitFor(() =>
+				expect(cache.getStatus()).toMatchObject({
+					state: "syncing",
+					progress: { cachedVersion: version },
+				}),
+			);
+			expect(cache.getChampions()?.[0]?.id).toBe("Ahri");
+		} finally {
+			release();
+			await pending;
+		}
+	});
 	it("D0 waits for a live cache owner before issuing any request", async () => {
 		await mkdir(lock(process.pid), { recursive: true });
 		const pending = create().sync();

@@ -17,6 +17,7 @@ import {
 } from "react";
 import { useTranslation } from "react-i18next";
 import { useOptionalAssets } from "../assets";
+import { appContent } from "../content-set";
 import {
 	CoreErrorMessage,
 	CoreRequestError,
@@ -57,8 +58,6 @@ interface DraftSession {
 	sessionId: number;
 	/** The content set the setup offers and the series is played with. */
 	content: ContentSet;
-	/** Only before the series starts: the setup's content choice (A1). */
-	setContent(content: ContentSet): void;
 	/**
 	 * Teams (name and coach) and the champion pool of `content`; with real
 	 * content, champions carry their cached name in the UI language (R4).
@@ -115,11 +114,10 @@ const noFact = () => false;
 function LoadedSession(props: {
 	sessionId: number;
 	content: ContentSet;
-	setContent(content: ContentSet): void;
 	onLost: () => void;
 	children: ReactNode;
 }) {
-	const { sessionId, onLost, content, setContent } = props;
+	const { sessionId, onLost, content } = props;
 	const { i18n } = useTranslation();
 	const catalog = useOptionalAssets()?.champions;
 	const { mutateAsync } = useCoreCommand();
@@ -221,7 +219,6 @@ function LoadedSession(props: {
 				? {
 						sessionId,
 						content,
-						setContent,
 						options: shown,
 						timer,
 						rules,
@@ -241,7 +238,6 @@ function LoadedSession(props: {
 		[
 			sessionId,
 			content,
-			setContent,
 			shown,
 			view.data,
 			mine,
@@ -274,18 +270,12 @@ function LoadedSession(props: {
  * sub-screens. The session lives while the draft screen is mounted; if the core
  * loses it, a fresh one is opened and the flow starts over at the setup.
  */
-export function DraftSessionProvider({
-	children,
-	initialContent = "fictional",
-}: {
-	children: ReactNode;
-	initialContent?: ContentSet;
-}) {
+export function DraftSessionProvider({ children }: { children: ReactNode }) {
 	const openSession = useOpenSession();
 	const [sessionId, setSessionId] = useState<number | null>(null);
 	const [failure, setFailure] = useState<CoreRequestError | null>(null);
 	const [reopen, setReopen] = useState(0);
-	const [content, setContent] = useState<ContentSet>(initialContent);
+	const content = appContent();
 
 	useEffect(() => {
 		let live = true;
@@ -311,7 +301,6 @@ export function DraftSessionProvider({
 			key={sessionId}
 			sessionId={sessionId}
 			content={content}
-			setContent={setContent}
 			onLost={onLost}
 		>
 			{children}

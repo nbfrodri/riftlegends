@@ -34,7 +34,13 @@ const actions: Record<
 	error: { label: "retry", icon: RotateCw },
 };
 
-function Progress({ completed, total }: { completed: number; total: number }) {
+export function Progress({
+	completed,
+	total,
+}: {
+	completed: number;
+	total: number;
+}) {
 	const { t } = useTranslation();
 	const known = total > 0;
 	return (
@@ -45,11 +51,11 @@ function Progress({ completed, total }: { completed: number; total: number }) {
 				aria-valuemin={0}
 				aria-valuemax={known ? total : undefined}
 				aria-valuenow={known ? completed : undefined}
-				className="h-1.5 overflow-hidden rounded-control bg-surface"
+				className="h-1.5 overflow-hidden rounded-control bg-line"
 			>
 				<div
-					className="h-full bg-action transition-[width] duration-300 ease-lock"
-					style={{ width: known ? `${(completed / total) * 100}%` : "0%" }}
+					className="h-full bg-action transition-[width] duration-300 ease-lock motion-reduce:transition-none"
+					style={{ width: known ? `${(completed / total) * 100}%` : "25%" }}
 				/>
 			</div>
 			<p className="mt-1.5 text-[13px] text-muted tabular-nums">

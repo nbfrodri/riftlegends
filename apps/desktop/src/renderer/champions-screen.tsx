@@ -1,4 +1,4 @@
-import type { ContentSet, Role } from "@rift-legends/contracts";
+import type { Role } from "@rift-legends/contracts";
 import { TIERS } from "@rift-legends/contracts";
 import { Button } from "@rift-legends/ui-kit/components/button";
 import { Tooltip } from "@rift-legends/ui-kit/components/tooltip";
@@ -51,19 +51,10 @@ function CardDialog({
 	);
 }
 
-/**
- * The player only sees the real content. Tests may ask for the fictional set
- * with `?content=fictional` (the E2E sets it from `RIFT_E2E_CONTENT`).
- */
-const catalogContent = (): ContentSet =>
-	new URLSearchParams(window.location.search).get("content") === "fictional"
-		? "fictional"
-		: "real";
-
 /** The `/campeones` route: its own core session, outside any series. */
 export function ChampionsScreen() {
 	return (
-		<DraftSessionProvider initialContent={catalogContent()}>
+		<DraftSessionProvider>
 			<ChampionsCatalog />
 		</DraftSessionProvider>
 	);
