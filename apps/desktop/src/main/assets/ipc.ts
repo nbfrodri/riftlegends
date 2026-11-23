@@ -38,8 +38,14 @@ export function registerAssetIpc(
 			webContents.send(assetChannels.progress, progress);
 		}
 	});
+	const stopLogos = cache.subscribeTeamLogos(() => {
+		if (!webContents.isDestroyed()) {
+			webContents.send(assetChannels.teamLogosChanged);
+		}
+	});
 	window.once("closed", () => {
 		stop();
+		stopLogos();
 		ipc.removeHandler(assetChannels.status);
 		ipc.removeHandler(assetChannels.sync);
 		ipc.removeHandler(assetChannels.champions);

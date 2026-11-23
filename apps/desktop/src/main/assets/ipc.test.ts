@@ -39,6 +39,7 @@ test("validates the sender and rejects any arguments before handling asset IPC",
 		getStatus: vi.fn(() => ({ state: "missing" as const })),
 		sync: vi.fn(async () => ({ state: "missing" as const })),
 		subscribe: vi.fn(() => () => {}),
+		subscribeTeamLogos: vi.fn(() => () => {}),
 	};
 	registerAssetIpc(window as never, ipc as never, cache);
 	for (const channel of [

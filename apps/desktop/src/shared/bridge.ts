@@ -23,6 +23,7 @@ export const assetChannels = {
 	champions: "assets:champions",
 	teamLogos: "assets:teamLogos",
 	progress: "assets:progress",
+	teamLogosChanged: "assets:teamLogosChanged",
 } as const;
 
 export interface AssetsApi {
@@ -33,6 +34,8 @@ export interface AssetsApi {
 	/** Team id to `rift-asset://` URL of each verified team logo on disk. */
 	teamLogos(): Promise<Record<string, string>>;
 	subscribe(listener: (progress: AssetProgress) => void): () => void;
+	/** Main finished downloading team logos: read `teamLogos()` again. */
+	subscribeTeamLogos(listener: () => void): () => void;
 }
 
 export const windowChannels = {
