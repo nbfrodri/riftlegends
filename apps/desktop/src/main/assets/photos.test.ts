@@ -106,7 +106,7 @@ test.each([
 	{ url: url.replace(".png", ".svg") },
 	{ mime: "image/svg+xml" },
 	{ size: 0 },
-	{ size: 512 * 1024 + 1 },
+	{ size: 2 * 1024 * 1024 + 1 },
 	{ sha256: "invalid" },
 ])("rejects unsafe photo metadata before transport %j", async (changes) => {
 	const transport = vi.fn<AssetTransport>();
@@ -134,7 +134,7 @@ test.each([
 		Buffer.from("<svg/>"),
 		200,
 	],
-	["large body", source("portrait"), Buffer.alloc(512 * 1024 + 1), 200],
+	["large body", source("portrait"), Buffer.alloc(2 * 1024 * 1024 + 1), 200],
 	["redirect", source("portrait"), png, 302],
 ] as const)("rejects a response with %s", async (_, photo, bytes, status) => {
 	const transport = vi.fn<AssetTransport>(async () => response(bytes, status));
@@ -146,4 +146,14 @@ test.each([
 	expect((await serveAsset(root, { url: local, method: "GET" })).status).toBe(
 		404,
 	);
+});
+
+test("accepts a 1 MB photo, which is over the team logo limit", async () => {
+	const big = Buffer.concat([png, Buffer.alloc(1024 * 1024 - png.length)]);
+	const cache = createAssetCache(root, {
+		transport: async () => response(big),
+		photos: [source("portrait", big)],
+	});
+	await cache.syncPlayerPhotos();
+	await expect(cache.getPlayerPhotos()).resolves.toEqual({ portrait: local });
 });

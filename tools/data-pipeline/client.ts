@@ -55,25 +55,27 @@ function interval(url: string) {
 	return lolesportsHosts.has(parsed.hostname) ? lolesportsInterval : 0;
 }
 
-async function readImage(response: Response): Promise<ImageDigest> {
-	const declared = Number(response.headers.get("content-length") ?? 0);
-	if (declared > maxRiotImageBytes) throw new Permanent("Image is too large");
-	const chunks: Uint8Array[] = [];
-	let size = 0;
-	for await (const chunk of response.body ?? []) {
-		size += chunk.length;
-		if (size > maxRiotImageBytes) throw new Permanent("Image is too large");
-		chunks.push(chunk);
-	}
-	const bytes = Buffer.concat(chunks);
-	const mime = sniffImageMime(bytes);
-	if (!mime) throw new Permanent("Not a PNG, JPEG or WebP image");
-	return {
-		sha256: createHash("sha256").update(bytes).digest("hex"),
-		size,
-		mime,
+const readImage =
+	(limit: number) =>
+	async (response: Response): Promise<ImageDigest> => {
+		const declared = Number(response.headers.get("content-length") ?? 0);
+		if (declared > limit) throw new Permanent("Image is too large");
+		const chunks: Uint8Array[] = [];
+		let size = 0;
+		for await (const chunk of response.body ?? []) {
+			size += chunk.length;
+			if (size > limit) throw new Permanent("Image is too large");
+			chunks.push(chunk);
+		}
+		const bytes = Buffer.concat(chunks);
+		const mime = sniffImageMime(bytes);
+		if (!mime) throw new Permanent("Not a PNG, JPEG or WebP image");
+		return {
+			sha256: createHash("sha256").update(bytes).digest("hex"),
+			size,
+			mime,
+		};
 	};
-}
 
 function parseDigest(body: unknown): ImageDigest {
 	const { sha256, size, mime } = (body ?? {}) as Partial<ImageDigest>;
@@ -194,8 +196,11 @@ export class Client {
 	 * SHA-256, size and type of an image, downloaded once and cached as
 	 * metadata only: the bytes are never stored. Redirects are refused.
 	 */
-	imageDigest(url: string): Promise<ImageDigest> {
-		return this.#enqueue(url, parseDigest, readImage);
+	imageDigest(
+		url: string,
+		limit: number = maxRiotImageBytes,
+	): Promise<ImageDigest> {
+		return this.#enqueue(url, parseDigest, readImage(limit));
 	}
 
 	get<T>(url: string, parse: (body: unknown) => T): Promise<T> {

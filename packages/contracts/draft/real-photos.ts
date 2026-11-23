@@ -1,6 +1,7 @@
 import { z } from "zod";
 import {
 	lolesportsProvenance,
+	maxPlayerPhotoBytes,
 	riotImageFile,
 	riotImageMetadata,
 } from "./real-logos.ts";
@@ -24,7 +25,7 @@ export function parseRiotPhotoUrl(value: string): URL | undefined {
 export const realPhotoSchema = z.strictObject({
 	player: z.string().min(1),
 	url: z.string().refine((value) => parseRiotPhotoUrl(value) !== undefined),
-	...riotImageMetadata,
+	...riotImageMetadata(maxPlayerPhotoBytes),
 });
 
 export const realPhotosSchema = z.strictObject({

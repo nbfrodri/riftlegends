@@ -56,11 +56,14 @@ export function sniffImageMime(bytes: Uint8Array): string | undefined {
 
 export const maxRiotImageBytes = 512 * 1024;
 
-export const riotImageMetadata = {
+/** Player photos are larger than team logos. */
+export const maxPlayerPhotoBytes = 2 * 1024 * 1024;
+
+export const riotImageMetadata = (limit: number) => ({
 	sha256: z.string().regex(/^[0-9a-f]{64}$/),
-	size: z.number().int().min(1).max(maxRiotImageBytes),
+	size: z.number().int().min(1).max(limit),
 	mime: z.enum(["image/png", "image/jpeg", "image/webp"]),
-};
+});
 
 export const lolesportsProvenance = z.strictObject({
 	source: z.literal("lolesports.com"),
@@ -72,7 +75,7 @@ export const lolesportsProvenance = z.strictObject({
 const realLogoSchema = z.strictObject({
 	team: z.string().min(1),
 	url: z.string().refine((value) => parseRiotLogoUrl(value) !== undefined),
-	...riotImageMetadata,
+	...riotImageMetadata(maxRiotImageBytes),
 });
 export type RealLogo = z.infer<typeof realLogoSchema>;
 

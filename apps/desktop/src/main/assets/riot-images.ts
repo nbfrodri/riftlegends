@@ -81,6 +81,7 @@ interface Entry extends Digest {
 export function createRiotImageCache(
 	folder: "teams" | "players",
 	parseUrl: (value: string) => URL | undefined,
+	maxBytes: number = maxRiotImageBytes,
 ) {
 	const imagePath = new RegExp(
 		`^${folder}/[a-z0-9-]{1,64}\\.(?:png|jpg|webp)$`,
@@ -95,14 +96,14 @@ export function createRiotImageCache(
 			!/^[0-9a-f]{64}$/i.test(source.sha256) ||
 			!Number.isSafeInteger(source.size) ||
 			source.size < 1 ||
-			source.size > maxRiotImageBytes
+			source.size > maxBytes
 		)
 			return undefined;
 		const expected = source.sha256.toLowerCase();
 		return {
 			path: `${folder}/${slug}.${format}`,
 			url,
-			limit: maxRiotImageBytes,
+			limit: maxBytes,
 			check: (bytes) =>
 				bytes.length === source.size &&
 				sniffImage(bytes) === format &&
@@ -136,7 +137,7 @@ export function createRiotImageCache(
 	}
 
 	async function readVerifiedImage(root: string, entry: Entry) {
-		if (entry.size > maxRiotImageBytes) return undefined;
+		if (entry.size > maxBytes) return undefined;
 		const bytes = await readBytes(
 			await cachePath(root, entry.path),
 			entry.size,

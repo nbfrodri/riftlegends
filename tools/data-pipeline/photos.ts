@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { readFile, rename, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
+import { maxPlayerPhotoBytes } from "@rift-legends/contracts/real-logos";
 import {
 	parseRiotPhotoUrl,
 	type RealPhotos,
@@ -9,6 +10,7 @@ import {
 } from "@rift-legends/contracts/real-photos";
 import { Client, type ClientOptions, OfflineCacheMiss } from "./client.ts";
 import {
+	type ApiTeam,
 	httpsOf,
 	matchTeam,
 	parseApiTeams,
@@ -25,7 +27,14 @@ interface SnapshotPlayer {
 	placeholder?: boolean;
 }
 
-const handleKey = (player: { handle: string }) => player.handle.toLowerCase();
+/** Case, diacritics and edge or repeated spaces do not tell two handles apart. */
+const handleKey = (player: { handle: string }) =>
+	player.handle
+		.normalize("NFKD")
+		.replace(/\p{M}/gu, "")
+		.toLowerCase()
+		.replace(/\s+/g, " ")
+		.trim();
 const placeholder =
 	/^(?:\d+_)?(?:default-headshot|download|silhouette(?:_transparent)?|placeholder_?|eSports_male_NoPlayer)\./i;
 
@@ -54,6 +63,25 @@ export async function writePhotos(
 	const matches = new Map(
 		teams.map((team) => [team.id, matchTeam(team, apiTeams)]),
 	);
+	const leagueName = (team: ApiTeam) => team.homeLeague?.name.toLowerCase();
+	const leagueCandidate = (match: ApiTeam, handle: string) => {
+		const league = leagueName(match);
+		if (!league) return undefined;
+		const found = apiTeams
+			.filter((team) => leagueName(team) === league)
+			.flatMap((team) => team.players)
+			.filter((candidate) => handleKey(candidate) === handle);
+		const mine = eligible.filter((p) => {
+			const other = matches.get(p.team);
+			return (
+				other &&
+				typeof other !== "string" &&
+				leagueName(other) === league &&
+				handleKey(p) === handle
+			);
+		});
+		return found.length === 1 && mine.length === 1 ? found[0] : undefined;
+	};
 	for (const player of eligible.sort((a, b) => compare(a.id, b.id))) {
 		const { id, team } = player;
 		const match = matches.get(team);
@@ -72,7 +100,9 @@ export async function writePhotos(
 			unmatched.push({ player: id, reason: "ambiguous handle" });
 			continue;
 		}
-		const candidate = candidates[0];
+		// A moved player: only when the handle is unique in the whole league, both
+		// in the API and in the snapshot. Never a guess between several.
+		const candidate = candidates[0] ?? leagueCandidate(match, handle);
 		const url = candidate && photoUrl(candidate.image);
 		if (!url) {
 			unmatched.push({
@@ -82,7 +112,7 @@ export async function writePhotos(
 			continue;
 		}
 		try {
-			const digest = await client.imageDigest(url.href);
+			const digest = await client.imageDigest(url.href, maxPlayerPhotoBytes);
 			photos.push(
 				realPhotoSchema.parse({ player: id, url: url.href, ...digest }),
 			);
