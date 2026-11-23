@@ -91,7 +91,7 @@ export function SearchSelect(props: {
 							<Combobox.Empty className="px-2 py-3 text-muted empty:hidden">
 								{props.empty}
 							</Combobox.Empty>
-							<Combobox.List className="min-h-0 overflow-y-auto overscroll-contain py-1 [scrollbar-color:var(--color-line)_var(--color-panel)] empty:p-0">
+							<Combobox.List className="min-h-0 overflow-y-auto overscroll-contain py-1 empty:p-0">
 								{(group: SearchSelectGroup) => (
 									<Combobox.Group
 										key={group.label ?? ""}

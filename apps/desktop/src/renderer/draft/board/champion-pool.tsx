@@ -179,7 +179,7 @@ export const ChampionPool = memo(function ChampionPool(props: {
 					const index = Number(event.target.dataset.index);
 					if (!Number.isNaN(index)) setActive(index);
 				}}
-				className="m-0 mb-[9px] grid min-w-0 border-0 p-0 max-h-[calc(4*var(--row)+21px)] grid-cols-6 auto-rows-(--row) gap-[7px] overflow-y-auto [--row:clamp(62px,10.5vh,112px)] [scrollbar-color:var(--color-line)_var(--color-panel)] [scrollbar-width:thin]"
+				className="m-0 mb-[9px] grid min-w-0 border-0 p-0 max-h-[calc(4*var(--row)+21px)] grid-cols-6 auto-rows-(--row) gap-[7px] overflow-y-auto [--row:clamp(62px,10.5vh,112px)]"
 			>
 				{shown.map((champion, index) => (
 					<Tile

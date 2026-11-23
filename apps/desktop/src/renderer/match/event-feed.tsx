@@ -137,7 +137,7 @@ export function EventFeed({
 		// Size the map row from its tables; earlier events scroll inside this panel.
 		<section className="flex min-h-0 min-w-0 flex-col bg-panel p-[clamp(12px,1.3vw,20px)] [contain:size]">
 			<h2 className={`${panelTitle} mb-3`}>{t("draft.match.events")}</h2>
-			<div className="h-0 min-h-0 flex-1 overflow-auto [scrollbar-color:var(--color-line)_transparent] [scrollbar-width:thin]">
+			<div className="h-0 min-h-0 flex-1 overflow-auto">
 				{count === 0 && (
 					<p className="border-line border-t pt-3.5 text-muted">
 						{t("draft.match.noEvents")}
