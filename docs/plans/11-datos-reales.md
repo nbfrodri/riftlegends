@@ -26,9 +26,9 @@ Queda fuera: ligas menores (plan 24), regens y evolución (plan 16), meta por pa
 
 | # | Comportamiento | Caso límite |
 | --- | --- | --- |
-| R1 | Cada campeón del juego tiene roles, tier, daño, curva de poder y arquetipos | Campeón nuevo sin partidas profesionales: roles y arquetipos de la tabla curada, tier C |
-| R2 | Roles y tier salen de la presencia en partidas profesionales de la temporada (picks y bans por rol) | Rol con menos del 5 % de sus picks: no cuenta como posición |
-| R3 | Matchups y sinergias solo con muestra mínima | Por debajo de la muestra: no se generan (no inventamos datos) |
+| R1 | Cada campeón del juego tiene roles, tier, daño, curva de poder y arquetipos | Campeón nuevo sin partidas profesionales: roles y arquetipos de la tabla curada, tier por su perfil |
+| R2 | Roles y tier salen de la presencia en partidas profesionales de la temporada y las dos anteriores (picks y bans por rol), más los roles curados (#321) | Rol con menos del 5 % de sus picks: solo cuenta si está en la tabla curada |
+| R3 | Todos los campeones tienen counters a favor y en contra y sinergias: base de reglas con nombre mezclada con los datos pro según la muestra (#321) | Sin partidas: manda la regla; con muchas, el dato real |
 | R4 | Los nombres y retratos salen de la caché en tiempo de ejecución, en el idioma de la UI | Sin caché: el modo real no está disponible y la UI lo explica |
 | R5 | Nombres (ES y EN), retratos y clase de cada campeón salen de `champion-summary.json` de CommunityDragon | Campeón sin partidas pro ni entrada en la tabla curada: arquetipos por defecto según su clase |
 
@@ -38,12 +38,79 @@ Queda fuera: ligas menores (plan 24), regens y evolución (plan 16), meta por pa
 
 - **Lista:** los campeones jugables del catálogo (sin `None` ni variantes Jade): ids alias, clave numérica y clases.
 - **Daño, curva, arquetipos, CC, movilidad y línea frontal:** [curated-champions.ts](../../tools/data-pipeline/curated-champions.ts), solo ids. Las entradas con `true` son dudosas y quedan en `estimated` de la procedencia. Sin entrada: valores por defecto según su clase, tier C y marca `classFallbacks` (R5).
-- **Rol (R2):** el rol cuenta con ≥ 5 % de los picks del campeón (picks sin rol resoluble no cuentan para ningún rol). Sin picks suficientes: roles de la tabla curada.
-- **Tier (R2):** `presencia = 100 × (picks + bans) / partidas × (picks del rol / picks totales)`. Los bans no llevan rol, así que se reparten según los picks. Cortes: ≥ 70 S+, ≥ 45 S, ≥ 30 A, ≥ 10 B, ≥ 1 C, menos D.
-- **Matchups (R3):** mismo rol, cara a cara, partidas con ganador. `valor = round(20 × victorias / partidas − 10)` (−10 a 10), simétrico.
-- **Sinergias (R3):** parejas aliadas en la misma partida. `valor = max(0, round(12 × victorias / partidas − 6))` (0 a 6).
-- **Muestra mínima:** 20 partidas (`--min-sample`). Por debajo no se genera nada.
+- **Rol (R2):** los de pro (≥ 5 % de los picks ponderados por temporada) más los de la tabla curada. Se ordenan por presencia: el primero es el principal.
+- **Tier (R2):** `presencia = 100 × (picks + bans) / partidas × (picks del rol / picks totales)` por temporada. Ver [base de reglas](#base-de-reglas-y-mezcla-con-los-datos-pro-321) para las temporadas y los cortes.
+- **Matchups, counters y sinergias (R3):** base de reglas mezclada con los datos pro; ver la sección siguiente.
 - **Determinismo:** orden estable por id; dos ejecuciones dan los mismos bytes.
+
+#### Base de reglas y mezcla con los datos pro (#321)
+
+Cada campeón tiene un **perfil** en [curated-champions.ts](../../tools/data-pipeline/curated-champions.ts) y sus **rasgos** en [champion-traits.ts](../../tools/data-pipeline/champion-traits.ts): alcance (melee, rango, largo), sustain (0–3), tipos de CC (punto y click, skillshot, área, knock-up), reparto de daño (físico, mágico y verdadero en %) y rasgos de kit (wombo, daño en área, disengage, enchanter, asedio, invasor, farmeo, anti-curación, escudos, daño a tanques, visión, duelista, skillshots lentos, anti-dash, anti-AP, anti-AD y ultimate de knock-up). Los estilos engage, poke, split y pick salen de los arquetipos. Los dudosos van en `estimated`.
+
+Cada regla tiene un **id** que viaja en `reasons` para que la ficha explique el porqué. La ficha no dice de dónde sale el dato.
+
+**Counters en línea** (mismo rol; A gana a B, y B pierde lo mismo):
+
+| Regla | Puntos | Cuándo |
+| --- | --- | --- |
+| `range` | 2 | A tiene más alcance (no en jungla) |
+| `pokeVsLowSustain` | 2 | A hace poke y B tiene sustain 0–1. Si depende de skillshots lentos, B necesita movilidad < 7 |
+| `sustainVsPoke` | 2 | A tiene sustain ≥ 2, no hace poke, y B sí |
+| `earlyVsScaling` | 3 | A es fuerte en early y B escala (late) |
+| `mobilityVsSkillshots` | 3 | A tiene movilidad ≥ 7 y B depende de skillshots lentos |
+| `lockdownVsDash` | 2 | A tiene CC de punto y click o anti-dash y B es melee con movilidad ≥ 7 |
+| `antiHeal` | 2 | A aplica anti-curación y B tiene sustain 3 |
+| `shieldVsPoke` | 1 | A da escudos y B hace poke |
+| `shieldVsSustain` | 1 | A tiene escudo y B es un duelista con sustain alto |
+| `tankShred` | 2 | A hace daño porcentual o verdadero y B tiene primera línea ≥ 8 |
+| `resistVsDamage` | 3 | A es anti-AP y B hace ≥ 70 % mágico, o anti-AD y B ≥ 70 % físico |
+| `splitDuel` | 2 | A es splitpusher duelista y B no es ni lo uno ni lo otro |
+| `tankVsBurst` | 1 | A tiene primera línea ≥ 8 y B es asesino frágil (pick o dive, primera línea ≤ 3) |
+| `invadeVsFarm` | 3 | Jungla: A invade en early y B farmea |
+| `counterGank` | 1 | Jungla: A escaramucea sin ser late y B gankea (pick o engage) sin escaramucear |
+| `visionVsPick` | 1 | A controla la visión y B vive de los picks |
+| `engageVsEnchanter` | 2 | Soporte: A hace engage y B es enchanter |
+| `enchanterVsPoke` | 1 | Soporte: A es enchanter y B hace poke |
+| `pokeVsEngage` | 1 | Soporte: A hace poke sin engage y B hace engage |
+| `projectileBlock` | 3 | A intercepta proyectiles y una parte importante del kit de B depende de ellos |
+
+**Counters de equipo** (cualquier rol; mismo sentido):
+
+| Regla | Puntos | Cuándo |
+| --- | --- | --- |
+| `assassinVsCarry` | 3 | A es asesino (pick o dive, movilidad ≥ 7, primera línea ≤ 4) y B es carry a distancia con movilidad ≤ 3 |
+| `disengageVsEngage` | 2 | A tiene disengage y B entra en melee con engage |
+| `peelVsDive` | 2 | A hace peel y B es asesino o diver melee |
+| `aoeVsGrouped` | 1 | A hace daño en área y B es melee frágil que pelea encima (dive o escaramuza, primera línea ≤ 5). Varios rivales de ese perfil favorecen la misma respuesta |
+| `engageVsPoke` | 2 | A hace engage con CC ≥ 7 y B hace poke con movilidad ≤ 3 |
+| `lockdownVsCarry` | 1 | A tiene CC ≥ 8 de punto y click y B es hypercarry con movilidad ≤ 3 |
+| `hookVsImmobile` | 3 | A tiene gancho y B juega a distancia, tiene movilidad ≤ 3 y primera línea ≤ 4 |
+| `projectileBlock` | 2 | Como en línea |
+| `resistVsDamage`, `tankShred`, `antiHeal`, `lockdownVsDash`, `visionVsPick` | 2, 1, 1, 1, 1 | Como en línea |
+
+**Sinergias** (aliados en roles distintos):
+
+| Regla | Puntos | Cuándo |
+| --- | --- | --- |
+| `wombo` | 3 | Kit con iniciación en área, o engage con CC ≥ 7 en área o knock-up, más daño en área aliado |
+| `hypercarryPeel` | 3 | Hypercarry + peel o enchanter |
+| `pokeSiege` | 2 | Poke + disengage o asedio |
+| `chainCc` | 1 | Los dos con CC ≥ 7 |
+| `knockupUlt` | 4 | Knock-up aliado + ultimate de Yasuo |
+| `earlyDuo` | 2 | ADC y soporte fuertes en early |
+| `scalingDuo` | 2 | ADC de late y soporte de late con peel o de tipo enchanter |
+| `pickVision` | 2 | Pick + visión o CC de largo alcance |
+| `splitPressure` | 2 | Splitpusher + asedio o disengage (1-3-1) |
+| `damageMix` | 1 | Dos fuentes de daño, una ≥ 70 % física y la otra ≥ 70 % mágica |
+| `diveTogether` | 1 | Los dos son divers |
+| `enchanterDiver` | 2 | Enchanter + melee de dive o escaramuza |
+| `frontToBack` | 1 | Tanque (primera línea ≥ 8) + carry a distancia |
+
+**Mezcla.** `valor = round(p × pro + (1 − p) × regla)`, con `p = partidas / (partidas + 20)` y redondeo por magnitud. `pro` es el valor sin redondear de las partidas: `20 × victorias / partidas − 10` en matchups y `12 × victorias / partidas − 6` en counters de equipo y sinergias. Cada partida con ganador de la temporada actual aporta muestra. Los matchups requieren rivales del mismo rol y las sinergias usan parejas aliadas. Los counters de equipo mezclan solo rivales en roles distintos y con al menos una señal del kit. Topes de la base: ±6 para counters y 0–6 para sinergias. Se guardan valores distintos de cero. `reasons` lista las reglas que favorecen al campeón con ventaja, de más a menos puntos.
+
+**Tier.** Media de presencia ponderada: temporada actual × 1, anterior × 0,5 y la de antes × 0,25, desde la primera temporada disponible con picks del campeón. Para las temporadas previas, Cargo devuelve los picks agrupados por campeón y rol y el total de partidas. Se estiman los bans previos con la proporción global bans/picks de la temporada actual. La media se mezcla con el perfil con peso `picks del rol / (picks del rol + 3)`, usando los pesos de temporada también para contar picks. El perfil aporta 0,5 de presencia a campeones con engage, peel, utilidad, tanque, pick, poke, dos roles curados o un nicho competitivo indicado en el kit. Aporta 0,1 al resto y 0,5 a perfiles sin revisar. Cortes: ≥ 70 S+, ≥ 45 S, ≥ 30 A, ≥ 10 B, ≥ 0,25 C, menos D. En modo offline se omiten temporadas históricas sin caché y se registran sus años en la procedencia.
+
+**Mínimos** (test sobre el contenido generado): cada campeón tiene ≥ 1 rol, un tier, ≥ 3 counters a favor y ≥ 3 en contra frente a campeones distintos (línea y equipo), y ≥ 3 sinergias. No se añaden parejas sin señal para rellenar el mínimo.
 
 ### Jugadores y equipos
 
