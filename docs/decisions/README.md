@@ -96,6 +96,7 @@ Resumen de las decisiones **vigentes**, para empezar cualquier sesión sin volve
 | 2026-11-19 | El botón **minimizar se oculta** en compositores Wayland en mosaico que no lo soportan (Hyprland, sway, river y niri); en el resto se muestra | PR #54 |
 | 2026-11-22 | **Barras de desplazamiento** Caja en toda la app, definidas una sola vez en el CSS global con `::-webkit-scrollbar` (8 px, pista transparente, pulgar `line` que pasa a `muted` al pasar el ratón, sin flechas). Ningún elemento usa `scrollbar-color` ni `scrollbar-width` (salvo `none`), porque en Chromium anulan esas reglas | [styles.css](../../packages/ui-kit/styles.css) (#307) |
 | 2026-11-19 | Estilo **Caja** (Frecuencia con Unbounded + Archivo), **barra lateral izquierda** fija y plegable, e icono **Corte · Puntera** | [ADR 0002](0002-estilo-visual.md), [design/](../../design/README.md) |
+| 2026-11-23 | **Un solo tooltip Caja** en toda la app (`Tooltip` del ui-kit sobre Base UI): panel oscuro con borde y flecha, título opcional en negrita, texto, atajo opcional con `Kbd` y sombra suave; entrada rápida con Motion y sin animación con movimiento reducido. Un único popup compartido por todos los disparadores, también en el pool del draft. Prohibido el `title` nativo en los elementos de `apps/desktop/src` y `packages/ui-kit` (lo vigila un test); cada disparador conserva su nombre accesible | #315 |
 | 2026-11-22 | Las capturas visuales esperan los recursos de cada pantalla (#317) | [Tests visuales](../../apps/desktop/e2e/visual/README.md) |
 
 ## Repositorio y proceso
