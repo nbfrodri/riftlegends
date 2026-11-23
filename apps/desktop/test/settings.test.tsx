@@ -8,7 +8,11 @@ import { createAppRouter } from "../src/renderer/router";
 import { fakeAssets } from "./fake-assets";
 import { renderInLocale } from "./render-in-locale";
 
-beforeEach(() => localStorage.clear());
+beforeEach(() => {
+	localStorage.clear();
+	// Past the startup screen: the test seam opens the app with fictional content.
+	window.history.replaceState(null, "", "?content=fictional");
+});
 afterEach(() => {
 	cleanup();
 	vi.restoreAllMocks();

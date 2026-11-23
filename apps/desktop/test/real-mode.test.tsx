@@ -23,9 +23,6 @@ const real = loadRealContent();
 const realIds = real.draft.champions.map((c) => c.id);
 const ready: AssetStatus = { state: "ready", version: "16.23" };
 
-const radio = (name: string) =>
-	screen.getByRole("radio", { name }) as HTMLInputElement;
-
 async function setup(
 	status: AssetStatus = ready,
 	catalog: ChampionCatalog | null = testCatalog(realIds),
@@ -37,107 +34,37 @@ async function setup(
 		locale,
 		undefined,
 		undefined,
-		{ assets: assets.api },
+		{ assets: assets.api, content: "real" },
 	);
-	await screen.findByRole("heading", { level: 1 });
+	await waitFor(
+		() =>
+			expect(
+				(
+					screen.getByRole("button", {
+						name: /Start series|Empezar serie/,
+					}) as HTMLButtonElement
+				).disabled,
+			).toBe(false),
+		{ timeout: 8000 },
+	);
 	return { ...core, assets };
-}
-
-async function chooseReal(user: User, name = "Real LoL") {
-	await waitFor(() => expect(radio(name).disabled).toBe(false));
-	await user.click(radio(name));
-	await waitFor(() =>
-		expect(
-			screen.getByRole("combobox", { name: /My team|Mi equipo/ }).textContent,
-		).not.toContain("Forge"),
-	);
 }
 
 /** Real teams by seed, as the setup pairs them by default. */
 const bySeed = real.match.teams.slice().sort((a, b) => a.seed - b.seed);
 
-describe("content choice (plan 11, A1)", () => {
-	test("offers fictional and real content, fictional by default", async () => {
-		await setup();
-		expect(radio("Fictional").checked).toBe(true);
-		expect(radio("Real LoL").checked).toBe(false);
-	});
-
-	test.each([
-		[
-			{ state: "missing" },
-			"Real LoL needs the game content: download it in Settings.",
-		],
-		[
-			{ state: "syncing", progress: { completed: 3, total: 10 } },
-			"Real LoL will be available when the content download finishes.",
-		],
-		[
-			{ state: "error" },
-			"The content download failed: retry it in Settings to play real LoL.",
-		],
-	] as const)(
-		"disables real content while the cache is %j, saying why",
-		async (status, reason) => {
-			await setup(status, null);
-			expect(radio("Real LoL").disabled).toBe(true);
-			expect(await screen.findByText(reason)).toBeTruthy();
-		},
-	);
-
-	test("disables real content when the cache lacks some of its champions", async () => {
-		await setup(ready, testCatalog(realIds.slice(1)));
-		expect(
-			await screen.findByText(
-				"The downloaded content lacks some champions: update it in Settings.",
-			),
-		).toBeTruthy();
-		expect(radio("Real LoL").disabled).toBe(true);
-	});
-
-	test("blocks a selected real series during a refresh and checks the replacement catalog", async () => {
-		const user = userEvent.setup();
-		const { assets } = await setup();
-		await chooseReal(user);
-		const start = screen.getByRole("button", {
-			name: "Start series",
-		}) as HTMLButtonElement;
-		act(() => assets.progress({ completed: 0, total: 8 }));
-		expect(start.disabled).toBe(true);
-		expect(
-			screen.getByText(
-				"Real LoL will be available when the content download finishes.",
-			),
-		).toBeTruthy();
-		assets.api.champions.mockResolvedValue(testCatalog(realIds.slice(1)));
-		assets.finish({ state: "ready", version: "16.24" });
-		await screen.findByText(
-			"The downloaded content lacks some champions: update it in Settings.",
-			{},
-			{ timeout: 2500 },
-		);
-		expect(start.disabled).toBe(true);
-		await user.click(radio("Fictional"));
-		expect(start.disabled).toBe(false);
-	});
-
-	test("is translated to Spanish", async () => {
-		await setup({ state: "missing" }, null, "es-ES");
-		expect(radio("Ficticio").checked).toBe(true);
-		expect(radio("LoL real").disabled).toBe(true);
-		expect(
-			screen.getByText(
-				"LoL real necesita el contenido del juego: descárgalo en Ajustes.",
-			),
-		).toBeTruthy();
-	});
+test("starts with real teams and offers no content choice", async () => {
+	await setup();
+	expect(screen.queryByRole("radio", { name: "Fictional" })).toBeNull();
+	expect(
+		screen.getByRole("combobox", { name: "My team" }).textContent,
+	).toContain(bySeed[0]?.name);
 });
 
 describe("real teams (plan 11, A2)", () => {
 	test("pairs the two best seeds and groups the snapshot teams by league", async () => {
 		const user = userEvent.setup();
 		await setup();
-		await chooseReal(user);
 		const mine = screen.getByRole("combobox", { name: "My team" });
 		expect(mine.textContent).toContain(bySeed[0]?.name);
 		expect(
@@ -162,7 +89,6 @@ describe("real teams (plan 11, A2)", () => {
 	test("shows the downloaded league logo in its team selector heading", async () => {
 		const user = userEvent.setup();
 		const { assets } = await setup();
-		await chooseReal(user);
 		const url = "rift-asset://leagues/leagues/cblol.png";
 		assets.api.leagueLogos.mockResolvedValue({ CBLOL: url });
 		await act(async () => assets.logosChanged());
@@ -174,7 +100,6 @@ describe("real teams (plan 11, A2)", () => {
 	test("finds a team by typing part of its name", async () => {
 		const user = userEvent.setup();
 		await setup();
-		await chooseReal(user);
 		const target = real.match.teams.find((t) => t.league === "CBLOL");
 		if (!target) throw new Error("no CBLOL team");
 		await user.click(screen.getByRole("combobox", { name: "My team" }));
@@ -195,7 +120,6 @@ describe("real teams (plan 11, A2)", () => {
 	test("starts the series with the real content and its teams", async () => {
 		const user = userEvent.setup();
 		const core = await setup();
-		await chooseReal(user);
 		await user.click(screen.getByRole("button", { name: "Start series" }));
 		await screen.findByRole("heading", { level: 1, name: "Side and order" });
 		const start = core.sent.find(
@@ -220,7 +144,6 @@ describe("real champions on the board (R4, A3)", () => {
 		assets.api.playerPhotos.mockResolvedValue(photos);
 		act(() => assets.photosChanged());
 		seedNextSeries();
-		await chooseReal(user, locale === "en-US" ? "Real LoL" : "LoL real");
 		await user.click(
 			screen.getByRole("button", {
 				name: locale === "en-US" ? "Start series" : "Empezar serie",

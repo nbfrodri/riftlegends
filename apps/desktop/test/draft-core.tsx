@@ -124,8 +124,16 @@ export async function renderWithDraftCore(
 	locale = "en-US",
 	match = packagedMatchContent,
 	draft = packagedDraftContent,
-	{ assets }: { assets?: AssetsApi } = {},
+	{
+		assets,
+		content = "fictional",
+	}: { assets?: AssetsApi; content?: "real" | "fictional" } = {},
 ) {
+	window.history.replaceState(
+		null,
+		"",
+		content === "fictional" ? "?content=fictional" : "/",
+	);
 	const core = draftCore(match, draft);
 	const i18n = await createI18n(locale);
 	const client = new QueryClient({

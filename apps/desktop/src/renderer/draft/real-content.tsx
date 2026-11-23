@@ -22,7 +22,12 @@ const noFact = () => false;
  */
 export function useRealBlock(sessionId: number): RealBlock | null {
 	const assets = useOptionalAssets();
-	const catalog = assets?.status?.state === "ready" ? assets.champions : null;
+	const catalog =
+		assets?.status?.state === "ready" ||
+		(assets?.status?.state === "syncing" &&
+			assets.status.progress.cachedVersion)
+			? assets.champions
+			: null;
 	const pool = useCoreQuery<SeriesOptions>(
 		{
 			v: CONTRACT_VERSION,

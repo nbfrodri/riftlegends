@@ -33,6 +33,7 @@ export function launchApp(
 						([, value]) => value !== undefined,
 					),
 				) as Record<string, string>),
+				RIFT_E2E_CONTENT: "fictional",
 				...options.env,
 				RIFT_E2E_OFFLINE: "1",
 			},

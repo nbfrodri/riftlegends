@@ -5,7 +5,7 @@
 
 ## Objetivo
 
-Jugar el draft rápido con **contenido real**: todos los campeones de LoL con sus retratos y todos los equipos de **LCK, LPL, LEC, LCP, LCS y CBLOL** con sus jugadores, coaches y logos. El contenido ficticio sigue siendo el modo sin red y el de los tests.
+Jugar el draft rápido con **contenido real**: todos los campeones de LoL con sus retratos y todos los equipos de **LCK, LPL, LEC, LCP, LCS y CBLOL** con sus jugadores, coaches y logos. Con la caché lista se juega sin red. El contenido ficticio se reserva para las pruebas.
 
 Queda fuera: ligas menores (plan 24), regens y evolución (plan 16), meta por parche (plan 18).
 
@@ -127,7 +127,7 @@ Cada regla tiene un **id** que viaja en `reasons` para que la ficha explique el 
 
 | # | Comportamiento | Caso límite |
 | --- | --- | --- |
-| A1 | La configuración ofrece **ficticio** o **LoL real**; el real necesita la caché lista | Caché a medias o con error: real desactivado con el motivo en palabras |
+| A1 | Al arrancar, la pantalla de carga muestra el progreso y abre el juego con todos los campeones reales listos | Sin caché utilizable, explica que hace falta conexión la primera vez y permite reintentar |
 | A2 | La configuración agrupa los equipos por liga | 60 equipos: el selector sigue siendo usable (búsqueda o grupos) |
 | A3 | Retratos en draft, roles y resultados; logos de equipo con caída al escudo propio | Imagen que no carga: placeholder sin saltos |
 | A4 | La calibración K1–K5 sigue en verde con el contenido real | Bandas revisadas solo si el contenido real lo justifica, con nota |

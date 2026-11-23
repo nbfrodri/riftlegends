@@ -63,6 +63,8 @@ export type ChampionCatalog = z.infer<typeof championCatalogSchema>;
 export interface AssetProgress {
 	readonly completed: number;
 	readonly total: number;
+	/** Verified installed version available during a background startup update. */
+	readonly cachedVersion?: string;
 }
 
 export type AssetStatus =

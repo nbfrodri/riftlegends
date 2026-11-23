@@ -23,6 +23,7 @@ interface AssetsState {
 	leagueLogos: Readonly<Record<string, string>>;
 	/** The verified champion catalog (names in ES and EN), or null without one. */
 	champions: ChampionCatalog | null;
+	catalogPending: boolean;
 }
 
 const AssetsContext = createContext<AssetsState | null>(null);
@@ -39,19 +40,24 @@ export function AssetsProvider(props: { api: AssetsApi; children: ReactNode }) {
 	const [playerPhotos, setPlayerPhotos] = useState<Record<string, string>>({});
 	const [leagueLogos, setLeagueLogos] = useState<Record<string, string>>({});
 	const [catalog, setCatalog] = useState<{
-		status: AssetStatus;
+		source: AssetStatus | string;
 		champions: ChampionCatalog | null;
 	}>();
+	const source =
+		status?.state === "ready"
+			? status
+			: status?.state === "syncing"
+				? status.progress.cachedVersion
+				: undefined;
 	const champions =
-		status?.state === "ready" && catalog?.status !== status
-			? null
-			: (catalog?.champions ?? null);
+		source && catalog?.source !== source ? null : (catalog?.champions ?? null);
 	const mounted = useRef(true);
 
 	const settle = useCallback((next: AssetStatus) => {
 		if (!mounted.current) return;
 		setStatus(next);
 		if (next.state !== "syncing") setReady(next.state === "ready");
+		else if (next.progress.cachedVersion) setReady(true);
 	}, []);
 
 	const refresh = useCallback(() => {
@@ -119,19 +125,20 @@ export function AssetsProvider(props: { api: AssetsApi; children: ReactNode }) {
 	}, [api]);
 
 	useEffect(() => {
-		if (status?.state !== "ready") return;
+		if (!source) return;
 		let current = true;
 		readTeamLogos();
 		readPlayerPhotos();
 		api.champions().then(
-			(champions) => current && setCatalog({ status, champions }),
-			() => current && setCatalog({ status, champions: null }),
+			(champions) => current && setCatalog({ source, champions }),
+			() => current && setCatalog({ source, champions: null }),
 		);
 		return () => {
 			current = false;
 		};
-	}, [api, status, readTeamLogos, readPlayerPhotos]);
+	}, [api, source, readTeamLogos, readPlayerPhotos]);
 
+	const catalogPending = !!source && catalog?.source !== source;
 	const value = useMemo(
 		() => ({
 			status,
@@ -141,8 +148,18 @@ export function AssetsProvider(props: { api: AssetsApi; children: ReactNode }) {
 			leagueLogos,
 			champions,
 			playerPhotos,
+			catalogPending,
 		}),
-		[status, ready, sync, teamLogos, leagueLogos, champions, playerPhotos],
+		[
+			status,
+			ready,
+			sync,
+			teamLogos,
+			leagueLogos,
+			champions,
+			playerPhotos,
+			catalogPending,
+		],
 	);
 	return <AssetsContext value={value}>{props.children}</AssetsContext>;
 }

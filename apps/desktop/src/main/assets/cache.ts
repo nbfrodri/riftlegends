@@ -111,7 +111,7 @@ export function createAssetCache(
 		for (const listener of listeners) listener(progress);
 	}
 
-	async function synchronize(): Promise<CacheStatus> {
+	async function synchronize(startup: boolean): Promise<CacheStatus> {
 		let fallback: CacheStatus = { state: "missing" };
 		let release: (() => Promise<void>) | undefined;
 		try {
@@ -121,7 +121,15 @@ export function createAssetCache(
 			release = await acquireSyncLock(dirname(root));
 			const active = await activeCatalog(root);
 			champions = active?.catalog ?? null;
-			if (active) fallback = { state: "ready", version: active.version };
+			if (active) {
+				fallback = { state: "ready", version: active.version };
+				if (startup)
+					reportProgress({
+						completed: 0,
+						total: 0,
+						cachedVersion: active.version,
+					});
+			}
 
 			for (const version of await candidatePatches(transport)) {
 				// A cache made before tiles is fetched again on its own patch.
@@ -132,7 +140,12 @@ export function createAssetCache(
 					root,
 					version,
 					transport,
-					(completed, total) => reportProgress({ completed, total }),
+					(completed, total) =>
+						reportProgress({
+							completed,
+							total,
+							...(startup && active && { cachedVersion: active.version }),
+						}),
 				);
 				// Both summaries must exist on the same numbered patch.
 				if (!catalog) continue;
@@ -144,7 +157,11 @@ export function createAssetCache(
 			if (active) return fallback;
 			throw new Error("CommunityDragon champion patch unavailable");
 		} catch (error) {
-			if (error instanceof NetworkUnavailable) return fallback;
+			if (
+				(startup && fallback.state === "ready") ||
+				error instanceof NetworkUnavailable
+			)
+				return fallback;
 			throw error;
 		} finally {
 			await release?.();
@@ -262,9 +279,9 @@ export function createAssetCache(
 			listeners.add(listener);
 			return () => listeners.delete(listener);
 		},
-		sync(): Promise<CacheStatus> {
+		sync(startup = false): Promise<CacheStatus> {
 			if (running) return running;
-			running = synchronize()
+			running = synchronize(startup)
 				.catch(
 					(error): CacheStatus => ({
 						state: "error",

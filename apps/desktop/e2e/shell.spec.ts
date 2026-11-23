@@ -88,7 +88,8 @@ test("T7: navigating keeps the window location unchanged", async ({
 }) => {
 	await expect(heading(appWindow)).toHaveText("Set up series");
 	const initial = await appWindow.evaluate(() => location.href);
-	expect(initial).toMatch(/^file:.*index\.html$/);
+	// The E2E test seam may add its query (`?content=fictional`).
+	expect(initial).toMatch(/^file:.*index\.html(\?[^#]*)?$/);
 	const initialLength = await appWindow.evaluate(() => history.length);
 	for (const [name, title] of [
 		["Market", "Market"],

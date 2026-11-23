@@ -18,7 +18,6 @@ const button = (name: string) => screen.getByRole("button", { name });
 
 /** Fictional content only through the test seam: the UI never offers it. */
 async function open(ready = false) {
-	if (!ready) window.history.replaceState(null, "", "?content=fictional");
 	const ids = ready ? loadRealContent().draft.champions.map((c) => c.id) : [];
 	const assets = ready
 		? fakeAssets({ state: "ready", version: "16.23" }, testCatalog(ids))
@@ -28,7 +27,7 @@ async function open(ready = false) {
 		"en-US",
 		undefined,
 		undefined,
-		{ assets: assets.api },
+		{ assets: assets.api, content: ready ? "real" : "fictional" },
 	);
 	const user = userEvent.setup();
 	await screen.findByRole("heading", { name: "Set up series" });
@@ -72,32 +71,6 @@ it("shows portraits without names: the name is the label and the tooltip", async
 		"Cragbell",
 	);
 });
-
-it("never offers the fictional content and asks to download the real one", async () => {
-	const user = userEvent.setup();
-	await renderWithDraftCore(
-		<RouterProvider router={createAppRouter("/campeones")} />,
-		"en-US",
-		undefined,
-		undefined,
-		{ assets: fakeAssets().api },
-	);
-	// Loading the real set takes a while the first time.
-	await screen.findByRole(
-		"heading",
-		{ name: "Champions", level: 1 },
-		{ timeout: 8000 },
-	);
-	const go = await screen.findByRole("button", { name: "Go to Settings" });
-	expect(screen.getByText(/Download the game content/)).toBeTruthy();
-	expect(screen.queryByRole("radio")).toBeNull();
-	expect(screen.queryByText(/fictional/i)).toBeNull();
-	expect(screen.queryByRole("region", { name: "Tier S" })).toBeNull();
-	await user.click(go);
-	expect(
-		await screen.findByRole("heading", { name: "Settings", level: 1 }),
-	).toBeTruthy();
-}, 15_000);
 
 it("opens the full card and returns focus to the tile on Escape", async () => {
 	const user = await open();
