@@ -1,6 +1,6 @@
 import type { Role } from "@rift-legends/contracts";
 import { Tooltip } from "@rift-legends/ui-kit/components/tooltip";
-import { Info, LayoutGrid } from "lucide-react";
+import { LayoutGrid, MouseRight } from "lucide-react";
 import { type KeyboardEvent, memo, useCallback, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { GameRoleIcon } from "../../assets/game-role-icon";
@@ -56,17 +56,26 @@ const Tile = memo(function Tile(props: {
 				aria-disabled={unavailable ? true : undefined}
 				aria-label={reason ? `${name}. ${reason}` : name}
 				onClick={() => !unavailable && props.onSelect(id)}
-				className={`group relative flex min-h-0 min-w-0 flex-col overflow-hidden rounded-control bg-surface outline-offset-[-3px] focus-visible:z-1 focus-visible:outline-3 focus-visible:outline-action ${props.selected ? "outline-2 outline-action" : ""} ${unavailable ? "cursor-default" : ""}`}
+				className={`group relative flex min-h-0 min-w-0 flex-col overflow-hidden rounded-control bg-surface outline-offset-[-3px] focus-visible:z-1 focus-visible:outline-3 focus-visible:outline-action ${unavailable ? "cursor-default" : "hover:brightness-110"}`}
 			>
 				<ChampionPortrait
 					id={id}
 					size="pool"
 					unavailable={unavailable !== null}
 				/>
-				<Info
+				<MouseRight
+					data-slot="card-hint"
 					aria-hidden
-					className="pointer-events-none absolute right-1 top-1 hidden size-4 rounded-full bg-panel text-action group-hover:block group-focus-visible:block"
+					className="pointer-events-none absolute right-1 top-1 hidden size-5 rounded-control bg-panel/85 p-0.5 text-action group-hover:block group-focus-visible:block"
 				/>
+				{props.selected && (
+					// Tint plus an inset frame: unlike hover (brighter) and focus (outline).
+					<span
+						data-slot="selection"
+						aria-hidden
+						className="pointer-events-none absolute inset-0 rounded-control bg-action/20 ring-2 ring-action ring-inset"
+					/>
+				)}
 			</button>
 		</Tooltip>
 	);

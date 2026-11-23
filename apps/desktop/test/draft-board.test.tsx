@@ -338,6 +338,33 @@ describe("draft board (U3)", () => {
 		const cragbell = tile("Cragbell");
 		expect(cragbell.textContent).toBe("CR");
 		expect(within(cragbell).getByRole("img", { hidden: true })).toBeTruthy();
+		// No info icon: its only icon is the right-click hint for the card.
+		await user.hover(cragbell);
+		const icons = [...cragbell.querySelectorAll("svg")];
+		expect(icons.map((icon) => icon.dataset.slot)).toEqual(["card-hint"]);
+	});
+
+	test("the selected tile is pressed and framed in the action colour; only it", async () => {
+		const user = userEvent.setup();
+		await renderWithDraftCore(<DraftScreen />);
+		await toBoard(user);
+		const mark = (button: HTMLElement) =>
+			button.querySelector('[data-slot="selection"]');
+		const cragbell = tile("Cragbell");
+		expect(mark(cragbell)).toBeNull();
+
+		await user.click(cragbell);
+		expect(cragbell.getAttribute("aria-pressed")).toBe("true");
+		expect(mark(cragbell)?.className).toMatch(/\bring-action\b/);
+		expect(mark(cragbell)?.className).toMatch(/\bbg-action\//);
+		const grid = screen.getByRole("group", { name: "Champions" });
+		expect(grid.querySelectorAll('[data-slot="selection"]')).toHaveLength(1);
+
+		const rimefoil = tile("Rimefoil");
+		await user.click(rimefoil);
+		expect(mark(cragbell)).toBeNull();
+		expect(mark(rimefoil)).not.toBeNull();
+		expect(cragbell.getAttribute("aria-pressed")).toBe("false");
 	});
 
 	test("the keyboard moves through the grid with arrows, selects with Enter and confirms", async () => {
