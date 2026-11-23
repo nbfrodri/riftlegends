@@ -5,6 +5,7 @@ import { useNavigate } from "@tanstack/react-router";
 import {
 	ArrowLeftRight,
 	Binoculars,
+	BookOpen,
 	CalendarDays,
 	Columns2,
 	Dumbbell,
@@ -22,13 +23,14 @@ import {
 import { type KeyboardEvent, useId } from "react";
 import { useTranslation } from "react-i18next";
 
-type SectionPath = "/draft" | "/mercado" | "/ajustes";
+type SectionPath = "/draft" | "/campeones" | "/mercado" | "/ajustes";
 
 interface Section {
 	label:
 		| "shell.nav.home"
 		| "shell.nav.calendar"
 		| "shell.nav.draft"
+		| "shell.nav.champions"
 		| "shell.nav.roster"
 		| "shell.nav.market"
 		| "shell.nav.scouting"
@@ -46,6 +48,7 @@ const sections: readonly Section[] = [
 	{ label: "shell.nav.home", icon: House },
 	{ label: "shell.nav.calendar", icon: CalendarDays },
 	{ label: "shell.nav.draft", icon: Columns2, to: "/draft" },
+	{ label: "shell.nav.champions", icon: BookOpen, to: "/campeones" },
 	{ label: "shell.nav.roster", icon: Users },
 	{ label: "shell.nav.market", icon: ArrowLeftRight, to: "/mercado" },
 	{ label: "shell.nav.scouting", icon: Binoculars },

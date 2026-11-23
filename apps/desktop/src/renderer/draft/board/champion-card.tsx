@@ -45,20 +45,22 @@ function Profile({ card }: { card: ChampionCardView }) {
 export function ChampionCard({
 	id,
 	left,
+	large = false,
 	onClose,
 }: {
 	id: string;
-	left: boolean;
+	left?: boolean;
+	large?: boolean;
 	onClose: () => void;
 }) {
 	const { t } = useTranslation();
-	const { sessionId, options, view, mine } = useDraftSession();
+	const { sessionId, options, view, mine, content } = useDraftSession();
 	const card = useCoreQuery<ChampionCardView | null>(
 		{
 			v: CONTRACT_VERSION,
 			kind: "draft.champion",
 			sessionId,
-			params: { champion: id },
+			params: { champion: id, ...(!view && { content }) },
 		},
 		{ affectedBy: () => false },
 	);
@@ -79,17 +81,29 @@ export function ChampionCard({
 			ref={panel}
 			tabIndex={-1}
 			aria-label={t("draft.card.name", { name })}
-			className={`absolute inset-y-0 z-20 flex w-[calc((100%-24px)/4)] flex-col overflow-hidden rounded-control border border-line border-t-[3px] border-t-action bg-panel text-[13px] leading-snug shadow-2xl focus-visible:outline-action ${left ? "left-0" : "right-0"}`}
+			className={`flex flex-col overflow-hidden rounded-control border border-line border-t-[3px] border-t-action bg-panel leading-snug shadow-2xl focus-visible:outline-action ${large ? "h-full text-sm" : `absolute inset-y-0 z-20 w-[calc((100%-24px)/4)] text-[13px] ${left ? "left-0" : "right-0"}`}`}
 		>
 			<header className="flex shrink-0 items-start gap-2 border-b border-line bg-surface px-3 py-2.5">
-				<div className="flex shrink-0 [&>span]:size-11 [&>span]:text-base">
-					<ChampionPortrait id={id} size="ban" unavailable={!!unavailable} />
+				<div
+					className={
+						large
+							? "size-20 shrink-0"
+							: "flex shrink-0 [&>span]:size-11 [&>span]:text-base"
+					}
+				>
+					<ChampionPortrait
+						id={id}
+						size={large ? "tile" : "ban"}
+						unavailable={!!unavailable}
+					/>
 				</div>
 				<div className="min-w-0 flex-1">
 					<p className="text-[10px] font-semibold uppercase tracking-wider text-action">
 						{t("draft.card.title")}
 					</p>
-					<h3 className="break-words font-display font-bold text-[18px] leading-tight tracking-heading">
+					<h3
+						className={`break-words font-display font-bold leading-tight tracking-heading ${large ? "text-3xl" : "text-[18px]"}`}
+					>
 						{name}
 					</h3>
 				</div>
@@ -124,12 +138,19 @@ export function ChampionCard({
 							))}
 						</ul>
 						<Profile card={card.data} />
-						<ChampionRelations
-							card={card.data}
-							nameOf={nameOf}
-							allies={own?.picks ?? []}
-							enemies={enemy?.picks ?? []}
-						/>
+						<div
+							className={
+								large ? "grid grid-cols-3 divide-x divide-line" : "contents"
+							}
+						>
+							<ChampionRelations
+								card={card.data}
+								showGame={!large || !!view}
+								nameOf={nameOf}
+								allies={own?.picks ?? []}
+								enemies={enemy?.picks ?? []}
+							/>
+						</div>
 					</>
 				) : card.error ? (
 					<CoreErrorMessage error={card.error} />

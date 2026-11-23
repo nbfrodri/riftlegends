@@ -31,8 +31,8 @@ import type {
 
 /** The real content set, as the core host offers it (plan 11). */
 const real = () => {
-	const { draft, match } = loadRealContent();
-	return { content: draft, match };
+	const { draft, match, season } = loadRealContent();
+	return { content: draft, match, season };
 };
 
 /** The real draft dispatcher with the packaged content, behind the renderer's `CoreApi`. */

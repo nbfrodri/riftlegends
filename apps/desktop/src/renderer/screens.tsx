@@ -10,10 +10,6 @@ import { useTranslation } from "react-i18next";
 import { ContentSettings } from "./assets/content-settings";
 import { isLocale, storeLanguage } from "./language";
 
-// Placeholder screens: each one only names itself until its real content lands
-// Draft and Mercado have their own files.
-
-export { DraftScreen } from "./draft/draft-screen";
 export { MarketScreen } from "./market-screen";
 
 function Screen({ title }: { title: string }) {

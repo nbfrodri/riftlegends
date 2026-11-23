@@ -98,11 +98,13 @@ export function ChampionRelations({
 	nameOf,
 	allies,
 	enemies,
+	showGame,
 }: {
 	card: ChampionCardView;
 	nameOf: (id: string) => string;
 	allies: readonly string[];
 	enemies: readonly string[];
+	showGame: boolean;
 }) {
 	const { t } = useTranslation();
 	const rows = card.relations;
@@ -131,27 +133,31 @@ export function ChampionRelations({
 	};
 	return (
 		<>
-			<Section title={t("draft.card.game")}>
-				{!alliesHere.length && !enemiesHere.length && (
-					<p className="text-muted">{t("draft.card.emptyGame")}</p>
-				)}
-				{(
-					[
-						["enemies", enemiesHere],
-						["allies", alliesHere],
-					] as const
-				).map(
-					([label, subset]) =>
-						subset.length > 0 && (
-							<div key={label} className="mt-2">
-								<h5 className="mb-1 font-semibold text-xs text-muted">
-									{t(`draft.card.${label}`)}
-								</h5>
-								{list(subset)}
-							</div>
-						),
-				)}
-			</Section>
+			{showGame && (
+				<div className="col-span-full">
+					<Section title={t("draft.card.game")}>
+						{!alliesHere.length && !enemiesHere.length && (
+							<p className="text-muted">{t("draft.card.emptyGame")}</p>
+						)}
+						{(
+							[
+								["enemies", enemiesHere],
+								["allies", alliesHere],
+							] as const
+						).map(
+							([label, subset]) =>
+								subset.length > 0 && (
+									<div key={label} className="mt-2">
+										<h5 className="mb-1 font-semibold text-xs text-muted">
+											{t(`draft.card.${label}`)}
+										</h5>
+										{list(subset)}
+									</div>
+								),
+						)}
+					</Section>
+				</div>
+			)}
 			<Section title={t("draft.card.wins")}>{list(best(true))}</Section>
 			<Section title={t("draft.card.losses")}>{list(best(false))}</Section>
 			<Section title={t("draft.card.synergies")}>

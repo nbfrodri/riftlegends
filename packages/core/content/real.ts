@@ -9,11 +9,13 @@ import { identities, rules } from "./data";
 import champions from "./real/champions/champions.json";
 import counters from "./real/champions/counters.json";
 import matchups from "./real/champions/matchups.json";
+import provenance from "./real/champions/provenance.json";
 import synergies from "./real/champions/synergies.json";
 import players from "./real/players.json";
 import teams from "./real/teams.json";
 
 export interface PackagedContent {
+	readonly season: number;
 	readonly draft: AiContent;
 	readonly match: MatchContent;
 	/** Content version of this set, as `CONTENT_VERSION` is of the fictional one. */
@@ -62,7 +64,12 @@ function load(): PackagedContent {
 		})),
 		rules,
 	});
-	return { draft, match, version: contentVersionOf(source) };
+	return {
+		draft,
+		match,
+		version: contentVersionOf(source),
+		season: provenance.tierSeasons.current,
+	};
 }
 
 let loaded: PackagedContent | undefined;

@@ -32,6 +32,38 @@ function card(
 	return result.view;
 }
 
+it("inspects a named content set without committing the session to a series", () => {
+	const { draft, match } = loadRealContent();
+	const session = openSession(
+		1,
+		draftStateWith(packagedDraftContent, packagedMatchContent, {
+			real: () => ({ content: draft, match }),
+		}),
+	);
+	const request = {
+		v: CONTRACT_VERSION,
+		kind: "draft.champion",
+		sessionId: 1,
+		params: { champion: "Aatrox", content: "real" },
+	};
+	expect(parseQuery(draftQueries, request).ok).toBe(true);
+	expect(draftDispatcher.query(session, request)).toMatchObject({
+		ok: true,
+		view: {
+			id: "Aatrox",
+			relations: expect.arrayContaining([
+				expect.objectContaining({ kind: "counter" }),
+			]),
+		},
+	});
+	expect(
+		draftDispatcher.query(session, {
+			...request,
+			params: { champion: "cragbell" },
+		}),
+	).toMatchObject({ ok: true, view: { id: "cragbell" } });
+});
+
 it("combines the two profiles and reads one-sided fictional relations from either end", () => {
 	expect(card("cragbell")).toMatchObject({
 		id: "cragbell",

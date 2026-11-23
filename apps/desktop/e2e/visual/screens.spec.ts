@@ -54,6 +54,15 @@ test("Mercado with the sidebar expanded", async ({ appWindow }) => {
 	await captureScreen(appWindow, "mercado-expanded.png");
 });
 
+test("Campeones with the Top tier list", async ({ appWindow }) => {
+	await goTo(appWindow, "Campeones");
+	await expect(
+		appWindow.getByRole("button", { name: "Cragbell" }),
+	).toBeVisible();
+	await appWindow.mouse.move(0, 0);
+	await captureScreen(appWindow, "campeones-top.png");
+});
+
 test("Ajustes", async ({ appWindow }) => {
 	await expandSidebar(appWindow);
 	await goTo(appWindow, "Ajustes");

@@ -41,6 +41,7 @@ export interface SeriesConfig {
 
 /** A content set: what the draft AI and the match simulation read. */
 export interface LoadedContent {
+	readonly season?: number;
 	readonly content: AiContent;
 	readonly match: MatchContent;
 }

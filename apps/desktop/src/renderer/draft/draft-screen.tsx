@@ -4,7 +4,7 @@ import { DraftSessionProvider, useDraftSession } from "./session";
 import { draftStages, stageOf } from "./stages";
 import { TurnControls } from "./turn-controls";
 
-function DraftFlow() {
+export function DraftFlow() {
 	const { view, presentation } = useDraftSession();
 	const stage = stageOf(view, presentation);
 	const Stage = draftStages[stage];
