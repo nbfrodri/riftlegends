@@ -1,7 +1,11 @@
 import { readFileSync } from "node:fs";
 import { expect, it } from "vitest";
-import { kitTraits, kitOrder } from "./champion-kit-rules.ts";
-import { type ChampionKit, readKit, readTooltips } from "./champion-kit-source.ts";
+import { kitOrder, kitTraits } from "./champion-kit-rules.ts";
+import {
+	type ChampionKit,
+	readKit,
+	readTooltips,
+} from "./champion-kit-source.ts";
 import { curatedTraitIds, estimatedTraits } from "./champion-traits.ts";
 
 const fixture = (name: string): unknown =>
@@ -48,8 +52,7 @@ it("counts the abilities that heal as sustain", () => {
 });
 
 it("derives the kit traits from named rules", () => {
-	const kitOf = (id: string, classes: string[] = []) =>
-		traits(id, classes).kit;
+	const kitOf = (id: string, classes: string[] = []) => traits(id, classes).kit;
 	// wombo: ultimate in an area that immobilizes
 	expect(kitOf("Galio")).toContain("wombo");
 	expect(kitOf("Malphite")).toContain("wombo");
@@ -120,6 +123,7 @@ it("orders the kit traits canonically and knows every curated trait", () => {
 		for (const trait of estimatedTraits(id, []).kit)
 			expect(all.has(trait), `${id} ${trait}`).toBe(true);
 	const galio = traits("Galio").kit;
-	expect([...galio].sort((a, b) => kitOrder.indexOf(a) - kitOrder.indexOf(b)))
-		.toEqual([...galio]);
+	expect(
+		[...galio].sort((a, b) => kitOrder.indexOf(a) - kitOrder.indexOf(b)),
+	).toEqual([...galio]);
 });

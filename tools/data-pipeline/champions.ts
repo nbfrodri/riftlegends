@@ -107,7 +107,11 @@ export async function championFiles(options: ChampionOptions) {
 		season,
 		picks ? bans / picks : 0,
 	);
-	const { kits, missing: missingKits, ...kitSource } = await fetchKits(
+	const {
+		kits,
+		missing: missingKits,
+		...kitSource
+	} = await fetchKits(
 		client.withCache(join(options.cacheDir, "kits")),
 		communityDragonPatch,
 		catalog.map(({ id }) => id),
@@ -150,12 +154,17 @@ export async function championFiles(options: ChampionOptions) {
 			attribution: snapshots[0]?.provenance.attribution,
 		},
 		kits: {
-			source: "CommunityDragon game data (characters bin files and the official string table)",
+			source:
+				"CommunityDragon game data (characters bin files and the official string table)",
 			patch: communityDragonPatch,
 			url: kitSource.url,
 			retrievedAt: kitSource.retrievedAt,
 			champions: kits.size,
 			missing: missingKits,
+			// No ultimate cooldown in the game data (zero or scripted).
+			noUltimateCooldown: [...kits.values()]
+				.filter(({ ultCooldown }) => !ultCooldown)
+				.map(({ id }) => id),
 		},
 		// Champions with at least one trait that is still an estimate.
 		traitsToReview: traits

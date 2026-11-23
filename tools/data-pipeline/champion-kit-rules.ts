@@ -5,8 +5,8 @@
 import type { ChampionKit, KitSlot } from "./champion-kit-source.ts";
 import { estimatedTraits, type Kit } from "./champion-traits.ts";
 
-export type TraitSource = "source" | "rule" | "estimated";
-export interface TraitSources {
+type TraitSource = "source" | "rule" | "estimated";
+interface TraitSources {
 	range: TraitSource;
 	sustain: TraitSource;
 	cc: TraitSource;
@@ -73,14 +73,16 @@ const castSlots = ["q", "w", "e", "r"] as const;
 
 const hasTag = (slot: KitSlot, ...tags: string[]) =>
 	tags.some((tag) => slot.tags.includes(tag));
-const hasStatus = (slot: KitSlot) => slot.statuses.some((s) => hardStatuses.has(s));
+const hasStatus = (slot: KitSlot) =>
+	slot.statuses.some((s) => hardStatuses.has(s));
 
 /** An ultimate or spell that only acts on an airborne target is no crowd control. */
 const needsAirborne = (slot: KitSlot) =>
 	slot.statuses.includes("airborne") && !hasStatus(slot);
 const hardCc = (slot: KitSlot) =>
 	!needsAirborne(slot) &&
-	(hasStatus(slot) || hasTag(slot, "ImmobilizingCCSpell", "ImmobilizingCCAbility"));
+	(hasStatus(slot) ||
+		hasTag(slot, "ImmobilizingCCSpell", "ImmobilizingCCAbility"));
 const areaTags = ["AoE", "Target_Area"];
 const missileTags = ["Ranged_StopsFirstHit", "Ranged_Piercing"];
 const skillshotTags = [...missileTags, "Target_Directional"];
@@ -96,14 +98,18 @@ function ccKinds(kit: ChampionKit) {
 		["targeted", hard.some((s) => !hasTag(s, ...areaTags, ...aimedTags))],
 		["skillshot", hard.some((s) => hasTag(s, ...aimedTags))],
 		["area", hard.some((s) => hasTag(s, ...areaTags))],
-		["knockup", castSlots.some((id) => kit.slots[id].statuses.includes("knockup"))],
+		[
+			"knockup",
+			castSlots.some((id) => kit.slots[id].statuses.includes("knockup")),
+		],
 	] as const;
 	return kinds.filter(([, present]) => present).map(([kind]) => kind);
 }
 
 function sustainOf(kit: ChampionKit) {
 	const healing = Object.values(kit.slots).filter(
-		(slot) => slot.marks.includes("heal") || hasTag(slot, "ActiveHeal", "SelfHeal"),
+		(slot) =>
+			slot.marks.includes("heal") || hasTag(slot, "ActiveHeal", "SelfHeal"),
 	).length;
 	return Math.min(3, healing) as 0 | 1 | 2 | 3;
 }
@@ -148,7 +154,9 @@ function derivedKit(kit: ChampionKit, classes: readonly string[]) {
 		// disengage: knocks enemies back.
 		[
 			"disengage",
-			slots.some((s) => hasTag(s, "KnockBack") || s.statuses.includes("knockback")),
+			slots.some(
+				(s) => hasTag(s, "KnockBack") || s.statuses.includes("knockback"),
+			),
 		],
 		// enchanter: support that heals or shields with at least two abilities.
 		[
@@ -160,7 +168,10 @@ function derivedKit(kit: ChampionKit, classes: readonly string[]) {
 		["antiheal", every.some((s) => s.marks.includes("antiheal"))],
 		[
 			"shield",
-			every.some((s) => s.marks.includes("shield") || hasTag(s, "Shield", "PassiveShield")),
+			every.some(
+				(s) =>
+					s.marks.includes("shield") || hasTag(s, "Shield", "PassiveShield"),
+			),
 		],
 		// shred: any true damage in the kit.
 		["shred", every.some((s) => s.damage.includes("true"))],

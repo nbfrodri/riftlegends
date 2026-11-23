@@ -3,9 +3,9 @@
 // types from the official tooltips in `lol.stringtable.json`. Only facts are
 // kept (tags, statuses, damage types, numbers); no tooltip text is stored.
 
-export type SlotId = "q" | "w" | "e" | "r" | "p";
-export type DamageType = "physical" | "magic" | "true";
-export type Mark = "heal" | "shield" | "antiheal";
+type SlotId = "q" | "w" | "e" | "r" | "p";
+type DamageType = "physical" | "magic" | "true";
+type Mark = "heal" | "shield" | "antiheal";
 
 export interface KitSlot {
 	/** Spell tags without the `Trait_` prefix, limited to {@link tagWhitelist}. */
@@ -112,7 +112,10 @@ function describe(text: string) {
 	const statuses = new Set<string>();
 	// "<status>Knocking</status> <status>Up</status>" is one status.
 	for (const [, word = ""] of text
-		.replace(/(<status>knock\w*)<\/status>\s*<status>(up|back|away)</gi, "$1 $2<")
+		.replace(
+			/(<status>knock\w*)<\/status>\s*<status>(up|back|away)</gi,
+			"$1 $2<",
+		)
 		.matchAll(/<status>(.*?)<\/status>/g)) {
 		const status = normalizeStatus(word);
 		if (status) statuses.add(status);
@@ -137,7 +140,9 @@ export function readKit(
 	tooltips: Readonly<Record<string, string>>,
 ): ChampionKit {
 	const data = record(body, `kit of ${id}`);
-	const byName = new Map(Object.entries(data).map(([k, v]) => [k.toLowerCase(), v]));
+	const byName = new Map(
+		Object.entries(data).map(([k, v]) => [k.toLowerCase(), v]),
+	);
 	const rootKey = Object.keys(data).find((key) =>
 		key.endsWith("/CharacterRecords/Root"),
 	);
@@ -156,7 +161,9 @@ export function readKit(
 	const abilityOf = (slot: number) => {
 		const named = `Characters/${character}/Spells/${names[slot]?.split("/")[0]}`;
 		const key = byName.has(named.toLowerCase())
-			? abilityKeys.find((candidate) => candidate.toLowerCase() === named.toLowerCase()) ?? named
+			? (abilityKeys.find(
+					(candidate) => candidate.toLowerCase() === named.toLowerCase(),
+				) ?? named)
 			: undefined;
 		// A slot that repeats another one (a data error) takes the next unused ability.
 		return key && !used.has(key) ? key : abilityKeys.find((c) => !used.has(c));
@@ -166,12 +173,21 @@ export function readKit(
 		if (key) used.add(key);
 		return key;
 	});
-	const spellsOf = (ability: string | undefined) => {
+	const spellOf = (key: unknown) => {
+		const spell = byName.get(String(key).toLowerCase());
+		return spell
+			? record(record(spell, "spell").mSpell ?? {}, "spell")
+			: undefined;
+	};
+	// The main spell is not always listed among the children of its ability.
+	const spellsOf = (ability: string | undefined): Json[] => {
 		const entry = ability ? byName.get(ability.toLowerCase()) : undefined;
-		const spells = entry ? (record(entry, "ability").mChildSpells as unknown[]) : [];
-		return (spells ?? []).flatMap((key) => {
-			const spell = byName.get(String(key).toLowerCase());
-			return spell ? [record(record(spell, "spell").mSpell ?? {}, "spell")] : [];
+		if (!entry) return [];
+		const { mRootSpell, mChildSpells } = record(entry, "ability");
+		const keys = new Set([mRootSpell, ...((mChildSpells as unknown[]) ?? [])]);
+		return [...keys].flatMap((key) => {
+			const spell = spellOf(key);
+			return spell ? [spell] : [];
 		});
 	};
 	const slotOf = (abilities: readonly (string | undefined)[]): KitSlot => {
@@ -183,7 +199,9 @@ export function readKit(
 				if (tagWhitelist.has(name)) tags.push(name);
 			}
 			const loc = (
-				(spell.mClientData as Json | undefined)?.mTooltipData as Json | undefined
+				(spell.mClientData as Json | undefined)?.mTooltipData as
+					| Json
+					| undefined
 			)?.mLocKeys as Json | undefined;
 			const text =
 				typeof loc?.keyTooltip === "string"
@@ -206,14 +224,15 @@ export function readKit(
 	const ultimate = assigned[3];
 	const rootSpell = (() => {
 		const entry = ultimate ? byName.get(ultimate.toLowerCase()) : undefined;
-		const key = entry ? record(entry, "ability").mRootSpell : undefined;
-		const spell = typeof key === "string" ? byName.get(key.toLowerCase()) : undefined;
-		return spell ? record(record(spell, "spell").mSpell ?? {}, "spell") : undefined;
+		return entry ? spellOf(record(entry, "ability").mRootSpell) : undefined;
 	})();
-	const cooldowns = (rootSpell?.cooldownTime as unknown[] | undefined)?.slice(1, 4);
-	const isUltimate = ((rootSpell?.mSpellTags as unknown[] | undefined) ?? []).includes(
-		"Trait_Ultimate",
+	const cooldowns = (rootSpell?.cooldownTime as unknown[] | undefined)?.slice(
+		1,
+		4,
 	);
+	const isUltimate = (
+		(rootSpell?.mSpellTags as unknown[] | undefined) ?? []
+	).includes("Trait_Ultimate");
 	const ultCooldown =
 		isUltimate &&
 		cooldowns?.length === 3 &&

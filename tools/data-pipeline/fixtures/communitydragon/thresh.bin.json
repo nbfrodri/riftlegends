@@ -1,346 +1,241 @@
 {
- "Characters/Thresh/CharacterRecords/Root": {
-  "mCharacterName": "Thresh",
-  "attackRangeModifiable": {
-   "baseValue": 450.0,
-   "__type": "ModifiableFloat"
-  },
-  "spellNames": [
-   "ThreshQAbility/ThreshQ",
-   "ThreshWAbility/ThreshW",
-   "ThreshEAbility/ThreshE",
-   "ThreshRPentaAbility/ThreshRPenta"
-  ],
-  "mAbilities": [
-   "Characters/Thresh/Spells/ThreshQAbility",
-   "Characters/Thresh/Spells/ThreshWAbility",
-   "Characters/Thresh/Spells/ThreshEAbility",
-   "Characters/Thresh/Spells/ThreshRPentaAbility",
-   "Characters/Thresh/Spells/ThreshPassiveSoulsAbility"
-  ],
-  "__type": "CharacterRecord"
- },
- "Characters/Thresh/Spells/ThreshQAbility": {
-  "mRootSpell": "Characters/Thresh/Spells/ThreshQAbility/ThreshQ",
-  "mChildSpells": [
-   "Characters/Thresh/Spells/ThreshQAbility/ThreshQ",
-   "Characters/Thresh/Spells/ThreshQAbility/ThreshQInternal",
-   "Characters/Thresh/Spells/ThreshQAbility/ThreshQLeap",
-   "Characters/Thresh/Spells/ThreshQAbility/ThreshQMissile",
-   "Characters/Thresh/Spells/ThreshQAbility/ThreshQPullMissile",
-   "Characters/Thresh/Spells/ThreshQAbility/ThreshQSelfRoot"
-  ],
-  "__type": "AbilityObject"
- },
- "Characters/Thresh/Spells/ThreshQAbility/ThreshQLeap": {
-  "ObjectName": "ThreshQLeap",
-  "mSpell": {
-   "mSpellTags": [
-    "PositiveEffect_MoveBlock",
-    "Trait_FreeRecast"
-   ],
-   "cooldownTime": [
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0
-   ],
-   "mClientData": {
-    "mTooltipData": {
-     "mLocKeys": {
-      "keyTooltip": "Spell_ThreshQLeap_Tooltip"
-     }
-    }
-   }
-  },
-  "__type": "SpellObject"
- },
- "Characters/Thresh/Spells/ThreshQAbility/ThreshQ": {
-  "ObjectName": "ThreshQ",
-  "mSpell": {
-   "mSpellTags": [
-    "Trait_ImmobilizingCCSpell",
-    "Trait_DamageAbility",
-    "Trait_RecastOrReplaceSpell",
-    "Trait_SignatureSpell",
-    "Trait_Ranged_StopsFirstHit"
-   ],
-   "cooldownTime": [
-    19.0,
-    19.0,
-    16.5,
-    14.0,
-    11.5,
-    9.0,
-    9.0
-   ],
-   "mClientData": {
-    "mTooltipData": {
-     "mLocKeys": {
-      "keyTooltip": "Spell_ThreshQ_Tooltip"
-     }
-    }
-   }
-  },
-  "__type": "SpellObject"
- },
- "Characters/Thresh/Spells/ThreshQAbility/ThreshQInternal": {
-  "ObjectName": "ThreshQInternal",
-  "mSpell": {
-   "cooldownTime": [
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0
-   ]
-  },
-  "__type": "SpellObject"
- },
- "Characters/Thresh/Spells/ThreshQAbility/ThreshQPullMissile": {
-  "ObjectName": "ThreshQPullMissile",
-  "mSpell": {
-   "cooldownTime": [
-    7.5,
-    7.0,
-    6.5,
-    6.0,
-    5.5,
-    5.0,
-    5.0
-   ]
-  },
-  "__type": "SpellObject"
- },
- "Characters/Thresh/Spells/ThreshQAbility/ThreshQMissile": {
-  "ObjectName": "ThreshQMissile",
-  "mSpell": {
-   "cooldownTime": [
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0
-   ]
-  },
-  "__type": "SpellObject"
- },
- "Characters/Thresh/Spells/ThreshQAbility/ThreshQSelfRoot": {
-  "ObjectName": "ThreshQSelfRoot",
-  "mSpell": {
-   "cooldownTime": [
-    14.0,
-    14.0,
-    14.0,
-    14.0,
-    14.0,
-    14.0,
-    14.0
-   ]
-  },
-  "__type": "SpellObject"
- },
- "Characters/Thresh/Spells/ThreshWAbility": {
-  "mRootSpell": "Characters/Thresh/Spells/ThreshWAbility/ThreshW",
-  "mChildSpells": [
-   "Characters/Thresh/Spells/ThreshWAbility/ThreshW",
-   "Characters/Thresh/Spells/ThreshWAbility/ThreshWLanternOut",
-   "Characters/Thresh/Spells/ThreshWAbility/ThreshWLanternReturn",
-   "Characters/Thresh/Spells/ThreshWAbility/ThreshWLanternVisibility",
-   "Characters/Thresh/Spells/ThreshWAbility/ThreshWShield"
-  ],
-  "__type": "AbilityObject"
- },
- "Characters/Thresh/Spells/ThreshWAbility/ThreshWLanternOut": {
-  "ObjectName": "ThreshWLanternOut",
-  "mSpell": {
-   "cooldownTime": [
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0
-   ]
-  },
-  "__type": "SpellObject"
- },
- "Characters/Thresh/Spells/ThreshWAbility/ThreshWShield": {
-  "ObjectName": "ThreshWShield",
-  "mSpell": {
-   "mSpellTags": [
-    "PositiveEffect_Boon"
-   ]
-  },
-  "__type": "SpellObject"
- },
- "Characters/Thresh/Spells/ThreshWAbility/ThreshWLanternReturn": {
-  "ObjectName": "ThreshWLanternReturn",
-  "mSpell": {
-   "cooldownTime": [
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0
-   ]
-  },
-  "__type": "SpellObject"
- },
- "Characters/Thresh/Spells/ThreshWAbility/ThreshW": {
-  "ObjectName": "ThreshW",
-  "mSpell": {
-   "mSpellTags": [
-    "PositiveEffect_Boon",
-    "Trait_Shield",
-    "Trait_Target_Area",
-    "Trait_AoE"
-   ],
-   "cooldownTime": [
-    21.0,
-    21.0,
-    20.0,
-    19.0,
-    18.0,
-    17.0,
-    16.0
-   ],
-   "mClientData": {
-    "mTooltipData": {
-     "mLocKeys": {
-      "keyTooltip": "Spell_ThreshW_Tooltip"
-     }
-    }
-   }
-  },
-  "__type": "SpellObject"
- },
- "Characters/Thresh/Spells/ThreshEAbility": {
-  "mRootSpell": "Characters/Thresh/Spells/ThreshEAbility/ThreshE",
-  "mChildSpells": [
-   "Characters/Thresh/Spells/ThreshEAbility/ThreshE",
-   "Characters/Thresh/Spells/ThreshEAbility/ThreshEMissile1",
-   "Characters/Thresh/Spells/ThreshEAbility/ThreshEPassive",
-   "Characters/Thresh/Spells/ThreshEAbility/ThreshEPassive1",
-   "Characters/Thresh/Spells/ThreshEAbility/ThreshEPassive2",
-   "Characters/Thresh/Spells/ThreshEAbility/ThreshEPassive3",
-   "Characters/Thresh/Spells/ThreshEAbility/ThreshEPassive4",
-   "Characters/Thresh/Spells/ThreshEAbility/ThreshEStun"
-  ],
-  "__type": "AbilityObject"
- },
- "Characters/Thresh/Spells/ThreshEAbility/ThreshE": {
-  "ObjectName": "ThreshE",
-  "mSpell": {
-   "mSpellTags": [
-    "Trait_ImmobilizingCCSpell",
-    "Trait_DamageAbility",
-    "Trait_KnockBack",
-    "Trait_Melee_SmallWindup",
-    "Trait_AoE"
-   ],
-   "cooldownTime": [
-    13.0,
-    13.0,
-    12.25,
-    11.5,
-    10.75,
-    10.0,
-    9.25
-   ],
-   "mClientData": {
-    "mTooltipData": {
-     "mLocKeys": {
-      "keyTooltip": "Spell_ThreshE_Tooltip"
-     }
-    }
-   }
-  },
-  "__type": "SpellObject"
- },
- "Characters/Thresh/Spells/ThreshEAbility/ThreshEPassive": {
-  "ObjectName": "ThreshEPassive",
-  "mSpell": {},
-  "__type": "SpellObject"
- },
- "Characters/Thresh/Spells/ThreshEAbility/ThreshEMissile1": {
-  "ObjectName": "ThreshEMissile1",
-  "mSpell": {
-   "cooldownTime": [
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0
-   ]
-  },
-  "__type": "SpellObject"
- },
- "Characters/Thresh/Spells/ThreshPassiveSoulsAbility": {
-  "mRootSpell": "Characters/Thresh/Spells/ThreshPassiveSoulsAbility/ThreshPassiveSouls",
-  "mChildSpells": [
-   "Characters/Thresh/Spells/ThreshPassiveSoulsAbility/ThreshPassiveSouls",
-   "Characters/Thresh/Spells/ThreshPassiveSoulsAbility/ThreshPassiveSoulsGain"
-  ],
-  "__type": "AbilityObject"
- },
- "Characters/Thresh/Spells/ThreshPassiveSoulsAbility/ThreshPassiveSouls": {
-  "ObjectName": "ThreshPassiveSouls",
-  "mSpell": {
-   "mClientData": {
-    "mTooltipData": {
-     "mLocKeys": {
-      "keyTooltip": "Spell_ThreshPassiveSouls_Tooltip"
-     }
-    }
-   }
-  },
-  "__type": "SpellObject"
- },
- "Characters/Thresh/Spells/ThreshRPentaAbility": {
-  "mRootSpell": "Characters/Thresh/Spells/ThreshRPentaAbility/ThreshRPenta",
-  "mChildSpells": [
-   "Characters/Thresh/Spells/ThreshRPentaAbility/ThreshRPenta"
-  ],
-  "__type": "AbilityObject"
- },
- "Characters/Thresh/Spells/ThreshRPentaAbility/ThreshRPenta": {
-  "ObjectName": "ThreshRPenta",
-  "mSpell": {
-   "mSpellTags": [
-    "Trait_Ultimate",
-    "Trait_DamageAbility",
-    "Trait_AoE"
-   ],
-   "cooldownTime": [
-    120.0,
-    120.0,
-    100.0,
-    80.0,
-    80.0,
-    80.0,
-    80.0
-   ],
-   "mClientData": {
-    "mTooltipData": {
-     "mLocKeys": {
-      "keyTooltip": "Spell_ThreshRPenta_Tooltip"
-     }
-    }
-   }
-  },
-  "__type": "SpellObject"
- }
+	"Characters/Thresh/CharacterRecords/Root": {
+		"mCharacterName": "Thresh",
+		"attackRangeModifiable": {
+			"baseValue": 450.0,
+			"__type": "ModifiableFloat"
+		},
+		"spellNames": [
+			"ThreshQAbility/ThreshQ",
+			"ThreshWAbility/ThreshW",
+			"ThreshEAbility/ThreshE",
+			"ThreshRPentaAbility/ThreshRPenta"
+		],
+		"mAbilities": [
+			"Characters/Thresh/Spells/ThreshQAbility",
+			"Characters/Thresh/Spells/ThreshWAbility",
+			"Characters/Thresh/Spells/ThreshEAbility",
+			"Characters/Thresh/Spells/ThreshRPentaAbility",
+			"Characters/Thresh/Spells/ThreshPassiveSoulsAbility"
+		],
+		"__type": "CharacterRecord"
+	},
+	"Characters/Thresh/Spells/ThreshQAbility": {
+		"mRootSpell": "Characters/Thresh/Spells/ThreshQAbility/ThreshQ",
+		"mChildSpells": [
+			"Characters/Thresh/Spells/ThreshQAbility/ThreshQ",
+			"Characters/Thresh/Spells/ThreshQAbility/ThreshQInternal",
+			"Characters/Thresh/Spells/ThreshQAbility/ThreshQLeap",
+			"Characters/Thresh/Spells/ThreshQAbility/ThreshQMissile",
+			"Characters/Thresh/Spells/ThreshQAbility/ThreshQPullMissile",
+			"Characters/Thresh/Spells/ThreshQAbility/ThreshQSelfRoot"
+		],
+		"__type": "AbilityObject"
+	},
+	"Characters/Thresh/Spells/ThreshQAbility/ThreshQLeap": {
+		"ObjectName": "ThreshQLeap",
+		"mSpell": {
+			"mSpellTags": ["PositiveEffect_MoveBlock", "Trait_FreeRecast"],
+			"cooldownTime": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+			"mClientData": {
+				"mTooltipData": {
+					"mLocKeys": {
+						"keyTooltip": "Spell_ThreshQLeap_Tooltip"
+					}
+				}
+			}
+		},
+		"__type": "SpellObject"
+	},
+	"Characters/Thresh/Spells/ThreshQAbility/ThreshQ": {
+		"ObjectName": "ThreshQ",
+		"mSpell": {
+			"mSpellTags": [
+				"Trait_ImmobilizingCCSpell",
+				"Trait_DamageAbility",
+				"Trait_RecastOrReplaceSpell",
+				"Trait_SignatureSpell",
+				"Trait_Ranged_StopsFirstHit"
+			],
+			"cooldownTime": [19.0, 19.0, 16.5, 14.0, 11.5, 9.0, 9.0],
+			"mClientData": {
+				"mTooltipData": {
+					"mLocKeys": {
+						"keyTooltip": "Spell_ThreshQ_Tooltip"
+					}
+				}
+			}
+		},
+		"__type": "SpellObject"
+	},
+	"Characters/Thresh/Spells/ThreshQAbility/ThreshQInternal": {
+		"ObjectName": "ThreshQInternal",
+		"mSpell": {
+			"cooldownTime": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+		},
+		"__type": "SpellObject"
+	},
+	"Characters/Thresh/Spells/ThreshQAbility/ThreshQPullMissile": {
+		"ObjectName": "ThreshQPullMissile",
+		"mSpell": {
+			"cooldownTime": [7.5, 7.0, 6.5, 6.0, 5.5, 5.0, 5.0]
+		},
+		"__type": "SpellObject"
+	},
+	"Characters/Thresh/Spells/ThreshQAbility/ThreshQMissile": {
+		"ObjectName": "ThreshQMissile",
+		"mSpell": {
+			"cooldownTime": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+		},
+		"__type": "SpellObject"
+	},
+	"Characters/Thresh/Spells/ThreshQAbility/ThreshQSelfRoot": {
+		"ObjectName": "ThreshQSelfRoot",
+		"mSpell": {
+			"cooldownTime": [14.0, 14.0, 14.0, 14.0, 14.0, 14.0, 14.0]
+		},
+		"__type": "SpellObject"
+	},
+	"Characters/Thresh/Spells/ThreshWAbility": {
+		"mRootSpell": "Characters/Thresh/Spells/ThreshWAbility/ThreshW",
+		"mChildSpells": [
+			"Characters/Thresh/Spells/ThreshWAbility/ThreshW",
+			"Characters/Thresh/Spells/ThreshWAbility/ThreshWLanternOut",
+			"Characters/Thresh/Spells/ThreshWAbility/ThreshWLanternReturn",
+			"Characters/Thresh/Spells/ThreshWAbility/ThreshWLanternVisibility",
+			"Characters/Thresh/Spells/ThreshWAbility/ThreshWShield"
+		],
+		"__type": "AbilityObject"
+	},
+	"Characters/Thresh/Spells/ThreshWAbility/ThreshWLanternOut": {
+		"ObjectName": "ThreshWLanternOut",
+		"mSpell": {
+			"cooldownTime": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+		},
+		"__type": "SpellObject"
+	},
+	"Characters/Thresh/Spells/ThreshWAbility/ThreshWShield": {
+		"ObjectName": "ThreshWShield",
+		"mSpell": {
+			"mSpellTags": ["PositiveEffect_Boon"]
+		},
+		"__type": "SpellObject"
+	},
+	"Characters/Thresh/Spells/ThreshWAbility/ThreshWLanternReturn": {
+		"ObjectName": "ThreshWLanternReturn",
+		"mSpell": {
+			"cooldownTime": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+		},
+		"__type": "SpellObject"
+	},
+	"Characters/Thresh/Spells/ThreshWAbility/ThreshW": {
+		"ObjectName": "ThreshW",
+		"mSpell": {
+			"mSpellTags": [
+				"PositiveEffect_Boon",
+				"Trait_Shield",
+				"Trait_Target_Area",
+				"Trait_AoE"
+			],
+			"cooldownTime": [21.0, 21.0, 20.0, 19.0, 18.0, 17.0, 16.0],
+			"mClientData": {
+				"mTooltipData": {
+					"mLocKeys": {
+						"keyTooltip": "Spell_ThreshW_Tooltip"
+					}
+				}
+			}
+		},
+		"__type": "SpellObject"
+	},
+	"Characters/Thresh/Spells/ThreshEAbility": {
+		"mRootSpell": "Characters/Thresh/Spells/ThreshEAbility/ThreshE",
+		"mChildSpells": [
+			"Characters/Thresh/Spells/ThreshEAbility/ThreshE",
+			"Characters/Thresh/Spells/ThreshEAbility/ThreshEMissile1",
+			"Characters/Thresh/Spells/ThreshEAbility/ThreshEPassive",
+			"Characters/Thresh/Spells/ThreshEAbility/ThreshEPassive1",
+			"Characters/Thresh/Spells/ThreshEAbility/ThreshEPassive2",
+			"Characters/Thresh/Spells/ThreshEAbility/ThreshEPassive3",
+			"Characters/Thresh/Spells/ThreshEAbility/ThreshEPassive4",
+			"Characters/Thresh/Spells/ThreshEAbility/ThreshEStun"
+		],
+		"__type": "AbilityObject"
+	},
+	"Characters/Thresh/Spells/ThreshEAbility/ThreshE": {
+		"ObjectName": "ThreshE",
+		"mSpell": {
+			"mSpellTags": [
+				"Trait_ImmobilizingCCSpell",
+				"Trait_DamageAbility",
+				"Trait_KnockBack",
+				"Trait_Melee_SmallWindup",
+				"Trait_AoE"
+			],
+			"cooldownTime": [13.0, 13.0, 12.25, 11.5, 10.75, 10.0, 9.25],
+			"mClientData": {
+				"mTooltipData": {
+					"mLocKeys": {
+						"keyTooltip": "Spell_ThreshE_Tooltip"
+					}
+				}
+			}
+		},
+		"__type": "SpellObject"
+	},
+	"Characters/Thresh/Spells/ThreshEAbility/ThreshEPassive": {
+		"ObjectName": "ThreshEPassive",
+		"mSpell": {},
+		"__type": "SpellObject"
+	},
+	"Characters/Thresh/Spells/ThreshEAbility/ThreshEMissile1": {
+		"ObjectName": "ThreshEMissile1",
+		"mSpell": {
+			"cooldownTime": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+		},
+		"__type": "SpellObject"
+	},
+	"Characters/Thresh/Spells/ThreshPassiveSoulsAbility": {
+		"mRootSpell": "Characters/Thresh/Spells/ThreshPassiveSoulsAbility/ThreshPassiveSouls",
+		"mChildSpells": [
+			"Characters/Thresh/Spells/ThreshPassiveSoulsAbility/ThreshPassiveSouls",
+			"Characters/Thresh/Spells/ThreshPassiveSoulsAbility/ThreshPassiveSoulsGain"
+		],
+		"__type": "AbilityObject"
+	},
+	"Characters/Thresh/Spells/ThreshPassiveSoulsAbility/ThreshPassiveSouls": {
+		"ObjectName": "ThreshPassiveSouls",
+		"mSpell": {
+			"mClientData": {
+				"mTooltipData": {
+					"mLocKeys": {
+						"keyTooltip": "Spell_ThreshPassiveSouls_Tooltip"
+					}
+				}
+			}
+		},
+		"__type": "SpellObject"
+	},
+	"Characters/Thresh/Spells/ThreshRPentaAbility": {
+		"mRootSpell": "Characters/Thresh/Spells/ThreshRPentaAbility/ThreshRPenta",
+		"mChildSpells": [
+			"Characters/Thresh/Spells/ThreshRPentaAbility/ThreshRPenta"
+		],
+		"__type": "AbilityObject"
+	},
+	"Characters/Thresh/Spells/ThreshRPentaAbility/ThreshRPenta": {
+		"ObjectName": "ThreshRPenta",
+		"mSpell": {
+			"mSpellTags": ["Trait_Ultimate", "Trait_DamageAbility", "Trait_AoE"],
+			"cooldownTime": [120.0, 120.0, 100.0, 80.0, 80.0, 80.0, 80.0],
+			"mClientData": {
+				"mTooltipData": {
+					"mLocKeys": {
+						"keyTooltip": "Spell_ThreshRPenta_Tooltip"
+					}
+				}
+			}
+		},
+		"__type": "SpellObject"
+	}
 }

@@ -1,335 +1,222 @@
 {
- "Characters/Yasuo/CharacterRecords/Root": {
-  "mCharacterName": "Yasuo",
-  "attackRangeModifiable": {
-   "baseValue": 175.0,
-   "__type": "ModifiableFloat"
-  },
-  "spellNames": [
-   "YasuoQ1WrapperAbility/YasuoQ1Wrapper",
-   "YasuoWAbility/YasuoW",
-   "YasuoEAbility/YasuoE",
-   "YasuoRAbility/YasuoR"
-  ],
-  "mAbilities": [
-   "Characters/Yasuo/Spells/YasuoRAbility",
-   "Characters/Yasuo/Spells/YasuoQ1WrapperAbility",
-   "Characters/Yasuo/Spells/YasuoWAbility",
-   "Characters/Yasuo/Spells/YasuoEAbility",
-   "Characters/Yasuo/Spells/YasuoPassiveAbility"
-  ],
-  "__type": "CharacterRecord"
- },
- "Characters/Yasuo/Spells/YasuoQ1WrapperAbility": {
-  "mRootSpell": "Characters/Yasuo/Spells/YasuoQ1WrapperAbility/YasuoQ1Wrapper",
-  "mChildSpells": [
-   "Characters/Yasuo/Spells/YasuoQ1WrapperAbility/YasuoQ1Wrapper",
-   "Characters/Yasuo/Spells/YasuoQ1WrapperAbility/YasuoQ",
-   "Characters/Yasuo/Spells/YasuoQ1WrapperAbility/YasuoQ1",
-   "Characters/Yasuo/Spells/YasuoQ1WrapperAbility/YasuoQ2",
-   "Characters/Yasuo/Spells/YasuoQ1WrapperAbility/YasuoQ2Wrapper",
-   "Characters/Yasuo/Spells/YasuoQ1WrapperAbility/YasuoQ3",
-   "Characters/Yasuo/Spells/YasuoQ1WrapperAbility/YasuoQ3Mis",
-   "Characters/Yasuo/Spells/YasuoQ1WrapperAbility/YasuoQ3W",
-   "Characters/Yasuo/Spells/YasuoQ1WrapperAbility/YasuoQ3Wrapper",
-   "Characters/Yasuo/Spells/YasuoQ1WrapperAbility/YasuoQW"
-  ],
-  "__type": "AbilityObject"
- },
- "Characters/Yasuo/Spells/YasuoQ1WrapperAbility/YasuoQ3Mis": {
-  "ObjectName": "YasuoQ3Mis",
-  "mSpell": {
-   "cooldownTime": [
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0
-   ]
-  },
-  "__type": "SpellObject"
- },
- "Characters/Yasuo/Spells/YasuoQ1WrapperAbility/YasuoQ": {
-  "ObjectName": "YasuoQ",
-  "mSpell": {
-   "cooldownTime": [
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0
-   ]
-  },
-  "__type": "SpellObject"
- },
- "Characters/Yasuo/Spells/YasuoQ1WrapperAbility/YasuoQ1Wrapper": {
-  "ObjectName": "YasuoQ1Wrapper",
-  "mSpell": {
-   "mSpellTags": [
-    "Trait_ImmobilizingCCAbility",
-    "Trait_DamageAbility",
-    "Trait_RecastOrReplaceSpell",
-    "Trait_Strike",
-    "Trait_Target_Directional",
-    "Trait_AoE",
-    "Trait_NotBenefitFromHaste"
-   ],
-   "cooldownTime": [
-    4.0,
-    4.0,
-    4.0,
-    4.0,
-    4.0,
-    4.0,
-    4.0
-   ],
-   "mClientData": {
-    "mTooltipData": {
-     "mLocKeys": {
-      "keyTooltip": "Spell_YasuoQ1Wrapper_Tooltip"
-     }
-    }
-   }
-  },
-  "__type": "SpellObject"
- },
- "Characters/Yasuo/Spells/YasuoQ1WrapperAbility/YasuoQ2Wrapper": {
-  "ObjectName": "YasuoQ2Wrapper",
-  "mSpell": {
-   "mSpellTags": [
-    "Trait_ImmobilizingCCAbility"
-   ],
-   "cooldownTime": [
-    4.0,
-    4.0,
-    4.0,
-    4.0,
-    4.0,
-    4.0,
-    4.0
-   ]
-  },
-  "__type": "SpellObject"
- },
- "Characters/Yasuo/Spells/YasuoQ1WrapperAbility/YasuoQ3": {
-  "ObjectName": "YasuoQ3",
-  "mSpell": {
-   "cooldownTime": [
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0
-   ]
-  },
-  "__type": "SpellObject"
- },
- "Characters/Yasuo/Spells/YasuoQ1WrapperAbility/YasuoQ2": {
-  "ObjectName": "YasuoQ2",
-  "mSpell": {
-   "cooldownTime": [
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0
-   ]
-  },
-  "__type": "SpellObject"
- },
- "Characters/Yasuo/Spells/YasuoQ1WrapperAbility/YasuoQ1": {
-  "ObjectName": "YasuoQ1",
-  "mSpell": {
-   "cooldownTime": [
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0
-   ]
-  },
-  "__type": "SpellObject"
- },
- "Characters/Yasuo/Spells/YasuoQ1WrapperAbility/YasuoQW": {
-  "ObjectName": "YasuoQW",
-  "mSpell": {
-   "cooldownTime": [
-    6.5,
-    6.0,
-    5.5,
-    5.0,
-    4.5,
-    4.0,
-    4.0
-   ]
-  },
-  "__type": "SpellObject"
- },
- "Characters/Yasuo/Spells/YasuoQ1WrapperAbility/YasuoQ3W": {
-  "ObjectName": "YasuoQ3W",
-  "mSpell": {
-   "cooldownTime": [
-    6.5,
-    6.0,
-    5.5,
-    5.0,
-    4.5,
-    4.0,
-    4.0
-   ]
-  },
-  "__type": "SpellObject"
- },
- "Characters/Yasuo/Spells/YasuoQ1WrapperAbility/YasuoQ3Wrapper": {
-  "ObjectName": "YasuoQ3Wrapper",
-  "mSpell": {
-   "mSpellTags": [
-    "Trait_ImmobilizingCCSpell"
-   ],
-   "cooldownTime": [
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0
-   ]
-  },
-  "__type": "SpellObject"
- },
- "Characters/Yasuo/Spells/YasuoEAbility": {
-  "mRootSpell": "Characters/Yasuo/Spells/YasuoEAbility/YasuoE",
-  "mChildSpells": [
-   "Characters/Yasuo/Spells/YasuoEAbility/YasuoE"
-  ],
-  "__type": "AbilityObject"
- },
- "Characters/Yasuo/Spells/YasuoEAbility/YasuoE": {
-  "ObjectName": "YasuoE",
-  "mSpell": {
-   "mSpellTags": [
-    "PositiveEffect_MoveBlock",
-    "Trait_DamageAbility",
-    "Trait_Low_Damage",
-    "Trait_NotBenefitFromHaste"
-   ],
-   "cooldownTime": [
-    0.5,
-    0.5,
-    0.4000000059604645,
-    0.30000001192092896,
-    0.20000000298023224,
-    0.10000000149011612,
-    0.10000000149011612
-   ],
-   "mClientData": {
-    "mTooltipData": {
-     "mLocKeys": {
-      "keyTooltip": "Spell_YasuoE_Tooltip"
-     }
-    }
-   }
-  },
-  "__type": "SpellObject"
- },
- "Characters/Yasuo/Spells/YasuoPassiveAbility": {
-  "mRootSpell": "Characters/Yasuo/Spells/YasuoPassiveAbility/YasuoPassive",
-  "mChildSpells": [
-   "Characters/Yasuo/Spells/YasuoPassiveAbility/YasuoPassive"
-  ],
-  "__type": "AbilityObject"
- },
- "Characters/Yasuo/Spells/YasuoRAbility": {
-  "mRootSpell": "Characters/Yasuo/Spells/YasuoRAbility/YasuoR",
-  "mChildSpells": [
-   "Characters/Yasuo/Spells/YasuoRAbility/YasuoR"
-  ],
-  "__type": "AbilityObject"
- },
- "Characters/Yasuo/Spells/YasuoWAbility": {
-  "mRootSpell": "Characters/Yasuo/Spells/YasuoWAbility/YasuoW",
-  "mChildSpells": [
-   "Characters/Yasuo/Spells/YasuoWAbility/YasuoW"
-  ],
-  "__type": "AbilityObject"
- },
- "Characters/Yasuo/Spells/YasuoRAbility/YasuoR": {
-  "ObjectName": "YasuoR",
-  "mSpell": {
-   "mSpellTags": [
-    "Trait_Ultimate",
-    "PositiveEffect_MoveBlock",
-    "Trait_ImmobilizingCCSpell",
-    "Trait_DamageAbility",
-    "Trait_SignatureSpell",
-    "Trait_AoE"
-   ],
-   "cooldownTime": [
-    105.0,
-    70.0,
-    50.0,
-    30.0,
-    30.0,
-    30.0,
-    30.0
-   ],
-   "mClientData": {
-    "mTooltipData": {
-     "mLocKeys": {
-      "keyTooltip": "Spell_YasuoR_Tooltip"
-     }
-    }
-   }
-  },
-  "__type": "SpellObject"
- },
- "Characters/Yasuo/Spells/YasuoPassiveAbility/YasuoPassive": {
-  "ObjectName": "YasuoPassive",
-  "mSpell": {
-   "mClientData": {
-    "mTooltipData": {
-     "mLocKeys": {
-      "keyTooltip": "Spell_YasuoPassive_Tooltip"
-     }
-    }
-   }
-  },
-  "__type": "SpellObject"
- },
- "Characters/Yasuo/Spells/YasuoWAbility/YasuoW": {
-  "ObjectName": "YasuoW",
-  "mSpell": {
-   "mSpellTags": [
-    "Trait_ProjectileDestruction"
-   ],
-   "cooldownTime": [
-    27.0,
-    25.0,
-    23.0,
-    21.0,
-    19.0,
-    17.0,
-    15.0
-   ],
-   "mClientData": {
-    "mTooltipData": {
-     "mLocKeys": {
-      "keyTooltip": "Spell_YasuoW_Tooltip"
-     }
-    }
-   }
-  },
-  "__type": "SpellObject"
- }
+	"Characters/Yasuo/CharacterRecords/Root": {
+		"mCharacterName": "Yasuo",
+		"attackRangeModifiable": {
+			"baseValue": 175.0,
+			"__type": "ModifiableFloat"
+		},
+		"spellNames": [
+			"YasuoQ1WrapperAbility/YasuoQ1Wrapper",
+			"YasuoWAbility/YasuoW",
+			"YasuoEAbility/YasuoE",
+			"YasuoRAbility/YasuoR"
+		],
+		"mAbilities": [
+			"Characters/Yasuo/Spells/YasuoRAbility",
+			"Characters/Yasuo/Spells/YasuoQ1WrapperAbility",
+			"Characters/Yasuo/Spells/YasuoWAbility",
+			"Characters/Yasuo/Spells/YasuoEAbility",
+			"Characters/Yasuo/Spells/YasuoPassiveAbility"
+		],
+		"__type": "CharacterRecord"
+	},
+	"Characters/Yasuo/Spells/YasuoQ1WrapperAbility": {
+		"mRootSpell": "Characters/Yasuo/Spells/YasuoQ1WrapperAbility/YasuoQ1Wrapper",
+		"mChildSpells": [
+			"Characters/Yasuo/Spells/YasuoQ1WrapperAbility/YasuoQ1Wrapper",
+			"Characters/Yasuo/Spells/YasuoQ1WrapperAbility/YasuoQ",
+			"Characters/Yasuo/Spells/YasuoQ1WrapperAbility/YasuoQ1",
+			"Characters/Yasuo/Spells/YasuoQ1WrapperAbility/YasuoQ2",
+			"Characters/Yasuo/Spells/YasuoQ1WrapperAbility/YasuoQ2Wrapper",
+			"Characters/Yasuo/Spells/YasuoQ1WrapperAbility/YasuoQ3",
+			"Characters/Yasuo/Spells/YasuoQ1WrapperAbility/YasuoQ3Mis",
+			"Characters/Yasuo/Spells/YasuoQ1WrapperAbility/YasuoQ3W",
+			"Characters/Yasuo/Spells/YasuoQ1WrapperAbility/YasuoQ3Wrapper",
+			"Characters/Yasuo/Spells/YasuoQ1WrapperAbility/YasuoQW"
+		],
+		"__type": "AbilityObject"
+	},
+	"Characters/Yasuo/Spells/YasuoQ1WrapperAbility/YasuoQ3Mis": {
+		"ObjectName": "YasuoQ3Mis",
+		"mSpell": {
+			"cooldownTime": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+		},
+		"__type": "SpellObject"
+	},
+	"Characters/Yasuo/Spells/YasuoQ1WrapperAbility/YasuoQ": {
+		"ObjectName": "YasuoQ",
+		"mSpell": {
+			"cooldownTime": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+		},
+		"__type": "SpellObject"
+	},
+	"Characters/Yasuo/Spells/YasuoQ1WrapperAbility/YasuoQ1Wrapper": {
+		"ObjectName": "YasuoQ1Wrapper",
+		"mSpell": {
+			"mSpellTags": [
+				"Trait_ImmobilizingCCAbility",
+				"Trait_DamageAbility",
+				"Trait_RecastOrReplaceSpell",
+				"Trait_Strike",
+				"Trait_Target_Directional",
+				"Trait_AoE",
+				"Trait_NotBenefitFromHaste"
+			],
+			"cooldownTime": [4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0],
+			"mClientData": {
+				"mTooltipData": {
+					"mLocKeys": {
+						"keyTooltip": "Spell_YasuoQ1Wrapper_Tooltip"
+					}
+				}
+			}
+		},
+		"__type": "SpellObject"
+	},
+	"Characters/Yasuo/Spells/YasuoQ1WrapperAbility/YasuoQ2Wrapper": {
+		"ObjectName": "YasuoQ2Wrapper",
+		"mSpell": {
+			"mSpellTags": ["Trait_ImmobilizingCCAbility"],
+			"cooldownTime": [4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0]
+		},
+		"__type": "SpellObject"
+	},
+	"Characters/Yasuo/Spells/YasuoQ1WrapperAbility/YasuoQ3": {
+		"ObjectName": "YasuoQ3",
+		"mSpell": {
+			"cooldownTime": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+		},
+		"__type": "SpellObject"
+	},
+	"Characters/Yasuo/Spells/YasuoQ1WrapperAbility/YasuoQ2": {
+		"ObjectName": "YasuoQ2",
+		"mSpell": {
+			"cooldownTime": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+		},
+		"__type": "SpellObject"
+	},
+	"Characters/Yasuo/Spells/YasuoQ1WrapperAbility/YasuoQ1": {
+		"ObjectName": "YasuoQ1",
+		"mSpell": {
+			"cooldownTime": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+		},
+		"__type": "SpellObject"
+	},
+	"Characters/Yasuo/Spells/YasuoQ1WrapperAbility/YasuoQW": {
+		"ObjectName": "YasuoQW",
+		"mSpell": {
+			"cooldownTime": [6.5, 6.0, 5.5, 5.0, 4.5, 4.0, 4.0]
+		},
+		"__type": "SpellObject"
+	},
+	"Characters/Yasuo/Spells/YasuoQ1WrapperAbility/YasuoQ3W": {
+		"ObjectName": "YasuoQ3W",
+		"mSpell": {
+			"cooldownTime": [6.5, 6.0, 5.5, 5.0, 4.5, 4.0, 4.0]
+		},
+		"__type": "SpellObject"
+	},
+	"Characters/Yasuo/Spells/YasuoQ1WrapperAbility/YasuoQ3Wrapper": {
+		"ObjectName": "YasuoQ3Wrapper",
+		"mSpell": {
+			"mSpellTags": ["Trait_ImmobilizingCCSpell"],
+			"cooldownTime": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+		},
+		"__type": "SpellObject"
+	},
+	"Characters/Yasuo/Spells/YasuoEAbility": {
+		"mRootSpell": "Characters/Yasuo/Spells/YasuoEAbility/YasuoE",
+		"mChildSpells": ["Characters/Yasuo/Spells/YasuoEAbility/YasuoE"],
+		"__type": "AbilityObject"
+	},
+	"Characters/Yasuo/Spells/YasuoEAbility/YasuoE": {
+		"ObjectName": "YasuoE",
+		"mSpell": {
+			"mSpellTags": [
+				"PositiveEffect_MoveBlock",
+				"Trait_DamageAbility",
+				"Trait_Low_Damage",
+				"Trait_NotBenefitFromHaste"
+			],
+			"cooldownTime": [
+				0.5, 0.5, 0.4000000059604645, 0.30000001192092896, 0.20000000298023224,
+				0.10000000149011612, 0.10000000149011612
+			],
+			"mClientData": {
+				"mTooltipData": {
+					"mLocKeys": {
+						"keyTooltip": "Spell_YasuoE_Tooltip"
+					}
+				}
+			}
+		},
+		"__type": "SpellObject"
+	},
+	"Characters/Yasuo/Spells/YasuoPassiveAbility": {
+		"mRootSpell": "Characters/Yasuo/Spells/YasuoPassiveAbility/YasuoPassive",
+		"mChildSpells": [
+			"Characters/Yasuo/Spells/YasuoPassiveAbility/YasuoPassive"
+		],
+		"__type": "AbilityObject"
+	},
+	"Characters/Yasuo/Spells/YasuoRAbility": {
+		"mRootSpell": "Characters/Yasuo/Spells/YasuoRAbility/YasuoR",
+		"mChildSpells": ["Characters/Yasuo/Spells/YasuoRAbility/YasuoR"],
+		"__type": "AbilityObject"
+	},
+	"Characters/Yasuo/Spells/YasuoWAbility": {
+		"mRootSpell": "Characters/Yasuo/Spells/YasuoWAbility/YasuoW",
+		"mChildSpells": ["Characters/Yasuo/Spells/YasuoWAbility/YasuoW"],
+		"__type": "AbilityObject"
+	},
+	"Characters/Yasuo/Spells/YasuoRAbility/YasuoR": {
+		"ObjectName": "YasuoR",
+		"mSpell": {
+			"mSpellTags": [
+				"Trait_Ultimate",
+				"PositiveEffect_MoveBlock",
+				"Trait_ImmobilizingCCSpell",
+				"Trait_DamageAbility",
+				"Trait_SignatureSpell",
+				"Trait_AoE"
+			],
+			"cooldownTime": [105.0, 70.0, 50.0, 30.0, 30.0, 30.0, 30.0],
+			"mClientData": {
+				"mTooltipData": {
+					"mLocKeys": {
+						"keyTooltip": "Spell_YasuoR_Tooltip"
+					}
+				}
+			}
+		},
+		"__type": "SpellObject"
+	},
+	"Characters/Yasuo/Spells/YasuoPassiveAbility/YasuoPassive": {
+		"ObjectName": "YasuoPassive",
+		"mSpell": {
+			"mClientData": {
+				"mTooltipData": {
+					"mLocKeys": {
+						"keyTooltip": "Spell_YasuoPassive_Tooltip"
+					}
+				}
+			}
+		},
+		"__type": "SpellObject"
+	},
+	"Characters/Yasuo/Spells/YasuoWAbility/YasuoW": {
+		"ObjectName": "YasuoW",
+		"mSpell": {
+			"mSpellTags": ["Trait_ProjectileDestruction"],
+			"cooldownTime": [27.0, 25.0, 23.0, 21.0, 19.0, 17.0, 15.0],
+			"mClientData": {
+				"mTooltipData": {
+					"mLocKeys": {
+						"keyTooltip": "Spell_YasuoW_Tooltip"
+					}
+				}
+			}
+		},
+		"__type": "SpellObject"
+	}
 }

@@ -67,6 +67,18 @@ it("has no ultimate cooldown when the fourth slot is not an ultimate", () => {
 	expect(readKit("Galio", body, tooltips).ultCooldown).toBeNull();
 });
 
+it("reads the main spell even when the ability does not list it as a child", () => {
+	const body = structuredClone(fixture("galio.bin.json")) as Record<
+		string,
+		{ mChildSpells?: string[] }
+	>;
+	const ability = body["Characters/Galio/Spells/GalioRAbility"];
+	if (ability) ability.mChildSpells = [];
+	expect(readKit("Galio", body, tooltips).slots.r.statuses).toEqual([
+		"knockup",
+	]);
+});
+
 it("rejects a response without a character record", () => {
 	expect(() => readKit("Galio", {}, tooltips)).toThrow(/character record/i);
 });
@@ -94,12 +106,13 @@ it("normalizes tooltip status words", () => {
 
 it("stores only spell tooltips and accepts its own cached shape", () => {
 	const cached = tooltipsBody(tooltips);
-	expect(Object.keys(cached.entries).every((key) => key.endsWith("_tooltip")))
-		.toBe(true);
+	expect(
+		Object.keys(cached.entries).every((key) => key.endsWith("_tooltip")),
+	).toBe(true);
 	expect(readTooltips(cached)).toEqual(tooltips);
-	expect(readTooltips({ entries: { other: "x", spell_a_tooltip: "y" } })).toEqual(
-		{ spell_a_tooltip: "y" },
-	);
+	expect(
+		readTooltips({ entries: { other: "x", spell_a_tooltip: "y" } }),
+	).toEqual({ spell_a_tooltip: "y" });
 });
 
 it("builds the CommunityDragon urls from the pinned patch", () => {

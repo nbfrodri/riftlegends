@@ -1,4 +1,3 @@
-import { type Client, OfflineCacheMiss } from "./client.ts";
 import {
 	bin,
 	type ChampionKit,
@@ -7,6 +6,7 @@ import {
 	stringtableUrl,
 	tooltipsBody,
 } from "./champion-kit-source.ts";
+import { type Client, OfflineCacheMiss } from "./client.ts";
 
 /**
  * Downloads the kit of each champion (#340). A champion whose file is missing
@@ -33,9 +33,7 @@ export async function fetchKits(
 		try {
 			kits.set(
 				id,
-				await client.get(bin(patch, id), (body) =>
-					readKit(id, body, tooltips),
-				),
+				await client.get(bin(patch, id), (body) => readKit(id, body, tooltips)),
 			);
 		} catch (error) {
 			const absent =

@@ -1,257 +1,187 @@
 {
- "Characters/Malphite/CharacterRecords/Root": {
-  "mCharacterName": "Malphite",
-  "attackRangeModifiable": {
-   "baseValue": 125.0,
-   "__type": "ModifiableFloat"
-  },
-  "spellNames": [
-   "SeismicShardAbility/SeismicShard",
-   "ObduracyAbility/Obduracy",
-   "LandslideAbility/Landslide",
-   "UFSlashAbility/UFSlash"
-  ],
-  "mAbilities": [
-   "Characters/Malphite/Spells/SeismicShardAbility",
-   "Characters/Malphite/Spells/ObduracyAbility",
-   "Characters/Malphite/Spells/LandslideAbility",
-   "Characters/Malphite/Spells/UFSlashAbility",
-   "Characters/Malphite/Spells/MalphiteShieldAbility"
-  ],
-  "__type": "CharacterRecord"
- },
- "Characters/Malphite/Spells/MalphiteShieldAbility": {
-  "mRootSpell": "Characters/Malphite/Spells/MalphiteShieldAbility/MalphiteShield",
-  "mChildSpells": [
-   "Characters/Malphite/Spells/MalphiteShieldAbility/MalphiteShield",
-   "Characters/Malphite/Spells/MalphiteShieldAbility/Malphite_Shield_Cooldown",
-   "Characters/Malphite/Spells/MalphiteShieldAbility/MalphiteArmorSizeScale"
-  ],
-  "__type": "AbilityObject"
- },
- "Characters/Malphite/Spells/MalphiteShieldAbility/MalphiteShield": {
-  "ObjectName": "MalphiteShield",
-  "mSpell": {
-   "mClientData": {
-    "mTooltipData": {
-     "mLocKeys": {
-      "keyTooltip": "game_character_passiveTooltip_Malphite"
-     }
-    }
-   }
-  },
-  "__type": "SpellObject"
- },
- "Characters/Malphite/Spells/ObduracyAbility": {
-  "mRootSpell": "Characters/Malphite/Spells/ObduracyAbility/Obduracy",
-  "mChildSpells": [
-   "Characters/Malphite/Spells/ObduracyAbility/Obduracy",
-   "Characters/Malphite/Spells/ObduracyAbility/ObduracyAttack",
-   "Characters/Malphite/Spells/ObduracyAbility/MalphiteThunderclap",
-   "Characters/Malphite/Spells/ObduracyAbility/MalphiteObduracyEffect",
-   "Characters/Malphite/Spells/ObduracyAbility/MalphiteCleave"
-  ],
-  "__type": "AbilityObject"
- },
- "Characters/Malphite/Spells/ObduracyAbility/MalphiteCleave": {
-  "ObjectName": "MalphiteCleave",
-  "mSpell": {
-   "cooldownTime": [
-    16.0,
-    16.0,
-    16.0,
-    16.0,
-    16.0,
-    16.0,
-    16.0
-   ]
-  },
-  "__type": "SpellObject"
- },
- "Characters/Malphite/Spells/ObduracyAbility/ObduracyAttack": {
-  "ObjectName": "ObduracyAttack",
-  "mSpell": {
-   "cooldownTime": [
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0
-   ]
-  },
-  "__type": "SpellObject"
- },
- "Characters/Malphite/Spells/ObduracyAbility/MalphiteThunderclap": {
-  "ObjectName": "MalphiteThunderclap",
-  "mSpell": {
-   "cooldownTime": [
-    16.0,
-    16.0,
-    16.0,
-    16.0,
-    16.0,
-    16.0,
-    16.0
-   ]
-  },
-  "__type": "SpellObject"
- },
- "Characters/Malphite/Spells/ObduracyAbility/Obduracy": {
-  "ObjectName": "Obduracy",
-  "mSpell": {
-   "mSpellTags": [
-    "Trait_AttackReset",
-    "Trait_DamageAbility",
-    "Trait_AttackBuff_Duration",
-    "Trait_Strike",
-    "Trait_AoE"
-   ],
-   "cooldownTime": [
-    10.0,
-    10.0,
-    9.5,
-    9.0,
-    8.5,
-    8.0,
-    8.0
-   ],
-   "mClientData": {
-    "mTooltipData": {
-     "mLocKeys": {
-      "keyTooltip": "Spell_Obduracy_Tooltip"
-     }
-    }
-   }
-  },
-  "__type": "SpellObject"
- },
- "Characters/Malphite/Spells/UFSlashAbility": {
-  "mRootSpell": "Characters/Malphite/Spells/UFSlashAbility/UFSlash",
-  "mChildSpells": [
-   "Characters/Malphite/Spells/UFSlashAbility/UFSlash",
-   "Characters/Malphite/Spells/UFSlashAbility/UnstoppableForceStun"
-  ],
-  "__type": "AbilityObject"
- },
- "Characters/Malphite/Spells/UFSlashAbility/UnstoppableForceStun": {
-  "ObjectName": "UnstoppableForceStun",
-  "mSpell": {
-   "cooldownTime": [
-    75.0,
-    75.0,
-    75.0,
-    75.0,
-    75.0,
-    75.0,
-    75.0
-   ]
-  },
-  "__type": "SpellObject"
- },
- "Characters/Malphite/Spells/UFSlashAbility/UFSlash": {
-  "ObjectName": "UFSlash",
-  "mSpell": {
-   "mSpellTags": [
-    "Trait_Ultimate",
-    "PositiveEffect_MoveBlock",
-    "Trait_ChannelSpell",
-    "Trait_ImmobilizingCCSpell",
-    "Trait_PlayerSelectedDashDirection",
-    "Trait_DamageAbility",
-    "Trait_AoE"
-   ],
-   "cooldownTime": [
-    130.0,
-    130.0,
-    115.0,
-    100.0,
-    100.0,
-    100.0,
-    100.0
-   ],
-   "mClientData": {
-    "mTooltipData": {
-     "mLocKeys": {
-      "keyTooltip": "Spell_UFSlash_Tooltip"
-     }
-    }
-   }
-  },
-  "__type": "SpellObject"
- },
- "Characters/Malphite/Spells/LandslideAbility": {
-  "mRootSpell": "Characters/Malphite/Spells/LandslideAbility/Landslide",
-  "mChildSpells": [
-   "Characters/Malphite/Spells/LandslideAbility/Landslide",
-   "Characters/Malphite/Spells/LandslideAbility/LandslideDebuff"
-  ],
-  "__type": "AbilityObject"
- },
- "Characters/Malphite/Spells/SeismicShardAbility": {
-  "mRootSpell": "Characters/Malphite/Spells/SeismicShardAbility/SeismicShard",
-  "mChildSpells": [
-   "Characters/Malphite/Spells/SeismicShardAbility/SeismicShard",
-   "Characters/Malphite/Spells/SeismicShardAbility/SeismicShardBuff"
-  ],
-  "__type": "AbilityObject"
- },
- "Characters/Malphite/Spells/SeismicShardAbility/SeismicShardBuff": {
-  "ObjectName": "SeismicShardBuff",
-  "mSpell": {},
-  "__type": "SpellObject"
- },
- "Characters/Malphite/Spells/SeismicShardAbility/SeismicShard": {
-  "ObjectName": "SeismicShard",
-  "mSpell": {
-   "mSpellTags": [
-    "Trait_DamageAbility",
-    "Trait_SignatureSpell"
-   ],
-   "cooldownTime": [
-    8.0,
-    8.0,
-    8.0,
-    8.0,
-    8.0,
-    8.0,
-    8.0
-   ],
-   "mClientData": {
-    "mTooltipData": {
-     "mLocKeys": {
-      "keyTooltip": "Spell_SeismicShard_Tooltip"
-     }
-    }
-   }
-  },
-  "__type": "SpellObject"
- },
- "Characters/Malphite/Spells/LandslideAbility/Landslide": {
-  "ObjectName": "Landslide",
-  "mSpell": {
-   "mSpellTags": [
-    "Trait_DamageAbility",
-    "Trait_AoE"
-   ],
-   "cooldownTime": [
-    7.0,
-    7.0,
-    7.0,
-    7.0,
-    7.0,
-    7.0,
-    7.0
-   ],
-   "mClientData": {
-    "mTooltipData": {
-     "mLocKeys": {
-      "keyTooltip": "Spell_Landslide_Tooltip"
-     }
-    }
-   }
-  },
-  "__type": "SpellObject"
- }
+	"Characters/Malphite/CharacterRecords/Root": {
+		"mCharacterName": "Malphite",
+		"attackRangeModifiable": {
+			"baseValue": 125.0,
+			"__type": "ModifiableFloat"
+		},
+		"spellNames": [
+			"SeismicShardAbility/SeismicShard",
+			"ObduracyAbility/Obduracy",
+			"LandslideAbility/Landslide",
+			"UFSlashAbility/UFSlash"
+		],
+		"mAbilities": [
+			"Characters/Malphite/Spells/SeismicShardAbility",
+			"Characters/Malphite/Spells/ObduracyAbility",
+			"Characters/Malphite/Spells/LandslideAbility",
+			"Characters/Malphite/Spells/UFSlashAbility",
+			"Characters/Malphite/Spells/MalphiteShieldAbility"
+		],
+		"__type": "CharacterRecord"
+	},
+	"Characters/Malphite/Spells/MalphiteShieldAbility": {
+		"mRootSpell": "Characters/Malphite/Spells/MalphiteShieldAbility/MalphiteShield",
+		"mChildSpells": [
+			"Characters/Malphite/Spells/MalphiteShieldAbility/MalphiteShield",
+			"Characters/Malphite/Spells/MalphiteShieldAbility/Malphite_Shield_Cooldown",
+			"Characters/Malphite/Spells/MalphiteShieldAbility/MalphiteArmorSizeScale"
+		],
+		"__type": "AbilityObject"
+	},
+	"Characters/Malphite/Spells/MalphiteShieldAbility/MalphiteShield": {
+		"ObjectName": "MalphiteShield",
+		"mSpell": {
+			"mClientData": {
+				"mTooltipData": {
+					"mLocKeys": {
+						"keyTooltip": "game_character_passiveTooltip_Malphite"
+					}
+				}
+			}
+		},
+		"__type": "SpellObject"
+	},
+	"Characters/Malphite/Spells/ObduracyAbility": {
+		"mRootSpell": "Characters/Malphite/Spells/ObduracyAbility/Obduracy",
+		"mChildSpells": [
+			"Characters/Malphite/Spells/ObduracyAbility/Obduracy",
+			"Characters/Malphite/Spells/ObduracyAbility/ObduracyAttack",
+			"Characters/Malphite/Spells/ObduracyAbility/MalphiteThunderclap",
+			"Characters/Malphite/Spells/ObduracyAbility/MalphiteObduracyEffect",
+			"Characters/Malphite/Spells/ObduracyAbility/MalphiteCleave"
+		],
+		"__type": "AbilityObject"
+	},
+	"Characters/Malphite/Spells/ObduracyAbility/MalphiteCleave": {
+		"ObjectName": "MalphiteCleave",
+		"mSpell": {
+			"cooldownTime": [16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0]
+		},
+		"__type": "SpellObject"
+	},
+	"Characters/Malphite/Spells/ObduracyAbility/ObduracyAttack": {
+		"ObjectName": "ObduracyAttack",
+		"mSpell": {
+			"cooldownTime": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+		},
+		"__type": "SpellObject"
+	},
+	"Characters/Malphite/Spells/ObduracyAbility/MalphiteThunderclap": {
+		"ObjectName": "MalphiteThunderclap",
+		"mSpell": {
+			"cooldownTime": [16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0]
+		},
+		"__type": "SpellObject"
+	},
+	"Characters/Malphite/Spells/ObduracyAbility/Obduracy": {
+		"ObjectName": "Obduracy",
+		"mSpell": {
+			"mSpellTags": [
+				"Trait_AttackReset",
+				"Trait_DamageAbility",
+				"Trait_AttackBuff_Duration",
+				"Trait_Strike",
+				"Trait_AoE"
+			],
+			"cooldownTime": [10.0, 10.0, 9.5, 9.0, 8.5, 8.0, 8.0],
+			"mClientData": {
+				"mTooltipData": {
+					"mLocKeys": {
+						"keyTooltip": "Spell_Obduracy_Tooltip"
+					}
+				}
+			}
+		},
+		"__type": "SpellObject"
+	},
+	"Characters/Malphite/Spells/UFSlashAbility": {
+		"mRootSpell": "Characters/Malphite/Spells/UFSlashAbility/UFSlash",
+		"mChildSpells": [
+			"Characters/Malphite/Spells/UFSlashAbility/UFSlash",
+			"Characters/Malphite/Spells/UFSlashAbility/UnstoppableForceStun"
+		],
+		"__type": "AbilityObject"
+	},
+	"Characters/Malphite/Spells/UFSlashAbility/UnstoppableForceStun": {
+		"ObjectName": "UnstoppableForceStun",
+		"mSpell": {
+			"cooldownTime": [75.0, 75.0, 75.0, 75.0, 75.0, 75.0, 75.0]
+		},
+		"__type": "SpellObject"
+	},
+	"Characters/Malphite/Spells/UFSlashAbility/UFSlash": {
+		"ObjectName": "UFSlash",
+		"mSpell": {
+			"mSpellTags": [
+				"Trait_Ultimate",
+				"PositiveEffect_MoveBlock",
+				"Trait_ChannelSpell",
+				"Trait_ImmobilizingCCSpell",
+				"Trait_PlayerSelectedDashDirection",
+				"Trait_DamageAbility",
+				"Trait_AoE"
+			],
+			"cooldownTime": [130.0, 130.0, 115.0, 100.0, 100.0, 100.0, 100.0],
+			"mClientData": {
+				"mTooltipData": {
+					"mLocKeys": {
+						"keyTooltip": "Spell_UFSlash_Tooltip"
+					}
+				}
+			}
+		},
+		"__type": "SpellObject"
+	},
+	"Characters/Malphite/Spells/LandslideAbility": {
+		"mRootSpell": "Characters/Malphite/Spells/LandslideAbility/Landslide",
+		"mChildSpells": [
+			"Characters/Malphite/Spells/LandslideAbility/Landslide",
+			"Characters/Malphite/Spells/LandslideAbility/LandslideDebuff"
+		],
+		"__type": "AbilityObject"
+	},
+	"Characters/Malphite/Spells/SeismicShardAbility": {
+		"mRootSpell": "Characters/Malphite/Spells/SeismicShardAbility/SeismicShard",
+		"mChildSpells": [
+			"Characters/Malphite/Spells/SeismicShardAbility/SeismicShard",
+			"Characters/Malphite/Spells/SeismicShardAbility/SeismicShardBuff"
+		],
+		"__type": "AbilityObject"
+	},
+	"Characters/Malphite/Spells/SeismicShardAbility/SeismicShardBuff": {
+		"ObjectName": "SeismicShardBuff",
+		"mSpell": {},
+		"__type": "SpellObject"
+	},
+	"Characters/Malphite/Spells/SeismicShardAbility/SeismicShard": {
+		"ObjectName": "SeismicShard",
+		"mSpell": {
+			"mSpellTags": ["Trait_DamageAbility", "Trait_SignatureSpell"],
+			"cooldownTime": [8.0, 8.0, 8.0, 8.0, 8.0, 8.0, 8.0],
+			"mClientData": {
+				"mTooltipData": {
+					"mLocKeys": {
+						"keyTooltip": "Spell_SeismicShard_Tooltip"
+					}
+				}
+			}
+		},
+		"__type": "SpellObject"
+	},
+	"Characters/Malphite/Spells/LandslideAbility/Landslide": {
+		"ObjectName": "Landslide",
+		"mSpell": {
+			"mSpellTags": ["Trait_DamageAbility", "Trait_AoE"],
+			"cooldownTime": [7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0],
+			"mClientData": {
+				"mTooltipData": {
+					"mLocKeys": {
+						"keyTooltip": "Spell_Landslide_Tooltip"
+					}
+				}
+			}
+		},
+		"__type": "SpellObject"
+	}
 }

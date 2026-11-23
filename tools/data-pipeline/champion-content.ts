@@ -1,5 +1,6 @@
 import type { AiContent, MatchContent } from "@rift-legends/contracts";
 import type { RealSnapshot } from "@rift-legends/contracts/real-snapshot";
+import type { ChampionKit } from "./champion-kit-source.ts";
 import {
 	countsFor,
 	positions,
@@ -15,7 +16,6 @@ import {
 	synergyHits,
 	teamHits,
 } from "./champion-rules.ts";
-import type { ChampionKit } from "./champion-kit-source.ts";
 import { championProfile } from "./curated-champions.ts";
 import { key, orderBy } from "./normalization.ts";
 

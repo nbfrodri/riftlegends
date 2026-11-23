@@ -184,7 +184,11 @@ it("R1-R3 writes reproducible files from the cache and the snapshot", async () =
 		tier: "B",
 	});
 	expect(first[3]).not.toContain('"name"');
-	expect(provenance.kits).toMatchObject({ patch: "16.23", champions: 2, missing: [] });
+	expect(provenance.kits).toMatchObject({
+		patch: "16.23",
+		champions: 2,
+		missing: [],
+	});
 	const kits = JSON.parse(
 		await readFile(join(outputDir, "kits.json"), "utf8"),
 	) as { id: string; ultCooldown: number[] }[];
