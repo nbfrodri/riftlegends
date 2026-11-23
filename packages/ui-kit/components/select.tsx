@@ -16,7 +16,7 @@ export function SelectTrigger({
 		<Primitive.Trigger
 			data-slot="select-trigger"
 			className={withState(
-				"inline-flex min-w-0 items-center justify-between gap-2 whitespace-nowrap rounded-control border border-line bg-surface px-2 py-[5px] text-text select-none hover:not-data-disabled:border-muted data-popup-open:border-action data-disabled:cursor-default data-disabled:text-muted",
+				"press inline-flex min-w-0 items-center justify-between gap-2 whitespace-nowrap rounded-control border border-line bg-surface px-2 py-[5px] text-text select-none hover:not-data-disabled:border-muted data-popup-open:border-action data-disabled:cursor-default data-disabled:text-muted",
 				className,
 			)}
 			{...props}

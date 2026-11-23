@@ -1,5 +1,5 @@
 import { Tooltip } from "@rift-legends/ui-kit/components/tooltip";
-import { MouseRight } from "lucide-react";
+import { IdCard, MouseRight } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -34,9 +34,10 @@ export function ChampionCardHint() {
 		<Tooltip content={t("draft.card.shortcut")} shortcut="I" side="left">
 			<button
 				type="button"
-				className="ml-auto inline-flex items-center gap-1 text-xs text-muted"
+				className="press ml-auto inline-flex items-center gap-1 rounded-control px-1 text-xs text-muted hover:bg-surface hover:text-text"
 			>
-				<MouseRight aria-hidden size={14} />
+				<MouseRight aria-hidden size={16} />
+				<IdCard aria-hidden size={16} />
 				{t("draft.card.hint")}
 			</button>
 		</Tooltip>

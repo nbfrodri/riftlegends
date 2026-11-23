@@ -54,7 +54,7 @@ export async function playQuickDraftBo5(
 
 	const wins = { Forge: 0, Shoal: 0 };
 	for (let game = 1; game <= 5; game++) {
-		await expect(heading("Elección de lado")).toBeVisible();
+		await expect(heading("Lado y orden")).toBeVisible();
 		await expect(choices.first()).toBeVisible();
 		await inspectChoices?.();
 		if (game === 1) await capture?.("side-choice");

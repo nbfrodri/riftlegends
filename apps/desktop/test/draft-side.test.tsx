@@ -30,7 +30,7 @@ async function startAs(
 	}
 	seedNextSeries(team === "Forge" ? 7 : 0);
 	await user.click(screen.getByRole("button", { name: "Start series" }));
-	await screen.findByRole("heading", { level: 1, name: "Side choice" });
+	await screen.findByRole("heading", { level: 1, name: "Side and order" });
 }
 
 describe("side choice (U2)", () => {
@@ -40,6 +40,17 @@ describe("side choice (U2)", () => {
 		await startAs(user, "Forge");
 		expect(screen.getByText(/Forge won the draw/)).toBeTruthy();
 		expect(screen.getAllByRole("radio")).toHaveLength(4);
+		const crumb = screen.getByRole("navigation", { name: "You are here" });
+		expect(within(crumb).getByText("Side and order")).toBeTruthy();
+		// #376: blue and red only for map sides; the draft order is neutral.
+		const card = (name: string) =>
+			screen.getByRole("radio", { name }).closest("label")?.className ?? "";
+		expect(card("Blue side")).toMatch(/\bborder-side-blue\b/);
+		expect(card("Red side")).toMatch(/\bborder-side-red\b/);
+		for (const order of ["First pick", "Last pick"]) {
+			expect(card(order)).toMatch(/\bborder-text\b/);
+			expect(card(order)).not.toMatch(/border-(side-blue|action)\b/);
+		}
 		await user.click(screen.getByRole("radio", { name: "First pick" }));
 		await user.click(screen.getByRole("button", { name: "Confirm choice" }));
 		await screen.findByRole("button", { name: "Go to draft" });
@@ -278,6 +289,10 @@ describe("side choice with fearless", () => {
 		const locked = await screen.findByRole("region", {
 			name: "Locked champions",
 		});
+		// #376: it fills the column under the decisions, beside the series panel.
+		expect(locked.parentElement).toBe(
+			screen.getByRole("list", { name: "Decisions" }).parentElement,
+		);
 		const result = await core.api.query({
 			v: CONTRACT_VERSION,
 			kind: "match.view",
@@ -301,7 +316,9 @@ describe("side choice with fearless", () => {
 				);
 			expect(await within(list).findAllByRole("listitem")).toHaveLength(5);
 			for (const name of played) {
-				expect(within(list).getByText(name as string)).toBeTruthy();
+				expect(
+					within(list).getByRole("img", { name: name as string }),
+				).toBeTruthy();
 			}
 		}
 		expect(screen.getByText(/lost the last game/)).toBeTruthy();

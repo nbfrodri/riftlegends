@@ -10,7 +10,6 @@ import {
 } from "@rift-legends/ui-kit/components/search-select";
 import { SegmentedControl } from "@rift-legends/ui-kit/components/segmented-control";
 import { Tooltip } from "@rift-legends/ui-kit/components/tooltip";
-import { ArrowRight } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useRealBlock } from "./real-content";
@@ -312,7 +311,6 @@ export function SetupScreen() {
 					onClick={() => void start()}
 				>
 					{t("draft.setup.start")}
-					<ArrowRight aria-hidden="true" className="size-4" />
 				</Button>
 			</footer>
 		</>

@@ -90,3 +90,40 @@ test("search and all six role buttons fit on one row in the champion pool", asyn
 		expect(right).toBeLessThanOrEqual(grid.x + grid.width);
 	}
 });
+
+// #376: the board and the panels under it stay together at any window size,
+// and nothing scrolls at the minimum and default sizes.
+test("the draft fits and keeps the player card right under the board", async ({
+	appWindow,
+	electronApp,
+}) => {
+	await seedNextSeries(electronApp, 7);
+	await appWindow.getByRole("button", { name: "Start series" }).click();
+	await appWindow.getByRole("button", { name: "Confirm choice" }).click();
+	await appWindow.getByRole("button", { name: "Go to draft" }).click();
+	const board = appWindow.getByRole("region", { name: "Blue side Forge" });
+	const card = appWindow.getByRole("group", { name: /Player card/ });
+	for (const viewport of [
+		{ width: 1280, height: 720 },
+		{ width: 1366, height: 768 },
+		{ width: 1920, height: 1080 },
+	]) {
+		await appWindow.setViewportSize(viewport);
+		await expect(card).toBeInViewport({ ratio: 1 });
+		const above = await board.boundingBox();
+		const below = await card.boundingBox();
+		if (!above || !below) throw new Error("The board and the card must show");
+		const gap = below.y - (above.y + above.height);
+		expect(gap).toBeGreaterThanOrEqual(0);
+		expect(gap).toBeLessThanOrEqual(24);
+		expect(
+			await appWindow.evaluate(() => {
+				const main = document.querySelector("main");
+				return {
+					page: document.documentElement.scrollHeight - innerHeight,
+					main: main ? main.scrollHeight - main.clientHeight : 0,
+				};
+			}),
+		).toEqual({ page: 0, main: 0 });
+	}
+});

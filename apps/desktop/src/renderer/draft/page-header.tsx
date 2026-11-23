@@ -4,6 +4,11 @@ import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { teamName, useDraftSession } from "./session";
 import type { DraftStage } from "./stages";
+import { TeamCrest } from "./team-crest";
+
+// The crest's fixed box, shrunk to the score's line. The match screen has its
+// own crests in the team totals, so its score shows none.
+const crest = "shrink-0 [&_img]:h-8 [&_img]:w-11 [&_svg]:h-8 [&_svg]:w-11";
 
 type ScoreView = Pick<DraftView, "wins" | "game"> & {
 	phase?: DraftView["phase"];
@@ -27,14 +32,28 @@ function Score({ view, stage }: { view: ScoreView | null; stage: DraftStage }) {
 			aria-label={t("draft.score.label")}
 			className="m-0 grid min-w-0 border-0 p-0 grid-cols-[1fr_auto_1fr] items-center gap-x-3 text-center"
 		>
-			<span className={neutral ? "font-bold" : "font-bold text-side-blue"}>
-				{teamName(options, left.team)}
+			<span className="flex min-w-0 items-center justify-end gap-2 font-bold">
+				<span className={`truncate ${neutral ? "" : "text-side-blue"}`}>
+					{teamName(options, left.team)}
+				</span>
+				{stage !== "match" && (
+					<span className={`${crest} ${neutral ? "" : "text-side-blue"}`}>
+						<TeamCrest id={left.team} name={teamName(options, left.team)} />
+					</span>
+				)}
 			</span>
 			<b className="whitespace-nowrap font-display text-3xl">
 				{wins(left.team)} – {wins(right.team)}
 			</b>
-			<span className={neutral ? "font-bold" : "font-bold text-side-red"}>
-				{teamName(options, right.team)}
+			<span className="flex min-w-0 items-center gap-2 font-bold">
+				{stage !== "match" && (
+					<span className={`${crest} ${neutral ? "" : "text-side-red"}`}>
+						<TeamCrest id={right.team} name={teamName(options, right.team)} />
+					</span>
+				)}
+				<span className={`truncate ${neutral ? "" : "text-side-red"}`}>
+					{teamName(options, right.team)}
+				</span>
 			</span>
 			<small className="col-span-3 mt-1 text-muted">
 				{t("draft.score.game", {

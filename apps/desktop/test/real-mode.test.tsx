@@ -185,7 +185,7 @@ describe("real teams (plan 11, A2)", () => {
 		const core = await setup();
 		await chooseReal(user);
 		await user.click(screen.getByRole("button", { name: "Start series" }));
-		await screen.findByRole("heading", { level: 1, name: "Side choice" });
+		await screen.findByRole("heading", { level: 1, name: "Side and order" });
 		const start = core.sent.find(
 			(c) => c.kind === "series.start",
 		) as CoreCommand;

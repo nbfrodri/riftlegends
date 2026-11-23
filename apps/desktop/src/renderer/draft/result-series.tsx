@@ -1,6 +1,5 @@
 import type { SeriesSummary } from "@rift-legends/contracts";
-import { IconButton } from "@rift-legends/ui-kit/components/icon-button";
-import { ArrowUpRight } from "lucide-react";
+import { Button } from "@rift-legends/ui-kit/components/button";
 import { useTranslation } from "react-i18next";
 import { GameRoleIcon } from "../assets/game-role-icon";
 import { CountryFlag } from "./country-flag";
@@ -161,11 +160,15 @@ function Recap(props: {
 									{winsA} – {winsB}
 								</td>
 								<td className="px-1 py-0.5 text-right">
-									<IconButton
-										icon={ArrowUpRight}
-										label={t("draft.result.recap.view", { game: game.game })}
+									<Button
+										variant="ghost"
+										aria-label={t("draft.result.recap.view", {
+											game: game.game,
+										})}
 										onClick={() => props.onOpen(game.game)}
-									/>
+									>
+										{t("draft.result.recap.viewShort")}
+									</Button>
 								</td>
 							</tr>
 						);

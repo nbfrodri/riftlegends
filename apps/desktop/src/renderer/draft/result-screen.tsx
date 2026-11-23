@@ -4,7 +4,7 @@ import {
 	type SeriesSummary,
 } from "@rift-legends/contracts";
 import { Button } from "@rift-legends/ui-kit/components/button";
-import { ArrowRight, RotateCcw } from "lucide-react";
+import { RotateCcw } from "lucide-react";
 import { type KeyboardEvent, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -51,7 +51,7 @@ function Tabs(props: {
 		<div
 			role="tablist"
 			aria-label={t("draft.result.tabs.name")}
-			className="flex gap-1 border-line border-b"
+			className="flex gap-1 border-line border-b pb-1"
 		>
 			{tabs.map((tab, index) => (
 				<button
@@ -68,7 +68,7 @@ function Tabs(props: {
 					tabIndex={props.selected === tab ? 0 : -1}
 					onClick={() => props.onSelect(tab)}
 					onKeyDown={(event) => move(event, index)}
-					className={`-mb-px border-b-2 px-4 py-1.5 ${props.selected === tab ? "border-action font-bold text-text" : "border-transparent text-muted"}`}
+					className="press rounded-control border border-transparent px-4 py-1.5 text-muted outline-offset-2 hover:bg-surface hover:text-text focus-visible:outline-2 focus-visible:outline-action aria-selected:border-action aria-selected:bg-action/15 aria-selected:font-bold aria-selected:text-text"
 				>
 					{tab === SERIES
 						? t("draft.result.tabs.series")
@@ -163,7 +163,6 @@ function GameResultScreen(props: {
 			>
 				<Button onClick={() => present(null)}>
 					{t("draft.result.nextGame")}
-					<ArrowRight aria-hidden="true" className="size-4" />
 				</Button>
 			</Victory>
 			<GameReport game={game} summary={props.summary} showWinner={false} />

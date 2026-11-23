@@ -233,7 +233,10 @@ test("one minute takes five seconds at normal speed, with pause and both faster 
 	expect(clock()).toBe("01:12");
 	advance(250);
 	expect(clock()).toBe("01:18");
-	expect(screen.getByRole("button", { name: "View result" })).toBeTruthy();
+	// #376: the end of the match says what it does, with no arrow icon.
+	const result = screen.getByRole("button", { name: "View result" });
+	expect(result.textContent).toBe("View result");
+	expect(result.querySelector("svg")).toBeNull();
 });
 
 test("reveals facts at their second and updates the map and gold from the completed minute", async () => {

@@ -325,14 +325,15 @@ describe("series result (U10)", () => {
 		expect(screen.getByText("Series winner")).toBeTruthy();
 	});
 
-	test("recaps the maps and opens each one from an icon button", async () => {
+	test("recaps the maps and opens each one from a View button (#376: no arrow icon)", async () => {
 		const user = userEvent.setup();
 		await renderResult("over");
 		await screen.findByRole("tab", { name: "Full series" });
 		const recap = await screen.findByRole("table", { name: "Series recap" });
 		expect(within(recap).getAllByRole("row").length).toBeGreaterThan(2);
 		const button = within(recap).getByRole("button", { name: "View map 1" });
-		expect(button.textContent).toBe("");
+		expect(button.textContent).toBe("View");
+		expect(button.querySelector("svg")).toBeNull();
 		await user.click(button);
 		expect(
 			screen.getByRole("tab", { name: "Map 1" }).getAttribute("aria-selected"),
