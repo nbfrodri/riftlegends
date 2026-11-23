@@ -1,9 +1,13 @@
 {
-	"provenance": {
-		"source": "lolesports.com",
-		"endpoint": "https://esports-api.lolesports.com/persisted/gw/getLeagues?hl=en-US",
-		"retrievedAt": "1970-01-01T00:00:00.000Z",
-		"note": "Initial empty manifest pending the first official retrieval by pnpm data:leagues."
-	},
-	"leagues": []
+	"provenance": {"source":"lolesports.com","endpoint":"https://esports-api.lolesports.com/persisted/gw/getLeagues?hl=en-US","retrievedAt":"2026-11-23T22:13:08.006Z","note":"Logo URLs from the public lolesports.com web API (getLeagues). The images are downloaded by the app at runtime, never committed."},
+	"leagues": [
+		{"id":"First Stand","url":"https://static.lolesports.com/leagues/1740042025201_RG_LOL_FIRST_STAND_LOGO_VOLT_ALPHA.png","sha256":"e576bcc4944a374f716343d5a318379528c0f7b6c229809bc0e08edb6939e8ab","size":72567,"mime":"image/png"},
+		{"id":"LCK","url":"https://static.lolesports.com/leagues/lck-color-on-black.png","sha256":"1d0893042bde8b3e62e0e789ebdc380ac829d5b9c028c8cff80dcbf73aabe331","size":22172,"mime":"image/png"},
+		{"id":"LCP","url":"https://static.lolesports.com/leagues/1733468139601_lcp-color-golden.png","sha256":"ac0562931c9f0e3ce429da9edffa518e4bcfc518f9de676c6e6b412c73588952","size":45408,"mime":"image/png"},
+		{"id":"LCS","url":"https://static.lolesports.com/leagues/1706356907418_LCSNew-01-FullonDark.png","sha256":"c937026a09ada72ba0f07dff86e00737ef05157907b0be8e2b48cab7ae7d15e7","size":3166,"mime":"image/png"},
+		{"id":"LEC","url":"https://static.lolesports.com/leagues/1592516184297_LEC-01-FullonDark.png","sha256":"a922d65bb7170c454732ad3c0a094f6fba93b997868b86b894d4c4b35bcd9046","size":6656,"mime":"image/png"},
+		{"id":"LPL","url":"https://static.lolesports.com/leagues/1592516115322_LPL-01-FullonDark.png","sha256":"2118252c54d3b7530232bdcb4bd3b4376d1a7ae4736218692d7720b023271013","size":6176,"mime":"image/png"},
+		{"id":"MSI","url":"https://static.lolesports.com/leagues/1592594634248_MSIDarkBG.png","sha256":"ff2ec4e3f30f560eea7d9ee4cc0295cd0739a57bf863adc719bdab11b462ffe3","size":22682,"mime":"image/png"},
+		{"id":"Worlds","url":"https://static.lolesports.com/leagues/1592594612171_WorldsDarkBG.png","sha256":"84a2df992f961410231f3f248ca38c21eb279dcace0d82b12b17cdb8aca360b4","size":19358,"mime":"image/png"}
+	]
 }
