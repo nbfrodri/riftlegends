@@ -1,9 +1,17 @@
 import { expect, test } from "./fixtures";
+import { seedNextSeries } from "./quick-draft-flow";
+
+test.use({ appEnv: { RIFT_E2E_CORE: "1" } });
 
 // Plan 09, U3 in the real app: from the setup, the user's first ban reaches
 // the core and the board shows it.
-test("makes the user's first ban from the setup", async ({ appWindow }) => {
+test("makes the user's first ban from the setup", async ({
+	appWindow,
+	electronApp,
+}) => {
+	await seedNextSeries(electronApp, 7);
 	await appWindow.getByRole("button", { name: "Start series" }).click();
+	await appWindow.getByRole("button", { name: "Confirm choice" }).click();
 	await appWindow.getByRole("button", { name: "Go to draft" }).click();
 	await expect(appWindow.getByText("Ban 1 · Forge")).toBeVisible();
 
@@ -25,8 +33,11 @@ test("makes the user's first ban from the setup", async ({ appWindow }) => {
 
 test("search and all six role buttons fit on one row in the champion pool", async ({
 	appWindow,
+	electronApp,
 }) => {
+	await seedNextSeries(electronApp, 7);
 	await appWindow.getByRole("button", { name: "Start series" }).click();
+	await appWindow.getByRole("button", { name: "Confirm choice" }).click();
 	await appWindow.getByRole("button", { name: "Go to draft" }).click();
 	const filters = appWindow.getByRole("group", { name: "Filter by role" });
 	const buttons = filters.getByRole("button");

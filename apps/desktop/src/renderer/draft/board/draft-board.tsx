@@ -133,6 +133,7 @@ export function DraftBoard() {
 		return (
 			<TeamColumn
 				side={side}
+				first={view.first === side}
 				team={team}
 				options={options}
 				current={picking}

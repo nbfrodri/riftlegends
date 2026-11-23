@@ -61,6 +61,19 @@ export function SideSeriesPanel(props: {
 	const id = useId();
 	if (!view) return null;
 	const { rules, games } = props;
+	const taken = view.choices.find(
+		({ choice }) => choice === "blue" || choice === "red",
+	);
+	const rival = taken?.team === view.blue.team ? view.red.team : view.blue.team;
+	const current =
+		view.phase !== "side"
+			? { blue: view.blue.team, red: view.red.team }
+			: taken
+				? {
+						blue: taken.choice === "blue" ? taken.team : rival,
+						red: taken.choice === "red" ? taken.team : rival,
+					}
+				: null;
 	return (
 		<section
 			aria-labelledby={id}
@@ -114,7 +127,7 @@ export function SideSeriesPanel(props: {
 						>
 							{t("draft.score.game", { game: view.game })}
 						</th>
-						{view.phase === "side" ? (
+						{!current ? (
 							<td colSpan={2} className={`text-muted ${cell}`}>
 								{t("draft.side.pending")}
 							</td>
@@ -122,8 +135,7 @@ export function SideSeriesPanel(props: {
 							<SideCells
 								map={{
 									game: view.game,
-									blue: view.blue.team,
-									red: view.red.team,
+									...current,
 								}}
 							/>
 						)}

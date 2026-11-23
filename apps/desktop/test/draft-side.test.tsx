@@ -10,7 +10,8 @@ import {
 	useDraftSession,
 } from "../src/renderer/draft/session";
 import { draftStages, stageOf } from "../src/renderer/draft/stages";
-import { namedDraft, renderWithDraftCore } from "./draft-core";
+import { TurnControls } from "../src/renderer/draft/turn-controls";
+import { namedDraft, renderWithDraftCore, seedNextSeries } from "./draft-core";
 
 // The fearless test plays a whole game with the real core.
 configure({ asyncUtilTimeout: 10000 });
@@ -27,47 +28,42 @@ async function startAs(
 		await user.click(screen.getByRole("combobox", { name: "My team" }));
 		await user.click(await screen.findByRole("option", { name: /^Shoal\b/ }));
 	}
+	seedNextSeries(team === "Forge" ? 7 : 0);
 	await user.click(screen.getByRole("button", { name: "Start series" }));
 	await screen.findByRole("heading", { level: 1, name: "Side choice" });
 }
 
 describe("side choice (U2)", () => {
-	test("lets me pick my side when I choose, and says why (game 1 is by seeding)", async () => {
+	test("the draw winner can claim first pick and the opponent chooses the map side", async () => {
 		const user = userEvent.setup();
 		const core = await renderWithDraftCore(<DraftScreen />);
 		await startAs(user, "Forge");
-		expect(screen.getByText(/Forge chooses the side/)).toBeTruthy();
-		expect(screen.getByText(/seeding/i)).toBeTruthy();
-
-		await user.click(screen.getByRole("radio", { name: "Red side" }));
-		await user.click(screen.getByRole("button", { name: "Go to draft" }));
-
-		expect(
-			await screen.findByRole("heading", { level: 1, name: "Draft" }),
-		).toBeTruthy();
+		expect(screen.getByText(/Forge won the draw/)).toBeTruthy();
+		expect(screen.getAllByRole("radio")).toHaveLength(4);
+		await user.click(screen.getByRole("radio", { name: "First pick" }));
+		await user.click(screen.getByRole("button", { name: "Confirm choice" }));
+		await screen.findByRole("button", { name: "Go to draft" });
+		const choices = within(
+			screen.getByRole("list", { name: "Decisions" }),
+		).getAllByRole("listitem");
+		expect(choices[0]?.textContent).toContain("Forge");
+		expect(choices[0]?.textContent).toContain("First pick");
+		expect(choices[1]?.textContent).toMatch(/Shoal.*(Blue|Red) side/);
 		expect(core.sent.find((c) => c.kind === "side.choose")?.payload).toEqual({
 			team: "forge",
-			side: "red",
+			choice: "first",
 		});
-	});
-
-	test("explains each side: blue picks first, red answers with the last pick", async () => {
-		const user = userEvent.setup();
-		await renderWithDraftCore(<DraftScreen />);
-		await startAs(user, "Forge");
-
-		const blue = screen.getByRole("radio", { name: "Blue side" });
-		const red = screen.getByRole("radio", { name: "Red side" });
-		expect(blue.getAttribute("aria-describedby")).toBeTruthy();
-		expect(screen.getByRole("radio", { description: /First pick/ })).toBe(blue);
-		expect(screen.getByRole("radio", { description: /Last pick/ })).toBe(red);
-		// The order of the ten picks, as in pro play (plan 06).
+		expect(screen.getByText(/Coach's reason/)).toBeTruthy();
+		await user.click(screen.getByRole("button", { name: "Go to draft" }));
+		const side = choices[1]?.textContent?.includes("Blue side")
+			? "Red"
+			: "Blue";
 		expect(
-			screen.getByRole("img", { name: "Picks 1, 4, 5, 8, and 9" }),
+			within(
+				await screen.findByRole("region", { name: `${side} side Forge` }),
+			).getByText("First pick"),
 		).toBeTruthy();
-		expect(
-			screen.getByRole("img", { name: "Picks 2, 3, 6, 7, and 10" }),
-		).toBeTruthy();
+		expect(screen.getByText(`First pick · ${side}`)).toBeTruthy();
 	});
 
 	test("shows the series format and its fearless rule", async () => {
@@ -90,36 +86,27 @@ describe("side choice (U2)", () => {
 		).toBeNull();
 	});
 
-	test("does not wait on the AI: it chooses and the screen shows the side it took", async () => {
+	test("when the rival wins the draw the user gets only the remaining decision", async () => {
 		const user = userEvent.setup();
-		const core = await renderWithDraftCore(<DraftScreen />);
+		await renderWithDraftCore(<DraftScreen />);
 		await startAs(user, "Shoal");
-		// Forge has the better seed and is run by the AI.
-		expect(await screen.findByText(/Forge chose/)).toBeTruthy();
-		expect(core.sent.some((c) => c.kind === "draft.ai")).toBe(true);
-		expect(screen.queryByRole("radio", { name: "Red side" })).toBeNull();
-		expect(screen.getByText("Blue side").parentElement?.textContent).toContain(
-			"Forge",
-		);
-		expect(screen.getByText("Red side").parentElement?.textContent).toContain(
-			"Shoal",
-		);
-		// The series recap shows game 1's sides and who chose them.
+		const radios = await screen.findAllByRole("radio");
+		expect(radios).toHaveLength(2);
+		const first = within(
+			screen.getByRole("list", { name: "Decisions" }),
+		).getAllByRole("listitem")[0];
+		expect(first?.textContent).toContain("Forge");
+		const remaining = first?.textContent?.includes("side")
+			? ["First pick", "Last pick"]
+			: ["Blue side", "Red side"];
+		for (const name of remaining)
+			expect(screen.getByRole("radio", { name })).toBeTruthy();
+		await user.click(radios[1] as HTMLElement);
+		await user.click(screen.getByRole("button", { name: "Confirm choice" }));
+		await screen.findByRole("button", { name: "Go to draft" });
 		const history = screen.getByRole("table", { name: "Series recap" });
-		const row = await within(history).findByRole("row", { name: /Game 1/ });
-		const [blue, red] = within(row).getAllByRole("cell") as HTMLElement[];
-		expect(blue?.textContent).toContain("Forge");
 		expect(
-			within(blue as HTMLElement).getByRole("img", { name: "Chose side" }),
-		).toBeTruthy();
-		expect(red?.textContent).toContain("Shoal");
-		expect(
-			within(red as HTMLElement).queryByRole("img", { name: "Chose side" }),
-		).toBeNull();
-
-		await user.click(screen.getByRole("button", { name: "Go to draft" }));
-		expect(
-			await screen.findByRole("heading", { level: 1, name: "Draft" }),
+			within(history).getByRole("img", { name: "Chose side" }),
 		).toBeTruthy();
 	});
 });
@@ -145,7 +132,6 @@ function Driver({
 				const [a, b] = options.teams.map((team) => team.id);
 				await send("series.start", {
 					teams: [a, b],
-					seeds: [0, 1],
 					format: "bo5",
 					fearless,
 					timer: false,
@@ -160,7 +146,13 @@ function Driver({
 				if (view.game < stopAt) {
 					await send("side.choose", {
 						team: view.turn.team,
-						side: view.game === 1 ? "red" : "blue",
+						choice: view.choices.length
+							? view.game === 1
+								? "first"
+								: "last"
+							: view.game === 1
+								? "red"
+								: "blue",
 					});
 				} else {
 					present(showResult ? "result" : null);
@@ -183,7 +175,9 @@ function Flow() {
 	const Stage = draftStages[stage];
 	return (
 		<>
-			<PageHeader stage={stage} />
+			<PageHeader stage={stage}>
+				{stage === "side" && <TurnControls />}
+			</PageHeader>
 			<Stage />
 		</>
 	);
@@ -212,7 +206,8 @@ test("shows game 2 in series order until its sides are chosen", async () => {
 	expect(getByText("Shoal").className).not.toMatch(/text-side-(blue|red)/);
 
 	await user.click(screen.getByRole("radio", { name: "Blue side" }));
-	await user.click(screen.getByRole("button", { name: "Go to draft" }));
+	await user.click(screen.getByRole("button", { name: "Confirm choice" }));
+	await user.click(await screen.findByRole("button", { name: "Go to draft" }));
 	await screen.findByRole("heading", { level: 1, name: "Draft" });
 
 	expect(score.textContent).toContain("Forge0 – 1Shoal");

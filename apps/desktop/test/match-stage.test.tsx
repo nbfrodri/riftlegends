@@ -20,7 +20,6 @@ function Series() {
 			setMine("forge");
 			void send("series.start", {
 				teams: ["forge", "shoal"],
-				seeds: [1, 2],
 				format: "bo3",
 				fearless: "soft",
 				timer: false,

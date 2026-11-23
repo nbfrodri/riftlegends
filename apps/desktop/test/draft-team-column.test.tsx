@@ -45,6 +45,7 @@ async function renderColumn(picks: string[], current: number | null = null) {
 	await renderInLocale(
 		<TeamColumn
 			side="blue"
+			first
 			team={team}
 			options={options}
 			current={current}

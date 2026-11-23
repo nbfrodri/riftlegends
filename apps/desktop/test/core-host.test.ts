@@ -91,7 +91,6 @@ describe("draft sessions (plan 09, Q1)", () => {
 	const POOL = packagedDraftContent.champions.map((c) => c.id);
 	const start = {
 		teams: ["forge", "shoal"],
-		seeds: [1, 2],
 		format: "bo1",
 		fearless: "off",
 		timer: false,
@@ -109,12 +108,15 @@ describe("draft sessions (plan 09, Q1)", () => {
 		const chosen = host.receive(
 			draftMessage("side.choose", sessionId, 1, {
 				team: "forge",
-				side: "blue",
+				choice: "first",
 			}),
 		);
-		expect(chosen.result).toMatchObject({ ok: true, position: 3 });
+		expect(chosen.result).toMatchObject({ ok: true, position: 2 });
+		expect(
+			host.receive(draftMessage("draft.ai", sessionId, 2, {})).result,
+		).toMatchObject({ ok: true, position: 5 });
 		const banned = host.receive(
-			draftMessage("draft.ban", sessionId, 3, {
+			draftMessage("draft.ban", sessionId, 5, {
 				team: "forge",
 				champion: POOL[0],
 			}),
@@ -124,7 +126,7 @@ describe("draft sessions (plan 09, Q1)", () => {
 			facts: [{ type: "draft.banned", champion: POOL[0] }],
 		});
 		// The AI team reads its coach from the packaged content.
-		const ai = host.receive(draftMessage("draft.ai", sessionId, 4, {}));
+		const ai = host.receive(draftMessage("draft.ai", sessionId, 6, {}));
 		expect(ai.result).toMatchObject({
 			ok: true,
 			facts: [{ type: "ai.decided", team: "shoal" }, { type: "draft.banned" }],

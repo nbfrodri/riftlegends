@@ -8,7 +8,7 @@ import {
 import { afterEach, expect, test, vi } from "vitest";
 import { pacing } from "../src/renderer/draft/broadcast/pacing";
 import { DraftScreen } from "../src/renderer/draft/draft-screen";
-import { renderWithDraftCore } from "./draft-core";
+import { renderWithDraftCore, seedNextSeries } from "./draft-core";
 
 afterEach(() => {
 	cleanup();
@@ -22,7 +22,11 @@ async function start(timer: boolean) {
 	const core = await renderWithDraftCore(<DraftScreen />);
 	const start = await screen.findByRole("button", { name: "Start series" });
 	if (timer) fireEvent.click(screen.getByRole("radio", { name: "On" }));
+	seedNextSeries();
 	fireEvent.click(start);
+	fireEvent.click(
+		await screen.findByRole("button", { name: "Confirm choice" }),
+	);
 	const go = await screen.findByRole("button", { name: "Go to draft" });
 	vi.useFakeTimers();
 	fireEvent.click(go);
@@ -36,7 +40,9 @@ test("times out my ban once, then lets the AI act after its pause", async () => 
 	await advance(pacing.turnMs - 1000);
 	expect(screen.getByRole("timer").textContent).toContain("00:01");
 	expect(
-		core.sent.some((c) => c.kind === "draft.ai" || c.kind === "draft.timeout"),
+		core.sent
+			.slice(3)
+			.some((c) => c.kind === "draft.ai" || c.kind === "draft.timeout"),
 	).toBe(false);
 	await advance(1000);
 	expect(core.sent.at(-1)?.kind).toBe("draft.timeout");
@@ -53,7 +59,11 @@ test("with the timer off my turn waits, and reduced motion announces both bans i
 	vi.spyOn(window, "matchMedia").mockReturnValue(media);
 	const core = await start(false);
 	await advance(60_000);
-	expect(core.sent.map((c) => c.kind)).toEqual(["series.start", "side.choose"]);
+	expect(core.sent.map((c) => c.kind)).toEqual([
+		"series.start",
+		"side.choose",
+		"draft.ai",
+	]);
 	expect(screen.queryByRole("timer")).toBeNull();
 	const pool = screen.getByRole("group", { name: "Champions" });
 	fireEvent.click(within(pool).getByRole("button", { name: "Cragbell" }));
@@ -74,6 +84,7 @@ test("with the timer off my turn waits, and reduced motion announces both bans i
 	expect(core.sent.map((c) => c.kind)).toEqual([
 		"series.start",
 		"side.choose",
+		"draft.ai",
 		"draft.ban",
 		"draft.ai",
 	]);
@@ -93,6 +104,7 @@ test("confirming just before the deadline cancels that timeout on the rival's tu
 	expect(core.sent.map((c) => c.kind)).toEqual([
 		"series.start",
 		"side.choose",
+		"draft.ai",
 		"draft.ban",
 	]);
 	expect(screen.queryByRole("timer")).toBeNull();

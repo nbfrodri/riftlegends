@@ -26,34 +26,47 @@ test("#259 #310: the setup, match and results fit the default window", async ({
 	// The default window size; the compositor may tile the window otherwise.
 	await appWindow.setViewportSize({ width: 1366, height: 768 });
 	let checked = 0;
-	await playQuickDraftBo5(electronApp, appWindow, async (screen) => {
-		if (screen === "setup") {
+	await playQuickDraftBo5(
+		electronApp,
+		appWindow,
+		async (screen) => {
+			if (screen === "setup") {
+				await expectToFit(appWindow);
+				checked++;
+			}
+			if (screen === "match") {
+				await expectToFit(appWindow);
+				for (const team of ["Forge", "Shoal"])
+					await expect(
+						appWindow.getByRole("region", {
+							name: `${team} · estructuras y objetivos`,
+						}),
+					).toBeInViewport({ ratio: 1 });
+				checked++;
+			}
+			if (screen === "game-result") {
+				await expectToFit(appWindow);
+				checked++;
+			}
+			if (screen !== "series-result") return;
 			await expectToFit(appWindow);
+			const maps = appWindow.getByRole("tab", { name: /^Mapa \d$/ });
+			for (const map of await maps.all()) {
+				await map.click();
+				await expect(map).toHaveAttribute("aria-selected", "true");
+				await expectToFit(appWindow);
+			}
 			checked++;
-		}
-		if (screen === "match") {
-			await expectToFit(appWindow);
-			for (const team of ["Forge", "Shoal"])
-				await expect(
-					appWindow.getByRole("region", {
-						name: `${team} · estructuras y objetivos`,
-					}),
-				).toBeInViewport({ ratio: 1 });
-			checked++;
-		}
-		if (screen === "game-result") {
-			await expectToFit(appWindow);
-			checked++;
-		}
-		if (screen !== "series-result") return;
-		await expectToFit(appWindow);
-		const maps = appWindow.getByRole("tab", { name: /^Mapa \d$/ });
-		for (const map of await maps.all()) {
-			await map.click();
-			await expect(map).toHaveAttribute("aria-selected", "true");
-			await expectToFit(appWindow);
-		}
-		checked++;
-	});
+		},
+		async () => {
+			for (const size of [
+				{ width: 1280, height: 720 },
+				{ width: 1366, height: 768 },
+			]) {
+				await appWindow.setViewportSize(size);
+				await expectToFit(appWindow);
+			}
+		},
+	);
 	expect(checked).toBe(4);
 });

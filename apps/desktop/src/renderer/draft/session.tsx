@@ -29,7 +29,7 @@ import { localizeChampions } from "./real-content";
 
 /**
  * Presentation-only stages that the core does not know about (plan 09, "Flujo").
- * - `side`: the side the AI took, shown briefly or until the user continues.
+ * - `side`: the two confirmed choices, until the user continues.
  * - `match`: the game being replayed (the core has already played it).
  * - `result`: the finished game's result, shown until the user continues.
  */
@@ -45,7 +45,7 @@ interface DraftSession {
 	timer: boolean;
 	/** `null` until a series starts. */
 	rules: SeriesRules | null;
-	/** The team that actively chose a side, keyed by game. A draw has no chooser. */
+	/** The team that actively chose a side, keyed by game. */
 	sideChoosers: Readonly<Record<number, string>>;
 	lock: {
 		game: number;
@@ -173,7 +173,7 @@ function LoadedSession(props: {
 				for (const fact of result.facts) {
 					if (
 						fact.type === "side.chosen" &&
-						fact.by !== "draw" &&
+						fact.kind === "side" &&
 						typeof fact.game === "number" &&
 						typeof fact.team === "string"
 					) {

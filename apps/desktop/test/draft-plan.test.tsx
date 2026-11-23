@@ -27,7 +27,6 @@ function Driver() {
 			if (!view) {
 				const ok = await send("series.start", {
 					teams: ["forge", "shoal"],
-					seeds: [0, 1],
 					format: "bo1",
 					fearless: "soft",
 					timer: false,
@@ -42,7 +41,7 @@ function Driver() {
 				const lineup = suggestRoles(picks, options.positions);
 				await send("draft.roles", { team: "forge", roles: lineup });
 			} else if (view.phase === "side" && view.turn?.team === "forge") {
-				await send("side.choose", { team: "forge", side: "blue" });
+				await send("side.choose", { team: "forge", choice: "blue" });
 			} else if (view.phase !== "result") {
 				const turn = view.turn;
 				if (turn?.team !== "forge") await send("draft.ai", {});

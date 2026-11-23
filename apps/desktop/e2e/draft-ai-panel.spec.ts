@@ -1,10 +1,16 @@
 import { expect, test } from "./fixtures";
+import { seedNextSeries } from "./quick-draft-flow";
+
+test.use({ appEnv: { RIFT_E2E_CORE: "1" } });
 
 test("keeps the AI panel preference when the draft screen is reopened", async ({
 	appWindow,
+	electronApp,
 }) => {
 	async function openDraft() {
+		await seedNextSeries(electronApp, 7);
 		await appWindow.getByRole("button", { name: "Start series" }).click();
+		await appWindow.getByRole("button", { name: "Confirm choice" }).click();
 		await appWindow.getByRole("button", { name: "Go to draft" }).click();
 	}
 

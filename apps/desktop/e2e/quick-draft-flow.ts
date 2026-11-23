@@ -14,27 +14,33 @@ type QuickDraftScreen =
 	| "game-result"
 	| "series-result";
 
-export async function playQuickDraftBo5(
-	app: ElectronApplication,
-	page: Page,
-	capture?: (screen: QuickDraftScreen) => Promise<void>,
-) {
-	await app.evaluate(() => {
+/** Pin only the series root seed. Both choices still go through the real core. */
+export async function seedNextSeries(app: ElectronApplication, seed: number) {
+	await app.evaluate((_, seed) => {
 		const { send } = riftCore;
 		riftCore.send = (body) => {
 			const command = JSON.parse(body);
 			if (command.kind !== "series.start") return send(body);
 			riftCore.send = send;
-			command.payload.seed = 198;
+			command.payload.seed = seed;
 			return send(JSON.stringify(command));
 		};
-	});
+	}, seed);
+}
+
+export async function playQuickDraftBo5(
+	app: ElectronApplication,
+	page: Page,
+	capture?: (screen: QuickDraftScreen) => Promise<void>,
+	inspectChoices?: () => Promise<void>,
+) {
+	await seedNextSeries(app, 198);
 
 	const heading = (name: string) =>
 		page.getByRole("heading", { level: 1, name, exact: true });
 	const button = (name: string) =>
 		page.getByRole("button", { name, exact: true });
-	const blue = page.getByRole("radio", { name: "Lado azul", exact: true });
+	const choices = page.getByRole("radiogroup").getByRole("radio");
 	const draft = heading("Draft");
 
 	await expect(heading("Configurar serie")).toBeVisible();
@@ -48,17 +54,20 @@ export async function playQuickDraftBo5(
 
 	const wins = { Forge: 0, Shoal: 0 };
 	for (let game = 1; game <= 5; game++) {
-		if (game === 1) {
-			await expect(heading("Elección de lado")).toBeVisible();
-			await expect(blue).toBeVisible();
-			await capture?.("side-choice");
-		}
-		// When the rival chooses, the board opens automatically.
-		await expect(blue.or(draft)).toBeVisible();
-		if (await blue.isVisible()) {
-			await blue.check({ force: true });
-			await button("Ir al draft").click();
-		}
+		await expect(heading("Elección de lado")).toBeVisible();
+		await expect(choices.first()).toBeVisible();
+		await inspectChoices?.();
+		if (game === 1) await capture?.("side-choice");
+		await choices.last().check({ force: true });
+		await button("Confirmar decisión").click();
+		await expect(button("Ir al draft")).toBeVisible();
+		const decisions = page
+			.getByRole("list", { name: "Decisiones" })
+			.getByRole("listitem");
+		await expect(decisions).toHaveCount(2);
+		await expect(decisions.filter({ hasText: "Pendiente" })).toHaveCount(0);
+		await expect(page.getByText(/Motivo del coach/)).toBeVisible();
+		await button("Ir al draft").click();
 
 		await expect(draft).toBeVisible();
 		await makeDraftMoves(page, game === 1 ? capture : undefined);
@@ -94,11 +103,12 @@ export async function playQuickDraftBo5(
 			await expect(
 				page.getByText("Ganador de la serie", { exact: true }),
 			).toBeVisible();
-			await expect(
-				page
-					.getByText(`${wins.Forge} – ${wins.Shoal}`, { exact: true })
-					.first(),
-			).toBeVisible();
+			const score = page.getByRole("group", { name: "Marcador de la serie" });
+			await expect(score).toHaveText(
+				new RegExp(
+					`Forge\\s*${wins.Forge} – ${wins.Shoal}\\s*Shoal|Shoal\\s*${wins.Shoal} – ${wins.Forge}\\s*Forge`,
+				),
+			);
 			const recap = page.getByRole("table", { name: "Recorrido de la serie" });
 			await expect(recap.getByRole("row")).toHaveCount(game + 1);
 			await expect(

@@ -81,35 +81,46 @@ export function BroadcastScene() {
 				{ team, champion },
 			);
 	return (
-		<div
-			data-draft-lock={current?.position}
-			className={`relative min-w-0 overflow-hidden ${current ? "border-l-2 bg-panel px-3 py-1" : "w-0"} ${current?.team === view?.blue.team ? "border-side-blue" : "border-side-red"}`}
-		>
-			<span
-				role="status"
-				aria-label={t("draft.broadcast.label")}
-				aria-atomic="true"
-				className="sr-only"
-			>
-				{message}
-			</span>
-			{current && (
-				<div aria-hidden="true" className="grid">
-					<strong className="truncate font-display text-lg leading-tight">
-						{champion || team}
-					</strong>
-					<span
-						key={`${current.position}-${reduced}`}
-						ref={caption}
-						className="text-xs text-muted"
-					>
-						{current.champion
-							? t(`draft.broadcast.caption.${current.action}`, { team })
-							: t("draft.broadcast.noBan")}
-					</span>
-				</div>
+		<>
+			{view?.first && view.phase !== "roles" && (
+				<small
+					className={view.first === "blue" ? "text-side-blue" : "text-side-red"}
+				>
+					{t("draft.broadcast.first", {
+						side: t(`draft.side.column.${view.first}`),
+					})}
+				</small>
 			)}
-			{!reduced && <Sweep position={current?.position} />}
-		</div>
+			<div
+				data-draft-lock={current?.position}
+				className={`relative min-w-0 overflow-hidden ${current ? "border-l-2 bg-panel px-3 py-1" : "w-0"} ${current?.team === view?.blue.team ? "border-side-blue" : "border-side-red"}`}
+			>
+				<span
+					role="status"
+					aria-label={t("draft.broadcast.label")}
+					aria-atomic="true"
+					className="sr-only"
+				>
+					{message}
+				</span>
+				{current && (
+					<div aria-hidden="true" className="grid">
+						<strong className="truncate font-display text-lg leading-tight">
+							{champion || team}
+						</strong>
+						<span
+							key={`${current.position}-${reduced}`}
+							ref={caption}
+							className="text-xs text-muted"
+						>
+							{current.champion
+								? t(`draft.broadcast.caption.${current.action}`, { team })
+								: t("draft.broadcast.noBan")}
+						</span>
+					</div>
+				)}
+				{!reduced && <Sweep position={current?.position} />}
+			</div>
+		</>
 	);
 }

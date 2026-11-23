@@ -12,7 +12,7 @@ import { Profiler } from "react";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { pacing } from "../src/renderer/draft/broadcast/pacing";
 import { DraftScreen } from "../src/renderer/draft/draft-screen";
-import { namedDraft, renderWithDraftCore } from "./draft-core";
+import { namedDraft, renderWithDraftCore, seedNextSeries } from "./draft-core";
 
 afterEach(cleanup);
 
@@ -41,7 +41,11 @@ type User = ReturnType<typeof userEvent.setup>;
 /** Starts a series as Forge on the blue side: Forge bans first. */
 async function toBoard(user: User) {
 	await screen.findByRole("heading", { level: 1, name: "Set up series" });
+	seedNextSeries();
 	await user.click(screen.getByRole("button", { name: "Start series" }));
+	await user.click(
+		await screen.findByRole("button", { name: "Confirm choice" }),
+	);
 	await user.click(await screen.findByRole("button", { name: "Go to draft" }));
 	await screen.findByRole("heading", { level: 1, name: "Draft" });
 }
@@ -349,7 +353,11 @@ describe("draft board (U3)", () => {
 			</Profiler>,
 		);
 		await screen.findByRole("heading", { level: 1, name: "Set up series" });
+		seedNextSeries();
 		await user.click(screen.getByRole("button", { name: "Start series" }));
+		await user.click(
+			await screen.findByRole("button", { name: "Confirm choice" }),
+		);
 		const go = await screen.findByRole("button", { name: "Go to draft" });
 		commits = [];
 		await user.click(go);
