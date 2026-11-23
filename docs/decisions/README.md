@@ -16,6 +16,7 @@ Resumen de las decisiones **vigentes**, para empezar cualquier sesión sin volve
 | 2026-11-22 | **Meta propio de cada carrera**: la tier list parte del contenido con el que empezó la carrera y cambia con parches simulados con su semilla; cada carrera evoluciona distinta. **Maestría** de 0 a 100 por jugador y campeón, entrenable con coste de oportunidad | [plan general, Fase 7](../plans/00-plan-general.md), planes 18 y 20 |
 | 2026-11-19 | **Carreras ilimitadas**, autoguardado, ironman opcional, backups y export/import. Historial completo (palmarés, partidos, Hall of Fame, perfiles) | Planes 27 y 28 del [plan general](../plans/00-plan-general.md) |
 | 2026-11-19 | Interfaz con **i18n ES/EN** desde el inicio. PC gaming medio como objetivo. Pruebas en Arch Wayland y Windows | [ADR 0001](0001-stack-tecnologico.md) |
+| 2026-11-23 | **Scouting y origen de los jugadores:** lista abierta más ojeadores por región (únicos que descubren regens); jugadores de segundas divisiones reales, que son también la liga de las academias; **leyendas** históricas como agentes libres al empezar la carrera, con su prime mezclado con su edad actual. El modo Sandbox / Realidades se mantiene al final (Fase 10) | [IDEA §8](../../IDEA.md#8-novedades-respecto-a-draftsim) |
 
 ## Técnica
 

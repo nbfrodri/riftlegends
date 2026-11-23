@@ -132,7 +132,12 @@ Inventario basado en DraftSim, que ya validó que estos sistemas funcionan y apo
 
 ## 8. Novedades respecto a DraftSim
 
-- **Scouting e información imperfecta**: los pools y tendencias rivales se revelan investigando o viendo partidos.
+- **Scouting e información imperfecta** (decisión del usuario del 23-11-2026):
+  - **Rivales:** los pools y tendencias se revelan investigando o viendo partidos.
+  - **Búsqueda de talento:** una **lista abierta** con todos los jugadores conocidos (ligas top y segundas divisiones) y sus atributos aproximados, más **ojeadores por región** que afinan esos rangos con el tiempo y la calidad del staff, y que son la única forma de descubrir regens y talentos de SoloQ. Los ojeadores cuestan dinero.
+  - **De dónde salen los jugadores:** segundas divisiones reales (LCK CL, LDL, ERL, NACL, Circuito Desafiante…) desde Leaguepedia, con atributos por liga; **regens** de SoloQ con potencial oculto; y **leyendas** históricas.
+  - **Leyendas:** al empezar la carrera, un grupo de jugadores históricos (p. ej. Uzi) vuelve de su retirada como **agentes libres**, y la IA también puede ficharlos. Su versión mezcla su prime (experiencia, temple y lectura, sacados de su mejor año en Leaguepedia) con su edad actual (mecánicas y constancia).
+  - **Academias:** las segundas divisiones son también la liga de las academias: el filial juega allí y se suben jugadores.
 - **Objetivos de directiva y presupuesto**: expectativas por temporada y consecuencias si no se cumplen.
 - **Moral y dinámica de vestuario**: química, egos, conflictos por minutos.
 - **Entrenamiento con coste de oportunidad**: no se puede preparar todo a la vez.
@@ -179,7 +184,7 @@ Rift Legends es un **fan project no oficial y gratuito**, sin afiliación con Ri
 Resueltas (19-11-2026):
 
 - ~~¿Se empieza en una liga top o se puede subir desde ligas menores?~~ Primero ligas top; ligas menores y ascensos en una fase posterior.
-- ~~¿Jugadores reales, ficticios o ambos?~~ Reales al inicio y regens ficticios con el paso de los años.
+- ~~¿Jugadores reales, ficticios o ambos?~~ Reales al inicio y regens ficticios con el paso de los años. Desde el 23-11-2026, también segundas divisiones reales y leyendas históricas como agentes libres (§8).
 - ~~¿Cuánto detalle tiene la visualización de partidas?~~ Primero timeline de eventos; minimapa animado 2D después.
 - ~~¿Existe el despido o la carrera es infinita?~~ Sin despido por ahora (los objetivos de directiva sí existen).
 - ~~¿Draft local entre dos personas desde el inicio?~~ No por ahora.
