@@ -8,6 +8,7 @@ import { fictionalContent } from "../ai/fixtures/content";
 import { loadRealContent } from "../content/real";
 import { fictionalMatchContent } from "../match/fixtures/content";
 import { type Fact, openSession, type Session } from "../server/dispatcher";
+import { sideChoices } from "../test/take-sides";
 import { draftDispatcher, draftStateWith } from "./index";
 import type { SeriesState } from "./series";
 
@@ -55,7 +56,6 @@ const realStart = () => {
 	const [a, b] = match.teams;
 	return {
 		teams: [a?.id, b?.id],
-		seeds: [a?.seed, b?.seed],
 		format: "bo3",
 		fearless: "hard",
 		timer: false,
@@ -124,11 +124,8 @@ describe("content sets (plan 11, #251)", () => {
 
 		let s = started.session;
 		const facts: Fact[] = [...started.facts];
-		if (s.state.phase === "side") {
-			const chooser = s.state.chooser ?? "";
-			const next = accepted(
-				send(s, "side.choose", { team: chooser, side: "blue" }),
-			);
+		for (const payload of sideChoices(s.state, s.state.chooser ?? "")) {
+			const next = accepted(send(s, "side.choose", payload));
 			s = next.session;
 			facts.push(...next.facts);
 		}
@@ -150,7 +147,6 @@ describe("content sets (plan 11, #251)", () => {
 		const { content: _, ...fictional } = {
 			...realStart(),
 			teams: ["forge", "shoal"],
-			seeds: [1, 2],
 			pool: fictionalContent.champions.map((c) => c.id),
 		};
 		const started = accepted(send(withSets(), "series.start", fictional));

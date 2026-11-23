@@ -1,5 +1,4 @@
-import type { Side } from "@rift-legends/contracts";
-import { DRAFT_ORDER } from "../draft/order";
+import { DRAFT_ORDER, type Order } from "../draft/order";
 import { min, SCALE } from "../math";
 import type { Scored } from "./choose";
 import { scorePick } from "./components/pick";
@@ -15,10 +14,10 @@ export interface Reply {
 
 type Free = (team: string, picks: AiContext["picks"]) => readonly string[];
 
-function nextPick(after: number, side: Side) {
+function nextPick(after: number, order: Order) {
 	return DRAFT_ORDER.findIndex(
 		(turn, step) =>
-			step > after && turn.action === "pick" && turn.side === side,
+			step > after && turn.action === "pick" && turn.order === order,
 	);
 }
 
@@ -94,15 +93,15 @@ export function lookahead(
 	if (depth === 0 || DRAFT_ORDER[ctx.step]?.action !== "pick")
 		return { candidates: [...candidates], replies };
 
-	const rivalSide = ctx.side === "blue" ? "red" : "blue";
-	const replyStep = nextPick(ctx.step, rivalSide);
+	const rivalOrder = ctx.order === "first" ? "last" : "first";
+	const replyStep = nextPick(ctx.step, rivalOrder);
 	if (replyStep < 0) return { candidates: [...candidates], replies };
-	const answerStep = depth === 2 ? nextPick(replyStep, ctx.side) : -1;
+	const answerStep = depth === 2 ? nextPick(replyStep, ctx.order) : -1;
 
 	const adjusted = candidates.map((candidate) => {
 		const rivalTurn: AiContext = {
 			...ctx,
-			side: rivalSide,
+			order: rivalOrder,
 			team: ctx.rival,
 			rival: ctx.team,
 			wins: [ctx.wins[1], ctx.wins[0]],

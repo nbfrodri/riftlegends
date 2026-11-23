@@ -4,7 +4,7 @@ import type {
 	ContentSet,
 	MapSnapshot,
 	MatchContent,
-	Side,
+	SideChoice,
 	TeamStrategy,
 } from "@rift-legends/contracts";
 import type { Contest } from "../match/profile";
@@ -21,21 +21,13 @@ import {
 	type Format,
 	requiredPool,
 } from "./availability";
-import {
-	act,
-	assignRoles,
-	type GameDraft,
-	newGame,
-	type Roles,
-	turn,
-} from "./game";
-import { done, fail, other } from "./outcome";
+import { act, assignRoles, type GameDraft, type Roles, turn } from "./game";
+import { done, fail } from "./outcome";
 import { playResult } from "./result";
+import { type Choice, chooseSide, drawPriority } from "./sides";
 
 export interface SeriesConfig {
 	readonly teams: readonly [string, string];
-	/** Lower is better. Without seeds, game 1's sides are drawn. */
-	readonly seeds?: readonly [number, number];
 	readonly format: Format;
 	readonly fearless: Fearless;
 	readonly timer: boolean;
@@ -65,8 +57,10 @@ export interface SeriesState {
 	readonly game: number;
 	/** Wins in the order of `config.teams`. */
 	readonly wins: readonly [number, number];
-	/** Team that must choose a side before the next game. */
+	/** Team that must make a side choice before the next game. */
 	readonly chooser: string | null;
+	/** The side choices of the current game, priority first (issue #305). */
+	readonly choices: readonly Choice[];
 	readonly draft: GameDraft | null;
 	/** Picks of each finished game, by team. */
 	readonly previous: readonly Readonly<Record<string, readonly string[]>>[];
@@ -96,6 +90,7 @@ export const initialSeries: SeriesState = {
 	game: 0,
 	wins: [0, 0],
 	chooser: null,
+	choices: [],
 	draft: null,
 	previous: [],
 	content: null,
@@ -104,30 +99,6 @@ export const initialSeries: SeriesState = {
 	outcomes: [],
 	matches: [],
 	maps: [],
-};
-
-/** The sides of a game once `team` takes `side`. */
-const startGame = (
-	state: SeriesState,
-	config: SeriesConfig,
-	team: string,
-	side: Side,
-	by: "seed" | "draw" | "choice",
-) => {
-	const rival = other(config, team);
-	const [blue, red] = side === "blue" ? [team, rival] : [rival, team];
-	return {
-		state: {
-			...state,
-			phase: "draft" as const,
-			chooser: null,
-			draft: newGame(blue, red),
-		},
-		facts: [
-			{ type: "side.chosen", game: state.game, team, side, by },
-			{ type: "game.started", game: state.game, blue, red },
-		],
-	};
 };
 
 /** Whatever the series knows that decides which champions are free. */
@@ -252,7 +223,14 @@ export const seriesCommands = {
 				available: config.pool.length,
 			});
 		}
-		const started: SeriesState = { ...state, config, game: 1, phase: "side" };
+		const started: SeriesState = {
+			...state,
+			config,
+			game: 1,
+			phase: "side",
+			chooser: drawPriority(config),
+			choices: [],
+		};
 		const fact = {
 			type: "series.started",
 			teams: config.teams,
@@ -264,31 +242,13 @@ export const seriesCommands = {
 			...(config.ai ? { ai: config.ai } : {}),
 			...(config.content ? { content: config.content } : {}),
 		};
-		if (config.seeds) {
-			const [a, b] = config.seeds;
-			const chooser = b < a ? config.teams[1] : config.teams[0];
-			return done({ ...started, chooser }, fact);
-		}
-		const rng = createRng(deriveSeed(config.seed, SCOPES.draft, 0));
-		const blue = pick(rng, config.teams);
-		const game = startGame(started, config, blue, "blue", "draw");
-		return done(game.state, fact, ...game.facts);
+		return done(started, fact);
 	},
 
-	"side.choose": during<{ team: string; side: Side }>(
+	"side.choose": during<{ team: string; choice: SideChoice }>(
 		"side",
 		"side",
-		(state, config, { team, side }) => {
-			if (team !== state.chooser) return fail("not-your-turn", { team });
-			const game = startGame(
-				state,
-				config,
-				team,
-				side,
-				state.game === 1 ? "seed" : "choice",
-			);
-			return done(game.state, ...game.facts);
-		},
+		chooseSide,
 	),
 
 	"draft.ban": draftAction("ban"),

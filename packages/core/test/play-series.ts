@@ -56,7 +56,6 @@ export const playSeries = (options: PlayOptions): Fact[] => {
 
 	send("series.start", {
 		teams,
-		seeds: [1, 2],
 		format: options.format,
 		fearless: options.fearless,
 		timer: true,
@@ -73,10 +72,7 @@ export const playSeries = (options: PlayOptions): Fact[] => {
 		if (current.phase === "result" || !turn) {
 			send("match.play", {});
 		} else if (turn.action === "side") {
-			send("side.choose", {
-				team: turn.team,
-				side: pick(rng, ["blue", "red"]),
-			});
+			send("side.choose", { team: turn.team, choice: pick(rng, turn.options) });
 		} else if (turn.action === "roles") {
 			const [top, jungle, mid, bot, support] = current[turn.side].picks;
 			send("draft.roles", {
@@ -122,7 +118,6 @@ export const playAiSeries = (seed: number): Fact[] => {
 	};
 	send("series.start", {
 		teams: ["forge", "shoal"],
-		seeds: [1, 2],
 		format: "bo3",
 		fearless: "hard",
 		timer: false,

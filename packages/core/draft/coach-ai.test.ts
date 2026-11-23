@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { fictionalContent } from "../ai/fixtures/content";
 import { fictionalMatchContent } from "../match/fixtures/content";
 import { type Fact, openSession, type Session } from "../server/dispatcher";
+import { sideChoices } from "../test/take-sides";
 import { draftDispatcher, draftStateWith } from "./index";
 import type { SeriesState } from "./series";
 
@@ -35,7 +36,6 @@ const firstDecision = (match: MatchContent, ai: unknown): Fact => {
 	let s = openSession<SeriesState>(1, draftStateWith(fictionalContent, match));
 	s = send(s, "series.start", {
 		teams: ["forge", "shoal"],
-		seeds: [1, 2],
 		format: "bo1",
 		fearless: "off",
 		timer: false,
@@ -43,7 +43,8 @@ const firstDecision = (match: MatchContent, ai: unknown): Fact => {
 		seed: 7,
 		ai: [null, ai],
 	}).session;
-	s = send(s, "side.choose", { team: "forge", side: "blue" }).session;
+	for (const payload of sideChoices(s.state, "forge"))
+		s = send(s, "side.choose", payload).session;
 	s = send(s, "draft.ban", { team: "forge", champion: null }).session;
 	const decided = send(s, "draft.ai", {}).facts.find(
 		(f) => f.type === "ai.decided",

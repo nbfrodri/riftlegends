@@ -2,6 +2,8 @@ import { type AiOfTeam, ROLES } from "@rift-legends/contracts";
 import { fictionalContent } from "../ai/fixtures/content";
 import { fictionalMatchContent } from "../match/fixtures/content";
 import type { CommandHandler, Outcome } from "../server/dispatcher";
+import { takeSides } from "../test/take-sides";
+import { type GameDraft, type Turn, turn } from "./game";
 import { DRAFT_ORDER } from "./order";
 import { initialSeries, type SeriesState, seriesCommands } from "./series";
 
@@ -33,10 +35,9 @@ export const loaded = (match = fictionalMatchContent): SeriesState => ({
 });
 
 export function drafted(state = loaded(), ai?: [AiOfTeam, AiOfTeam]) {
-	let current = ok(
+	const current = ok(
 		run(state, "series.start", {
 			teams: ["forge", "shoal"],
-			seeds: [1, 2],
 			format: "bo3",
 			fearless: "off",
 			timer: false,
@@ -45,10 +46,7 @@ export function drafted(state = loaded(), ai?: [AiOfTeam, AiOfTeam]) {
 			...(ai ? { ai } : {}),
 		}),
 	).state;
-	current = ok(
-		run(current, "side.choose", { team: "forge", side: "blue" }),
-	).state;
-	return draftWith(current);
+	return draftWith(takeSides(current, "forge"));
 }
 
 /** Drafts the current game: each team picks its players' mains. */
@@ -58,12 +56,12 @@ export function draftWith(state: SeriesState) {
 	const wanted = { blue: mains(team("blue")), red: mains(team("red")) };
 	const next = { blue: 0, red: 0 };
 	for (const step of DRAFT_ORDER) {
-		const team = current.draft?.[step.side] ?? "";
+		const { team, side } = turn(current.draft as GameDraft) as Turn;
 		if (step.action === "ban") {
 			current = ok(run(current, "draft.ban", { team, champion: null })).state;
 			continue;
 		}
-		const champion = wanted[step.side][next[step.side]++];
+		const champion = wanted[side][next[side]++];
 		current = ok(run(current, "draft.pick", { team, champion })).state;
 	}
 	for (const side of ["blue", "red"] as const) {

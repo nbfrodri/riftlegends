@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { fictionalContent } from "../ai/fixtures/content";
 import { fictionalMatchContent } from "../match/fixtures/content";
 import { abs } from "../math";
+import { takeSides } from "../test/take-sides";
 import {
 	type Accepted,
 	drafted,
@@ -52,9 +53,7 @@ describe("match.play", () => {
 		);
 
 		let next = first.state;
-		const chooser = next.chooser ?? "";
-		next = ok(run(next, "side.choose", { team: chooser, side: "red" })).state;
-		next = draftWith(next);
+		next = draftWith(takeSides(next, "shoal"));
 		const second = ok(run(next, "match.play", {}));
 		expect(causes(second.facts).has("momentum")).toBe(true);
 	});
@@ -69,7 +68,6 @@ describe("match.play", () => {
 		const started = ok(
 			run(loaded(), "series.start", {
 				teams: ["forge", "shoal"],
-				seeds: [1, 2],
 				format: "bo1",
 				fearless: "off",
 				timer: false,
@@ -130,11 +128,7 @@ describe("match.play strategy", () => {
 		for (const team of played.state.match?.teams ?? []) {
 			expect(team.strategy).toEqual(balanced);
 		}
-		const chooser = played.state.chooser ?? "";
-		const side = chooser === "forge" ? "blue" : "red";
-		const next = draftWith(
-			ok(run(played.state, "side.choose", { team: chooser, side })).state,
-		);
+		const next = draftWith(takeSides(played.state, "forge"));
 		expect(profile(ok(run(next, "match.play", {})))).toEqual(profile(original));
 	});
 

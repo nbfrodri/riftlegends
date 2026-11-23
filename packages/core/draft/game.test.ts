@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { act, assignRoles, type GameDraft, newGame, turn } from "./game";
-import { DRAFT_ORDER } from "./order";
+import { DRAFT_ORDER, type DraftStep } from "./order";
+
+/** With the default draft, blue has first pick. */
+const sideOf = (step: DraftStep) => (step.order === "first" ? "blue" : "red");
 
 const BLUE = "t1";
 const RED = "geng";
@@ -9,9 +12,9 @@ const RED = "geng";
 const playAll = (game: GameDraft) => {
 	let state = game;
 	DRAFT_ORDER.forEach((step, index) => {
-		const team = step.side === "blue" ? BLUE : RED;
+		const team = sideOf(step) === "blue" ? BLUE : RED;
 		const champion =
-			step.action === "ban" ? `x${index}` : `${step.side[0]}${index}`;
+			step.action === "ban" ? `x${index}` : `${sideOf(step)[0]}${index}`;
 		const result = act(state, team, step.action, champion);
 		if (!result.ok) throw new Error(JSON.stringify(result.error));
 		state = result.value;
@@ -31,7 +34,7 @@ const rolesFor = (picks: readonly string[]) => ({
 
 describe("order (O1)", () => {
 	it("follows the professional sequence of 20 actions", () => {
-		const sequence = DRAFT_ORDER.map((s) => `${s.side[0]}${s.action[0]}`);
+		const sequence = DRAFT_ORDER.map((s) => `${sideOf(s)[0]}${s.action[0]}`);
 		expect(sequence.join(" ")).toBe(
 			[
 				"bb rb bb rb bb rb",
@@ -45,10 +48,10 @@ describe("order (O1)", () => {
 	it("gives each turn to the right team and action", () => {
 		let game = newGame(BLUE, RED);
 		DRAFT_ORDER.forEach((step, index) => {
-			const team = step.side === "blue" ? BLUE : RED;
+			const team = sideOf(step) === "blue" ? BLUE : RED;
 			expect(turn(game)).toEqual({
 				team,
-				side: step.side,
+				side: sideOf(step),
 				action: step.action,
 			});
 			const champion = step.action === "ban" ? null : `c${index}`;
@@ -92,7 +95,7 @@ describe("turns (O2)", () => {
 		});
 		let state = game;
 		for (const step of DRAFT_ORDER.slice(0, 6)) {
-			const team = step.side === "blue" ? BLUE : RED;
+			const team = sideOf(step) === "blue" ? BLUE : RED;
 			state = (act(state, team, "ban", null) as { value: GameDraft }).value;
 		}
 		expect(act(state, BLUE, "ban", "ahri")).toMatchObject({
@@ -117,7 +120,7 @@ describe("empty actions (O3)", () => {
 	it("reject an empty pick", () => {
 		let state = newGame(BLUE, RED);
 		for (const step of DRAFT_ORDER.slice(0, 6)) {
-			const team = step.side === "blue" ? BLUE : RED;
+			const team = sideOf(step) === "blue" ? BLUE : RED;
 			state = (act(state, team, "ban", null) as { value: GameDraft }).value;
 		}
 		expect(act(state, BLUE, "pick", null)).toMatchObject({

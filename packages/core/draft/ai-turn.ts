@@ -8,12 +8,14 @@ import { indexContent } from "../ai/content-index";
 import type { AiContext } from "../ai/context";
 import { lookahead } from "../ai/lookahead";
 import { PROFILES } from "../ai/profiles";
+import { decideSide } from "../ai/side-choice";
 import { SCOPES } from "../rng/scopes";
 import { deriveSeed } from "../rng/seeds";
 import { createRng } from "../rng/streams";
 import type { CommandHandler } from "../server/dispatcher";
 import { availability } from "./availability";
 import { type GameDraft, turn } from "./game";
+import type { Order } from "./order";
 import {
 	apply,
 	availabilityInput,
@@ -24,6 +26,7 @@ import {
 	seriesCommands,
 	WINS_NEEDED,
 } from "./series";
+import { sideOptions, sideSeed } from "./sides";
 
 const LOOKAHEAD_SHORTLIST = 5;
 const total = (s: Scored) => s.components.reduce((sum, c) => sum + c.points, 0);
@@ -100,9 +103,20 @@ export const aiTurn: CommandHandler<SeriesState> = (state) => {
 
 	if (state.phase === "side") {
 		const team = state.chooser as string;
-		if (!settingsOf(state, config, team))
-			return fail("wrong-action", { expected: "human" });
-		return seriesCommands["side.choose"](state, { team, side: "blue" });
+		const settings = settingsOf(state, config, team);
+		if (!settings) return fail("wrong-action", { expected: "human" });
+		const rng = createRng(sideSeed(config, state));
+		const decision = decideSide(rng, sideOptions(state), settings);
+		const chosen = seriesCommands["side.choose"](state, {
+			team,
+			choice: decision.choice,
+		});
+		if (!chosen.ok) return chosen;
+		return done(
+			chosen.state,
+			{ type: "ai.sideDecided", game: state.game, team, ...decision },
+			...chosen.facts,
+		);
 	}
 	if (state.phase !== "draft")
 		return fail("wrong-action", { expected: state.phase });
@@ -127,7 +141,7 @@ export const aiTurn: CommandHandler<SeriesState> = (state) => {
 		content: state.content,
 		team: next.team,
 		rival,
-		side: next.side,
+		order: (draft.first === next.side ? "first" : "last") as Order,
 		step: draft.step,
 		picks: input.picks,
 		bans: input.bans,

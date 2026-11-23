@@ -60,6 +60,26 @@ export const aiPerTeam = z.tuple([aiOfTeam, aiOfTeam]);
 
 const points = z.int();
 
+/**
+ * Why the AI took its side choice (issue #305): the same breakdown as a draft
+ * decision, over the choices it could take.
+ */
+export const aiSideDecidedFact = {
+	game: position,
+	team: id,
+	choice: z.enum(["blue", "red", "first", "last"]),
+	total: points,
+	components: z.array(z.strictObject({ key: id, points })),
+	alternatives: z.array(
+		z.strictObject({
+			choice: z.enum(["blue", "red", "first", "last"]),
+			total: points,
+			/** Chance of being chosen, per 10,000. */
+			chance: z.int().min(0).max(10000),
+		}),
+	),
+};
+
 export const aiDecidedFact = {
 	game: position,
 	/** Index of the step in the draft order. */

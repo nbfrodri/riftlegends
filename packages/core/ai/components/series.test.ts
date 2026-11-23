@@ -38,13 +38,13 @@ it("B4 rewards blue roster-backed flex only during the first pick phase", () => 
 	expect(side("rimefoil", { step: 9 })).toBeGreaterThan(0);
 	expect(side("rimefoil", { team: "shoal", rival: "forge", step: 9 })).toBe(0);
 	expect(side("rimefoil", { step: 17 })).toBe(0);
-	expect(side("rimefoil", { side: "red", step: 7 })).toBe(0);
+	expect(side("rimefoil", { order: "last", step: 7 })).toBe(0);
 	expect(side("cragbell", { step: 6 })).toBe(0);
 });
 
 it("B4 rewards red's final counter only when it can meet that opponent in lane", () => {
 	const side = (step: number, shoal: string[]) =>
-		pick("side", "glasswake", { side: "red", step, picks: { shoal } });
+		pick("side", "glasswake", { order: "last", step, picks: { shoal } });
 	expect(side(19, ["rimefoil"])).toBeGreaterThan(0);
 	expect(side(16, ["rimefoil"])).toBe(0);
 	expect(side(19, ["rimefoil", "prismoth"])).toBe(0);

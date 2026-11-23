@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { CommandHandler, Outcome } from "../server/dispatcher";
+import { takeSides } from "../test/take-sides";
 import { DRAFT_ORDER } from "./order";
 import { initialSeries, type SeriesState, seriesCommands } from "./series";
 
@@ -17,9 +18,9 @@ const ok = (outcome: Outcome<SeriesState>): Accepted => {
 	return outcome;
 };
 
-/** A series with the timer on, its draft just started. */
-const drafting = (seed = 5, timer = true) =>
-	ok(
+/** A series with the timer on, its draft just started: the drawn team plays blue. */
+const drafting = (seed = 5, timer = true) => {
+	const { state } = ok(
 		run(initialSeries, "series.start", {
 			teams: ["t1", "geng"],
 			format: "bo3",
@@ -28,7 +29,9 @@ const drafting = (seed = 5, timer = true) =>
 			pool: POOL,
 			seed,
 		}),
-	).state;
+	);
+	return takeSides(state, state.chooser as string);
+};
 
 /** Advances through the six first bans with timeouts. */
 const toFirstPick = (state: SeriesState) => {
