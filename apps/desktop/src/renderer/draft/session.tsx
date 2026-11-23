@@ -274,12 +274,18 @@ function LoadedSession(props: {
  * sub-screens. The session lives while the draft screen is mounted; if the core
  * loses it, a fresh one is opened and the flow starts over at the setup.
  */
-export function DraftSessionProvider({ children }: { children: ReactNode }) {
+export function DraftSessionProvider({
+	children,
+	initialContent = "fictional",
+}: {
+	children: ReactNode;
+	initialContent?: ContentSet;
+}) {
 	const openSession = useOpenSession();
 	const [sessionId, setSessionId] = useState<number | null>(null);
 	const [failure, setFailure] = useState<CoreRequestError | null>(null);
 	const [reopen, setReopen] = useState(0);
-	const [content, setContent] = useState<ContentSet>("fictional");
+	const [content, setContent] = useState<ContentSet>(initialContent);
 
 	useEffect(() => {
 		let live = true;

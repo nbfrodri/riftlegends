@@ -54,6 +54,35 @@ test("Mercado with the sidebar expanded", async ({ appWindow }) => {
 	await captureScreen(appWindow, "mercado-expanded.png");
 });
 
+test.describe("Campeones", () => {
+	test.use({ appEnv: { RIFT_E2E_CONTENT: "fictional" } });
+
+	test("Campeones with the Top tier list", async ({ appWindow }) => {
+		await goTo(appWindow, "Campeones");
+		await expect(
+			appWindow.getByRole("button", { name: "Cragbell" }),
+		).toBeVisible();
+		await appWindow.mouse.move(0, 0);
+		await captureScreen(appWindow, "campeones-top.png");
+	});
+
+	test("Campeones with a champion's detail open", async ({ appWindow }) => {
+		await goTo(appWindow, "Campeones");
+		await appWindow.getByRole("button", { name: "Rimefoil" }).click();
+		const detail = appWindow.getByRole("region", {
+			name: "Ficha de campeón: Rimefoil",
+		});
+		await expect(
+			detail.getByRole("region", { name: "Aporta a composiciones de" }),
+		).toBeVisible();
+		await expect(
+			detail.getByRole("region", { name: "Pierde contra" }),
+		).toContainText("Brassburrow");
+		await appWindow.mouse.move(0, 0);
+		await captureScreen(appWindow, "campeones-detalle.png");
+	});
+});
+
 test("Ajustes", async ({ appWindow }) => {
 	await expandSidebar(appWindow);
 	await goTo(appWindow, "Ajustes");

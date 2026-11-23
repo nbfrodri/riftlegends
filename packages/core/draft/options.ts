@@ -53,6 +53,7 @@ export const viewOptions = (
 	const champions = set.content?.champions ?? [];
 	const players = lineups(set);
 	return {
+		...(set.season !== undefined && { season: set.season }),
 		teams: (set.match?.teams ?? []).map(
 			({ id, name, seed, coach, league }) => ({
 				id,

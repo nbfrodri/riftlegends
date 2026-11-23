@@ -162,8 +162,8 @@ export const createCoreHost = () =>
 			initialState: () =>
 				draftStateWith(packagedDraftContent, packagedMatchContent, {
 					real: () => {
-						const { draft, match } = loadRealContent();
-						return { content: draft, match };
+						const { draft, match, season } = loadRealContent();
+						return { content: draft, match, season };
 					},
 				}),
 		},

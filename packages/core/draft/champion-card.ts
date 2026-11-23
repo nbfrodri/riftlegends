@@ -2,6 +2,7 @@ import type {
 	AiContent,
 	ChampionCardView,
 	ChampionRelation,
+	ContentSet,
 } from "@rift-legends/contracts";
 import { abs } from "../math/int";
 import type { SeriesState } from "./series";
@@ -33,11 +34,14 @@ function opponents(rows: Opponent[], id: string): ChampionRelation[] {
 	return [...found.values()];
 }
 
-/** The active series owns the content. Only the inspected champion crosses IPC. */
+/** The board uses the session's content. The catalog can inspect a set before play. */
 export function viewChampion(
-	{ content, match }: SeriesState,
-	{ champion: id }: { champion: string },
+	state: SeriesState,
+	{ champion: id, content: set }: { champion: string; content?: ContentSet },
 ): ChampionCardView | null {
+	const source = set ? state.library[set]?.() : state;
+	if (!source) return null;
+	const { content, match } = source;
 	const champion = content?.champions.find((c) => c.id === id);
 	const stats = match?.champions.find((c) => c.id === id);
 	if (!content || !champion || !stats) return null;
@@ -60,5 +64,9 @@ export function viewChampion(
 					: [],
 			),
 		].sort((a, b) => abs(b.value) - abs(a.value)),
+		identities: content.identities.flatMap(({ id: plan, archetypes }) => {
+			const shared = archetypes.filter((a) => champion.archetypes.includes(a));
+			return shared.length ? [{ id: plan, archetypes: shared }] : [];
+		}),
 	};
 }

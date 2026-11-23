@@ -5,6 +5,7 @@ const sizes = {
 	role: "my-3 min-h-[78px] flex-1 text-[clamp(45px,5.3vw,76px)]",
 	compact: "size-6 shrink-0 text-[10px]",
 	ban: "size-8 shrink-0 text-[12px]",
+	tile: "size-full text-[clamp(23px,2.2vw,38px)]",
 };
 
 /** Stable hue of the draft placeholder (FNV-1a). */

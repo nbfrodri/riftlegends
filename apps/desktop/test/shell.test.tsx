@@ -13,6 +13,7 @@ const sectionsEs = [
 	"Inicio",
 	"Calendario",
 	"Draft",
+	"Campeones",
 	"Plantilla",
 	"Mercado",
 	"Scouting",
@@ -23,7 +24,7 @@ const sectionsEs = [
 	"Ajustes",
 ];
 const pendingEs = sectionsEs.filter(
-	(name) => !["Draft", "Mercado", "Ajustes"].includes(name),
+	(name) => !["Draft", "Campeones", "Mercado", "Ajustes"].includes(name),
 );
 
 async function renderShell(path = "/mercado", locale = "es-ES") {
@@ -46,7 +47,7 @@ const toggle = () =>
 	screen.getByRole("button", { name: /^(contraer|expandir)$/i });
 
 describe("T5: sidebar sections", () => {
-	test("lists the eleven sections in order, with Ajustes last", async () => {
+	test("lists the sections in order, with Ajustes last", async () => {
 		await renderShell();
 		expect(
 			within(sections())
@@ -58,6 +59,7 @@ describe("T5: sidebar sections", () => {
 	// The Draft screen is titled after its current stage (plan 09).
 	test.each([
 		["Draft", "Configurar serie", "/draft"],
+		["Campeones", "Campeones", "/campeones"],
 		["Mercado", "Mercado", "/mercado"],
 		["Ajustes", "Ajustes", "/ajustes"],
 	])(
@@ -94,7 +96,7 @@ describe("T5: sidebar sections", () => {
 
 	test("available sections are not described as coming soon", async () => {
 		await renderShell();
-		for (const name of ["Draft", "Mercado", "Ajustes"]) {
+		for (const name of ["Draft", "Campeones", "Mercado", "Ajustes"]) {
 			expect(section(name).getAttribute("aria-disabled")).toBeNull();
 			expect(
 				within(sections()).queryByRole("button", {
@@ -116,6 +118,7 @@ describe("T5: sidebar sections", () => {
 			"Home",
 			"Calendar",
 			"Draft",
+			"Champions",
 			"Roster",
 			"Market",
 			"Scouting",
@@ -214,6 +217,8 @@ describe("T6: collapsing and keyboard", () => {
 	test("Tab skips the pending sections", async () => {
 		const { user } = await renderShell("/mercado");
 		section("Draft").focus();
+		await user.tab();
+		expect(document.activeElement).toBe(section("Campeones"));
 		await user.tab();
 		expect(document.activeElement).toBe(section("Mercado"));
 		await user.tab();

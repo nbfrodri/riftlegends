@@ -316,6 +316,8 @@ export type ChampionCardView = AiContent["champions"][number] & {
 	mobility: number;
 	frontline: number;
 	relations: ChampionRelation[];
+	/** Team plans (content identities) this champion feeds, and with which archetypes. */
+	identities: { id: string; archetypes: (typeof ARCHETYPES)[number][] }[];
 };
 export type AiSettings = z.infer<typeof aiSettings>;
 export type AiOfTeam = z.infer<typeof aiOfTeam>;

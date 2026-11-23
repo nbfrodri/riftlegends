@@ -74,8 +74,13 @@ async function start() {
 	if (process.env.RIFT_E2E_CORE === "1") {
 		Object.assign(globalThis, { riftCore: core });
 	}
-	const query: Record<string, string> =
-		process.env.RIFT_E2E_PROBE === "1" ? { probe: "core" } : {};
+	const query: Record<string, string> = {
+		...(process.env.RIFT_E2E_PROBE === "1" && { probe: "core" }),
+		// E2E only: the Champions screen with the fictional set (offline tests).
+		...(process.env.RIFT_E2E_CONTENT === "fictional" && {
+			content: "fictional",
+		}),
+	};
 
 	if (import.meta.env.DEV && process.env.ELECTRON_RENDERER_URL) {
 		const url = new URL(process.env.ELECTRON_RENDERER_URL);

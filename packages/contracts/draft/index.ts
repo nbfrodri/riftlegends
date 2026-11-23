@@ -98,7 +98,10 @@ export const draftCommands = defineCommands({
 export const draftQueries = defineQueries({
 	/** `team` is who looks: with soft fearless, availability depends on it. */
 	"draft.view": z.strictObject({ team: teamId.optional() }),
-	"draft.champion": z.strictObject({ champion: championId }),
+	"draft.champion": z.strictObject({
+		champion: championId,
+		content: contentSet.optional(),
+	}),
 	/** A strategy suggestion for the only human team in the current draft. */
 	"match.plan": z.strictObject({}),
 	/** The facts of a played game, to replay it without simulating again. */
@@ -230,6 +233,7 @@ export const draftView = z.strictObject({
 
 /** What `series.options` answers. Teams follow the content order. */
 export const seriesOptions = z.strictObject({
+	season: z.number().int().positive().optional(),
 	teams: z.array(
 		matchContent.shape.teams.element
 			.pick({

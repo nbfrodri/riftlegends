@@ -5,6 +5,7 @@ import {
 	createRouter,
 	redirect,
 } from "@tanstack/react-router";
+import { ChampionsScreen } from "./champions-screen";
 import { DraftScreen, MarketScreen, SettingsScreen } from "./screens";
 import { Shell } from "./shell";
 
@@ -27,6 +28,12 @@ const draftRoute = createRoute({
 	component: DraftScreen,
 });
 
+const championsRoute = createRoute({
+	getParentRoute: () => rootRoute,
+	path: "campeones",
+	component: ChampionsScreen,
+});
+
 const marketRoute = createRoute({
 	getParentRoute: () => rootRoute,
 	path: "mercado",
@@ -42,6 +49,7 @@ const settingsRoute = createRoute({
 const routeTree = rootRoute.addChildren([
 	indexRoute,
 	draftRoute,
+	championsRoute,
 	marketRoute,
 	settingsRoute,
 ]);

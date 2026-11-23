@@ -9,7 +9,7 @@ import { GameRoleIcon } from "../../assets/game-role-icon";
 import { CoreErrorMessage, useCoreQuery } from "../../core";
 import { ChampionPortrait } from "../champion-portrait";
 import { championLabel, useDraftSession } from "../session";
-import { ChampionRelations } from "./champion-relations";
+import { ChampionRelations, Section } from "./champion-relations";
 
 function Profile({ card }: { card: ChampionCardView }) {
 	const { t } = useTranslation();
@@ -42,23 +42,52 @@ function Profile({ card }: { card: ChampionCardView }) {
 	);
 }
 
+/** "Contributes to comps": the content's team plans fed by this champion's archetypes. */
+function TeamPlans({ card }: { card: ChampionCardView }) {
+	const { t } = useTranslation();
+	return (
+		<Section title={t("draft.card.plans")}>
+			{card.identities.length ? (
+				<ul className="space-y-1.5">
+					{card.identities.map(({ id, archetypes }) => (
+						<li key={id} className="bg-surface px-2.5 py-2">
+							<strong className="text-[14px]">
+								{t(`draft.card.plan.${id}`, { defaultValue: id })}
+							</strong>
+							<span className="block text-xs text-muted">
+								{archetypes
+									.map((a) => t(`draft.card.archetype.${a}`))
+									.join(", ")}
+							</span>
+						</li>
+					))}
+				</ul>
+			) : (
+				<p className="text-muted">{t("draft.card.noPlans")}</p>
+			)}
+		</Section>
+	);
+}
+
 export function ChampionCard({
 	id,
 	left,
+	large = false,
 	onClose,
 }: {
 	id: string;
-	left: boolean;
+	left?: boolean;
+	large?: boolean;
 	onClose: () => void;
 }) {
 	const { t } = useTranslation();
-	const { sessionId, options, view, mine } = useDraftSession();
+	const { sessionId, options, view, mine, content } = useDraftSession();
 	const card = useCoreQuery<ChampionCardView | null>(
 		{
 			v: CONTRACT_VERSION,
 			kind: "draft.champion",
 			sessionId,
-			params: { champion: id },
+			params: { champion: id, ...(!view && { content }) },
 		},
 		{ affectedBy: () => false },
 	);
@@ -79,17 +108,29 @@ export function ChampionCard({
 			ref={panel}
 			tabIndex={-1}
 			aria-label={t("draft.card.name", { name })}
-			className={`absolute inset-y-0 z-20 flex w-[calc((100%-24px)/4)] flex-col overflow-hidden rounded-control border border-line border-t-[3px] border-t-action bg-panel text-[13px] leading-snug shadow-2xl focus-visible:outline-action ${left ? "left-0" : "right-0"}`}
+			className={`flex flex-col overflow-hidden rounded-control border border-line border-t-[3px] border-t-action bg-panel leading-snug shadow-2xl focus-visible:outline-action ${large ? "h-full text-sm" : `absolute inset-y-0 z-20 w-[calc((100%-24px)/4)] text-[13px] ${left ? "left-0" : "right-0"}`}`}
 		>
 			<header className="flex shrink-0 items-start gap-2 border-b border-line bg-surface px-3 py-2.5">
-				<div className="flex shrink-0 [&>span]:size-11 [&>span]:text-base">
-					<ChampionPortrait id={id} size="ban" unavailable={!!unavailable} />
+				<div
+					className={
+						large
+							? "size-20 shrink-0"
+							: "flex shrink-0 [&>span]:size-11 [&>span]:text-base"
+					}
+				>
+					<ChampionPortrait
+						id={id}
+						size={large ? "tile" : "ban"}
+						unavailable={!!unavailable}
+					/>
 				</div>
 				<div className="min-w-0 flex-1">
 					<p className="text-[10px] font-semibold uppercase tracking-wider text-action">
 						{t("draft.card.title")}
 					</p>
-					<h3 className="break-words font-display font-bold text-[18px] leading-tight tracking-heading">
+					<h3
+						className={`break-words font-display font-bold leading-tight tracking-heading ${large ? "text-3xl" : "text-[18px]"}`}
+					>
 						{name}
 					</h3>
 				</div>
@@ -109,27 +150,46 @@ export function ChampionCard({
 			>
 				{card.data ? (
 					<>
-						<ul className="flex flex-wrap gap-1.5 px-3.5 py-3">
-							{card.data.positions.map(({ role, tier }) => (
-								<li
-									key={role}
-									className="inline-flex items-center gap-1.5 border border-line px-1.5 py-0.5 text-xs"
-								>
-									<GameRoleIcon role={role} size={16} />
-									<span>{t(`market.role.${role}`)}</span>
-									<strong className="text-action">
-										{t("draft.card.tier", { tier })}
-									</strong>
-								</li>
-							))}
-						</ul>
-						<Profile card={card.data} />
-						<ChampionRelations
-							card={card.data}
-							nameOf={nameOf}
-							allies={own?.picks ?? []}
-							enemies={enemy?.picks ?? []}
-						/>
+						<div
+							className={
+								large
+									? "grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] divide-x divide-line"
+									: "contents"
+							}
+						>
+							<div>
+								<ul className="flex flex-wrap gap-1.5 px-3.5 py-3">
+									{card.data.positions.map(({ role, tier }) => (
+										<li
+											key={role}
+											className="inline-flex items-center gap-1.5 border border-line px-1.5 py-0.5 text-xs"
+										>
+											<GameRoleIcon role={role} size={16} />
+											<span>{t(`market.role.${role}`)}</span>
+											<strong className="text-action">
+												{t("draft.card.tier", { tier })}
+											</strong>
+										</li>
+									))}
+								</ul>
+								<Profile card={card.data} />
+							</div>
+							{large && <TeamPlans card={card.data} />}
+						</div>
+						<div
+							className={
+								large ? "grid grid-cols-3 divide-x divide-line" : "contents"
+							}
+						>
+							<ChampionRelations
+								card={card.data}
+								showGame={!large || !!view}
+								full={large}
+								nameOf={nameOf}
+								allies={own?.picks ?? []}
+								enemies={enemy?.picks ?? []}
+							/>
+						</div>
 					</>
 				) : card.error ? (
 					<CoreErrorMessage error={card.error} />

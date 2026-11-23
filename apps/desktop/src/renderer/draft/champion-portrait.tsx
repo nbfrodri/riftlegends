@@ -7,6 +7,7 @@ import { useDraftContent } from "./session";
 const large = new Set<ComponentProps<typeof ChampionFace>["size"]>([
 	"pool",
 	"role",
+	"tile",
 ]);
 
 /**

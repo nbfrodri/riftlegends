@@ -1,11 +1,18 @@
-import type {
-	ChampionCardView,
-	ChampionRelation,
+import {
+	type ChampionCardView,
+	type ChampionRelation,
+	ROLES,
 } from "@rift-legends/contracts";
 import { type ReactNode, useId } from "react";
 import { useTranslation } from "react-i18next";
 
-function Section({ title, children }: { title: string; children: ReactNode }) {
+export function Section({
+	title,
+	children,
+}: {
+	title: string;
+	children: ReactNode;
+}) {
 	const id = useId();
 	return (
 		<section aria-labelledby={id} className="border-t border-line px-3.5 py-3">
@@ -98,11 +105,16 @@ export function ChampionRelations({
 	nameOf,
 	allies,
 	enemies,
+	showGame,
+	full = false,
 }: {
 	card: ChampionCardView;
 	nameOf: (id: string) => string;
 	allies: readonly string[];
 	enemies: readonly string[];
+	showGame: boolean;
+	/** The detail view: every row, grouped by lane, plus team counters. */
+	full?: boolean;
 }) {
 	const { t } = useTranslation();
 	const rows = card.relations;
@@ -129,33 +141,69 @@ export function ChampionRelations({
 			...candidates.filter((r) => r.kind === "counter").slice(0, 3),
 		];
 	};
+	const grouped = (favorable: boolean) => {
+		const candidates = rows.filter(
+			(r) => r.kind !== "synergy" && r.value > 0 === favorable,
+		);
+		const groups = [
+			...ROLES.map((role) => ({
+				key: role,
+				title: t(`market.role.${role}`),
+				rows: candidates.filter((r) => r.kind === "lane" && r.role === role),
+			})),
+			{
+				key: "counter",
+				title: t("draft.card.teamCounters"),
+				rows: candidates.filter((r) => r.kind === "counter"),
+			},
+		].filter((group) => group.rows.length > 0);
+		if (!groups.length) return list([]);
+		return groups.map((group) => (
+			<div key={group.key} className="mt-2 first:mt-0">
+				<h5 className="mb-1 font-semibold text-xs text-muted">{group.title}</h5>
+				{list(group.rows)}
+			</div>
+		));
+	};
 	return (
 		<>
-			<Section title={t("draft.card.game")}>
-				{!alliesHere.length && !enemiesHere.length && (
-					<p className="text-muted">{t("draft.card.emptyGame")}</p>
-				)}
-				{(
-					[
-						["enemies", enemiesHere],
-						["allies", alliesHere],
-					] as const
-				).map(
-					([label, subset]) =>
-						subset.length > 0 && (
-							<div key={label} className="mt-2">
-								<h5 className="mb-1 font-semibold text-xs text-muted">
-									{t(`draft.card.${label}`)}
-								</h5>
-								{list(subset)}
-							</div>
-						),
-				)}
+			{showGame && (
+				<div className="col-span-full">
+					<Section title={t("draft.card.game")}>
+						{!alliesHere.length && !enemiesHere.length && (
+							<p className="text-muted">{t("draft.card.emptyGame")}</p>
+						)}
+						{(
+							[
+								["enemies", enemiesHere],
+								["allies", alliesHere],
+							] as const
+						).map(
+							([label, subset]) =>
+								subset.length > 0 && (
+									<div key={label} className="mt-2">
+										<h5 className="mb-1 font-semibold text-xs text-muted">
+											{t(`draft.card.${label}`)}
+										</h5>
+										{list(subset)}
+									</div>
+								),
+						)}
+					</Section>
+				</div>
+			)}
+			<Section title={t("draft.card.wins")}>
+				{full ? grouped(true) : list(best(true))}
 			</Section>
-			<Section title={t("draft.card.wins")}>{list(best(true))}</Section>
-			<Section title={t("draft.card.losses")}>{list(best(false))}</Section>
+			<Section title={t("draft.card.losses")}>
+				{full ? grouped(false) : list(best(false))}
+			</Section>
 			<Section title={t("draft.card.synergies")}>
-				{list(rows.filter((r) => r.kind === "synergy").slice(0, 3))}
+				{list(
+					rows
+						.filter((r) => r.kind === "synergy")
+						.slice(0, full ? undefined : 3),
+				)}
 			</Section>
 		</>
 	);
