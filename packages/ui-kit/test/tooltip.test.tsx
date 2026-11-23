@@ -103,3 +103,41 @@ test("reduced motion shows the popup without an entrance animation", async () =>
 	await screen.findByRole("tooltip");
 	expect(animate).not.toHaveBeenCalled();
 });
+
+test("a click does not open the tooltip and leaving the trigger closes it", async () => {
+	const user = userEvent.setup();
+	render(
+		<>
+			<RailToggle />
+			<p>Elsewhere</p>
+		</>,
+	);
+	await user.click(screen.getByRole("button", { name: "Draft" }));
+	expect(screen.queryByRole("tooltip")).toBeNull();
+	await user.hover(screen.getByRole("button", { name: "Collapse sidebar" }));
+	await screen.findByRole("tooltip");
+	await user.hover(screen.getByText("Elsewhere"));
+	await waitFor(() => expect(screen.queryByRole("tooltip")).toBeNull());
+});
+
+test("hover waits for the provider delay; a disabled tooltip never opens", async () => {
+	const user = userEvent.setup();
+	render(
+		<TooltipProvider delay={300}>
+			<Tooltip content="Later">
+				<button type="button">Slow</button>
+			</Tooltip>
+			<Tooltip content="Never" disabled>
+				<button type="button">Off</button>
+			</Tooltip>
+		</TooltipProvider>,
+	);
+	await user.hover(screen.getByRole("button", { name: "Slow" }));
+	expect(screen.queryByRole("tooltip")).toBeNull();
+	expect((await screen.findByRole("tooltip")).textContent).toBe("Later");
+	await user.hover(screen.getByRole("button", { name: "Off" }));
+	await waitFor(() => expect(screen.queryByRole("tooltip")).toBeNull());
+	expect(screen.getByRole("button", { name: "Off" }).dataset.tooltip).toBe(
+		undefined,
+	);
+});
