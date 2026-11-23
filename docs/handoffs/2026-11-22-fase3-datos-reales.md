@@ -1,6 +1,6 @@
 # Handoff · Fase 3, datos reales
 
-Estado: en curso (actualizado el 23-11 por la tarde)
+Estado: en curso (actualizado el 23-11 por la noche)
 
 Para retomar en una sesión nueva. Decisiones en el [registro](../decisions/README.md); detalle en el [plan 11](../plans/11-datos-reales.md) y el [plan general](../plans/00-plan-general.md).
 
@@ -43,20 +43,33 @@ Para retomar en una sesión nueva. Decisiones en el [registro](../decisions/READ
 - **Diseño:** plan 08 ampliado para la **Fase 3.5** (#341). Scouting, segundas divisiones y leyendas (#344). Ascensos y descensos (#370).
 - **Milestone Fase 3.5** con #320, #326, #338, #339, #345–#358, #361–#364, #366 y #374.
 
+## Fusionado el 23-11 por la tarde y noche
+
+#365 ficha solo con clic derecho, #368 equipos de liga (último split o mayoría de splits), #367 retratos en alta resolución, #337 cara a cara en espejo, #378 logos sin reiniciar, #377 eventos con jugador, logo y rol, #380 iconos oficiales sin silueta, #319 pantalla de Campeones con detalle, #376 pulido del draft y reglas de botones de toda la app (sin subrayado, hover y pulsado, sin flechas). Docs: scouting y leyendas (#344), ascensos y descensos (#370).
+
 ## En curso
 
-| Issue | Rama / worktree | Estado | Cómo seguir |
+| Issue | PR / worktree | Estado | Cómo seguir |
 | --- | --- | --- | --- |
-| #319 pantalla de Campeones | `feat/319-champions-screen`, `../riftlegends-319` | Codex gpt-6.2-astra high, cortado por límite; reanudación programada a las 22:50 | `~/.cache/rift-tmp/codex/319-report.json` o `319-events2.jsonl`; revisar, capturas, PR |
-| #360 fotos de jugadores | `feat/360-player-photos`, `../riftlegends-360` | Codex gpt-6.2-sol high, igual | Igual. Codex no tiene red: lanzar después el comando que regenera `photos.json` |
+| #360 fotos y ficha de jugador | PR #389, `../riftlegends-360` | 323/397 fotos; capturas en el CI (nuevo estado `quick-draft-player-card.png`) | Revisar la captura con el usuario, subir PNG, fusionar |
+| #387 logos de ligas y eventos | PR #392, `../riftlegends-387` | 8/9 logos (CBLOL sin logo en la API) | Capturas, fusionar |
+| #379 filas del draft y fase de roles | PR #393, `../riftlegends-379` | Listo, `SIM_VERSION` 4 | Rebasar tras #389 y #392, capturas al usuario, fusionar |
+| #386 pantalla de carga y solo contenido real | `../riftlegends-386` | Subagente de Claude trabajando | Revisar, capturas, fusionar |
 
-Para reanudar a mano: `~/.cache/rift-tmp/codex/resume.sh NN MODELO EFFORT` (usa el `thread_id` guardado en `NN.thread`).
+Codex sin uso hasta el 24-11 a las 3:52. Reanudar a mano con `~/.cache/rift-tmp/codex/resume.sh NN MODELO EFFORT`.
 
 ## Siguiente (por orden)
 
-1. Cerrar la Fase 3: #319, #360, #340 (rasgos desde los datos del juego), #297 (partir módulos) y #253 (calibración real, E2E real, modo real por defecto y créditos).
-2. Subir el tiempo límite del test que parsea el contenido real (`packages/core/content/real.test.ts`): pasa de 5 s con la máquina cargada.
-3. Fase 3.5, en el orden de dependencias de sus issues.
+1. Cerrar la Fase 3: lo de «En curso», #340 (rasgos desde los datos del juego), #297 (partir módulos), #391 (Electron a veces no arranca en el CI) y #253 (calibración real, E2E real y créditos).
+2. Fase 3.5 (simulación por composiciones) en el orden de sus issues. Incluye #361 larvas, #362 efectos de objetivos, #363 lado y objetivos, #364 IA por orden y lado, #366 multikills, #374 hechizos de invocador.
+3. Fase 6: #384 colores del mercado, #385 filtros del mercado.
+
+## Avisos
+
+- **No usar `git stash`:** se comparte entre worktrees y ya mezcló trabajo de dos agentes. Usar commits WIP.
+- Con varios agentes a la vez, los tests de UI pasan de 5 s y fallan por tiempo. Repetir aislado; el CI decide.
+- Las capturas del CI no tienen caché: salen los iconos de respaldo y el contenido ficticio. Abrirlas al usuario con `xdg-open` antes de fusionar.
+- Títulos de PR siempre en inglés (el squash los convierte en el commit).
 
 ## Cómo trabajar
 
