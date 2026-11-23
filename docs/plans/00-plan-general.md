@@ -110,6 +110,9 @@ Cada fase termina con un hito verificable y un commit o PR fusionado en `main`. 
 - **Nacionalidad e idioma:** el dato y la bandera llegan con los datos reales (plan 11); el efecto en la química, con el plan 21, y las plazas de importados, con el plan 17.
 - **Finanzas** (plan 30): ingresos, gastos, sueldos, primas, traspasos y buyouts, reglas salariales por liga y presupuesto de la directiva.
 - **Salida:** 10 temporadas simuladas con distribuciones de edad, nivel, fichajes **y saldo de los clubes** dentro de bandas Monte Carlo acordadas (ningún club IA se arruina ni acumula dinero sin límite).
+- **Mercado vivo (petición del usuario, 23-11-2026):** los clubes de la IA también fichan. Hacen ofertas por jugadores de otros equipos, incluidos los del usuario, pagan buyouts y negocian renovaciones según sus necesidades de plantilla, su presupuesto y su ambición.
+  - **Ofertas al usuario:** las que le llegan las puede aceptar, rechazar o contraofertar. Pagar el buyout fuerza la salida del jugador.
+  - **Movimientos entre clubes de la IA:** se ven en las noticias y en el mercado.
 - **Propuesta del usuario para el plan 17 (21-11-2026):** ventanas de fichajes durante la temporada (entre fases) y en la offseason. En la lista del mercado, al pulsar un jugador su fila se despliega hacia abajo con la ficha (los 20 atributos), sus estadísticas y las acciones: hacer una oferta, seguirle o pedir un informe de scouting. Alternativa a valorar: un panel lateral fijo. Se decide al redactar el plan.
 
 ### Fase 7 — Profundidad de gestión
