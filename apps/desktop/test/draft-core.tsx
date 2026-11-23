@@ -98,6 +98,13 @@ function draftCore(match = packagedMatchContent, draft = packagedDraftContent) {
 	return { api, sent, act };
 }
 
+/** Fix the setup's root seed so component tests exercise a known draw. */
+export function seedNextSeries(seed = 7) {
+	vi.spyOn(crypto, "getRandomValues").mockReturnValueOnce(
+		new Uint32Array([seed]),
+	);
+}
+
 /** Distinct display names reveal places that still render a champion ID. */
 export const namedDraft = {
 	...packagedDraftContent,

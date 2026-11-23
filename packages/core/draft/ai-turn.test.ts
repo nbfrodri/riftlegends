@@ -6,6 +6,7 @@ import { fictionalMatchContent } from "../match/fixtures/content";
 import { SCOPES } from "../rng/scopes";
 import { deriveSeed } from "../rng/seeds";
 import { type Fact, openSession, type Session } from "../server/dispatcher";
+import { sideChoices } from "../test/take-sides";
 import { draftDispatcher, draftStateWith } from "./index";
 import type { SeriesState } from "./series";
 
@@ -33,7 +34,6 @@ const started = (
 ): Session<SeriesState> => {
 	const result = send(session(), "series.start", {
 		teams: ["forge", "shoal"],
-		seeds: [1, 2],
 		format: "bo1",
 		fearless: "hard",
 		timer: false,
@@ -80,7 +80,6 @@ it("C2: finishes every hard fearless Bo5 between packaged coaches with legal pic
 				const { facts, session: end } = playOut(
 					started(["coach", "coach"], {
 						teams: [a.id, b.id],
-						seeds: [a.seed, b.seed],
 						format: "bo5",
 						seed: deriveSeed(root, SCOPES.draft, first, second),
 					}),
@@ -171,9 +170,11 @@ describe("draft.ai (C1)", () => {
 		expect(facts.filter((f) => f.type === "draft.rolesAssigned")).toHaveLength(
 			2,
 		);
-		expect(facts.find((f) => f.type === "side.chosen")).toMatchObject({
-			by: "seed",
-		});
+		expect(facts.filter((f) => f.type === "side.chosen")).toMatchObject([
+			{ by: "draw" },
+			{ by: "rest" },
+		]);
+		expect(facts.filter((f) => f.type === "ai.sideDecided")).toHaveLength(2);
 	});
 
 	it("is the same for the same seed (C3)", () => {
@@ -197,7 +198,8 @@ describe("draft.ai (C1)", () => {
 
 	it("answers a human pick", () => {
 		let s = started([null, { personality: "meta" }]);
-		s = send(s, "side.choose", { team: "forge", side: "blue" }).session;
+		for (const payload of sideChoices(s.state, "forge"))
+			s = send(s, "side.choose", payload).session;
 		s = send(s, "draft.ban", { team: "forge", champion: null }).session;
 		const result = send(s, "draft.ai", {});
 		expect(

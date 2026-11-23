@@ -42,14 +42,11 @@ export function TurnControls() {
 	const { view, timer, send, mine, present, presentation } = useDraftSession();
 	const turn = view?.turn;
 	useEffect(() => {
-		if (presentation === "side") {
-			const id = window.setTimeout(() => present(null), pacing.sideResultMs);
-			return () => window.clearTimeout(id);
-		}
 		if (presentation || !mine || !turn || turn.team === mine) return;
 		const id = window.setTimeout(async () => {
 			const ok = await send("draft.ai", {});
-			if (ok && turn.action === "side") present("side");
+			if (ok && turn.action === "side" && turn.options.length === 2)
+				present("side");
 		}, pacing.aiPauseMs);
 		return () => window.clearTimeout(id);
 	}, [turn, mine, presentation, send, present]);

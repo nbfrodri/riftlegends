@@ -1,11 +1,13 @@
-import type { AiContent, Side } from "@rift-legends/contracts";
+import type { AiContent } from "@rift-legends/contracts";
 import type { Fearless } from "../draft/availability";
+import type { Order } from "../draft/order";
 
 export interface AiContext {
 	readonly content: AiContent;
 	readonly team: string;
 	readonly rival: string;
-	readonly side: Side;
+	/** Whether the team picks first or last, whatever its map side (issue #305). */
+	readonly order: Order;
 	readonly step: number;
 	readonly picks: Readonly<Record<string, readonly string[]>>;
 	readonly bans: readonly (string | null)[];

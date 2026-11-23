@@ -37,7 +37,7 @@ function prepareDraft() {
 			if (turn && turn.team === human) {
 				if (turn.action === "side") {
 					kind = "side.choose";
-					payload = { team: human, side: "blue" };
+					payload = { team: human, choice: "blue" };
 				} else if (turn.action === "ban") {
 					kind = "draft.ban";
 					payload = { team: human, champion: null };

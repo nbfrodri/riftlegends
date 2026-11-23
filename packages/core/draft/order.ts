@@ -1,21 +1,23 @@
-import type { Side } from "@rift-legends/contracts";
-
 export type DraftAction = "ban" | "pick";
+/** First pick opens the draft; last pick closes it. Independent of map side (issue #305). */
+export type Order = "first" | "last";
 
 export interface DraftStep {
-	readonly side: Side;
+	readonly order: Order;
 	readonly action: DraftAction;
 }
 
-const steps = (action: DraftAction, sides: string): DraftStep[] =>
-	sides.split(" ").map((s) => ({ side: s === "B" ? "blue" : "red", action }));
+const steps = (action: DraftAction, orders: string): DraftStep[] =>
+	orders
+		.split(" ")
+		.map((o) => ({ order: o === "F" ? "first" : "last", action }));
 
 /** The professional draft: 20 actions in four phases (plan 06). */
 export const DRAFT_ORDER: readonly DraftStep[] = [
-	...steps("ban", "B R B R B R"),
-	...steps("pick", "B R R B B R"),
-	...steps("ban", "R B R B"),
-	...steps("pick", "R B B R"),
+	...steps("ban", "F L F L F L"),
+	...steps("pick", "F L L F F L"),
+	...steps("ban", "L F L F"),
+	...steps("pick", "L F F L"),
 ];
 
 /** Phase of the step at `index`; past the last step, roles are assigned. */

@@ -23,8 +23,7 @@ function Driver({ mine }: { mine: string }) {
 			if (!view) {
 				const [a, b] = options.teams.map((team) => team.id);
 				const ok = await send("series.start", {
-					teams: [mine, mine === a ? b : a],
-					seeds: mine === a ? [0, 1] : [1, 0],
+					teams: [a, b],
 					format: "bo1",
 					fearless: "soft",
 					timer: false,

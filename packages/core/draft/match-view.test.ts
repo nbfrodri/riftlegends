@@ -37,7 +37,6 @@ const playFirstGame = () => {
 	);
 	s = send(s, "series.start", {
 		teams: ["forge", "shoal"],
-		seeds: [1, 2],
 		format: "bo3",
 		fearless: "off",
 		timer: false,

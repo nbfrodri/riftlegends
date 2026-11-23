@@ -1,5 +1,6 @@
 import { draftView } from "@rift-legends/contracts";
 import { describe, expect, it } from "vitest";
+import { takeSides } from "../test/take-sides";
 import { initialSeries, type SeriesState, seriesCommands } from "./series";
 import { viewDraft } from "./view";
 
@@ -14,7 +15,6 @@ const started = (): SeriesState =>
 	ok(
 		seriesCommands["series.start"](initialSeries, {
 			teams: ["t1", "geng"],
-			seeds: [1, 2],
 			format: "bo1",
 			fearless: "soft",
 			timer: false,
@@ -28,19 +28,20 @@ describe("draft.view (F7)", () => {
 		expect(viewDraft(initialSeries, {})).toBeNull();
 	});
 
-	it("asks the seeded team for a side", () => {
-		const view = viewDraft(started(), {});
+	it("asks the team with priority for a side choice", () => {
+		const state = started();
+		const view = viewDraft(state, {});
 		expect(draftView.parse(view)).toMatchObject({
 			game: 1,
 			phase: "side",
-			turn: { team: "t1", action: "side" },
+			turn: { team: state.chooser, action: "side" },
+			choices: [],
+			first: null,
 		});
 	});
 
 	it("shows turn, bans, picks and why each champion is not free", () => {
-		let state = ok(
-			seriesCommands["side.choose"](started(), { team: "t1", side: "blue" }),
-		);
+		let state = takeSides(started(), "t1");
 		state = ok(
 			seriesCommands["draft.ban"](state, { team: "t1", champion: "c1" }),
 		);
@@ -51,6 +52,7 @@ describe("draft.view (F7)", () => {
 		expect(view).toMatchObject({
 			phase: "bans1",
 			turn: { team: "t1", side: "blue", action: "ban" },
+			first: "blue",
 			blue: { team: "t1", bans: ["c1"], picks: [] },
 			red: { team: "geng", bans: [null], picks: [] },
 		});

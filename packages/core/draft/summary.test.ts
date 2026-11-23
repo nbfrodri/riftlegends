@@ -169,7 +169,6 @@ describe("series.summary", () => {
 		expect(summary(s)).toEqual({ ok: true, view: { mvp: null, lanes: [] } });
 		s = send(s, "series.start", {
 			teams: ["forge", "shoal"],
-			seeds: [1, 2],
 			format: "bo3",
 			fearless: "off",
 			timer: false,

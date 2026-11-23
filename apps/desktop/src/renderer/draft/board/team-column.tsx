@@ -30,6 +30,7 @@ const SIDE = {
  */
 export const TeamColumn = memo(function TeamColumn(props: {
 	side: Side;
+	first: boolean;
 	team: DraftView[Side];
 	options: SeriesOptions;
 	/** Index of the pick the user is choosing now, if any; it shows in the first free row. */
@@ -58,11 +59,11 @@ export const TeamColumn = memo(function TeamColumn(props: {
 				className={`flex items-center justify-between gap-3.5 ${style.text}`}
 			>
 				<div className="min-w-0">
-					<p
-						id={`${id}-side`}
-						className="font-semibold text-[12px] uppercase tracking-[0.055em]"
-					>
-						{t(`draft.side.${props.side}`)}
+					<p className="font-semibold text-[12px] uppercase tracking-[0.055em]">
+						<span id={`${id}-side`}>{t(`draft.side.${props.side}`)}</span>
+						{props.first && (
+							<span className="ml-2 text-text">{t("draft.side.first")}</span>
+						)}
 					</p>
 					<h2
 						id={`${id}-team`}

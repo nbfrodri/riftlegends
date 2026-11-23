@@ -91,7 +91,7 @@ describe("series setup (U1)", () => {
 		).toBeTruthy();
 	});
 
-	test("starts the series with content seeds, the chosen rules and the rival on its coach's AI", async () => {
+	test("starts the series with a draw, the chosen rules and the rival on its coach's AI", async () => {
 		const user = userEvent.setup();
 		const core = await renderWithDraftCore(<DraftScreen />, "en-US", {
 			...packagedMatchContent,
@@ -116,13 +116,14 @@ describe("series setup (U1)", () => {
 			expectedPosition: 0,
 			payload: {
 				teams: ["forge", "shoal"],
-				seeds: [3, 8],
+				seed: expect.any(Number),
 				format: "bo1",
 				fearless: "soft",
 				timer: false,
 				ai: [null, "coach"],
 			},
 		});
+		expect(start.payload).not.toHaveProperty("seeds");
 		const { pool } = start.payload as { pool: string[] };
 		expect(pool.length).toBeGreaterThanOrEqual(40);
 	});

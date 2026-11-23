@@ -6,7 +6,7 @@ export function scenario(overrides: Partial<AiContext> = {}): AiContext {
 		content: fictionalContent,
 		team: "forge",
 		rival: "shoal",
-		side: "blue",
+		order: "first",
 		step: 6,
 		picks: {},
 		bans: [],

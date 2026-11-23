@@ -1,7 +1,13 @@
 import { z } from "zod";
 import { defineCommands, defineQueries, position } from "../envelope";
 import { defineFacts } from "../facts";
-import { aiContent, aiDecidedFact, aiPerTeam, TIERS } from "./ai";
+import {
+	aiContent,
+	aiDecidedFact,
+	aiPerTeam,
+	aiSideDecidedFact,
+	TIERS,
+} from "./ai";
 import {
 	matchContent,
 	matchEndedFact,
@@ -21,6 +27,12 @@ const teamId = id;
 const championId = id;
 
 const SIDES = ["blue", "red"] as const;
+/**
+ * Split side choice (issue #305): the team with priority takes a map side or
+ * a draft order (first or last pick) and the rival takes the other kind.
+ */
+export const SIDE_CHOICES = ["blue", "red", "first", "last"] as const;
+const sideChoice = z.enum(SIDE_CHOICES);
 export const ROLES = ["top", "jungle", "mid", "bot", "support"] as const;
 const FORMATS = ["bo1", "bo3", "bo5"] as const;
 const FEARLESS = ["hard", "soft", "off"] as const;
@@ -58,8 +70,6 @@ const roleAssignment = z.strictObject({
 export const draftCommands = defineCommands({
 	"series.start": z.strictObject({
 		teams: pair(teamId).refine(unique, "teams must differ"),
-		/** Lower is better; without seeds game 1's side is drawn. */
-		seeds: pair(position).optional(),
 		format: z.enum(FORMATS),
 		fearless: z.enum(FEARLESS),
 		timer: z.boolean(),
@@ -71,7 +81,7 @@ export const draftCommands = defineCommands({
 		/** Content the series is played with; `fictional` when absent. */
 		content: contentSet.optional(),
 	}),
-	"side.choose": z.strictObject({ team: teamId, side }),
+	"side.choose": z.strictObject({ team: teamId, choice: sideChoice }),
 	"draft.ban": z.strictObject({
 		team: teamId,
 		champion: championId.nullable(),
@@ -101,7 +111,7 @@ export const draftQueries = defineQueries({
 	"series.options": z.strictObject({ content: contentSet.optional() }),
 });
 
-export const draftFacts = defineFacts({
+const factCatalog = defineFacts({
 	"series.started": {
 		teams: pair(teamId),
 		format: z.enum(FORMATS),
@@ -112,13 +122,20 @@ export const draftFacts = defineFacts({
 		ai: aiPerTeam.optional(),
 		content: contentSet.optional(),
 	},
+	/**
+	 * `by`: the team had priority from game 1's draw or from losing the last
+	 * game, or took the `rest` its rival left.
+	 */
 	"side.chosen": {
 		game: position,
 		team: teamId,
-		side,
-		by: z.enum(["seed", "draw", "choice"]),
+		kind: z.enum(["side", "order"]),
+		choice: sideChoice,
+		by: z.enum(["draw", "loss", "rest"]),
 	},
-	"game.started": { game: position, blue: teamId, red: teamId },
+	"ai.sideDecided": aiSideDecidedFact,
+	/** `first` is the team with first pick, whatever its map side. */
+	"game.started": { game: position, blue: teamId, red: teamId, first: teamId },
 	"draft.banned": {
 		game: position,
 		team: teamId,
@@ -145,6 +162,25 @@ export const draftFacts = defineFacts({
 	"series.finished": { winner: teamId, wins: pair(position) },
 });
 
+export const choiceKind = (choice: SideChoice) =>
+	choice === "blue" || choice === "red" ? "side" : "order";
+
+export const draftFacts = {
+	schema: factCatalog.schema
+		.refine(
+			(fact) =>
+				fact.type !== "side.chosen" || fact.kind === choiceKind(fact.choice),
+			{ path: ["kind"], error: "choice and kind must agree" },
+		)
+		.refine(
+			(fact) =>
+				fact.type !== "game.started" ||
+				(fact.blue !== fact.red &&
+					(fact.first === fact.blue || fact.first === fact.red)),
+			{ error: "first pick must belong to one of two distinct map teams" },
+		),
+};
+
 const sideView = z.strictObject({
 	team: teamId,
 	bans: z.array(championId.nullable()),
@@ -156,7 +192,7 @@ export const draftView = z.strictObject({
 	game: position,
 	wins: pair(position),
 	phase: z.enum(PHASES),
-	/** Who acts next; a side is chosen before the teams have one. */
+	/** Who acts next; sides are chosen before the teams have one. */
 	turn: z
 		.union([
 			z.strictObject({
@@ -164,9 +200,18 @@ export const draftView = z.strictObject({
 				side,
 				action: z.enum(["ban", "pick", "roles"]),
 			}),
-			z.strictObject({ team: teamId, action: z.literal("side") }),
+			z.strictObject({
+				team: teamId,
+				action: z.literal("side"),
+				/** What the team may take: all four with priority, else the other kind. */
+				options: z.array(sideChoice).min(1),
+			}),
 		])
 		.nullable(),
+	/** The side choices of the current game, in order: priority first. */
+	choices: z.array(z.strictObject({ team: teamId, choice: sideChoice })),
+	/** The map side with first pick, once the draft has started. */
+	first: side.nullable(),
 	blue: sideView,
 	red: sideView,
 	availability: z.array(
@@ -229,3 +274,4 @@ export type ContentSet = (typeof CONTENT_SETS)[number];
 export type DraftView = z.infer<typeof draftView>;
 export type Role = (typeof ROLES)[number];
 export type Side = (typeof SIDES)[number];
+export type SideChoice = (typeof SIDE_CHOICES)[number];

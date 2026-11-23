@@ -5,7 +5,7 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, test } from "vitest";
 import { DraftScreen } from "../src/renderer/draft/draft-screen";
 import type { CoreCommand } from "../src/shared/bridge";
-import { renderWithDraftCore } from "./draft-core";
+import { renderWithDraftCore, seedNextSeries } from "./draft-core";
 import { fakeAssets, testCatalog } from "./fake-assets";
 
 afterEach(cleanup);
@@ -193,10 +193,16 @@ describe("real teams (plan 11, A2)", () => {
 describe("real champions on the board (R4, A3)", () => {
 	async function toBoard(user: User, locale = "en-US") {
 		await setup(ready, testCatalog(realIds), locale);
+		seedNextSeries();
 		await chooseReal(user, locale === "en-US" ? "Real LoL" : "LoL real");
 		await user.click(
 			screen.getByRole("button", {
 				name: locale === "en-US" ? "Start series" : "Empezar serie",
+			}),
+		);
+		await user.click(
+			await screen.findByRole("button", {
+				name: locale === "en-US" ? "Confirm choice" : "Confirmar decisión",
 			}),
 		);
 		await user.click(

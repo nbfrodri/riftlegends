@@ -7,6 +7,8 @@ export type Roles = Readonly<Record<Role, string>>;
 export interface GameDraft {
 	readonly blue: string;
 	readonly red: string;
+	/** The map side with first pick (issue #305). */
+	readonly first: Side;
 	/** Index of the next step in `DRAFT_ORDER`. */
 	readonly step: number;
 	readonly bans: Readonly<Record<Side, readonly (string | null)[]>>;
@@ -29,9 +31,14 @@ const fail = (
 	params: CoreError["params"] = {},
 ): { ok: false; error: CoreError } => ({ ok: false, error: { code, params } });
 
-export const newGame = (blue: string, red: string): GameDraft => ({
+export const newGame = (
+	blue: string,
+	red: string,
+	first: Side = "blue",
+): GameDraft => ({
 	blue,
 	red,
+	first,
 	step: 0,
 	bans: { blue: [], red: [] },
 	picks: { blue: [], red: [] },
@@ -41,8 +48,11 @@ export const newGame = (blue: string, red: string): GameDraft => ({
 /** Who acts next and how; `null` once both teams have assigned roles. */
 export const turn = (game: GameDraft): Turn | null => {
 	const step = DRAFT_ORDER[game.step];
-	if (step)
-		return { team: game[step.side], side: step.side, action: step.action };
+	if (step) {
+		const last: Side = game.first === "blue" ? "red" : "blue";
+		const side = step.order === "first" ? game.first : last;
+		return { team: game[side], side, action: step.action };
+	}
 	if (!game.roles.blue)
 		return { team: game.blue, side: "blue", action: "roles" };
 	if (!game.roles.red) return { team: game.red, side: "red", action: "roles" };

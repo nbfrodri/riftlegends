@@ -84,6 +84,8 @@ async function playDraft(page: Page) {
 	await page.getByRole("combobox", { name: "My team" }).click();
 	await page.getByRole("option", { name: "Shoal" }).click();
 	await page.getByRole("button", { name: "Start series" }).click();
+	await page.getByRole("button", { name: "Confirm choice" }).click();
+	await page.getByRole("button", { name: "Go to draft" }).click();
 	const grid = page.getByRole("group", { name: "Champions" });
 	const samples: Sample[] = [];
 	for (let turn = 0; turn < 10; turn++) {

@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { CommandHandler, Outcome } from "../server/dispatcher";
+import { takeSides } from "../test/take-sides";
+import { type GameDraft, turn } from "./game";
 import { DRAFT_ORDER } from "./order";
 import {
 	finishGame,
@@ -29,7 +31,6 @@ const start = (extra: object = {}) =>
 	ok(
 		run(initialSeries, "series.start", {
 			teams: [T1, GENG],
-			seeds: [1, 2],
 			format: "bo3",
 			fearless: "hard",
 			timer: false,
@@ -45,7 +46,7 @@ const draftGame = (state: SeriesState) => {
 	for (const step of DRAFT_ORDER) {
 		const draft = current.draft;
 		if (!draft) throw new Error("no draft");
-		const team = draft[step.side];
+		const team = turn(draft)?.team;
 		if (step.action === "ban") {
 			current = ok(run(current, "draft.ban", { team, champion: null })).state;
 			continue;
@@ -74,23 +75,17 @@ const draftGame = (state: SeriesState) => {
 
 const playGame = (state: SeriesState, winner: string) => {
 	let current = state;
-	if (current.phase === "side") {
-		const chooser = current.chooser as string;
-		current = ok(
-			run(current, "side.choose", { team: chooser, side: "blue" }),
-		).state;
-	}
+	if (current.phase === "side") current = takeSides(current, T1);
 	current = draftGame(current);
 	// The winner is set by hand: these tests check the series, not the game.
 	return finishGame(current, winner);
 };
 
 describe("start", () => {
-	it("records the series and lets the better seed choose the side (S2)", () => {
+	it("records the series and waits for the side choices", () => {
 		const outcome = ok(
 			run(initialSeries, "series.start", {
 				teams: [T1, GENG],
-				seeds: [2, 1],
 				format: "bo1",
 				fearless: "hard",
 				timer: false,
@@ -100,33 +95,6 @@ describe("start", () => {
 		);
 		expect(outcome.facts.map((f) => f.type)).toEqual(["series.started"]);
 		expect(outcome.state.phase).toBe("side");
-		expect(outcome.state.chooser).toBe(GENG);
-	});
-
-	it("draws game 1's sides with the RNG when there are no seeds (S2)", () => {
-		const draw = (seed: number) =>
-			ok(
-				run(initialSeries, "series.start", {
-					teams: [T1, GENG],
-					format: "bo1",
-					fearless: "off",
-					timer: false,
-					pool: POOL,
-					seed,
-				}),
-			);
-		const first = draw(7);
-		expect(first.facts.map((f) => f.type)).toEqual([
-			"series.started",
-			"side.chosen",
-			"game.started",
-		]);
-		expect(first.facts[1]).toMatchObject({ game: 1, side: "blue", by: "draw" });
-		expect(draw(7)).toEqual(first);
-		const blues = new Set(
-			Array.from({ length: 20 }, (_, seed) => draw(seed).state.draft?.blue),
-		);
-		expect(blues).toEqual(new Set([T1, GENG]));
 	});
 
 	it("rejects a pool too small for the worst case (F8)", () => {
@@ -166,29 +134,13 @@ describe("start", () => {
 });
 
 describe("sides (S3)", () => {
-	it("are chosen only by the team with the right to", () => {
-		expect(
-			run(start(), "side.choose", { team: GENG, side: "red" }),
-		).toMatchObject({ ok: false, error: { code: "not-your-turn" } });
-	});
-
-	it("start the game with the chosen side", () => {
-		const outcome = ok(run(start(), "side.choose", { team: T1, side: "red" }));
-		expect(outcome.facts).toEqual([
-			{ type: "side.chosen", game: 1, team: T1, side: "red", by: "seed" },
-			{ type: "game.started", game: 1, blue: GENG, red: T1 },
-		]);
-	});
-
-	it("go to the loser of the previous game, and the draft waits for them", () => {
+	it("are chosen again after each game, and the draft waits for them", () => {
 		const after = ok(playGame(start(), GENG)).state;
 		expect(after.phase).toBe("side");
 		expect(after.chooser).toBe(T1);
 		expect(run(after, "draft.ban", { team: T1, champion: null })).toMatchObject(
 			{ ok: false, error: { code: "wrong-action" } },
 		);
-		const chosen = ok(run(after, "side.choose", { team: T1, side: "blue" }));
-		expect(chosen.facts[0]).toMatchObject({ game: 2, by: "choice" });
 	});
 });
 
@@ -216,12 +168,9 @@ describe("formats (S1)", () => {
 describe("champions", () => {
 	it("are checked against the series rules", () => {
 		const won = ok(playGame(start(), T1)).state;
-		const game2 = ok(
-			run(won, "side.choose", { team: GENG, side: "blue" }),
-		).state;
-		let state = game2;
-		for (const step of DRAFT_ORDER.slice(0, 6)) {
-			const team = state.draft?.[step.side] as string;
+		let state = takeSides(won, GENG);
+		for (const _ of DRAFT_ORDER.slice(0, 6)) {
+			const team = turn(state.draft as GameDraft)?.team as string;
 			state = ok(run(state, "draft.ban", { team, champion: null })).state;
 		}
 		// c0 was picked in game 1: hard fearless locks it for everyone.
@@ -236,7 +185,7 @@ describe("after the series (S4)", () => {
 	it("every command is rejected", () => {
 		const over = ok(playGame(start({ format: "bo1" }), T1)).state;
 		for (const [kind, payload] of [
-			["side.choose", { team: GENG, side: "blue" }],
+			["side.choose", { team: GENG, choice: "blue" }],
 			["draft.ban", { team: T1, champion: null }],
 			["match.play", {}],
 		] as const) {

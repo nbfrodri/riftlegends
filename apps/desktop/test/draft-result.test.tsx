@@ -46,7 +46,6 @@ function Driver({ stop }: { stop: "game1" | "over" }) {
 				const [a, b] = options.teams.map((team) => team.id);
 				const ok = await send("series.start", {
 					teams: [a, b],
-					seeds: [0, 1],
 					format: "bo3",
 					fearless: "off",
 					timer: false,
@@ -66,7 +65,10 @@ function Driver({ stop }: { stop: "game1" | "over" }) {
 				if (stop === "game1" && view.game === 2) {
 					if (presentation === "match") present("result");
 				} else if (view.turn) {
-					await send("side.choose", { team: view.turn.team, side: "blue" });
+					await send("side.choose", {
+						team: view.turn.team,
+						choice: view.choices.length ? "last" : "blue",
+					});
 				}
 			} else {
 				await send("draft.ai", {});
@@ -266,9 +268,7 @@ describe("game result (U9)", () => {
 		await screen.findByRole("button", { name: "Next game" });
 		expect(screen.queryByRole("button", { name: "New series" })).toBeNull();
 		await user.click(await screen.findByRole("button", { name: "Next game" }));
-		expect(
-			await screen.findByText(/(chooses|is choosing|chose) the side/),
-		).toBeTruthy();
+		expect(await screen.findByText(/lost the last game/)).toBeTruthy();
 	});
 });
 

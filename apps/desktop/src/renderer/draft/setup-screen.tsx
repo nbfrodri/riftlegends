@@ -178,7 +178,6 @@ export function SetupScreen() {
 		setStarting(true);
 		const ok = await send("series.start", {
 			teams: [mine.id, rival.id],
-			seeds: [mine.seed, rival.seed],
 			format,
 			fearless,
 			timer: timer === "on",
@@ -307,7 +306,7 @@ export function SetupScreen() {
 				</aside>
 			</div>
 			<footer className="mt-auto flex items-center justify-between gap-4 border-line border-t pt-[14px] text-muted">
-				<span>{t("draft.setup.seedingNote")}</span>
+				<span>{t("draft.setup.drawNote")}</span>
 				<Button
 					disabled={starting || (content === "real" && block !== null)}
 					onClick={() => void start()}

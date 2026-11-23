@@ -9,7 +9,7 @@ import {
 	useDraftSession,
 } from "../src/renderer/draft/session";
 import { draftStages } from "../src/renderer/draft/stages";
-import { namedDraft, renderWithDraftCore } from "./draft-core";
+import { namedDraft, renderWithDraftCore, seedNextSeries } from "./draft-core";
 
 afterEach(() => {
 	cleanup();
@@ -24,7 +24,11 @@ type Decision = Extract<
 >;
 
 async function toBoard(user: User) {
+	seedNextSeries();
 	await user.click(await screen.findByRole("button", { name: "Start series" }));
+	await user.click(
+		await screen.findByRole("button", { name: "Confirm choice" }),
+	);
 	await user.click(await screen.findByRole("button", { name: "Go to draft" }));
 	await screen.findByRole("heading", { level: 1, name: "Draft" });
 }
@@ -66,7 +70,10 @@ test("explains the latest rival decision and keeps earlier decisions newest firs
 	await user.click(await screen.findByRole("option", { name: /^Shoal\b/ }));
 	await user.click(screen.getByRole("button", { name: "Start series" }));
 	await screen.findByText("Waiting for side choice");
-	await act(async () => core.act("draft.ai", {}));
+	await act(async () => {
+		core.act("side.choose", { team: "shoal", choice: "last" });
+		core.act("side.choose", { team: "forge", choice: "blue" });
+	});
 	await screen.findByRole("group", { name: "AI decisions" });
 	const decisions: Decision[] = [];
 	core.api.subscribe((facts) => {

@@ -7,7 +7,7 @@
 ## Contexto
 
 - **Plan 04:** comandos, hechos y consultas sobre el despachador. Este plan añade el catálogo `draft`.
-- **Plan 05:** el sorteo de lado y el pick por tiempo agotado usan un ámbito propio del RNG.
+- **Plan 05:** el sorteo de prioridad y el pick por tiempo agotado usan un ámbito propio del RNG.
 - **Contenido:** los campeones son ids opacos. La serie recibe el pool al empezar; el dataset llega con el plan 10.
 - **Resultado de cada game:** hasta que exista el plan 08, lo envía un comando `game.finish`. Después lo emitirá la simulación.
 
@@ -40,8 +40,8 @@
 | # | Comportamiento | Caso límite |
 | --- | --- | --- |
 | S1 | Bo1, Bo3 y Bo5 terminan al llegar a 1, 2 y 3 victorias | 3-0 en Bo5: no hay games 4 y 5 |
-| S2 | Game 1: el mejor sembrado elige lado; sin siembra, sorteo con el RNG | Mismo resultado con la misma semilla |
-| S3 | Desde el game 2 elige lado el que perdió el anterior | No empieza el draft hasta elegir lado |
+| S2 | En el primer mapa el RNG sortea qué equipo elige primero | Mismo resultado con la misma semilla |
+| S3 | Desde el segundo mapa tiene prioridad el perdedor del anterior | Un equipo elige lado u orden y el rival decide lo que falta antes de empezar el draft |
 | S4 | Tras el final de la serie se rechaza cualquier comando con `series-over` | |
 
 ### Tiempo agotado (opcional, apagado por defecto)
@@ -66,20 +66,20 @@
 
 | Fase | Acciones |
 | --- | --- |
-| Bans 1 | Azul, Rojo, Azul, Rojo, Azul, Rojo |
-| Picks 1 | Azul · Rojo, Rojo · Azul, Azul · Rojo |
-| Bans 2 | Rojo, Azul, Rojo, Azul |
-| Picks 2 | Rojo · Azul, Azul · Rojo |
+| Bans 1 | Primero, Último, Primero, Último, Primero, Último |
+| Picks 1 | Primero · Último, Último · Primero, Primero · Último |
+| Bans 2 | Último, Primero, Último, Primero |
+| Picks 2 | Último · Primero, Primero · Último |
 | Roles | Cada equipo asigna sus picks a top, jungle, mid, bot y support |
 
-El orden es una tabla de datos en `packages/core/draft/order.ts`, no lógica repartida.
+«Primero» y «Último» indican el orden de pick que se ha elegido. Ambos pueden jugar en cualquiera de los dos lados del mapa. El orden es una tabla de datos en `packages/core/draft/order.ts`, no lógica repartida.
 
 ### Comandos, hechos y consulta
 
 | Comando | Hecho que emite |
 | --- | --- |
-| `series.start` `{ teams, seeds?, format, fearless, timer, pool }` | `series.started`, y `side.chosen` si hay sorteo |
-| `side.choose` `{ team, side }` | `side.chosen`, `game.started` |
+| `series.start` `{ teams, format, fearless, timer, pool, seed }` | `series.started` |
+| `side.choose` `{ team, choice }` | `side.chosen` con el tipo de elección (`side` u `order`). La segunda elección también emite `game.started` |
 | `draft.ban` `{ team, champion \| null }` | `draft.banned` |
 | `draft.pick` `{ team, champion }` | `draft.picked` |
 | `draft.timeout` `{}` | `draft.banned` o `draft.picked` con `timeout: true` |
@@ -89,7 +89,7 @@ El orden es una tabla de datos en `packages/core/draft/order.ts`, no lógica rep
 - **Consulta `draft.view`:** game y marcador, fase, a quién le toca, bans y picks por lado, y la disponibilidad de cada campeón (F7).
 - **Errores nuevos** (con sus claves `errors.*` en ES y EN): `not-your-turn`, `wrong-action`, `champion-unavailable`, `invalid-roles`, `pool-too-small`, `series-over` y `timer-off`.
 - **El núcleo no tiene reloj:** el temporizador vive en la UI, que envía `draft.timeout` al agotarse.
-- **Ámbito de RNG nuevo:** `draft` (sorteo de lado y pick por tiempo agotado), registrado con un número fijo (G7).
+- **Ámbito de RNG nuevo:** `draft` (sorteo de prioridad y pick por tiempo agotado), registrado con un número fijo (G7).
 
 ### Dónde vive cada cosa
 
@@ -122,5 +122,5 @@ El orden es una tabla de datos en `packages/core/draft/order.ts`, no lógica rep
 
 1. Fearless **hard por defecto y configurable** por serie: hard, soft o sin fearless.
 2. En el último game posible **no se liberan** los campeones.
-3. Lados **como en pro**: game 1 el mejor sembrado (o sorteo); después elige el perdedor.
+3. La regla original de lados se sustituyó por la **elección dividida** del 22-11. Véase el [registro de decisiones](../../decisions/README.md#fase-2--draft-rápido).
 4. Temporizador **opcional, apagado por defecto**, de 30 s por acción.

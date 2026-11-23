@@ -79,6 +79,7 @@ export function finishGame(
 			game: state.game + 1,
 			phase: "side",
 			chooser: other(config, winner),
+			choices: [],
 		},
 		...played,
 		finished,

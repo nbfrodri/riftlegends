@@ -22,7 +22,6 @@ const command = (kind: string, payload: unknown) => ({
 
 const start = {
 	teams: ["t1", "geng"],
-	seeds: [1, 2],
 	format: "bo5",
 	fearless: "hard",
 	timer: false,
@@ -41,10 +40,12 @@ const roles = {
 describe("draft commands", () => {
 	it.each([
 		["series.start", start],
-		["series.start", { ...start, seeds: undefined }],
 		["series.start", { ...start, content: "real" }],
 		["series.start", { ...start, content: "fictional" }],
-		["side.choose", { team: "t1", side: "blue" }],
+		["side.choose", { team: "t1", choice: "blue" }],
+		["side.choose", { team: "t1", choice: "red" }],
+		["side.choose", { team: "t1", choice: "first" }],
+		["side.choose", { team: "t1", choice: "last" }],
 		["draft.ban", { team: "t1", champion: "ahri" }],
 		["draft.ban", { team: "t1", champion: null }],
 		["draft.pick", { team: "geng", champion: "azir" }],
@@ -75,7 +76,13 @@ describe("draft commands", () => {
 			"series.start",
 			{ ...start, content: "fantasy" },
 		],
-		["an unknown side", "side.choose", { team: "t1", side: "green" }],
+		[
+			"seeds: game 1's priority is drawn",
+			"series.start",
+			{ ...start, seeds: [1, 2] },
+		],
+		["an unknown choice", "side.choose", { team: "t1", choice: "green" }],
+		["the old side payload", "side.choose", { team: "t1", side: "blue" }],
 		["an empty pick", "draft.pick", { team: "t1", champion: null }],
 		["an empty champion id", "draft.pick", { team: "t1", champion: "" }],
 		[
@@ -99,6 +106,35 @@ describe("draft commands", () => {
 
 describe("draft facts", () => {
 	it.each([
+		{ blue: "forge", red: "shoal", first: "another" },
+		{ blue: "forge", red: "forge", first: "forge" },
+	])("requires two distinct map teams and a first pick among them", (teams) => {
+		expect(
+			draftFacts.schema.safeParse({
+				type: "game.started",
+				position: 3,
+				game: 1,
+				...teams,
+			}).success,
+		).toBe(false);
+	});
+	it.each([
+		["side", "first"],
+		["order", "red"],
+	])("rejects %s paired with %s", (kind, choice) => {
+		expect(
+			draftFacts.schema.safeParse({
+				type: "side.chosen",
+				position: 1,
+				game: 1,
+				team: "forge",
+				kind,
+				choice,
+				by: "draw",
+			}).success,
+		).toBe(false);
+	});
+	it.each([
 		{
 			type: "series.started",
 			position: 0,
@@ -114,10 +150,37 @@ describe("draft facts", () => {
 			position: 1,
 			game: 1,
 			team: "t1",
-			side: "red",
-			by: "seed",
+			kind: "order",
+			choice: "last",
+			by: "draw",
 		},
-		{ type: "game.started", position: 2, game: 1, blue: "geng", red: "t1" },
+		{
+			type: "side.chosen",
+			position: 2,
+			game: 2,
+			team: "geng",
+			kind: "side",
+			choice: "red",
+			by: "rest",
+		},
+		{
+			type: "ai.sideDecided",
+			position: 2,
+			game: 2,
+			team: "geng",
+			choice: "blue",
+			total: 15000,
+			components: [{ key: "blueSide", points: 15000 }],
+			alternatives: [{ choice: "first", total: 10000, chance: 2000 }],
+		},
+		{
+			type: "game.started",
+			position: 2,
+			game: 1,
+			blue: "geng",
+			red: "t1",
+			first: "geng",
+		},
 		{
 			type: "draft.banned",
 			position: 3,
@@ -187,6 +250,11 @@ describe("draft view", () => {
 			wins: [1, 0],
 			phase: "picks1",
 			turn: { team: "t1", side: "blue", action: "pick" },
+			choices: [
+				{ team: "geng", choice: "last" },
+				{ team: "t1", choice: "blue" },
+			],
+			first: "blue",
 			blue: { team: "t1", bans: ["ahri", null], picks: ["azir"] },
 			red: { team: "geng", bans: ["jinx"], picks: [] },
 			availability: [
@@ -199,10 +267,17 @@ describe("draft view", () => {
 		expect(draftView.parse(view)).toEqual(view);
 	});
 
-	it("names who chooses the side, before anyone has one", () => {
+	it("names who chooses and between what, before anyone has a side", () => {
+		expect(
+			draftView.shape.turn.safeParse({
+				team: "t1",
+				action: "side",
+				options: ["blue", "red", "first", "last"],
+			}).success,
+		).toBe(true);
 		expect(
 			draftView.shape.turn.safeParse({ team: "t1", action: "side" }).success,
-		).toBe(true);
+		).toBe(false);
 		expect(
 			draftView.shape.turn.safeParse({
 				team: "t1",
@@ -219,6 +294,8 @@ describe("draft view", () => {
 				wins: [2, 1],
 				phase: "over",
 				turn: null,
+				choices: [],
+				first: null,
 				blue: { team: "t1", bans: [], picks: [] },
 				red: { team: "geng", bans: [], picks: [] },
 				availability: [],

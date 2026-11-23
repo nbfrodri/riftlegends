@@ -104,7 +104,6 @@ test("the core process opens draft sessions with the packaged content", async ({
 			expectedPosition: 0,
 			payload: {
 				teams: ["forge", "shoal"],
-				seeds: [1, 2],
 				format: "bo1",
 				fearless: "off",
 				timer: false,

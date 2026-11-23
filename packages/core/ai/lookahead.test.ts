@@ -85,17 +85,17 @@ it("C5 counts a counter recorded from the rival side only in a feasible lane", (
 });
 
 it.each([
-	{ step: 6, side: "blue" }, // B1, then R1/R2 before B2.
-	{ step: 7, side: "red" }, // R1, skip R2 before B2/B3 and R3.
-	{ step: 10, side: "blue" }, // B3, then R3, bans and R4 before B4.
-	{ step: 11, side: "red" }, // R3, skip bans and R4 before B4/B5 and R5.
+	{ step: 6, order: "first" }, // B1, then R1/R2 before B2.
+	{ step: 7, order: "last" }, // R1, skip R2 before B2/B3 and R3.
+	{ step: 10, order: "first" }, // B3, then R3, bans and R4 before B4.
+	{ step: 11, order: "last" }, // R3, skip bans and R4 before B4/B5 and R5.
 ] as const)(
 	"C5 follows both sides' next picks from step $step",
-	({ step, side }) => {
+	({ step, order }) => {
 		const { content } = scenario();
 		const ctx = scenario({
 			step,
-			side,
+			order,
 			content: {
 				...content,
 				matchups: [
@@ -153,14 +153,14 @@ it("C5 skips B5 after B4 and scores the rival as red on R5", () => {
 });
 
 it.each([
-	{ step: 6, side: "blue", depth: 0 },
-	{ step: 12, side: "red", depth: 2 },
-	{ step: 19, side: "red", depth: 1 },
+	{ step: 6, order: "first", depth: 0 },
+	{ step: 12, order: "last", depth: 2 },
+	{ step: 19, order: "last", depth: 1 },
 ] as const)(
 	"skips prediction at step $step with depth $depth",
-	({ step, side, depth }) => {
+	({ step, order, depth }) => {
 		const result = lookahead(
-			scenario({ step, side }),
+			scenario({ step, order }),
 			[glasswake],
 			depth,
 			() => {
@@ -181,7 +181,7 @@ it("keeps the candidate when the rival has no available champion", () => {
 it("C5 scores our answer on R5 after the rival double pick", () => {
 	const { content } = scenario();
 	const ctx = scenario({
-		side: "red",
+		order: "last",
 		step: 11,
 		content: {
 			...content,
