@@ -46,6 +46,7 @@ Resumen de las decisiones **vigentes**, para empezar cualquier sesión sin volve
 | Fecha | Decisión | Fuente |
 | --- | --- | --- |
 | 2026-11-22 | En el pool de campeones, el buscador comparte fila con los filtros de rol por icono. Cada casilla muestra solo el retrato y conserva el nombre del campeón como etiqueta accesible. | [#308](https://github.com/nbfrodri/riftlegends/issues/308) |
+| 2026-11-23 | Cada pick y su previsualización ocupan la fila del jugador que elige, del 1 al 5 por lado. En Roles se intercambian campeones entre titulares fijos. La IA registra primero su quinteto según las posiciones jugables, el tier y las preferencias del coach por el meta y el dominio de cada jugador. Ambos quintetos se ven antes de confirmar. Los hechos pasan a `SIM_VERSION` 4. | [Plan 06](../archive/plans/06-reglas-de-draft.md), #379 |
 | 2026-11-20 | IPC: main solo hace de **relevo** (comprueba el marco emisor); el `utilityProcess` valida con Zod y decide. Sin `MessagePort` directo | [plan 04](../archive/plans/04-contratos-ipc.md) |
 | 2026-11-20 | Comandos **idempotentes por `expectedPosition`** (posición del siguiente hecho), en lugar de IDs aleatorios | [plan 04](../archive/plans/04-contratos-ipc.md) |
 | 2026-11-20 | Hechos con **claves con nombre** y forma canónica ordenada (no tuplas) | [plan 04](../archive/plans/04-contratos-ipc.md) |

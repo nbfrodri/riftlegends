@@ -27,6 +27,7 @@ export const viewDraft = (
 		team,
 		bans: draft ? [...draft.bans[key]] : [],
 		picks: draft ? [...draft.picks[key]] : [],
+		...(draft?.roles[key] && { roles: { ...draft.roles[key] } }),
 	});
 	const viewer = params.team ?? next?.team ?? config.teams[0];
 	return {

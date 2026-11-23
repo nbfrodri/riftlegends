@@ -1,11 +1,14 @@
 import type { AssetStatus } from "@rift-legends/contracts";
-import { CONTRACT_VERSION, type MatchPlan } from "@rift-legends/contracts";
+import {
+	CONTRACT_VERSION,
+	type MatchPlan,
+	ROLES,
+} from "@rift-legends/contracts";
 import { cleanup, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useEffect, useRef } from "react";
 import { afterEach, describe, expect, test } from "vitest";
 import { AssetsProvider } from "../src/renderer/assets";
-import { suggestRoles } from "../src/renderer/draft/roles-proposal";
 import {
 	DraftSessionProvider,
 	useDraftSession,
@@ -38,7 +41,9 @@ function Driver() {
 			} else if (view.phase === "roles" && view.turn?.team === "forge") {
 				const picks =
 					view.blue.team === "forge" ? view.blue.picks : view.red.picks;
-				const lineup = suggestRoles(picks, options.positions);
+				const lineup = Object.fromEntries(
+					ROLES.map((role, i) => [role, picks[i]]),
+				);
 				await send("draft.roles", { team: "forge", roles: lineup });
 			} else if (view.phase === "side" && view.turn?.team === "forge") {
 				await send("side.choose", { team: "forge", choice: "blue" });

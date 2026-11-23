@@ -189,6 +189,7 @@ const sideView = z.strictObject({
 	team: teamId,
 	bans: z.array(championId.nullable()),
 	picks: z.array(championId),
+	roles: roleAssignment.optional(),
 });
 
 /** What `draft.view` answers. */
@@ -269,7 +270,7 @@ export const seriesOptions = z.strictObject({
 			}),
 	),
 	pool: z.array(championId),
-	/** Roles each champion plays, with their tier; for the roles screen's suggestion. */
+	/** Roles each champion plays, with their tier; for the pool and champion details. */
 	positions: z.record(
 		championId,
 		z.array(z.strictObject({ role: z.enum(ROLES), tier: z.enum(TIERS) })),
