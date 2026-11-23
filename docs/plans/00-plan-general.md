@@ -113,6 +113,7 @@ Cada fase termina con un hito verificable y un commit o PR fusionado en `main`. 
 
 ### Fase 6 — Jugadores, mercado y temporadas
 - Evolución por edad y forma, pools de campeones, contratos, renovaciones, agentes libres, academias, **regens**, offseason y bucle de varias temporadas.
+- **Segundas divisiones y leyendas (23-11-2026):** jugadores de LCK CL, LDL, ERL, NACL y Circuito Desafiante en el snapshot (plan 11), que sirven también de liga de academias; **leyendas** históricas como agentes libres al empezar la carrera, con atributos que mezclan su prime y su edad actual ([IDEA §8](../../IDEA.md#8-novedades-respecto-a-draftsim)).
 - **Staff** (plan 29): head coach, assistant coach, analistas, coaches por posición y psicólogo, con mercado y contratos. Cada rol mejora un solo sistema y su efecto se ve en el desglose. El usuario es el manager: draftea él (con sugerencias del assistant coach) o delega en el head coach.
 - **Nacionalidad e idioma:** el dato y la bandera llegan con los datos reales (plan 11); el efecto en la química, con el plan 21, y las plazas de importados, con el plan 17.
 - **Finanzas** (plan 30): ingresos, gastos, sueldos, primas, traspasos y buyouts, reglas salariales por liga y presupuesto de la directiva.
@@ -134,10 +135,10 @@ Cada fase termina con un hito verificable y un commit o PR fusionado en `main`. 
   - **Límites de la maestría:** el techo depende de su rol y su versatilidad. Un parche fuerte o un rework puede bajarla.
   - **Efecto y dónde se ve:** pesa en la partida y en la IA de draft (comfort picks), y se ve en el perfil del jugador, en el draft y en la ficha de campeón.
 - **Propuesta del usuario (21-11-2026):** dirigir la partida como coach más allá del «Plan de partida» del plan 09: pausas tácticas en momentos clave (p. ej. minutos 15 y 25) para cambiar de plan (el «pivote estratégico»), ejecutadas mejor o peor según el shotcalling; y palancas nuevas (línea a la que se juega, invadir o defender la jungla, splitpush o agruparse), cada una con su efecto en la simulación y su calibración.
-- Scouting e información imperfecta.
+- Scouting e información imperfecta: de rivales y **búsqueda de talento** (lista abierta más ojeadores por región, únicos que descubren regens; [IDEA §8](../../IDEA.md#8-novedades-respecto-a-draftsim)).
 - Entrenamiento con coste de oportunidad (elegir qué atributos de cada jugador mejorar) y **scrims** ([IDEA §8](../../IDEA.md#8-novedades-respecto-a-draftsim)).
 - Moral, química y vestuario.
-- **Composiciones contra el rival (#320):** cada identidad genera un plan que condiciona qué jugadas ocurren y con qué frecuencia. El desglose explica los cruces, la coherencia, el control de carries y el perfil de daño frente a la primera línea rival.
+- **Composiciones contra el rival (#320):** pasa a la Fase 3.5 (simulación por composiciones).
 - **Salida:** cada sistema influye en resultados de forma explicable (visible en el desglose) y probada con tests de propiedades.
 
 ### Fase 8 — Narrativa e historial
