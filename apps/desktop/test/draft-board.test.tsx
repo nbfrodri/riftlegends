@@ -391,15 +391,23 @@ describe("draft board (U3)", () => {
 		// Mounting the whole board is the yardstick: it scales with the machine.
 		const mount = Math.max(...commits);
 
-		await user.click(tile("Cragbell"));
-		commits = [];
-		await user.click(confirm());
-		await waitFor(() => tile("Cragbell. Banned in this game"));
-		expect(core.sent.at(-1)?.kind).toBe("draft.ban");
+		// One sample can catch a GC pause or JIT on a busy CI runner (#329):
+		// confirm three bans and keep the cheapest. Noise only adds time, so a
+		// real whole-board re-render still fails every sample.
+		const samples: number[] = [];
+		for (let ban = 0; ban < 3; ban++) {
+			await user.click(firstAvailable());
+			commits = [];
+			await confirmAndWaitForRival();
+			samples.push(Math.max(...commits));
+			expect(core.sent.filter((c) => c.kind === "draft.ban")).toHaveLength(
+				ban + 1,
+			);
+		}
 		// Re-rendering the whole board would cost about a mount; half a mount
 		// still catches that without failing on CI timing noise (Windows hit
 		// 0.36 × mount). The Electron E2E measures the actual S1 frame budget.
-		expect(Math.max(...commits)).toBeLessThan(mount / 2);
+		expect(Math.min(...samples)).toBeLessThan(mount / 2);
 	});
 });
 
