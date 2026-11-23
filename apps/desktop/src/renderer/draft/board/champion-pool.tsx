@@ -74,7 +74,7 @@ const Tile = memo(function Tile(props: {
 					props.tier ? t("draft.card.tier", { tier: props.tier }) : undefined
 				}
 				onClick={() => !unavailable && props.onSelect(id)}
-				className={`press group relative flex min-h-0 min-w-0 flex-col overflow-hidden rounded-control bg-surface outline-offset-[-3px] focus-visible:z-1 focus-visible:outline-3 focus-visible:outline-action ${unavailable ? "cursor-default" : "hover:brightness-110"}`}
+				className={`press group relative flex min-h-0 min-w-0 flex-col overflow-hidden rounded-control bg-surface outline-offset-[-3px] focus-visible:z-1 focus-visible:outline-3 focus-visible:outline-action ${unavailable ? "cursor-default" : "cursor-pointer hover:brightness-110"}`}
 			>
 				<ChampionPortrait
 					id={id}
@@ -130,7 +130,7 @@ const RoleFilterButtons = memo(function RoleFilterButtons(props: {
 							aria-pressed={props.value === value}
 							aria-label={label}
 							onClick={() => props.onChange(value)}
-							className="press grid size-[30px] place-items-center rounded-control border border-line bg-surface text-muted outline-offset-2 hover:border-muted hover:text-text focus-visible:outline-2 focus-visible:outline-action aria-pressed:border-action aria-pressed:bg-action/15 aria-pressed:text-text"
+							className="press grid size-[30px] cursor-pointer place-items-center rounded-control border border-line bg-surface text-muted outline-offset-2 hover:border-muted hover:text-text focus-visible:outline-2 focus-visible:outline-action aria-pressed:border-action aria-pressed:bg-action/15 aria-pressed:text-text"
 						>
 							{value === "all" ? (
 								<LayoutGrid size={16} aria-hidden />

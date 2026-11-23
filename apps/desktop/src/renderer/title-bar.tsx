@@ -22,7 +22,7 @@ function Glyph({ path }: { path: string }) {
 }
 
 const controlButton =
-	"grid h-full w-11 cursor-default place-items-center text-muted [app-region:no-drag] hover:bg-surface hover:text-text";
+	"grid h-full w-11 cursor-pointer place-items-center text-muted [app-region:no-drag] hover:bg-surface hover:text-text";
 
 export function TitleBar({ controls }: { controls: WindowControls }) {
 	const { t } = useTranslation();

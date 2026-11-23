@@ -34,7 +34,7 @@ export function ChampionCardHint() {
 		<Tooltip content={t("draft.card.shortcut")} shortcut="I" side="left">
 			<button
 				type="button"
-				className="press ml-auto inline-flex items-center gap-1 rounded-control px-1 text-xs text-muted hover:bg-surface hover:text-text"
+				className="press ml-auto cursor-pointer inline-flex items-center gap-1 rounded-control px-1 text-xs text-muted hover:bg-surface hover:text-text"
 			>
 				<MouseRight aria-hidden size={16} />
 				<IdCard aria-hidden size={16} />

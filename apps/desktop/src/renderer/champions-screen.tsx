@@ -232,7 +232,7 @@ function ChampionsCatalog() {
 															type="button"
 															aria-label={name}
 															onClick={(event) => open(id, event.currentTarget)}
-															className="relative h-[clamp(64px,9vh,90px)] w-[clamp(72px,6vw,100px)] overflow-hidden rounded-control bg-surface outline-offset-[-2px] hover:brightness-110 focus-visible:outline-2 focus-visible:outline-action"
+															className="relative h-[clamp(64px,9vh,90px)] cursor-pointer w-[clamp(72px,6vw,100px)] overflow-hidden rounded-control bg-surface outline-offset-[-2px] hover:brightness-110 focus-visible:outline-2 focus-visible:outline-action"
 														>
 															<ChampionPortrait id={id} size="tile" />
 														</button>

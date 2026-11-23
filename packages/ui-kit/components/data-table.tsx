@@ -259,7 +259,7 @@ export function DataTable<Row extends RowData>({
 												type="button"
 												onClick={column.getToggleSortingHandler()}
 												className={cn(
-													"inline-flex w-full items-center gap-1 font-[inherit]",
+													"inline-flex w-full cursor-pointer items-center gap-1 font-[inherit]",
 													numeric.has(column.id) && "justify-end",
 												)}
 											>

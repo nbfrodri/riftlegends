@@ -54,7 +54,7 @@ export function SearchSelect(props: {
 			<Combobox.Trigger
 				aria-label={props.label}
 				className={withState(
-					"press inline-flex min-w-0 items-center justify-between gap-2 whitespace-nowrap rounded-control border border-line bg-surface px-2 py-[5px] text-text select-none hover:not-data-disabled:border-muted data-popup-open:border-action data-disabled:cursor-default data-disabled:text-muted",
+					"press inline-flex min-w-0 cursor-pointer items-center justify-between gap-2 whitespace-nowrap rounded-control border border-line bg-surface px-2 py-[5px] text-text select-none hover:not-data-disabled:border-muted data-popup-open:border-action data-disabled:cursor-default data-disabled:text-muted",
 					props.className,
 				)}
 			>
@@ -113,7 +113,7 @@ export function SearchSelect(props: {
 												<Combobox.Item
 													key={item.value}
 													value={item}
-													className="flex cursor-default items-center justify-between gap-3 px-2 py-[5px] outline-none select-none data-highlighted:bg-surface data-highlighted:outline-2 data-highlighted:-outline-offset-2 data-highlighted:outline-solid data-highlighted:outline-action data-selected:font-semibold"
+													className="flex cursor-pointer items-center justify-between gap-3 px-2 py-[5px] outline-none select-none data-highlighted:bg-surface data-highlighted:outline-2 data-highlighted:-outline-offset-2 data-highlighted:outline-solid data-highlighted:outline-action data-selected:font-semibold"
 												>
 													<span className="truncate">{item.label}</span>
 													<span className="flex shrink-0 items-center gap-2 text-[13px] text-muted">

@@ -26,7 +26,7 @@ export function Button({
 			data-slot="button"
 			data-variant={variant}
 			className={withState(
-				`inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-control press select-none data-disabled:cursor-default [&_svg]:pointer-events-none [&_svg]:shrink-0 ${variants[variant]}`,
+				`inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-control press cursor-pointer select-none data-disabled:cursor-default [&_svg]:pointer-events-none [&_svg]:shrink-0 ${variants[variant]}`,
 				className,
 			)}
 			{...props}

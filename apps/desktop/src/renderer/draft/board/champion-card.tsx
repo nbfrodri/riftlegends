@@ -138,7 +138,7 @@ export function ChampionCard({
 					type="button"
 					aria-label={t("draft.card.close")}
 					onClick={onClose}
-					className="press grid size-7 shrink-0 place-items-center rounded-control text-muted hover:bg-panel hover:text-action"
+					className="press grid size-7 cursor-pointer shrink-0 place-items-center rounded-control text-muted hover:bg-panel hover:text-action"
 				>
 					<X size={16} aria-hidden />
 				</button>
