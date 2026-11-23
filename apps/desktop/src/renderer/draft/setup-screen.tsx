@@ -12,6 +12,7 @@ import { SegmentedControl } from "@rift-legends/ui-kit/components/segmented-cont
 import { Tooltip } from "@rift-legends/ui-kit/components/tooltip";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { LeagueLogo } from "../assets/league-logo";
 import { useRealBlock } from "./real-content";
 import { useDraftSession } from "./session";
 import { TeamCrest } from "./team-crest";
@@ -63,6 +64,7 @@ function teamGroups(
 		.sort((a, b) => rank(a) - rank(b) || a.localeCompare(b))
 		.map((league) => ({
 			label: league,
+			icon: <LeagueLogo id={league} name={league} />,
 			items: teams.filter((team) => team.league === league).map(item),
 		}));
 }
@@ -91,7 +93,12 @@ function TeamCard(props: {
 							{props.team.name}
 						</h2>
 					</Tooltip>
-					<p className="mt-1.5 text-[13px] text-muted">
+					<p className="mt-1.5 flex items-center gap-1.5 text-[13px] text-muted">
+						{props.team.league && (
+							<span aria-hidden="true">
+								<LeagueLogo id={props.team.league} name={props.team.league} />
+							</span>
+						)}
 						{props.team.league
 							? t("draft.setup.leagueSeed", {
 									league: props.team.league,

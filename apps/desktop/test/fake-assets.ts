@@ -22,6 +22,7 @@ export function fakeAssets(
 		champions: vi.fn(async () => catalog),
 		teamLogos: vi.fn(async (): Promise<Record<string, string>> => ({})),
 		playerPhotos: vi.fn(async (): Promise<Record<string, string>> => ({})),
+		leagueLogos: vi.fn(async (): Promise<Record<string, string>> => ({})),
 		sync: vi.fn(() => {
 			current = { state: "syncing", progress: { completed: 0, total: 0 } };
 			return new Promise<AssetStatus>((resolve) => {

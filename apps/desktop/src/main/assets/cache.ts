@@ -7,7 +7,13 @@ import type {
 import { realPhotoSchema } from "@rift-legends/contracts/real-photos";
 import { isVersion, versionsUrl } from "./catalog";
 import { cachePath } from "./disk";
-import { readTeamLogos, syncTeamLogos, type TeamLogoSource } from "./logos";
+import {
+	readLeagueLogos,
+	readTeamLogos,
+	syncLeagueLogos,
+	syncTeamLogos,
+	type TeamLogoSource,
+} from "./logos";
 import { readPlayerPhotos, syncPlayerPhotos } from "./photos";
 import {
 	activateVersion,
@@ -82,10 +88,12 @@ export function createAssetCache(
 		transport = httpsTransport,
 		logos = [],
 		photos = [],
+		leagueLogos = [],
 	}: {
 		transport?: AssetTransport;
 		logos?: readonly (Omit<TeamLogoSource, "id"> & { team: string })[];
 		photos?: readonly unknown[];
+		leagueLogos?: readonly TeamLogoSource[];
 	} = {},
 ) {
 	let status: CacheStatus = { state: "missing" };
@@ -93,6 +101,7 @@ export function createAssetCache(
 	let running: Promise<CacheStatus> | undefined;
 	let syncingLogos: Promise<void> | undefined;
 	let syncingPhotos: Promise<void> | undefined;
+	let syncingLeagueLogos: Promise<void> | undefined;
 	const listeners = new Set<(progress: AssetProgress) => void>();
 	const logoListeners = new Set<() => void>();
 	const photoListeners = new Set<() => void>();
@@ -144,6 +153,9 @@ export function createAssetCache(
 
 	const logoRoot = async () =>
 		dirname(await cachePath(userData, "assets/logos/manifest.json", true));
+
+	const leagueLogoRoot = async () =>
+		dirname(await cachePath(userData, "assets/leagues/manifest.json", true));
 
 	const photoRoot = async () =>
 		dirname(await cachePath(userData, "assets/photos/manifest.json", true));
@@ -200,6 +212,31 @@ export function createAssetCache(
 				]),
 			);
 		},
+		/** League logos (untrusted snapshot input); failures are per logo. */
+		async syncLeagueLogos(
+			sources: readonly TeamLogoSource[],
+		): Promise<{ failed: string[] }> {
+			const root = await leagueLogoRoot();
+			const release = await acquireSyncLock(root);
+			try {
+				return await syncLeagueLogos(root, sources, transport);
+			} finally {
+				await release();
+				for (const listener of logoListeners) listener();
+			}
+		},
+		/** League or event id to `rift-asset://` URL of every verified logo. */
+		async getLeagueLogos(): Promise<Record<string, string>> {
+			await syncingLeagueLogos;
+			const paths = await readLeagueLogos(await leagueLogoRoot());
+			return Object.fromEntries(
+				Object.entries(paths).map(([id, path]) => [
+					id,
+					`rift-asset://leagues/${path}`,
+				]),
+			);
+		},
+		/** Notifies when team or league logos land. */
 		subscribeTeamLogos(listener: () => void): () => void {
 			logoListeners.add(listener);
 			return () => logoListeners.delete(listener);
@@ -252,6 +289,21 @@ export function createAssetCache(
 							)
 							.finally(() => {
 								syncingLogos = undefined;
+							});
+					}
+					if (
+						result.state === "ready" &&
+						leagueLogos.length &&
+						!syncingLeagueLogos
+					) {
+						syncingLeagueLogos = cache
+							.syncLeagueLogos(leagueLogos)
+							.then(
+								() => undefined,
+								() => undefined,
+							)
+							.finally(() => {
+								syncingLeagueLogos = undefined;
 							});
 					}
 					// Same for the photos: read again when they land.

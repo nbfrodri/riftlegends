@@ -20,6 +20,7 @@ interface AssetsState {
 	/** Team id to the `rift-asset://` URL of its downloaded logo. */
 	teamLogos: Readonly<Record<string, string>>;
 	playerPhotos: Readonly<Record<string, string>>;
+	leagueLogos: Readonly<Record<string, string>>;
 	/** The verified champion catalog (names in ES and EN), or null without one. */
 	champions: ChampionCatalog | null;
 }
@@ -36,6 +37,7 @@ export function AssetsProvider(props: { api: AssetsApi; children: ReactNode }) {
 	const [ready, setReady] = useState(false);
 	const [teamLogos, setTeamLogos] = useState<Record<string, string>>({});
 	const [playerPhotos, setPlayerPhotos] = useState<Record<string, string>>({});
+	const [leagueLogos, setLeagueLogos] = useState<Record<string, string>>({});
 	const [catalog, setCatalog] = useState<{
 		status: AssetStatus;
 		champions: ChampionCatalog | null;
@@ -100,6 +102,23 @@ export function AssetsProvider(props: { api: AssetsApi; children: ReactNode }) {
 	);
 
 	useEffect(() => {
+		let request = 0;
+		const read = () => {
+			const current = ++request;
+			api.leagueLogos().then(
+				(logos) => current === request && setLeagueLogos(logos),
+				() => undefined,
+			);
+		};
+		const unsubscribe = api.subscribeTeamLogos(read);
+		read();
+		return () => {
+			request++;
+			unsubscribe();
+		};
+	}, [api]);
+
+	useEffect(() => {
 		if (status?.state !== "ready") return;
 		let current = true;
 		readTeamLogos();
@@ -119,10 +138,11 @@ export function AssetsProvider(props: { api: AssetsApi; children: ReactNode }) {
 			ready,
 			sync,
 			teamLogos,
+			leagueLogos,
 			champions,
 			playerPhotos,
 		}),
-		[status, ready, sync, teamLogos, champions, playerPhotos],
+		[status, ready, sync, teamLogos, leagueLogos, champions, playerPhotos],
 	);
 	return <AssetsContext value={value}>{props.children}</AssetsContext>;
 }
@@ -162,4 +182,9 @@ export function usePlayerPhotoSrc(playerId: string): string | undefined {
 	return photos && Object.hasOwn(photos, playerId)
 		? photos[playerId]
 		: undefined;
+}
+
+export function useLeagueLogoSrc(id: string): string | undefined {
+	const logos = use(AssetsContext)?.leagueLogos;
+	return logos && Object.hasOwn(logos, id) ? logos[id] : undefined;
 }

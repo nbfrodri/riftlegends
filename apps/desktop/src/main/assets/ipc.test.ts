@@ -33,6 +33,10 @@ test("validates the sender and rejects any arguments before handling asset IPC",
 			],
 		),
 		syncTeamLogos: vi.fn(async () => ({ failed: [] })),
+		syncLeagueLogos: vi.fn(async () => ({ failed: [] })),
+		getLeagueLogos: vi.fn(async () => ({
+			LCK: "rift-asset://leagues/leagues/lck.png",
+		})),
 		getTeamLogos: vi.fn(async () => ({
 			"Gen.G": "rift-asset://logos/teams/gen-g.png",
 		})),
@@ -53,6 +57,7 @@ test("validates the sender and rejects any arguments before handling asset IPC",
 		"assets:champions",
 		"assets:teamLogos",
 		"assets:playerPhotos",
+		"assets:leagueLogos",
 	]) {
 		const handle = handlers.get(channel);
 		expect(handle).toBeDefined();
@@ -87,4 +92,7 @@ test("validates the sender and rejects any arguments before handling asset IPC",
 		mid: "rift-asset://photos/players/mid.png",
 	});
 	await expect(bridge.champions()).resolves.toEqual(cache.getChampions());
+	await expect(bridge.leagueLogos()).resolves.toEqual(
+		await cache.getLeagueLogos(),
+	);
 });

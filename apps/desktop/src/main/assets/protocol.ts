@@ -1,7 +1,7 @@
 import { dirname } from "node:path";
 import { maxCatalogBytes, maxImageBytes } from "./catalog";
 import { cachePath, readBytes } from "./disk";
-import { readLogo } from "./logos";
+import { readLeagueLogo, readLogo } from "./logos";
 import { readPhoto } from "./photos";
 import { type ImageFormat, imageMimes } from "./riot-images";
 import { readActiveVersion } from "./store";
@@ -16,7 +16,7 @@ const cdragonTypes = {
 } as const;
 
 const imageRequest =
-	/^rift-asset:\/\/(logos|photos)\/((?:teams|players)\/[a-z0-9-]{1,64}\.(png|jpg|webp))$/;
+	/^rift-asset:\/\/(logos|photos|leagues)\/((?:teams|players|leagues)\/[a-z0-9-]{1,64}\.(png|jpg|webp))$/;
 
 async function serveRiotImage(
 	userData: string,
@@ -28,7 +28,12 @@ async function serveRiotImage(
 		await cachePath(userData, `assets/${source}/manifest.json`),
 	);
 	// Only files named by the manifest, and only while they still match it.
-	const readImage = source === "logos" ? readLogo : readPhoto;
+	const readImage =
+		source === "logos"
+			? readLogo
+			: source === "leagues"
+				? readLeagueLogo
+				: readPhoto;
 	const bytes = await readImage(root, path);
 	return (
 		bytes &&

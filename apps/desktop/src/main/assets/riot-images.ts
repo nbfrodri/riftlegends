@@ -79,7 +79,7 @@ interface Entry extends Digest {
 }
 
 export function createRiotImageCache(
-	folder: "teams" | "players",
+	folder: "teams" | "players" | "leagues",
 	parseUrl: (value: string) => URL | undefined,
 	maxBytes: number = maxRiotImageBytes,
 ) {
@@ -174,7 +174,7 @@ export function createRiotImageCache(
 	): Promise<{ failed: string[] }> {
 		const slugs = imageSlugs(
 			sources.map(({ id }) => id),
-			folder === "teams" ? "team" : "player",
+			{ teams: "team", players: "player", leagues: "league" }[folder],
 		);
 		const entries = await readManifest(root);
 		const failed: string[] = [];

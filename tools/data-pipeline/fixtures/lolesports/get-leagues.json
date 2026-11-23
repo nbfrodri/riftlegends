@@ -1,0 +1,76 @@
+{
+	"data": {
+		"leagues": [
+			{
+				"id": "1",
+				"slug": "worlds",
+				"name": "Worlds",
+				"region": "INTERNATIONAL",
+				"image": "https://static.lolesports.com/leagues/worlds.png"
+			},
+			{
+				"id": "2",
+				"slug": "lck",
+				"name": "LCK",
+				"region": "REGIONAL",
+				"image": "https://static.lolesports.com/leagues/lck.png"
+			},
+			{
+				"id": "3",
+				"slug": "lpl",
+				"name": "LPL",
+				"region": "REGIONAL",
+				"image": "https://static.lolesports.com/leagues/lpl.png"
+			},
+			{
+				"id": "4",
+				"slug": "lec",
+				"name": "LEC",
+				"region": "REGIONAL",
+				"image": "https://static.lolesports.com/leagues/lec.png"
+			},
+			{
+				"id": "5",
+				"slug": "lcp",
+				"name": "LCP",
+				"region": "REGIONAL",
+				"image": "https://static.lolesports.com/leagues/lcp.png"
+			},
+			{
+				"id": "6",
+				"slug": "lcs",
+				"name": "LCS",
+				"region": "REGIONAL",
+				"image": "https://static.lolesports.com/leagues/lcs.png"
+			},
+			{
+				"id": "7",
+				"slug": "cblol",
+				"name": "CBLOL",
+				"region": "REGIONAL",
+				"image": "https://static.lolesports.com/leagues/cblol.png"
+			},
+			{
+				"id": "8",
+				"slug": "first_stand",
+				"name": "First Stand",
+				"region": "INTERNATIONAL",
+				"image": "https://static.lolesports.com/leagues/first-stand.png"
+			},
+			{
+				"id": "9",
+				"slug": "msi",
+				"name": "MSI",
+				"region": "INTERNATIONAL",
+				"image": "https://static.lolesports.com/leagues/msi.png"
+			},
+			{
+				"id": "10",
+				"slug": "lfl",
+				"name": "LFL",
+				"region": "REGIONAL",
+				"image": "https://static.lolesports.com/leagues/lfl.png"
+			}
+		]
+	}
+}

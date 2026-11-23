@@ -7,6 +7,7 @@ import {
 	shell,
 	utilityProcess,
 } from "electron";
+import leagueLogos from "../../../../packages/core/content/real/leagues.json";
 import teamLogos from "../../../../packages/core/content/real/logos.json";
 import playerPhotos from "../../../../packages/core/content/real/photos.json";
 import coreHostPath from "../core-host/index?modulePath";
@@ -30,6 +31,7 @@ async function start() {
 	const assets = createAssetCache(userData, {
 		logos: teamLogos.logos,
 		photos: Array.isArray(playerPhotos.photos) ? playerPhotos.photos : [],
+		leagueLogos: leagueLogos.leagues,
 		...(process.env.RIFT_E2E_OFFLINE === "1" && {
 			transport: async () => {
 				throw Object.assign(new Error("Asset network unavailable"), {

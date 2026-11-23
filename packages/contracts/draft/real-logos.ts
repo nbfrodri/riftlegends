@@ -1,29 +1,55 @@
 import { z } from "zod";
 
 /**
- * Team logo sources of the real snapshot (`content/real/logos.json`), made by
+ * Team and league logo sources of the real snapshot (`content/real/logos.json`
+ * and `leagues.json`), made by
  * the dev/CI data pipeline from the public lolesports.com API. The app treats
  * the file as untrusted input: only these exact Riot hosts and path shapes,
  * https, no credentials, port, query or fragment.
  */
 export const riotImageFile = String.raw`[A-Za-z0-9_.%()-]{1,200}\.(?:png|jpe?g|webp)`;
 const logoHosts = new Map([
-	["static.lolesports.com", new RegExp(`^/teams/${riotImageFile}$`, "i")],
-	[
-		"lolstatic-a.akamaihd.net",
-		new RegExp(`^/esports-assets/production/team/${riotImageFile}$`, "i"),
-	],
+	["static.lolesports.com", "/"],
+	["lolstatic-a.akamaihd.net", "/esports-assets/production/"],
 ]);
+export const riotLogoHosts: readonly string[] = [...logoHosts.keys()];
+const logoPaths = {
+	team: new Map(
+		[...logoHosts].map(([host, prefix]) => [
+			host,
+			new RegExp(
+				`^${prefix}${prefix === "/" ? "teams" : "team"}/${riotImageFile}$`,
+				"i",
+			),
+		]),
+	),
+	league: new Map(
+		[...logoHosts].map(([host, prefix]) => [
+			host,
+			new RegExp(
+				`^${prefix}${prefix === "/" ? "leagues" : "league"}/${riotImageFile}$`,
+				"i",
+			),
+		]),
+	),
+};
 
-export function parseRiotLogoUrl(value: string): URL | undefined {
+export function parseRiotLogoUrl(
+	value: string,
+	kind: "team" | "league" = "team",
+): URL | undefined {
+	const raw = /^https:\/\/([a-z0-9.-]+)(\/[^?#\\\s]+)$/i.exec(value);
+	if (!raw) return undefined;
 	let url: URL;
 	try {
 		url = new URL(value);
 	} catch {
 		return undefined;
 	}
-	const shape = logoHosts.get(url.hostname);
+	const shape = logoPaths[kind].get(url.hostname);
 	return url.protocol === "https:" &&
+		raw[1]?.toLowerCase() === url.hostname &&
+		raw[2] === url.pathname &&
 		shape?.test(url.pathname) &&
 		!url.username &&
 		!url.password &&
@@ -34,8 +60,6 @@ export function parseRiotLogoUrl(value: string): URL | undefined {
 		? url
 		: undefined;
 }
-
-export const riotLogoHosts: readonly string[] = [...logoHosts.keys()];
 
 /** The image type of PNG, JPEG and WebP bytes (never SVG), or undefined. */
 export function sniffImageMime(bytes: Uint8Array): string | undefined {
@@ -88,3 +112,21 @@ export const realLogosSchema = z.strictObject({
 		),
 });
 export type RealLogos = z.infer<typeof realLogosSchema>;
+
+const leagueLogoSchema = z.strictObject({
+	id: z.string().min(1),
+	url: z
+		.string()
+		.refine((value) => parseRiotLogoUrl(value, "league") !== undefined),
+	...riotImageMetadata(maxRiotImageBytes),
+});
+export type LeagueLogoMetadata = z.infer<typeof leagueLogoSchema>;
+
+export const leagueLogosSchema = z.strictObject({
+	provenance: lolesportsProvenance,
+	leagues: z
+		.array(leagueLogoSchema)
+		.refine(
+			(leagues) => new Set(leagues.map(({ id }) => id)).size === leagues.length,
+		),
+});
