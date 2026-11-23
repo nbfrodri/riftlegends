@@ -2,6 +2,8 @@
 
 Capturas de pantalla (`toHaveScreenshot`) de tres pantallas del shell y de las ocho del draft rápido (de la configuración al resultado de la serie, con semilla fija) a 1366x768 y con el sistema en `es-ES`: Draft con la barra lateral plegada (y, aparte, con el tooltip Caja abierto sobre «Expandir»), Mercado con la barra expandida y Ajustes (pantalla entera y, aparte, la sección «Contenido» en su estado sin conexión: «Sin descargar»). Corren con `pnpm e2e:visual`, fuera del `pnpm e2e` normal, y solo en Linux (en otros sistemas el test se omite).
 
+El tablero del draft se captura también con la ficha de campeón fijada.
+
 ## Por qué solo en el CI
 
 La tipografía se rasteriza distinto en cada distribución, así que las capturas de referencia solo valen en la imagen del CI (`ubuntu-latest` bajo Xvfb). **No se generan ni se commitean desde una máquina local.** Las referencias viven en `__screenshots__/screens.spec.ts/` (sin sufijo de plataforma, porque el test solo existe en Linux).

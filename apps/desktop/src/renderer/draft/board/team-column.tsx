@@ -53,6 +53,7 @@ export const TeamColumn = memo(function TeamColumn(props: {
 	const style = SIDE[props.side];
 	return (
 		<section
+			data-card-side={props.side}
 			aria-labelledby={`${id}-side ${id}-team`}
 			className={`flex min-h-0 flex-col border-t-[3px] bg-panel px-[15px] py-3 ${style.border}`}
 		>
@@ -97,6 +98,8 @@ export const TeamColumn = memo(function TeamColumn(props: {
 							<Tooltip heading={label} content={handle}>
 								<button
 									type="button"
+									data-card-champion={champion}
+									aria-keyshortcuts={champion ? "I" : undefined}
 									aria-controls="player-card"
 									onMouseEnter={show}
 									onFocus={show}
@@ -145,16 +148,24 @@ export const TeamColumn = memo(function TeamColumn(props: {
 					const label = championLabel(options, ban);
 					return (
 						// biome-ignore lint/suspicious/noArrayIndexKey: bans only grow, in order.
-						<Tooltip key={index} content={label}>
-							<li className="flex">
-								<ChampionPortrait
-									id={ban}
-									label={label}
-									size="ban"
-									unavailable
-								/>
-							</li>
-						</Tooltip>
+						<li key={index} className="flex">
+							<Tooltip content={label}>
+								<button
+									type="button"
+									data-card-champion={ban}
+									aria-keyshortcuts="I"
+									aria-label={label}
+									className="flex rounded-control focus-visible:outline-action"
+								>
+									<ChampionPortrait
+										id={ban}
+										label={label}
+										size="ban"
+										unavailable
+									/>
+								</button>
+							</Tooltip>
+						</li>
 					);
 				})}
 			</ul>

@@ -1,10 +1,11 @@
 import type { Role } from "@rift-legends/contracts";
 import { Tooltip } from "@rift-legends/ui-kit/components/tooltip";
-import { LayoutGrid } from "lucide-react";
+import { Info, LayoutGrid } from "lucide-react";
 import { type KeyboardEvent, memo, useCallback, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { GameRoleIcon } from "../../assets/game-role-icon";
 import { ChampionPortrait } from "../champion-portrait";
+import { ChampionCardHelp, ChampionCardHint } from "./champion-card-hint";
 
 /** Why a champion cannot be chosen; `null` when it is free. */
 type Unavailable = "banned" | "picked" | "fearless" | null;
@@ -40,21 +41,31 @@ const Tile = memo(function Tile(props: {
 	const { id, name, unavailable } = props;
 	const reason = unavailable ? t(`draft.board.status.${unavailable}`) : null;
 	return (
-		<Tooltip heading={reason ? name : undefined} content={reason ?? name}>
+		<Tooltip
+			heading={reason ? name : undefined}
+			content={reason ?? name}
+			side="left"
+		>
 			<button
 				type="button"
 				data-index={props.index}
+				data-card-champion={id}
+				aria-keyshortcuts="I"
 				tabIndex={props.tabbable ? 0 : -1}
 				aria-pressed={props.selected}
 				aria-disabled={unavailable ? true : undefined}
 				aria-label={reason ? `${name}. ${reason}` : name}
 				onClick={() => !unavailable && props.onSelect(id)}
-				className={`relative flex min-h-0 min-w-0 flex-col overflow-hidden rounded-control bg-surface outline-offset-[-3px] focus-visible:z-1 focus-visible:outline-3 focus-visible:outline-action ${props.selected ? "outline-2 outline-action" : ""} ${unavailable ? "cursor-default" : ""}`}
+				className={`group relative flex min-h-0 min-w-0 flex-col overflow-hidden rounded-control bg-surface outline-offset-[-3px] focus-visible:z-1 focus-visible:outline-3 focus-visible:outline-action ${props.selected ? "outline-2 outline-action" : ""} ${unavailable ? "cursor-default" : ""}`}
 			>
 				<ChampionPortrait
 					id={id}
 					size="pool"
 					unavailable={unavailable !== null}
+				/>
+				<Info
+					aria-hidden
+					className="pointer-events-none absolute right-1 top-1 hidden size-4 rounded-full bg-panel text-action group-hover:block group-focus-visible:block"
 				/>
 			</button>
 		</Tooltip>
@@ -151,6 +162,7 @@ export const ChampionPool = memo(function ChampionPool(props: {
 				>
 					{t("draft.board.pool")}
 				</h2>
+				<ChampionCardHint />
 				<span role="status" className="text-[13px] text-muted">
 					{shown.length === total
 						? t("draft.board.count", { count: total })
@@ -173,6 +185,7 @@ export const ChampionPool = memo(function ChampionPool(props: {
 				/>
 				<RoleFilterButtons value={role} onChange={chooseRole} />
 			</div>
+			<ChampionCardHelp />
 			<fieldset
 				ref={grid}
 				aria-label={t("draft.board.grid")}

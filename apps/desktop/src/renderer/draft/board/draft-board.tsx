@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import { CountryFlag } from "../country-flag";
 import { teamName, useDraftSession } from "../session";
 import { AiDecisionPanel } from "./ai-decision-panel";
+import { ChampionInspection } from "./champion-inspection";
 import { ChampionPool, type PoolChampion } from "./champion-pool";
 import { InspectionPanel, PlayerAttributes } from "./player-card";
 import { type PlayerRef, TeamColumn } from "./team-column";
@@ -144,7 +145,7 @@ export function DraftBoard() {
 
 	return (
 		<>
-			<div className="grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_minmax(0,2fr)_minmax(0,1fr)] gap-3">
+			<ChampionInspection>
 				{column("blue")}
 				<section
 					aria-labelledby="pool-title"
@@ -166,7 +167,7 @@ export function DraftBoard() {
 					)}
 				</section>
 				{column("red")}
-			</div>
+			</ChampionInspection>
 			<Inspection
 				player={player ?? myMid}
 				red={view.red.team}

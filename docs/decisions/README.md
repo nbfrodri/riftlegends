@@ -100,6 +100,7 @@ Resumen de las decisiones **vigentes**, para empezar cualquier sesión sin volve
 | 2026-11-19 | Estilo **Caja** (Frecuencia con Unbounded + Archivo), **barra lateral izquierda** fija y plegable, e icono **Corte · Puntera** | [ADR 0002](0002-estilo-visual.md), [design/](../../design/README.md) |
 | 2026-11-23 | **Un solo tooltip Caja** en toda la app (`Tooltip` del ui-kit sobre Base UI): panel oscuro con borde y flecha, título opcional en negrita, texto, atajo opcional con `Kbd` y sombra suave; entrada rápida con Motion y sin animación con movimiento reducido. Un único popup que el `TooltipProvider` abre escuchando en el documento; los disparadores no montan hooks, para no penalizar el pool del draft (S1). Prohibido el `title` nativo en los elementos de `apps/desktop/src` y `packages/ui-kit` (lo vigila un test); cada disparador conserva su nombre accesible | #315 |
 | 2026-11-22 | Las capturas visuales esperan los recursos de cada pantalla (#317) | [Tests visuales](../../apps/desktop/e2e/visual/README.md) |
+| 2026-11-23 | El draft comparte una ficha Caja entre el pool, las elecciones y los vetos. Se abre al pasar el ratón o enfocar, se fija con clic derecho o con la tecla I y se cierra con Escape. Las relaciones usan cinco grados expresados con palabras y explican la interacción cuando el contenido aporta un motivo. | #318, [plan 11](../plans/11-datos-reales.md) |
 
 ## Repositorio y proceso
 
