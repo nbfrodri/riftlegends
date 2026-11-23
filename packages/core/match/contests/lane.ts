@@ -1,5 +1,6 @@
 import type { Role, Side } from "@rift-legends/contracts";
 import { int, pick } from "../../rng/helpers";
+import { attribute } from "../attribution/attribute";
 import { type MatchState, other } from "../state";
 import { type Contest, type ContestEvent, paid, roll } from "./contest";
 import { edge, outcome } from "./edge";
@@ -28,18 +29,21 @@ export function kill(
 	};
 }
 
+/**
+ * Kills pay one assist bag when the exchange has a second player (the support
+ * or the jungler), however many of them help: the number of assists never
+ * moves the gold, so it never moves the game (plan 08, R4).
+ */
 function gold(
 	state: MatchState,
 	winner: Side,
 	kills: ContestEvent["kills"],
+	bagged: boolean,
 	extra = 0,
 ) {
 	const { economy } = state.context.rules;
-	const earned = kills.reduce(
-		(sum, k) => sum + economy.kill + economy.assist * k.assists.length,
-		extra,
-	);
-	return paid(winner, earned);
+	const earned = kills.length * (economy.kill + (bagged ? economy.assist : 0));
+	return paid(winner, earned + extra);
 }
 
 /** The two laners of `lane` trade for farm, pressure and sometimes a kill. */
@@ -50,10 +54,17 @@ const laneContest = (lane: Lane, id: number): Contest => ({
 		const result = edge(state, "lane");
 		const winner: Side = roll(rng, result.blue) ? "blue" : "red";
 		const second = int(rng, 0, 59);
-		const assists: Role[] = lane === "bot" ? ["support"] : [];
-		const kills = roll(rng, SOLO_KILL)
-			? [kill(state, winner, lane, lane, assists)]
-			: [];
+		const scored = roll(rng, SOLO_KILL);
+		const duo = lane === "bot";
+		const { killer, assists } = scored
+			? attribute(
+					state,
+					winner,
+					duo ? { kind: "duo" } : { kind: "duel", lane },
+					{ contest: id, event: 0, kill: 0 },
+				)
+			: { killer: lane, assists: [] as Role[] };
+		const kills = scored ? [kill(state, winner, killer, lane, assists)] : [];
 		return [
 			{
 				kind: "lane",
@@ -61,7 +72,7 @@ const laneContest = (lane: Lane, id: number): Contest => ({
 				zone: `lane-${lane}`,
 				second,
 				kills,
-				gold: gold(state, winner, kills, LANE_GOLD),
+				gold: gold(state, winner, kills, duo, LANE_GOLD),
 				...outcome(result, winner),
 			},
 		];
@@ -77,7 +88,13 @@ const gank: Contest = {
 		const winner: Side = roll(rng, result.blue) ? "blue" : "red";
 		const second = int(rng, 0, 59);
 		const lane = pick(rng, ["top", "mid", "bot"] as const);
-		const kills = [kill(state, winner, "jungle", lane, [lane])];
+		const { killer, assists } = attribute(
+			state,
+			winner,
+			{ kind: "gank", lane },
+			{ contest: 4, event: 0, kill: 0 },
+		);
+		const kills = [kill(state, winner, killer, lane, assists)];
 		return [
 			{
 				kind: "gank",
@@ -85,7 +102,7 @@ const gank: Contest = {
 				zone: `lane-${lane}`,
 				second,
 				kills,
-				gold: gold(state, winner, kills),
+				gold: gold(state, winner, kills, true),
 				...outcome(result, winner),
 			},
 		];

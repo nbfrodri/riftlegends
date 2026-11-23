@@ -106,12 +106,19 @@ export function trackPlayerStats(
 				victim.deaths += 1;
 				victim.damage += DAMAGE.death;
 			}
-			for (const id of k.assists) {
+			// One bag per kill, split among the assistants; the first takes the rest.
+			const bag = rules.economy.assist;
+			const share = div(bag, k.assists.length || 1);
+			for (const [index, id] of k.assists.entries()) {
 				const helper = lines.get(id);
 				if (helper) {
 					helper.assists += 1;
 					helper.damage += DAMAGE.assist;
-					pay(side, helper, rules.economy.assist);
+					pay(
+						side,
+						helper,
+						index === 0 ? bag - share * (k.assists.length - 1) : share,
+					);
 				}
 			}
 		}

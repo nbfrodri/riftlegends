@@ -2,12 +2,14 @@ import { ROLES, type Side } from "@rift-legends/contracts";
 import { min } from "../../math";
 import { int, pick, shuffle } from "../../rng/helpers";
 import type { Rng } from "../../rng/streams";
+import { attribute, type Engagement } from "../attribution/attribute";
 import { type MatchState, other } from "../state";
 import { type Contest, roll } from "./contest";
 import { edge, MID_GAME, outcome } from "./edge";
 import { kill } from "./lane";
 
 const TEMPO_CHANCE = { slow: 1300, balanced: 2200, fast: 3200 } as const;
+const PITS: ReadonlySet<string> = new Set(["dragon-pit", "baron-pit"]);
 const EXCHANGE_CHANCE = 2300;
 const AGGRESSION_POINTS = 25;
 const POSITIONING_POINTS = 30;
@@ -32,21 +34,38 @@ function extraKills(state: MatchState, defended: Side, rng: Rng) {
 	return kills;
 }
 
-function casualties(state: MatchState, side: Side, count: number, rng: Rng) {
+/**
+ * `count` kills by `side`. Victims come from the contest's stream; who scores
+ * and who assists comes from the attribution stream (issue #346). The two
+ * draws that used to pick the killer and the assistant are still taken and
+ * dropped, so the rest of the contest draws what it always drew (plan 08, R4).
+ */
+function casualties(
+	state: MatchState,
+	side: Side,
+	count: number,
+	rng: Rng,
+	engagement: Engagement,
+	first: number,
+) {
 	return shuffle(rng, ROLES)
 		.slice(0, count)
-		.map((victim) => {
-			const killer = pick(rng, ROLES);
-			const assist = pick(
-				rng,
-				ROLES.filter((role) => role !== killer),
-			);
-			return kill(state, side, killer, victim, [assist]);
+		.map((victim, index) => {
+			pick(rng, ROLES);
+			pick(rng, ROLES.slice(1));
+			const { killer, assists } = attribute(state, side, engagement, {
+				contest: FIGHT_ID,
+				event: 0,
+				kill: first + index,
+			});
+			return kill(state, side, killer, victim, assists);
 		});
 }
 
+const FIGHT_ID = 30;
+
 export const FIGHT_CONTEST: Contest = {
-	id: 30,
+	id: FIGHT_ID,
 	due: (state) => state.minute >= MID_GAME,
 	resolve(state, rng) {
 		const { blue, red, rules } = state.context;
@@ -62,9 +81,14 @@ export const FIGHT_CONTEST: Contest = {
 		const second = int(rng, 0, 59);
 		const won = 1 + extraKills(state, loser, rng);
 		const lost = min(won - 1, extraKills(state, winner, rng));
+		// A team fight is at an objective pit or leaves four or more dead.
+		const engagement: Engagement =
+			PITS.has(zone) || won + lost >= 4
+				? { kind: "teamfight" }
+				: { kind: "skirmish" };
 		const kills = [
-			...casualties(state, winner, won, rng),
-			...casualties(state, loser, lost, rng),
+			...casualties(state, winner, won, rng, engagement, 0),
+			...casualties(state, loser, lost, rng, engagement, won),
 		];
 		const { kill: killGold, assist } = rules.economy;
 		const wonGold = won * (killGold + assist);

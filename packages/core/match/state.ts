@@ -1,9 +1,10 @@
-import type {
-	AiContent,
-	MatchContent,
-	MatchEvent,
-	Role,
-	Side,
+import {
+	type AiContent,
+	type MatchContent,
+	type MatchEvent,
+	ROLES,
+	type Role,
+	type Side,
 } from "@rift-legends/contracts";
 import { indexContent } from "../ai/content-index";
 import { type Fixed, mul, SCALE, toInt } from "../math";
@@ -11,6 +12,7 @@ import { int } from "../rng/helpers";
 import { SCOPES } from "../rng/scopes";
 import { deriveSeed } from "../rng/seeds";
 import { createRng } from "../rng/streams";
+import { roleWeights } from "./attribution/weights";
 import type { MentalEdge } from "./mental";
 import { type Lineup, type Profile, profiles } from "./profile";
 
@@ -44,6 +46,10 @@ interface SideContext {
 	readonly mental: MentalEdge | null;
 	/** Player id in each role. */
 	readonly players: Readonly<Record<Role, string>>;
+	/** Weight of each role to score and to assist a kill (issue #346). */
+	readonly attribution: Readonly<
+		Record<Role, { kill: number; assist: number }>
+	>;
 }
 
 /** What stays fixed during a game. */
@@ -140,6 +146,7 @@ export function createMatch(setup: MatchSetup): MatchState {
 			(mental?.variance ?? SCALE) as Fixed,
 		);
 		const ids = players(setup.draft, lineup.team);
+		const { champions } = indexContent(setup.draft);
 		const roster = Object.values(ids).map((id) => {
 			const player = setup.match.players.find((p) => p.id === id);
 			if (!player) throw new Error(`No match data for player ${id}`);
@@ -157,6 +164,16 @@ export function createMatch(setup: MatchSetup): MatchState {
 			strategy: strategy(setup.match, lineup.team),
 			profile,
 			players: ids,
+			attribution: Object.fromEntries(
+				ROLES.map((role, i) => [
+					role,
+					roleWeights(
+						role,
+						champions.get(lineup.roles[role])?.archetypes ?? [],
+						roster[i] as (typeof roster)[number],
+					),
+				]),
+			) as SideContext["attribution"],
 			aggression: average("aggression"),
 			positioning: average("positioning"),
 		};
