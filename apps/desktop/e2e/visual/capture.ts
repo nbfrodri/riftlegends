@@ -27,7 +27,23 @@ export async function waitForCaptureAssets(page: Page) {
 	// The first screenshot of a cold app takes over a second on CI (software
 	// rendering). Take it now, outside the assertion, so toHaveScreenshot's
 	// stability loop compares fast frames instead of timing out (#317).
-	await page.screenshot({ animations: "disabled", caret: "hide" });
+	// A window that has not painted yet can refuse the capture; wait two frames
+	// and retry only this throwaway shot, never the assertion.
+	await page.evaluate(
+		() =>
+			new Promise<void>((done) =>
+				requestAnimationFrame(() => requestAnimationFrame(() => done())),
+			),
+	);
+	for (let attempt = 1; ; attempt++) {
+		try {
+			await page.screenshot({ animations: "disabled", caret: "hide" });
+			return;
+		} catch (error) {
+			if (attempt === 5) throw error;
+			await page.waitForTimeout(500);
+		}
+	}
 }
 
 export async function captureScreen(
