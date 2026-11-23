@@ -5,6 +5,8 @@ import {
 	type PlaywrightWorkerArgs,
 } from "@playwright/test";
 
+import { withLaunchRetry } from "./launch-retry";
+
 export { expect } from "@playwright/test";
 
 // Chromium's --lang sets app.getLocale() on every platform, so the UI
@@ -17,21 +19,25 @@ export function launchApp(
 		env?: Record<string, string>;
 	},
 ): Promise<ElectronApplication> {
-	return playwright._electron.launch({
-		args: [
-			".",
-			`--user-data-dir=${options.profileDir}`,
-			`--lang=${options.systemLocale}`,
-		],
-		chromiumSandbox: true,
-		env: {
-			...(Object.fromEntries(
-				Object.entries(process.env).filter(([, value]) => value !== undefined),
-			) as Record<string, string>),
-			...options.env,
-			RIFT_E2E_OFFLINE: "1",
-		},
-	});
+	return withLaunchRetry(() =>
+		playwright._electron.launch({
+			args: [
+				".",
+				`--user-data-dir=${options.profileDir}`,
+				`--lang=${options.systemLocale}`,
+			],
+			chromiumSandbox: true,
+			env: {
+				...(Object.fromEntries(
+					Object.entries(process.env).filter(
+						([, value]) => value !== undefined,
+					),
+				) as Record<string, string>),
+				...options.env,
+				RIFT_E2E_OFFLINE: "1",
+			},
+		}),
+	);
 }
 
 export const test = base.extend<{
