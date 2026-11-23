@@ -9,12 +9,20 @@ export const createAssetsApi = (
 	sync: () => ipc.invoke(assetChannels.sync),
 	champions: () => ipc.invoke(assetChannels.champions),
 	teamLogos: () => ipc.invoke(assetChannels.teamLogos),
+	playerPhotos: () => ipc.invoke(assetChannels.playerPhotos),
 	subscribe(listener) {
 		const notify = (_event: IpcRendererEvent, progress: AssetProgress) =>
 			listener(progress);
 		ipc.on(assetChannels.progress, notify);
 		return () => {
 			ipc.off(assetChannels.progress, notify);
+		};
+	},
+	subscribePlayerPhotos(listener) {
+		const notify = () => listener();
+		ipc.on(assetChannels.playerPhotosChanged, notify);
+		return () => {
+			ipc.off(assetChannels.playerPhotosChanged, notify);
 		};
 	},
 	subscribeTeamLogos(listener) {

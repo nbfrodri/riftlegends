@@ -16,6 +16,8 @@ import {
 } from "@rift-legends/contracts/real-logos";
 import { realSnapshotSchema } from "@rift-legends/contracts/real-snapshot";
 import { Client, type ClientOptions, lolesportsApi } from "./client.ts";
+import { compare } from "./queries.ts";
+import { leagues } from "./scope.ts";
 
 /**
  * Team logo sources for the real snapshot, from the public lolesports.com web
@@ -43,6 +45,12 @@ export interface ApiTeam {
 	image: string | null;
 	status: string;
 	homeLeague: { name: string } | null;
+	players: ApiPlayer[];
+}
+
+interface ApiPlayer {
+	handle: string;
+	image: string | null;
 }
 
 export interface Unmatched {
@@ -55,7 +63,7 @@ export function parseApiTeams(body: unknown): ApiTeam[] {
 	const teams = (body as { data?: { teams?: unknown } } | null)?.data?.teams;
 	if (!Array.isArray(teams)) throw new Error("Invalid lolesports teams");
 	return teams.map((team) => {
-		const { slug, name, code, image, status, homeLeague } = team ?? {};
+		const { slug, name, code, image, status, homeLeague, players } = team ?? {};
 		if (
 			typeof slug !== "string" ||
 			typeof name !== "string" ||
@@ -72,6 +80,19 @@ export function parseApiTeams(body: unknown): ApiTeam[] {
 			image: image ?? null,
 			status,
 			homeLeague: homeLeague ? { name: homeLeague.name } : null,
+			players: Array.isArray(players)
+				? players.flatMap((player) => {
+						const { summonerName, image } = player ?? {};
+						return typeof summonerName === "string" && summonerName
+							? [
+									{
+										handle: summonerName,
+										image: typeof image === "string" ? image : null,
+									},
+								]
+							: [];
+					})
+				: [],
 		};
 	});
 }
@@ -92,9 +113,12 @@ export function matchTeam(
 	team: SnapshotTeam,
 	apiTeams: readonly ApiTeam[],
 ): ApiTeam | string {
-	const alias = aliases[team.id];
+	const alias = Object.hasOwn(aliases, team.id) ? aliases[team.id] : undefined;
 	if (alias) {
-		return apiTeams.find(({ slug }) => slug === alias) ?? `no team "${alias}"`;
+		const matches = apiTeams.filter(({ slug }) => slug === alias);
+		return matches.length > 1
+			? "ambiguous"
+			: (matches[0] ?? `no team "${alias}"`);
 	}
 	const league = fold(team.league);
 	const sameLeague = apiTeams.filter(
@@ -108,13 +132,14 @@ export function matchTeam(
 		const found = sameLeague.filter(same);
 		const active = found.filter(({ status }) => status === "active");
 		const pool = active.length ? active : found;
-		if (pool.length === 1) return pool[0] as ApiTeam;
+		if (pool.length === 1 && pool[0]) return pool[0];
 		if (pool.length > 1) return "ambiguous";
 	}
 	return "no team in the league";
 }
 
-const httpsOf = (image: string) => image.replace(/^http:\/\//i, "https://");
+export const httpsOf = (image: string) =>
+	image.replace(/^http:\/\//i, "https://");
 
 export async function buildLogos(
 	client: Client,
@@ -147,10 +172,6 @@ export async function buildLogos(
 	return { logos, unmatched, retrievedAt };
 }
 
-function compare(a: string, b: string) {
-	return a < b ? -1 : a > b ? 1 : 0;
-}
-
 const logosFile = "logos.json";
 
 function serialize(file: RealLogos) {
@@ -159,8 +180,11 @@ function serialize(file: RealLogos) {
 }
 
 async function readTeams(outputDir: string): Promise<SnapshotTeam[]> {
+	const leagueFiles = new Set(
+		leagues.map(({ id }) => `${id.toLowerCase()}.json`),
+	);
 	const files = (await readdir(outputDir))
-		.filter((file) => file.endsWith(".json") && file !== logosFile)
+		.filter((file) => leagueFiles.has(file))
 		.sort();
 	const teams: SnapshotTeam[] = [];
 	for (const file of files) {

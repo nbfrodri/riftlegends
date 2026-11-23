@@ -59,6 +59,7 @@ beforeEach(async () => {
 			getStatus: vi.fn(),
 			subscribe: () => vi.fn(),
 			subscribeTeamLogos: () => vi.fn(),
+			subscribePlayerPhotos: () => vi.fn(),
 		}),
 	}));
 	await import("../src/main/index");

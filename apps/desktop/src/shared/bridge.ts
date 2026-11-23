@@ -22,8 +22,10 @@ export const assetChannels = {
 	sync: "assets:sync",
 	champions: "assets:champions",
 	teamLogos: "assets:teamLogos",
+	playerPhotos: "assets:playerPhotos",
 	progress: "assets:progress",
 	teamLogosChanged: "assets:teamLogosChanged",
+	playerPhotosChanged: "assets:playerPhotosChanged",
 } as const;
 
 export interface AssetsApi {
@@ -33,9 +35,12 @@ export interface AssetsApi {
 	champions(): Promise<ChampionCatalog | null>;
 	/** Team id to `rift-asset://` URL of each verified team logo on disk. */
 	teamLogos(): Promise<Record<string, string>>;
+	/** Synchronizes the photo cache and returns verified URLs by player id. */
+	playerPhotos(): Promise<Record<string, string>>;
 	subscribe(listener: (progress: AssetProgress) => void): () => void;
 	/** Main finished downloading team logos: read `teamLogos()` again. */
 	subscribeTeamLogos(listener: () => void): () => void;
+	subscribePlayerPhotos(listener: () => void): () => void;
 }
 
 export const windowChannels = {

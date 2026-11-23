@@ -1,7 +1,9 @@
-import { join } from "node:path";
-import { maxCatalogBytes, maxImageBytes, maxLogoBytes } from "./catalog";
+import { dirname } from "node:path";
+import { maxCatalogBytes, maxImageBytes } from "./catalog";
 import { cachePath, readBytes } from "./disk";
-import { type LogoFormat, logoMimes, readLogoEntry } from "./logos";
+import { readLogo } from "./logos";
+import { readPhoto } from "./photos";
+import { type ImageFormat, imageMimes } from "./riot-images";
 import { readActiveVersion } from "./store";
 
 export const assetScheme = "rift-asset";
@@ -13,20 +15,27 @@ const cdragonTypes = {
 	".json": "application/json",
 } as const;
 
-const logoRequest =
-	/^rift-asset:\/\/logos\/(teams\/[a-z0-9-]{1,64}\.(png|jpg|webp))$/;
+const imageRequest =
+	/^rift-asset:\/\/(logos|photos)\/((?:teams|players)\/[a-z0-9-]{1,64}\.(png|jpg|webp))$/;
 
-async function serveLogo(userData: string, path: string, format: LogoFormat) {
-	const root = join(userData, "assets", "logos");
+async function serveRiotImage(
+	userData: string,
+	source: string,
+	path: string,
+	format: ImageFormat,
+) {
+	const root = dirname(
+		await cachePath(userData, `assets/${source}/manifest.json`),
+	);
 	// Only files named by the manifest, and only while they still match it.
-	if (!(await readLogoEntry(root, path))) return undefined;
-	const bytes = await readBytes(await cachePath(root, path), maxLogoBytes);
+	const readImage = source === "logos" ? readLogo : readPhoto;
+	const bytes = await readImage(root, path);
 	return (
 		bytes &&
 		new Response(bytes, {
 			headers: {
 				"cache-control": "no-store",
-				"content-type": logoMimes[format],
+				"content-type": imageMimes[format],
 				"x-content-type-options": "nosniff",
 			},
 		})
@@ -41,12 +50,16 @@ export async function serveAsset(
 	if (request.method !== "GET") return notFound();
 	// Chromium and Electron can remove dot segments before dispatch.
 	// Containment must also hold for the canonical URL we receive.
-	const logo = logoRequest.exec(request.url);
-	if (logo?.[1] && logo[2]) {
+	const image = imageRequest.exec(request.url);
+	if (image?.[1] && image[2] && image[3]) {
 		try {
 			return (
-				(await serveLogo(userData, logo[1], logo[2] as LogoFormat)) ??
-				notFound()
+				(await serveRiotImage(
+					userData,
+					image[1],
+					image[2],
+					image[3] as ImageFormat,
+				)) ?? notFound()
 			);
 		} catch {
 			return notFound();

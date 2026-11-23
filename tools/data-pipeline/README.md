@@ -71,6 +71,16 @@ mise exec -- pnpm data:logos --offline
 
 Lee los equipos de los JSON del snapshot, los empareja con la API web pública de lolesports.com (`getTeams`) y escribe `packages/core/content/real/logos.json` con la URL, el SHA-256, el tamaño y el tipo de cada logo. Acepta las mismas opciones y la misma caché que `data:snapshot`. Pausa de 1 s entre peticiones, sin redirects. Los equipos sin logo se listan en la salida. Los bytes de los logos no se guardan. Detalles y capturas: [plan 11](../../docs/plans/11-datos-reales.md#logos-de-equipos-en-la-caché-252-284) y [fixtures/lolesports](fixtures/lolesports/README.md).
 
+## Fotos de jugadores
+
+```sh
+TMPDIR=/home/phobos/.cache/rift-tmp mise exec -- pnpm data:photos
+```
+
+Ejecuta el comando desde la raíz con acceso a los servidores de Riot. Reutiliza la respuesta `getTeams` de `data:logos` y lee `teams.json` y `players.json` del snapshot. Descarga cada URL válida para calcular sus metadatos y escribe `packages/core/content/real/photos.json`, ordenado por id de jugador. La caché solo guarda metadatos. El comando lista los jugadores que quedan sin foto.
+
+Admite `--cache-dir`, `--max-attempts` y `--offline`. En modo offline solo puede regenerar el manifiesto cuando la caché ya tiene todos los metadatos de las imágenes válidas. [Plan 11](../../docs/plans/11-datos-reales.md#fotos-de-jugadores-en-la-caché-360).
+
 ## Actualización semanal
 
 El [workflow](../../.github/workflows/data-snapshot.yml) se ejecuta los lunes a las 05:23 UTC y también se puede lanzar desde **Actions → Real data snapshot → Run workflow** en la rama por defecto. Las respuestas crudas viven en `actions/cache` (privada del repositorio, con clave por fecha UTC): no se suben como artefacto ni se commitean, porque los desambiguadores de `Link` pueden incluir nombres reales. Un día nuevo consulta de nuevo la fuente. Si solo cambian las fechas de consulta, se conservan los bytes y la procedencia de la última versión publicada.

@@ -198,8 +198,15 @@ describe("real teams (plan 11, A2)", () => {
 });
 
 describe("real champions on the board (R4, A3)", () => {
-	async function toBoard(user: User, locale = "en-US") {
-		await setup(ready, testCatalog(realIds), locale);
+	async function toBoard(
+		user: User,
+		locale = "en-US",
+		photos: Record<string, string> = {},
+	) {
+		const { assets } = await setup(ready, testCatalog(realIds), locale);
+		// Main emits this when the photos finish downloading.
+		assets.api.playerPhotos.mockResolvedValue(photos);
+		act(() => assets.photosChanged());
 		seedNextSeries();
 		await chooseReal(user, locale === "en-US" ? "Real LoL" : "LoL real");
 		await user.click(
@@ -269,8 +276,46 @@ describe("real champions on the board (R4, A3)", () => {
 			(p) => p.team === team?.id && p.role === "mid" && !p.sub,
 		);
 		const card = screen.getByRole("group", { name: /Player card/ });
-		const marks = within(card).queryAllByRole("img", { name: "Estimated" });
+		const marks = card.querySelectorAll("dd.italic");
 		expect(marks).toHaveLength(mid?.estimated?.length ?? 0);
 		expect(marks.length).toBeGreaterThan(0);
+		expect(
+			within(card).getByText(
+				"Estimated value: it cannot be measured with stats",
+			),
+		).toBeTruthy();
+	});
+
+	const mid = real.draft.players.find(
+		(p) => p.team === bySeed[0]?.id && p.role === "mid" && !p.sub,
+	);
+
+	test("shows the real player's cached photo and falls back to a named silhouette on error", async () => {
+		const photo = "rift-asset://photos/players/mid.png";
+		const user = userEvent.setup();
+		await toBoard(user, "en-US", { [mid?.id ?? ""]: photo });
+		const card = screen.getByRole("group", { name: /Player card/ });
+		await user.click(within(card).getByText("Player card", { exact: true }));
+		const portrait = await within(card).findByRole("img", {
+			name: `Portrait of ${mid?.handle}`,
+		});
+		expect(portrait.tagName).toBe("IMG");
+		expect(portrait.getAttribute("src")).toBe(photo);
+		fireEvent.error(portrait);
+		expect(
+			within(card).getByRole("img", { name: `Portrait of ${mid?.handle}` })
+				.tagName,
+		).toBe("svg");
+	});
+
+	test("shows an accessible silhouette when the real player has no photo", async () => {
+		const user = userEvent.setup();
+		await toBoard(user);
+		const card = screen.getByRole("group", { name: /Player card/ });
+		await user.click(within(card).getByText("Player card", { exact: true }));
+		expect(
+			within(card).getByRole("img", { name: `Portrait of ${mid?.handle}` })
+				.tagName,
+		).toBe("svg");
 	});
 });

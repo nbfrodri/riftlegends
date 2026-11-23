@@ -14,7 +14,6 @@ export const communityDragon = "https://raw.communitydragon.org";
 export const versionsUrl = new URL("/api/versions.json", dataDragon);
 export const maxCatalogBytes = 4 * 1024 * 1024;
 export const maxImageBytes = 1024 * 1024;
-export const maxLogoBytes = 512 * 1024;
 export const maxChampionDataBytes = 1024 * 1024;
 const championLocales = { en: "en_gb", es: "es_es" } as const;
 export type ChampionLocale = keyof typeof championLocales;

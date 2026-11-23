@@ -2,7 +2,10 @@ import { createHash, randomUUID } from "node:crypto";
 import { mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
-import { sniffImageMime } from "@rift-legends/contracts/real-logos";
+import {
+	maxRiotImageBytes,
+	sniffImageMime,
+} from "@rift-legends/contracts/real-logos";
 
 export interface ClientOptions {
 	cacheDir: string;
@@ -18,7 +21,6 @@ const cargoLimit = 500;
 const cargoInterval = 11_000;
 const lolesportsInterval = 1_000;
 const userAgent = "RiftLegendsDataPipeline/0.1";
-const maxImageBytes = 512 * 1024;
 
 /**
  * lolesports.com's own public web client key, shipped in its website. It
@@ -53,25 +55,27 @@ function interval(url: string) {
 	return lolesportsHosts.has(parsed.hostname) ? lolesportsInterval : 0;
 }
 
-async function readImage(response: Response): Promise<ImageDigest> {
-	const declared = Number(response.headers.get("content-length") ?? 0);
-	if (declared > maxImageBytes) throw new Permanent("Image is too large");
-	const chunks: Uint8Array[] = [];
-	let size = 0;
-	for await (const chunk of response.body ?? []) {
-		size += chunk.length;
-		if (size > maxImageBytes) throw new Permanent("Image is too large");
-		chunks.push(chunk);
-	}
-	const bytes = Buffer.concat(chunks);
-	const mime = sniffImageMime(bytes);
-	if (!mime) throw new Permanent("Not a PNG, JPEG or WebP image");
-	return {
-		sha256: createHash("sha256").update(bytes).digest("hex"),
-		size,
-		mime,
+const readImage =
+	(limit: number) =>
+	async (response: Response): Promise<ImageDigest> => {
+		const declared = Number(response.headers.get("content-length") ?? 0);
+		if (declared > limit) throw new Permanent("Image is too large");
+		const chunks: Uint8Array[] = [];
+		let size = 0;
+		for await (const chunk of response.body ?? []) {
+			size += chunk.length;
+			if (size > limit) throw new Permanent("Image is too large");
+			chunks.push(chunk);
+		}
+		const bytes = Buffer.concat(chunks);
+		const mime = sniffImageMime(bytes);
+		if (!mime) throw new Permanent("Not a PNG, JPEG or WebP image");
+		return {
+			sha256: createHash("sha256").update(bytes).digest("hex"),
+			size,
+			mime,
+		};
 	};
-}
 
 function parseDigest(body: unknown): ImageDigest {
 	const { sha256, size, mime } = (body ?? {}) as Partial<ImageDigest>;
@@ -192,8 +196,11 @@ export class Client {
 	 * SHA-256, size and type of an image, downloaded once and cached as
 	 * metadata only: the bytes are never stored. Redirects are refused.
 	 */
-	imageDigest(url: string): Promise<ImageDigest> {
-		return this.#enqueue(url, parseDigest, readImage);
+	imageDigest(
+		url: string,
+		limit: number = maxRiotImageBytes,
+	): Promise<ImageDigest> {
+		return this.#enqueue(url, parseDigest, readImage(limit));
 	}
 
 	get<T>(url: string, parse: (body: unknown) => T): Promise<T> {

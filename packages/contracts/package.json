@@ -6,7 +6,8 @@
 		".": "./index.ts",
 		"./country-codes": "./country-codes.ts",
 		"./real-snapshot": "./draft/snapshot-content.ts",
-		"./real-logos": "./draft/real-logos.ts"
+		"./real-logos": "./draft/real-logos.ts",
+		"./real-photos": "./draft/real-photos.ts"
 	},
 	"dependencies": {
 		"zod": "4.6.7"

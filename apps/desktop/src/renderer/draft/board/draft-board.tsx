@@ -8,7 +8,12 @@ import { teamName, useDraftSession } from "../session";
 import { AiDecisionPanel } from "./ai-decision-panel";
 import { ChampionInspection } from "./champion-inspection";
 import { ChampionPool, type PoolChampion } from "./champion-pool";
-import { InspectionPanel, PlayerAttributes } from "./player-card";
+import {
+	InspectionPanel,
+	PlayerAttributes,
+	PlayerPool,
+	PlayerPortrait,
+} from "./player-card";
 import { type PlayerRef, TeamColumn } from "./team-column";
 
 type Turn = Extract<
@@ -198,6 +203,10 @@ const Inspection = memo(function Inspection(props: {
 }) {
 	const { t } = useTranslation();
 	const { options, player } = props;
+	const championNames = useMemo(
+		() => new Map(options.champions.map((c) => [c.id, c.name])),
+		[options.champions],
+	);
 	const rated = options.teams
 		.find((team) => team.id === player?.team)
 		?.players.find((p) => p.role === player?.role);
@@ -225,10 +234,21 @@ const Inspection = memo(function Inspection(props: {
 				}
 			>
 				{rated ? (
-					<PlayerAttributes
-						attributes={rated.attributes}
-						estimated={rated.estimated}
-					/>
+					<div className="mt-2 flex items-start gap-3">
+						<PlayerPortrait
+							key={rated.id}
+							id={rated.id}
+							handle={rated.handle}
+						/>
+						<div className="min-w-0 flex-1">
+							<PlayerAttributes
+								attributes={rated.attributes}
+								role={rated.role}
+								estimated={rated.estimated}
+							/>
+							<PlayerPool pool={rated.pool} names={championNames} />
+						</div>
+					</div>
 				) : (
 					<p className="mt-2 text-[13px] text-muted">
 						{t("draft.board.playerHint")}

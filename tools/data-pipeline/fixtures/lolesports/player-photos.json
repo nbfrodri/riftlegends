@@ -1,0 +1,49 @@
+{
+	"data": {
+		"teams": [
+			{
+				"slug": "team-liquid",
+				"name": "Liquid",
+				"code": "LIQ",
+				"status": "active",
+				"players": [
+					{
+						"summonerName": "Aurora",
+						"image": "http://static.lolesports.com/players/aurora.png"
+					},
+					{
+						"summonerName": "Zenith",
+						"image": "https://lolstatic-a.akamaihd.net/esports-assets/production/player/zenith.jpg"
+					},
+					{ "summonerName": "NoImage", "image": null },
+					{
+						"summonerName": "Default",
+						"image": "https://static.lolesports.com/players/default-headshot.png"
+					},
+					{
+						"summonerName": "Dupe",
+						"image": "https://static.lolesports.com/players/dupe.png"
+					},
+					{ "summonerName": "DUPE" },
+					{
+						"summonerName": "Unsafe",
+						"image": "https://static.lolesports.com.example/players/unsafe.png"
+					}
+				]
+			},
+			{
+				"slug": "other",
+				"name": "Other",
+				"code": "OTH",
+				"status": "active",
+				"homeLeague": { "name": "LCS" },
+				"players": [
+					{
+						"summonerName": "NoImage",
+						"image": "https://static.lolesports.com/players/other.png"
+					}
+				]
+			}
+		]
+	}
+}
