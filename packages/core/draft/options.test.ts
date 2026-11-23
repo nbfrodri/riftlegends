@@ -80,6 +80,7 @@ describe("series.options (plan 09, U1)", () => {
 		]);
 		expect(forge[2]).toMatchObject({
 			id: "forge-mid",
+			nationality: "GB",
 			attributes: { experience: 98, composure: 95, lanes: 92 },
 		});
 	});

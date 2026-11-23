@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { COUNTRY_CODES } from "../country-codes";
 import { position } from "../envelope";
 import { checkChampionReference, checkDuplicates } from "./content-validation";
 import { PLAYER_ATTRIBUTES } from "./player-attributes";
@@ -125,6 +126,10 @@ export const aiContent = z
 				handle: z
 					.string()
 					.regex(/^[\p{L}\p{N}](?:[\p{L}\p{N} ._-]{0,22}[\p{L}\p{N}._-])?$/u),
+				nationality: z
+					.string()
+					.refine((code) => COUNTRY_CODES.has(code))
+					.optional(),
 				sub: z.boolean().optional(),
 				estimated: z.array(z.enum(PLAYER_ATTRIBUTES)).optional(),
 				placeholder: z.literal(true).optional(),

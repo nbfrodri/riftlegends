@@ -58,6 +58,25 @@ it("gives every player a unique handle of 2 to 16 letters or digits", () => {
 	).toBe(false);
 });
 
+it("gives fictional players a country and accepts older entries without one", () => {
+	const schema = aiContent.shape.players.element;
+	for (const player of packagedDraftContent.players) {
+		expect(
+			schema.safeParse({ ...player, nationality: undefined }).success,
+		).toBe(true);
+		expect(schema.safeParse({ ...player, nationality: "KR" }).success).toBe(
+			true,
+		);
+		expect(schema.safeParse({ ...player, nationality: "ZZ" }).success).toBe(
+			false,
+		);
+		expect(player).toHaveProperty(
+			"nationality",
+			expect.stringMatching(/^[A-Z]{2}$/),
+		);
+	}
+});
+
 it("parses as draft and match content", () => {
 	expect(aiContent.parse(packagedDraftContent)).toEqual(packagedDraftContent);
 	expect(matchContent.parse(packagedMatchContent)).toEqual(

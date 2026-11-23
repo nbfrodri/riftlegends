@@ -31,7 +31,7 @@ const attributeIcons = {
 export function InspectionPanel(props: {
 	id: string;
 	title: string;
-	note?: string | undefined;
+	note?: ReactNode;
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
 	accent: string;
@@ -57,7 +57,9 @@ export function InspectionPanel(props: {
 					{props.title}
 				</span>
 				{props.note && (
-					<span className="ml-auto text-[13px] text-muted">{props.note}</span>
+					<span className="ml-auto flex items-center gap-1.5 text-[13px] text-muted">
+						{props.note}
+					</span>
 				)}
 			</summary>
 			{props.children}

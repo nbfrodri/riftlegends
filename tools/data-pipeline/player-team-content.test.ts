@@ -261,3 +261,19 @@ test("players who share a handle get their team appended, whatever the input ord
 	).toEqual(["Starter.AE", "starter.BE"]);
 	expect(profile(source, "Starter").handle).toBe("Starter");
 });
+
+test("a player has a nationality only when the data has one", () => {
+	const source = snapshot([game(1, [line("Starter")])]);
+	const nationalities = new Map([["Starter", "KR"]]);
+	const { players } = buildPlayerTeamContent(
+		[source],
+		new Map(),
+		nationalities,
+	);
+	expect(players.find((p) => p.id === "Starter")?.nationality).toBe("KR");
+	const other = players.find((p) => p.id !== "Starter");
+	expect(other && "nationality" in other).toBe(false);
+	expect(
+		buildPlayerTeamContent([source]).players.some((p) => "nationality" in p),
+	).toBe(false);
+});

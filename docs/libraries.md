@@ -30,6 +30,7 @@ Rift Legends es una **app de escritorio instalable** (Electron), no una web: tie
 | --- | --- | --- | --- | --- |
 | UI | `react` | 19.3 | MIT | |
 | Montaje del renderer y tipos JSX | `react-dom`, `@types/react` y `@types/react-dom` | 19.3 | MIT | Montan y tipan la interfaz React en la ventana de Electron |
+| Banderas de jugadores | `country-flag-icons` | 1.6.20 | MIT | Componentes SVG empaquetados con el renderer para mostrar la nacionalidad sin conexión |
 | Componentes | **shadcn/ui** (CLI `shadcn` 4.23) sobre `@base-ui/react` | 1.9 | MIT | El código se copia a `packages/ui-kit` y es nuestro: se re-estila con los tokens del estilo elegido (ADR 0002). Base UI es la base por defecto de shadcn desde julio de 2026 |
 | Estilos | `tailwindcss` + `@tailwindcss/vite` | 4.3 | MIT | Tokens como variables CSS (`@theme`) en `packages/ui-kit/tokens.css`; plugin de Vite en el renderer. Estilos solo con utilidades: no se importan `.css` desde módulos, porque en dev Vite los inyecta como `<style>` y la CSP los bloquea (#226). Variante `short:` para ventanas de 740 px de alto o menos |
 | Utilidades de clases | `clsx` + `tailwind-merge`, `class-variance-authority` | 2.1 / 3.7 / 0.7 | MIT / MIT / Apache-2.0 | cva para variantes de componentes |

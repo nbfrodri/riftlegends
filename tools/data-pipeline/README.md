@@ -52,6 +52,16 @@ Datos de los colaboradores de Leaguepedia, **CC BY-SA 3.0 Unported**. El [aviso 
 
 `pnpm data:snapshot` también escribe `packages/core/content/real/history.json` para los siete años anteriores a la temporada del snapshot. La ventana avanza con la temporada y consulta tres agregados por año con `GROUP BY` (partidas por jugador, eventos internacionales y títulos). La caché de años cerrados va aparte (`RIFT_LEGENDS_HISTORY_CACHE`, por defecto `<caché>/history`). El workflow restaura la última y guarda una nueva cuando incorpora consultas. La caché sustituye los desambiguadores personales por huellas y el historial publicado contiene solo los IDs de los jugadores del snapshot.
 
+## Nacionalidad
+
+`pnpm data:snapshot` guarda `nationalities.json` junto a las ligas. Consulta la tabla `Players` de Leaguepedia para quienes aparecen en los marcadores o en las plantillas de los torneos del snapshot. Usa la misma caché, paginación y espera de Cargo. Solo guarda IDs del snapshot y conserva la huella de los desambiguadores.
+
+`pnpm data:content` cruza ese fichero por ID y añade `nationality` a `players.json` cuando hay un código válido. Para actualizar ambos ficheros, ejecuta desde la raíz:
+
+```sh
+mise exec -- pnpm data:snapshot && mise exec -- pnpm data:content
+```
+
 ## Logos de equipos
 
 ```sh

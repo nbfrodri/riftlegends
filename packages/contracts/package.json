@@ -4,6 +4,7 @@
 	"type": "module",
 	"exports": {
 		".": "./index.ts",
+		"./country-codes": "./country-codes.ts",
 		"./real-snapshot": "./draft/snapshot-content.ts",
 		"./real-logos": "./draft/real-logos.ts"
 	},

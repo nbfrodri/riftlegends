@@ -1,0 +1,39 @@
+{
+  "cargoquery": [
+    {
+      "title": {
+        "Link": "Faker",
+        "Country": "South Korea",
+        "NationalityPrimary": ""
+      }
+    },
+    {
+      "title": {
+        "Link": "Kiin",
+        "Country": "South Korea",
+        "NationalityPrimary": ""
+      }
+    },
+    {
+      "title": {
+        "Link": "Synthetic Dual (Disambiguator)",
+        "Country": "France",
+        "NationalityPrimary": "Morocco"
+      }
+    },
+    {
+      "title": {
+        "Link": "Synthetic Unknown",
+        "Country": "",
+        "NationalityPrimary": ""
+      }
+    },
+    {
+      "title": {
+        "Link": "Synthetic Odd",
+        "Country": "Atlantis",
+        "NationalityPrimary": ""
+      }
+    }
+  ]
+}
