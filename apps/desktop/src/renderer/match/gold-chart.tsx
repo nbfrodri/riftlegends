@@ -1,6 +1,7 @@
 import type { MapSnapshot } from "@rift-legends/contracts";
 import { useId, useMemo } from "react";
 import { useTranslation } from "react-i18next";
+import { StatIcon } from "../assets/stat-icon";
 import { clockTime } from "./playback";
 import { type TeamNames, useGoldDiff, useGoldFormat } from "./scoreboard";
 
@@ -62,7 +63,10 @@ export function GoldChart({
 	return (
 		<figure className="flex h-full min-w-0 flex-col bg-panel px-3.5 py-[9px]">
 			<figcaption className="flex items-center justify-between gap-2 font-bold text-[13px]">
-				<span>{t("draft.match.lead", { team: names[leader] })}</span>
+				<span className="inline-flex items-center gap-1.5">
+					<StatIcon stat="gold" size={16} />
+					{t("draft.match.lead", { team: names[leader] })}
+				</span>
 				<strong
 					data-side={leader}
 					className="text-(--side) text-[clamp(15px,1.4vw,21px)]"

@@ -18,6 +18,8 @@ import { GameRoleIcon } from "../src/renderer/assets/game-role-icon";
 import { MapIcon } from "../src/renderer/assets/map-icon";
 import { StatIcon } from "../src/renderer/assets/stat-icon";
 import { EventFeed } from "../src/renderer/match/event-feed";
+import { FaceToFace } from "../src/renderer/match/face-to-face";
+import { GoldChart } from "../src/renderer/match/gold-chart";
 import { teamMap } from "../src/renderer/match/team-map";
 import { TeamPanel } from "../src/renderer/match/team-panel";
 import { fakeAssets } from "./fake-assets";
@@ -236,6 +238,20 @@ describe("objective events in the feed", () => {
 	});
 });
 
+const emptySide = {
+	gold: 0,
+	kills: 0,
+	towers: { top: 0, mid: 0, bot: 0 },
+	nexusTowers: 0,
+	inhibitors: { top: null, mid: null, bot: null },
+	dragons: 0,
+	soul: false,
+	heralds: 0,
+	barons: 0,
+	elders: 0,
+	buffs: { herald: null, baron: null, elder: null },
+};
+
 describe("team panel", () => {
 	const side = {
 		gold: 0,
@@ -286,11 +302,73 @@ describe("team panel", () => {
 				?.getAttribute("data-taken"),
 		).toBe("false");
 		const structures = screen.getByRole("table");
+		const sources = (name: string) =>
+			within(structures)
+				.getAllByRole("img", { name })
+				.map((icon) => icon.querySelector("img")?.getAttribute("src"));
+		const official = (file: string) =>
+			`rift-asset://cdragon/objectives/${file}.png`;
+		expect(new Set(sources("Standing tower"))).toEqual(
+			new Set([official("tower")]),
+		);
+		expect(sources("Destroyed tower")).toEqual([official("tower")]);
+		expect(sources("Standing inhibitor")).toEqual(
+			Array(3).fill(official("inhibitor")),
+		);
+		expect(sources("Standing nexus")).toEqual([official("nexus")]);
 		expect(
 			structures.querySelector("thead tr")?.classList.contains("sr-only"),
 		).toBe(false);
 		expect(
 			within(structures).getAllByRole("img", { name: "Destroyed tower" }),
 		).toHaveLength(1);
+	});
+});
+
+describe("match stat headers", () => {
+	test("the face to face and the gold chart use the client's stat icons", async () => {
+		const snapshot = {
+			minute: 0,
+			blue: { ...emptySide },
+			red: { ...emptySide },
+			players: [],
+		};
+		await renderInLocale(
+			<AssetsProvider api={fakeAssets(ready).api}>
+				<FaceToFace
+					snapshot={snapshot}
+					names={{ blue: "Blue", red: "Red" }}
+					lineup={new Map()}
+				/>
+				<GoldChart
+					snapshots={[snapshot]}
+					index={0}
+					names={{ blue: "Blue", red: "Red" }}
+					duration={60}
+				/>
+			</AssetsProvider>,
+		);
+		const table = await screen.findByRole("table", { name: "Face to face" });
+		await waitFor(() => {
+			if (!table.querySelector("img")) throw new Error("no image yet");
+		});
+		const header = (name: string) =>
+			within(table)
+				.getAllByRole("columnheader", { name })
+				.map((cell) => cell.querySelector("img")?.getAttribute("src"));
+		for (const [name, stat] of [
+			["K/D/A", "kda"],
+			["CS", "cs"],
+			["Gold", "gold"],
+		] as const)
+			expect(header(name)).toEqual(
+				Array(2).fill(`rift-asset://cdragon/stats/${stat}.svg`),
+			);
+		expect(
+			screen
+				.getByRole("figure")
+				.querySelector("figcaption img")
+				?.getAttribute("src"),
+		).toBe("rift-asset://cdragon/stats/gold.svg");
 	});
 });

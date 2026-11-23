@@ -11,7 +11,12 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { CoreErrorMessage, useCoreQuery } from "../core";
 import { PageHeader } from "../draft/page-header";
-import { championLabel, teamName, useDraftSession } from "../draft/session";
+import {
+	championLabel,
+	playerProfile,
+	teamName,
+	useDraftSession,
+} from "../draft/session";
 import { EventFeed } from "./event-feed";
 import { FaceToFace } from "./face-to-face";
 import { GoldChart } from "./gold-chart";
@@ -32,6 +37,20 @@ function Replay({ match, entry }: { match: MatchView; entry: DraftView }) {
 				end?.players.map(({ player, champion }) => [
 					player,
 					championLabel(options, champion),
+				]),
+			),
+		[end, options],
+	);
+	const lineup = useMemo(
+		() =>
+			new Map(
+				end?.players.map(({ player, champion }) => [
+					player,
+					{
+						handle: playerProfile(options, player)?.handle ?? player,
+						champion,
+						championName: championLabel(options, champion),
+					},
 				]),
 			),
 		[end, options],
@@ -108,11 +127,7 @@ function Replay({ match, entry }: { match: MatchView; entry: DraftView }) {
 						className={`min-w-0 [grid-area:1/1] ${panel === "faceToFace" ? "" : "invisible"}`}
 						inert={panel !== "faceToFace"}
 					>
-						<FaceToFace
-							snapshot={snapshot}
-							names={names}
-							championByPlayer={championByPlayer}
-						/>
+						<FaceToFace snapshot={snapshot} names={names} lineup={lineup} />
 					</div>
 				</div>
 				<EventFeed

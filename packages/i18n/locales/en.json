@@ -225,6 +225,7 @@
 	"draft.match.panelMap": "Map",
 	"draft.match.faceToFace": "Face to face",
 	"draft.match.faceToFace.kda": "K/D/A",
+	"draft.match.faceToFace.player": "Player",
 	"draft.match.faceToFace.cs": "CS",
 	"draft.match.faceToFace.gold": "Gold",
 	"draft.match.faceToFace.even": "Even",

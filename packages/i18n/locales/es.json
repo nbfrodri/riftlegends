@@ -225,6 +225,7 @@
 	"draft.match.panelMap": "Mapa",
 	"draft.match.faceToFace": "Cara a cara",
 	"draft.match.faceToFace.kda": "K/D/A",
+	"draft.match.faceToFace.player": "Jugador",
 	"draft.match.faceToFace.cs": "CS",
 	"draft.match.faceToFace.gold": "Oro",
 	"draft.match.faceToFace.even": "Igualados",

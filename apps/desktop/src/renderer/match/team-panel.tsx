@@ -125,14 +125,14 @@ function Objectives({ view }: { view: TeamMap }) {
 	];
 	return (
 		<>
-			<dl className="grid grid-cols-4 gap-x-2 text-center">
+			<dl className="grid grid-cols-4 gap-x-3 text-center">
 				{objectives.map((kind) => {
 					const taken = view.objectives[`${kind}s`] > 0;
 					return (
 						<div
 							key={kind}
 							data-taken={taken}
-							className="grid min-w-0 grid-cols-[auto_auto] items-center justify-center gap-x-1.5"
+							className="grid min-w-0 grid-cols-[auto_auto] items-center justify-center gap-x-2 gap-y-1"
 						>
 							{/* Icon and count share a line; the name sits below. */}
 							<dt className="contents">
@@ -187,7 +187,7 @@ export function TeamPanel({
 		<section
 			aria-label={t("draft.match.teamMap", { team: name })}
 			data-side={side}
-			className={`${panel} relative row-span-6 grid grid-rows-subgrid gap-y-2 border-(--side) border-t-[3px]`}
+			className={`${panel} relative row-span-6 grid grid-rows-subgrid gap-y-3 border-(--side) border-t-[3px]`}
 			style={{ "--map-icon-tint": `url(#${tint})` } as CSSProperties}
 		>
 			<svg aria-hidden="true" className="absolute size-0">

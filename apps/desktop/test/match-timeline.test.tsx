@@ -189,8 +189,16 @@ vi.mock("../src/renderer/draft/session", async (original) => ({
 				{ id: "c3", name: "Bright Moon" },
 			],
 			teams: [
-				{ id: "forge", name: "Forge" },
-				{ id: "shoal", name: "Shoal" },
+				{
+					id: "forge",
+					name: "Forge",
+					players: [{ id: "b-top", handle: "Bluetop" }],
+				},
+				{
+					id: "shoal",
+					name: "Shoal",
+					players: [{ id: "r-top", handle: "Redtop" }],
+				},
 			],
 		},
 	}),
@@ -445,9 +453,10 @@ test("face to face mirrors each role: blue on the left, the role in the centre, 
 	const table = screen.getByRole("table", { name: "Face to face" });
 	const headers = within(table)
 		.getAllByRole("columnheader")
-		.slice(-7)
+		.slice(-9)
 		.map((header) => header.textContent);
 	expect(headers).toEqual([
+		"Player",
 		"K/D/A",
 		"CS",
 		"Gold",
@@ -455,25 +464,26 @@ test("face to face mirrors each role: blue on the left, the role in the centre, 
 		"Gold",
 		"CS",
 		"K/D/A",
+		"Player",
 	]);
 	for (const role of ["Top", "Jungle", "Mid", "ADC", "Support"]) {
 		const row = within(table).getByRole("row", { name: new RegExp(role) });
-		const cells = [...row.querySelectorAll("th, td")];
-		expect(cells).toHaveLength(7);
-		expect(cells[3]?.getAttribute("scope")).toBe("row");
-		expect(cells[3]?.textContent).toContain(role);
+		const cells = [...row.querySelectorAll(":scope > th, :scope > td")];
+		expect(cells).toHaveLength(9);
+		expect(cells[4]?.getAttribute("scope")).toBe("row");
+		expect(cells[4]?.textContent).toContain(role);
 		expect(cells[0]?.getAttribute("data-side")).toBe("blue");
-		expect(cells[6]?.getAttribute("data-side")).toBe("red");
+		expect(cells[8]?.getAttribute("data-side")).toBe("red");
 	}
 	const top = [
 		...(lane("Top").getByRole("rowheader").closest("tr")?.children ?? []),
 	];
 	expect(top[0]?.textContent).toContain("Ember Crown");
-	expect(top[0]?.textContent).toContain("1/0/2");
-	expect(top[2]?.textContent).toBe("1,500");
-	expect(top[4]?.textContent).toBe("1,200");
-	expect(top[6]?.textContent).toContain("Silver Tide");
-	expect(top[6]?.textContent).toContain("0/1/0");
+	expect(top[1]?.textContent).toBe("1/0/2");
+	expect(top[3]?.textContent).toBe("1,500");
+	expect(top[5]?.textContent).toBe("1,200");
+	expect(top[7]?.textContent).toBe("0/1/0");
+	expect(top[8]?.textContent).toContain("Silver Tide");
 });
 
 test("each role's gold lead is a bar that grows towards the side ahead", async () => {
@@ -506,4 +516,29 @@ test("the gold chart scales to the gold difference, with a minimum range", async
 	expect(
 		screen.getByRole("img", { name: /Gold lead over time.*\+3,200 gold/ }),
 	).toBeTruthy();
+});
+
+test("face to face shows each player's portrait and name, with the champion as secondary text", async () => {
+	await renderInLocale(<Match />);
+	faceToFace();
+	advance(5000);
+	const cells = [
+		...(lane("Top").getByRole("rowheader").closest("tr")?.children ?? []),
+	] as HTMLElement[];
+	for (const [cell, player, champion] of [
+		[cells[0], "Bluetop", "Ember Crown"],
+		[cells[8], "Redtop", "Silver Tide"],
+	] as const) {
+		if (!cell) throw new Error("missing cell");
+		expect(within(cell).getByRole("img", { name: champion })).toBeTruthy();
+		expect(within(cell).getByText(player)).toBeTruthy();
+		expect(within(cell).getByText(champion)).toBeTruthy();
+	}
+	// The portrait sits on the outer edge, mirrored.
+	expect(
+		cells[0]?.querySelector("[role=img]")?.parentElement?.className,
+	).not.toMatch(/flex-row-reverse/);
+	expect(
+		cells[8]?.querySelector("[role=img]")?.parentElement?.className,
+	).toMatch(/flex-row-reverse/);
 });
