@@ -8,14 +8,19 @@ import {
 import {
 	type ChampionLocale,
 	catalogPath,
+	championDataFile,
 	championSummaryFile,
 	communityFiles,
 	isRecord,
 	isVersion,
 	maxCatalogBytes,
+	maxChampionDataBytes,
+	maxImageBytes,
 	mergeChampionCatalogs,
 	parseChampionSummary,
 	portraitFile,
+	tileFile,
+	tilePath,
 } from "./catalog";
 import {
 	cachePath,
@@ -31,13 +36,20 @@ import { downloadFile } from "./download";
 import { AssetHttpError, type AssetTransport } from "./transport";
 
 type Progress = (completed: number, total: number) => void;
-const manifestLimit = 128 * 1024;
+// Room for an icon and a tile per champion, up to maxAssetChampions.
+const manifestLimit = 512 * 1024;
 const locales = ["en", "es"] as const;
+
+interface VerifiedCatalog {
+	catalog: ChampionCatalog;
+	/** False for a cache made before champion tiles (#367). */
+	tiles: boolean;
+}
 
 async function verifyCatalog(
 	root: string,
 	version: string,
-): Promise<ChampionCatalog | undefined> {
+): Promise<VerifiedCatalog | undefined> {
 	if (!(await statIfPresent(root))?.isDirectory()) return undefined;
 	const manifest = await readJson(
 		await cachePath(root, "manifest.json"),
@@ -68,16 +80,23 @@ async function verifyCatalog(
 	const english = await readLocale("en");
 	const spanish = await readLocale("es");
 	const catalog = mergeChampionCatalogs(english, spanish);
-	const images = [
+	const required = [
 		...communityFiles,
 		...english.map((champion) => portraitFile(version, champion)),
 	];
-	if (Object.keys(digests).length !== images.length + locales.length)
+	// A champion's tile is optional: the UI falls back to its icon.
+	const limits = new Map([
+		...locales.map((locale) => [catalogPath(locale), maxCatalogBytes] as const),
+		...required.map(({ path, limit }) => [path, limit] as const),
+		...english.map((champion) => [tilePath(champion), maxImageBytes] as const),
+	]);
+	if (required.some(({ path }) => !Object.hasOwn(digests, path)))
 		return undefined;
-	for (const { path, limit } of images) {
-		if (!(await verifyFile(path, limit))) return undefined;
+	for (const path of Object.keys(digests)) {
+		const limit = limits.get(path);
+		if (!limit || !(await verifyFile(path, limit))) return undefined;
 	}
-	return catalog;
+	return { catalog, tiles: manifest.tiles === true };
 }
 
 export async function readActiveVersion(
@@ -95,8 +114,8 @@ export async function activeCatalog(root: string) {
 			await cachePath(root, "current.json"),
 		);
 		if (!version) return undefined;
-		const catalog = await verifyCatalog(join(root, version), version);
-		return catalog ? { version, catalog } : undefined;
+		const verified = await verifyCatalog(join(root, version), version);
+		return verified && { version, ...verified };
 	} catch {
 		// The active cache can be absent, unreadable, or damaged on disk.
 		return undefined;
@@ -111,7 +130,7 @@ export async function prepareVersion(
 ): Promise<ChampionCatalog | undefined> {
 	const target = join(root, version);
 	const existing = await verifyCatalog(target, version).catch(() => undefined);
-	if (existing) return existing;
+	if (existing?.tiles) return existing.catalog;
 	const staging = await cachePath(
 		root,
 		`staging-${version}/manifest.json`,
@@ -168,20 +187,48 @@ export async function prepareVersion(
 		...localized.en.map((champion) => portraitFile(version, champion)),
 		...communityFiles,
 	];
-	total = completed + images.length;
+	total = completed + images.length + localized.en.length;
 	progress(completed, total);
 	for (const file of images) {
 		manifest[file.path] = await downloadFile(stageRoot, file, transport);
 		progress(++completed, total);
 	}
-	await writeJson(staging, { version, files: manifest });
+	for (const champion of localized.en) {
+		const tile = await downloadTile(stageRoot, version, champion, transport);
+		if (tile) manifest[tilePath(champion)] = tile;
+		progress(++completed, total);
+	}
+	await writeJson(staging, { version, tiles: true, files: manifest });
 	const verified = await verifyCatalog(stageRoot, version);
 	if (!verified) throw new Error("Staged assets failed verification");
 	await rm(join(stageRoot, "upstream"), { recursive: true, force: true });
 	await rm(target, { recursive: true, force: true });
 	await rename(stageRoot, target);
 	await syncDirectory(root);
-	return verified;
+	return verified.catalog;
+}
+
+/** Missing or unexpected champion data leaves the champion with its icon. */
+async function downloadTile(
+	stageRoot: string,
+	version: string,
+	champion: LocalizedChampionAsset,
+	transport: AssetTransport,
+): Promise<Digest | undefined> {
+	const missing = (error: unknown) => {
+		if (error instanceof AssetHttpError && error.status === 404)
+			return undefined;
+		throw error;
+	};
+	const data = championDataFile(version, champion);
+	if (!(await downloadFile(stageRoot, data, transport).catch(missing)))
+		return undefined;
+	const file = tileFile(
+		version,
+		champion,
+		await readJson(await cachePath(stageRoot, data.path), maxChampionDataBytes),
+	);
+	return file && downloadFile(stageRoot, file, transport).catch(missing);
 }
 
 export async function activateVersion(

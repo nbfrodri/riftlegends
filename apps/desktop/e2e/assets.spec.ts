@@ -6,6 +6,10 @@ const pixel = Buffer.from(
 	"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jP1sAAAAASUVORK5CYII=",
 	"base64",
 );
+const jpegPixel = Buffer.from(
+	"/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/wAALCAABAAEBAREA/8QAFAABAAAAAAAAAAAAAAAAAAAAB//EABQQAQAAAAAAAAAAAAAAAAAAAAD/2gAIAQEAAD8AQH//2Q==",
+	"base64",
+);
 
 test("the renderer can load an active cached image and cannot load outside the cache", async ({
 	appWindow,
@@ -15,6 +19,8 @@ test("the renderer can load an active cached image and cannot load outside the c
 	const active = join(source, "1.2");
 	await mkdir(join(active, "champions"), { recursive: true });
 	await writeFile(join(active, "champions", "Ahri.png"), pixel);
+	await mkdir(join(active, "tiles"));
+	await writeFile(join(active, "tiles", "Ahri.jpg"), jpegPixel);
 	await writeFile(join(profile, "outside.png"), pixel);
 	await writeFile(join(source, "current.json"), '{"version":"1.2"}');
 	await symlink(profile, join(active, "linked"), "junction");
@@ -32,6 +38,7 @@ test("the renderer can load an active cached image and cannot load outside the c
 		}, `rift-asset://cdragon/${path}`);
 
 	expect(await loadWidth("champions/Ahri.png")).toBe(1);
+	expect(await loadWidth("tiles/Ahri.jpg")).toBe(1);
 	expect(await loadWidth("../../../outside.png")).toBe(0);
 	expect(await loadWidth("%2e%2e%2f%2e%2e%2f%2e%2e%2foutside.png")).toBe(0);
 	expect(await loadWidth("linked/outside.png")).toBe(0);

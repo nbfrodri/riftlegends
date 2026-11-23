@@ -1,6 +1,13 @@
 import type { AssetStatus, ChampionCatalog } from "@rift-legends/contracts";
 import { loadRealContent } from "@rift-legends/core";
-import { act, cleanup, screen, waitFor, within } from "@testing-library/react";
+import {
+	act,
+	cleanup,
+	fireEvent,
+	screen,
+	waitFor,
+	within,
+} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, test } from "vitest";
 import { DraftScreen } from "../src/renderer/draft/draft-screen";
@@ -230,14 +237,26 @@ describe("real champions on the board (R4, A3)", () => {
 		},
 	);
 
-	test("shows each champion's cached portrait", async () => {
+	test("shows the cached tile art in large slots and the icon in small ones", async () => {
 		const user = userEvent.setup();
 		await toBoard(user);
 		const [first] = realIds;
 		const tile = await pool("Champions").findByRole("button", {
 			name: `${first} EN`,
 		});
+		const art = tile.querySelector("img");
+		expect(art?.getAttribute("src")).toBe(
+			`rift-asset://cdragon/tiles/${first}.jpg`,
+		);
+		fireEvent.error(art as HTMLImageElement);
 		expect(tile.querySelector("img")?.getAttribute("src")).toBe(
+			`rift-asset://cdragon/champions/${first}.png`,
+		);
+		fireEvent.contextMenu(tile);
+		const card = await screen.findByRole("region", {
+			name: `Champion card: ${first} EN`,
+		});
+		expect(card.querySelector("img")?.getAttribute("src")).toBe(
 			`rift-asset://cdragon/champions/${first}.png`,
 		);
 	});
