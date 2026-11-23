@@ -203,8 +203,13 @@ export class Client {
 		return this.#enqueue(url, parseDigest, readImage(limit));
 	}
 
-	get<T>(url: string, parse: (body: unknown) => T): Promise<T> {
-		return this.#enqueue(url, parse, (response) => response.json());
+	/** `cacheBody` shrinks what is stored; `parse` must accept both shapes. */
+	get<T>(
+		url: string,
+		parse: (body: unknown) => T,
+		cacheBody?: (result: T) => unknown,
+	): Promise<T> {
+		return this.#enqueue(url, parse, (response) => response.json(), cacheBody);
 	}
 
 	#enqueue<T>(

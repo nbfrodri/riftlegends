@@ -1,0 +1,217 @@
+{
+ "Characters/Soraka/CharacterRecords/Root": {
+  "mCharacterName": "Soraka",
+  "attackRangeModifiable": {
+   "baseValue": 550.0,
+   "__type": "ModifiableFloat"
+  },
+  "spellNames": [
+   "SorakaQAbility/SorakaQ",
+   "SorakaWAbility/SorakaW",
+   "SorakaEAbility/SorakaE",
+   "SorakaRAbility/SorakaR"
+  ],
+  "mAbilities": [
+   "Characters/Soraka/Spells/SorakaQAbility",
+   "Characters/Soraka/Spells/SorakaWAbility",
+   "Characters/Soraka/Spells/SorakaEAbility",
+   "Characters/Soraka/Spells/SorakaRAbility",
+   "Characters/Soraka/Spells/Consecration_SelfAbility"
+  ],
+  "__type": "CharacterRecord"
+ },
+ "Characters/Soraka/Spells/SorakaEAbility": {
+  "mRootSpell": "Characters/Soraka/Spells/SorakaEAbility/SorakaE",
+  "mChildSpells": [
+   "Characters/Soraka/Spells/SorakaEAbility/SorakaE",
+   "Characters/Soraka/Spells/SorakaEAbility/SorakaEPacify",
+   "Characters/Soraka/Spells/SorakaEAbility/SorakaESnare"
+  ],
+  "__type": "AbilityObject"
+ },
+ "Characters/Soraka/Spells/SorakaEAbility/SorakaE": {
+  "ObjectName": "SorakaE",
+  "mSpell": {
+   "mSpellTags": [
+    "Trait_ImmobilizingCCSpell",
+    "Trait_DamageAbility",
+    "Trait_Ranged_Zone",
+    "Trait_Target_Area",
+    "Trait_AoE"
+   ],
+   "cooldownTime": [
+    20.0,
+    20.0,
+    19.0,
+    18.0,
+    17.0,
+    16.0,
+    16.0
+   ],
+   "mClientData": {
+    "mTooltipData": {
+     "mLocKeys": {
+      "keyTooltip": "Spell_SorakaE_Tooltip"
+     }
+    }
+   }
+  },
+  "__type": "SpellObject"
+ },
+ "Characters/Soraka/Spells/SorakaQAbility": {
+  "mRootSpell": "Characters/Soraka/Spells/SorakaQAbility/SorakaQ",
+  "mChildSpells": [
+   "Characters/Soraka/Spells/SorakaQAbility/SorakaQ",
+   "Characters/Soraka/Spells/SorakaQAbility/SorakaQMissile",
+   "Characters/Soraka/Spells/SorakaQAbility/SorakaQRegen",
+   "Characters/Soraka/Spells/SorakaQAbility/SorakaQReturnMissile"
+  ],
+  "__type": "AbilityObject"
+ },
+ "Characters/Soraka/Spells/SorakaQAbility/SorakaQReturnMissile": {
+  "ObjectName": "SorakaQReturnMissile",
+  "mSpell": {
+   "cooldownTime": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  "__type": "SpellObject"
+ },
+ "Characters/Soraka/Spells/SorakaQAbility/SorakaQMissile": {
+  "ObjectName": "SorakaQMissile",
+  "mSpell": {
+   "cooldownTime": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  "__type": "SpellObject"
+ },
+ "Characters/Soraka/Spells/SorakaQAbility/SorakaQ": {
+  "ObjectName": "SorakaQ",
+  "mSpell": {
+   "mSpellTags": [
+    "Trait_DamageAbility",
+    "Trait_ActiveHeal",
+    "Trait_AoE"
+   ],
+   "cooldownTime": [
+    9.0,
+    8.0,
+    7.0,
+    6.0,
+    5.0,
+    4.0,
+    3.0
+   ],
+   "mClientData": {
+    "mTooltipData": {
+     "mLocKeys": {
+      "keyTooltip": "Spell_SorakaQ_Tooltip"
+     }
+    }
+   }
+  },
+  "__type": "SpellObject"
+ },
+ "Characters/Soraka/Spells/Consecration_SelfAbility": {
+  "mRootSpell": "Characters/Soraka/Spells/Consecration_SelfAbility/Consecration_Self",
+  "mChildSpells": [
+   "Characters/Soraka/Spells/Consecration_SelfAbility/Consecration_Self"
+  ],
+  "__type": "AbilityObject"
+ },
+ "Characters/Soraka/Spells/Consecration_SelfAbility/Consecration_Self": {
+  "ObjectName": "Consecration_Self",
+  "mSpell": {
+   "mClientData": {
+    "mTooltipData": {
+     "mLocKeys": {
+      "keyTooltip": "Spell_Consecration_Self_Tooltip"
+     }
+    }
+   }
+  },
+  "__type": "SpellObject"
+ },
+ "Characters/Soraka/Spells/SorakaWAbility": {
+  "mRootSpell": "Characters/Soraka/Spells/SorakaWAbility/SorakaW",
+  "mChildSpells": [
+   "Characters/Soraka/Spells/SorakaWAbility/SorakaW"
+  ],
+  "__type": "AbilityObject"
+ },
+ "Characters/Soraka/Spells/SorakaRAbility": {
+  "mRootSpell": "Characters/Soraka/Spells/SorakaRAbility/SorakaR",
+  "mChildSpells": [
+   "Characters/Soraka/Spells/SorakaRAbility/SorakaR"
+  ],
+  "__type": "AbilityObject"
+ },
+ "Characters/Soraka/Spells/SorakaRAbility/SorakaR": {
+  "ObjectName": "SorakaR",
+  "mSpell": {
+   "mSpellTags": [
+    "Trait_Ultimate",
+    "PositiveEffect_Boon",
+    "Trait_ActiveHeal",
+    "Trait_AoE"
+   ],
+   "cooldownTime": [
+    150.0,
+    150.0,
+    135.0,
+    120.0,
+    10.0,
+    10.0,
+    10.0
+   ],
+   "mClientData": {
+    "mTooltipData": {
+     "mLocKeys": {
+      "keyTooltip": "Spell_SorakaR_Tooltip"
+     }
+    }
+   }
+  },
+  "__type": "SpellObject"
+ },
+ "Characters/Soraka/Spells/SorakaWAbility/SorakaW": {
+  "ObjectName": "SorakaW",
+  "mSpell": {
+   "mSpellTags": [
+    "PositiveEffect_Boon",
+    "Trait_ActiveHeal",
+    "Trait_SignatureSpell"
+   ],
+   "cooldownTime": [
+    6.0,
+    6.0,
+    5.0,
+    4.0,
+    3.0,
+    2.0,
+    2.0
+   ],
+   "mClientData": {
+    "mTooltipData": {
+     "mLocKeys": {
+      "keyTooltip": "Spell_SorakaW_Tooltip"
+     }
+    }
+   }
+  },
+  "__type": "SpellObject"
+ }
+}

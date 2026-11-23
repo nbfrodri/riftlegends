@@ -1,0 +1,302 @@
+{
+ "Characters/Jinx/CharacterRecords/Root": {
+  "mCharacterName": "Jinx",
+  "attackRangeModifiable": {
+   "baseValue": 525.0,
+   "__type": "ModifiableFloat"
+  },
+  "spellNames": [
+   "JinxQAbility/JinxQ",
+   "JinxWAbility/JinxW",
+   "JinxEAbility/JinxE",
+   "JinxRAbility/JinxR"
+  ],
+  "mAbilities": [
+   "Characters/Jinx/Spells/JinxPassiveMarkerAbility",
+   "Characters/Jinx/Spells/JinxRAbility",
+   "Characters/Jinx/Spells/JinxEAbility",
+   "Characters/Jinx/Spells/JinxWAbility",
+   "Characters/Jinx/Spells/JinxQAbility"
+  ],
+  "__type": "CharacterRecord"
+ },
+ "Characters/Jinx/Spells/JinxWAbility": {
+  "mRootSpell": "Characters/Jinx/Spells/JinxWAbility/JinxW",
+  "mChildSpells": [
+   "Characters/Jinx/Spells/JinxWAbility/JinxW",
+   "Characters/Jinx/Spells/JinxWAbility/JinxWMissile",
+   "Characters/Jinx/Spells/JinxWAbility/JinxWSight"
+  ],
+  "__type": "AbilityObject"
+ },
+ "Characters/Jinx/Spells/JinxWAbility/JinxWMissile": {
+  "ObjectName": "JinxWMissile",
+  "mSpell": {
+   "cooldownTime": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  "__type": "SpellObject"
+ },
+ "Characters/Jinx/Spells/JinxWAbility/JinxW": {
+  "ObjectName": "JinxW",
+  "mSpell": {
+   "mSpellTags": [
+    "Trait_DamageAbility",
+    "Trait_SignatureSpell",
+    "Trait_Ranged_StopsFirstHit"
+   ],
+   "cooldownTime": [
+    9.0,
+    8.0,
+    7.0,
+    6.0,
+    5.0,
+    4.0,
+    3.0
+   ],
+   "mClientData": {
+    "mTooltipData": {
+     "mLocKeys": {
+      "keyTooltip": "Spell_JinxW_Tooltip"
+     }
+    }
+   }
+  },
+  "__type": "SpellObject"
+ },
+ "Characters/Jinx/Spells/JinxEAbility": {
+  "mRootSpell": "Characters/Jinx/Spells/JinxEAbility/JinxE",
+  "mChildSpells": [
+   "Characters/Jinx/Spells/JinxEAbility/JinxE",
+   "Characters/Jinx/Spells/JinxEAbility/JinxEFireBurn",
+   "Characters/Jinx/Spells/JinxEAbility/JinxEMine",
+   "Characters/Jinx/Spells/JinxEAbility/JinxEMineSnare",
+   "Characters/Jinx/Spells/JinxEAbility/JinxEHit",
+   "Characters/Jinx/Spells/JinxEAbility/JinxEMineSight"
+  ],
+  "__type": "AbilityObject"
+ },
+ "Characters/Jinx/Spells/JinxEAbility/JinxEHit": {
+  "ObjectName": "JinxEHit",
+  "mSpell": {
+   "cooldownTime": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  "__type": "SpellObject"
+ },
+ "Characters/Jinx/Spells/JinxEAbility/JinxEMine": {
+  "ObjectName": "JinxEMine",
+  "mSpell": {
+   "cooldownTime": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  "__type": "SpellObject"
+ },
+ "Characters/Jinx/Spells/JinxEAbility/JinxEFireBurn": {
+  "ObjectName": "JinxEFireBurn",
+  "mSpell": {},
+  "__type": "SpellObject"
+ },
+ "Characters/Jinx/Spells/JinxEAbility/JinxEMineSnare": {
+  "ObjectName": "JinxEMineSnare",
+  "mSpell": {},
+  "__type": "SpellObject"
+ },
+ "Characters/Jinx/Spells/JinxEAbility/JinxE": {
+  "ObjectName": "JinxE",
+  "mSpell": {
+   "mSpellTags": [
+    "Trait_ImmobilizingCCSpell",
+    "Trait_DamageAbility",
+    "Trait_Target_Area",
+    "Trait_Low_Damage",
+    "Trait_AoE"
+   ],
+   "cooldownTime": [
+    27.5,
+    24.0,
+    20.5,
+    17.0,
+    13.5,
+    10.0,
+    10.0
+   ],
+   "mClientData": {
+    "mTooltipData": {
+     "mLocKeys": {
+      "keyTooltip": "Spell_JinxE_Tooltip"
+     }
+    }
+   }
+  },
+  "__type": "SpellObject"
+ },
+ "Characters/Jinx/Spells/JinxQAbility": {
+  "mRootSpell": "Characters/Jinx/Spells/JinxQAbility/JinxQ",
+  "mChildSpells": [
+   "Characters/Jinx/Spells/JinxQAbility/JinxQ",
+   "Characters/Jinx/Spells/JinxQAbility/JinxQAttack",
+   "Characters/Jinx/Spells/JinxQAbility/JinxQAttack2",
+   "Characters/Jinx/Spells/JinxQAbility/JinxQCritAttack",
+   "Characters/Jinx/Spells/JinxQAbility/JinxQIcon",
+   "Characters/Jinx/Spells/JinxQAbility/JinxQIconManager"
+  ],
+  "__type": "AbilityObject"
+ },
+ "Characters/Jinx/Spells/JinxQAbility/JinxQ": {
+  "ObjectName": "JinxQ",
+  "mSpell": {
+   "mSpellTags": [
+    "Trait_DamageAbility",
+    "Trait_RecastOrReplaceSpell",
+    "Trait_Toggle",
+    "Trait_AoE"
+   ],
+   "cooldownTime": [
+    0.8999999761581421,
+    0.8999999761581421,
+    0.8999999761581421,
+    0.8999999761581421,
+    0.8999999761581421,
+    0.8999999761581421,
+    0.8999999761581421
+   ],
+   "mClientData": {
+    "mTooltipData": {
+     "mLocKeys": {
+      "keyTooltip": "Spell_JinxQ_Tooltip"
+     }
+    }
+   }
+  },
+  "__type": "SpellObject"
+ },
+ "Characters/Jinx/Spells/JinxQAbility/JinxQAttack2": {
+  "ObjectName": "JinxQAttack2",
+  "mSpell": {
+   "cooldownTime": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  "__type": "SpellObject"
+ },
+ "Characters/Jinx/Spells/JinxQAbility/JinxQCritAttack": {
+  "ObjectName": "JinxQCritAttack",
+  "mSpell": {
+   "cooldownTime": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  "__type": "SpellObject"
+ },
+ "Characters/Jinx/Spells/JinxQAbility/JinxQAttack": {
+  "ObjectName": "JinxQAttack",
+  "mSpell": {
+   "cooldownTime": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  "__type": "SpellObject"
+ },
+ "Characters/Jinx/Spells/JinxPassiveMarkerAbility": {
+  "mRootSpell": "Characters/Jinx/Spells/JinxPassiveMarkerAbility/JinxPassiveMarker",
+  "mChildSpells": [
+   "Characters/Jinx/Spells/JinxPassiveMarkerAbility/JinxPassiveMarker",
+   "Characters/Jinx/Spells/JinxPassiveMarkerAbility/JinxPassiveKillAttackSpeed",
+   "Characters/Jinx/Spells/JinxPassiveMarkerAbility/JinxPassiveKill"
+  ],
+  "__type": "AbilityObject"
+ },
+ "Characters/Jinx/Spells/JinxPassiveMarkerAbility/JinxPassiveKillAttackSpeed": {
+  "ObjectName": "JinxPassiveKillAttackSpeed",
+  "mSpell": {},
+  "__type": "SpellObject"
+ },
+ "Characters/Jinx/Spells/JinxPassiveMarkerAbility/JinxPassiveMarker": {
+  "ObjectName": "JinxPassiveMarker",
+  "mSpell": {
+   "mClientData": {
+    "mTooltipData": {
+     "mLocKeys": {
+      "keyTooltip": "Spell_JinxPassiveMarker_Tooltip"
+     }
+    }
+   }
+  },
+  "__type": "SpellObject"
+ },
+ "Characters/Jinx/Spells/JinxRAbility": {
+  "mRootSpell": "Characters/Jinx/Spells/JinxRAbility/JinxR",
+  "mChildSpells": [
+   "Characters/Jinx/Spells/JinxRAbility/JinxR"
+  ],
+  "__type": "AbilityObject"
+ },
+ "Characters/Jinx/Spells/JinxRAbility/JinxR": {
+  "ObjectName": "JinxR",
+  "mSpell": {
+   "mSpellTags": [
+    "Trait_Ultimate",
+    "Trait_DamageAbility",
+    "Trait_RecastOrReplaceSpell",
+    "Trait_AoE"
+   ],
+   "cooldownTime": [
+    85.0,
+    85.0,
+    65.0,
+    45.0,
+    45.0,
+    45.0,
+    45.0
+   ],
+   "mClientData": {
+    "mTooltipData": {
+     "mLocKeys": {
+      "keyTooltip": "Spell_JinxR_Tooltip"
+     }
+    }
+   }
+  },
+  "__type": "SpellObject"
+ }
+}

@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { aiContent, matchContent } from "@rift-legends/contracts";
 import { expect, it } from "vitest";
-import { championTraits, curatedTraitIds } from "./champion-traits.ts";
+import { estimatedTraits, curatedTraitIds } from "./champion-traits.ts";
 
 const read = (file: string) =>
 	JSON.parse(
@@ -77,7 +77,7 @@ it("R1/R3 give the entire playable catalog curated traits and meaningful relatio
 	const { estimated, classFallbacks } = read("provenance");
 	expect(classFallbacks).toEqual([]);
 	for (const { id, positions } of champions) {
-		const traits = championTraits(id, []);
+		const traits = estimatedTraits(id, []);
 		expect(
 			traits.split.reduce((sum, damage) => sum + damage, 0),
 			id,

@@ -1,5 +1,6 @@
 import type { AiContent, MatchContent } from "@rift-legends/contracts";
-import { championTraits } from "./champion-traits.ts";
+import { kitTraits } from "./champion-kit-rules.ts";
+import type { ChampionKit } from "./champion-kit-source.ts";
 
 type DraftChampion = AiContent["champions"][number];
 type MatchChampion = MatchContent["champions"][number];
@@ -461,12 +462,16 @@ const classDefaults: Readonly<Record<string, Profile>> = {
 };
 const generic: Profile = [["mid"], "mixed", "mid", ["skirmish"], 5, 5, 5];
 
-export function championProfile(id: string, classes: readonly string[]) {
+export function championProfile(
+	id: string,
+	classes: readonly string[],
+	kit?: ChampionKit,
+) {
 	const profile = Object.hasOwn(curated, id) ? curated[id] : undefined;
 	const fallback = classes.find((tag) => Object.hasOwn(classDefaults, tag));
 	const [roles, damage, power, archetypes, cc, mobility, frontline, uncertain] =
 		profile ?? (fallback ? classDefaults[fallback] : undefined) ?? generic;
-	const { estimate, ...traits } = championTraits(id, classes);
+	const { estimate, ...traits } = kitTraits(id, classes, kit);
 	return {
 		roles,
 		damage,
