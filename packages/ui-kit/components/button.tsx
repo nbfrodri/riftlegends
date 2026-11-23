@@ -1,7 +1,7 @@
 import { Button as ButtonPrimitive } from "@base-ui/react/button";
 import { withState } from "../lib/utils";
 
-// Caja controls: 2 px corners; on hover, underline plus a lighter fill (white
+// Caja controls: 2 px corners; on hover, a lighter fill, never an underline (white
 // for the filled action, surface for ghost); held, the shared `press` state
 // (#376). `default` is the single filled action of a view; `ghost` is for
 // secondary and icon-only actions on panels.
@@ -26,7 +26,7 @@ export function Button({
 			data-slot="button"
 			data-variant={variant}
 			className={withState(
-				`inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-control press underline-offset-3 select-none hover:not-data-disabled:underline data-disabled:cursor-default [&_svg]:pointer-events-none [&_svg]:shrink-0 ${variants[variant]}`,
+				`inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-control press select-none data-disabled:cursor-default [&_svg]:pointer-events-none [&_svg]:shrink-0 ${variants[variant]}`,
 				className,
 			)}
 			{...props}
