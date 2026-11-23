@@ -130,7 +130,7 @@ Cada fase termina con un hito verificable y un commit o PR fusionado en `main`. 
 - Scouting e información imperfecta.
 - Entrenamiento con coste de oportunidad (elegir qué atributos de cada jugador mejorar) y **scrims** ([IDEA §8](../../IDEA.md#8-novedades-respecto-a-draftsim)).
 - Moral, química y vestuario.
-- **Composiciones contra el rival (#320):** reparto de daño frente a resistencias especializadas (p. ej. todo mágico contra Galio) y estilos que se cruzan (engage, poke, splitpush, scaling), explicados en el desglose.
+- **Composiciones contra el rival (#320):** cada identidad genera un plan que condiciona qué jugadas ocurren y con qué frecuencia. El desglose explica los cruces, la coherencia, el control de carries y el perfil de daño frente a la primera línea rival.
 - **Salida:** cada sistema influye en resultados de forma explicable (visible en el desglose) y probada con tests de propiedades.
 
 ### Fase 8 — Narrativa e historial
@@ -170,7 +170,7 @@ Cada plan se crea al empezar su fase con `to-spec` o `dev-workflow`, y se trocea
 | 05 | [RNG, determinismo y golden tests](05-rng-determinismo.md) | 2 |
 | 06 | [Reglas de draft y series (fearless)](../archive/plans/06-reglas-de-draft.md) (hecho) | 2 |
 | 07 | [IA de draft explicable y personalidades](../archive/plans/07-ia-de-draft.md) (hecho) | 2 |
-| 08 | [Simulación de partida v1 y timeline](../archive/plans/08-simulacion-de-partida.md) (hecho) | 2 |
+| 08 | [Simulación de partida v1 y timeline](../archive/plans/08-simulacion-de-partida.md) (hecho) · [Ampliación de estadísticas y composiciones](../archive/plans/08-simulacion-de-partida.md#ampliación-23-11-estadísticas-por-rol-y-composiciones-326-320) (propuesta) | 2–3 |
 | 09 | [Draft rápido en la app: draft broadcast, partida y resultados](../archive/plans/09-draft-rapido-en-la-app.md) (hecho) | 2 |
 | 10 | [Contenido: dataset ficticio, iconos y caché de Data Dragon](../archive/plans/10-contenido.md) (hecho) | 2–3 |
 | 11 | [Datos reales: Leaguepedia, campeones reales y atributos de jugadores](11-datos-reales.md) | 3 |
