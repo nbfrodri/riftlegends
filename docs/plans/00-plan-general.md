@@ -80,6 +80,13 @@ Cada fase termina con un hito verificable y un commit o PR fusionado en `main`. 
 - Gestión de la caché de assets (integridad, reanudación, versión).
 - **Salida:** `content_version` reproducible y un comando que regenera el snapshot.
 
+### Fase 3.5 — Simulación por composiciones
+- Decisión del usuario del 23-11-2026; diseño en el [plan 08](../archive/plans/08-simulacion-de-partida.md) (#326, #320).
+- Estadísticas por rol con oro por jugador; nota común por rol; identidades de composición y sus cruces; la composición decide las jugadas (cazada, asedio con poke, dive bajo torre, presión en banda, invasión).
+- Ventaja de oro relativa con saturación por full build; early, mid y late viables.
+- Nivel, objetos simplificados y ultis con enfriamientos reales (#338, #339); head2head en la partida (#337).
+- **Salida:** bandas Monte Carlo del plan 08 en verde y goldens con `SIM_VERSION` subida.
+
 ### Fase 4 — Competición
 - Formatos: liga, grupos, Swiss propio (restricciones de región, sin revanchas) y eliminatorias simple y doble; calendario y ligas top; First Stand, MSI y Worlds.
 - **Formatos como datos, configurables al crear la carrera** (decisión del 22-11-2026): por defecto, el formato real de la temporada de cada competición (p. ej. tres splits con round robin y playoffs de doble eliminación; Swiss en Worlds). Al crear la carrera, el usuario puede cambiar por competición: número de splits, vueltas del round robin, Bo1/Bo3/Bo5 por fase, grupos o Swiss, eliminación simple o doble y plazas internacionales por región. Queda fijo durante la carrera salvo para temporadas futuras. Los mismos bloques sirven al modo Torneo.
@@ -130,7 +137,7 @@ Cada fase termina con un hito verificable y un commit o PR fusionado en `main`. 
 - Scouting e información imperfecta.
 - Entrenamiento con coste de oportunidad (elegir qué atributos de cada jugador mejorar) y **scrims** ([IDEA §8](../../IDEA.md#8-novedades-respecto-a-draftsim)).
 - Moral, química y vestuario.
-- **Composiciones contra el rival (#320):** reparto de daño frente a resistencias especializadas (p. ej. todo mágico contra Galio) y estilos que se cruzan (engage, poke, splitpush, scaling), explicados en el desglose.
+- **Composiciones contra el rival (#320):** cada identidad genera un plan que condiciona qué jugadas ocurren y con qué frecuencia. El desglose explica los cruces, la coherencia, el control de carries y el perfil de daño frente a la primera línea rival.
 - **Salida:** cada sistema influye en resultados de forma explicable (visible en el desglose) y probada con tests de propiedades.
 
 ### Fase 8 — Narrativa e historial
@@ -170,7 +177,7 @@ Cada plan se crea al empezar su fase con `to-spec` o `dev-workflow`, y se trocea
 | 05 | [RNG, determinismo y golden tests](05-rng-determinismo.md) | 2 |
 | 06 | [Reglas de draft y series (fearless)](../archive/plans/06-reglas-de-draft.md) (hecho) | 2 |
 | 07 | [IA de draft explicable y personalidades](../archive/plans/07-ia-de-draft.md) (hecho) | 2 |
-| 08 | [Simulación de partida v1 y timeline](../archive/plans/08-simulacion-de-partida.md) (hecho) | 2 |
+| 08 | [Simulación de partida v1 y timeline](../archive/plans/08-simulacion-de-partida.md) (hecho) · [Ampliación de estadísticas y composiciones](../archive/plans/08-simulacion-de-partida.md#ampliación-23-11-estadísticas-por-rol-y-composiciones-326-320) (propuesta) | 2–3 |
 | 09 | [Draft rápido en la app: draft broadcast, partida y resultados](../archive/plans/09-draft-rapido-en-la-app.md) (hecho) | 2 |
 | 10 | [Contenido: dataset ficticio, iconos y caché de Data Dragon](../archive/plans/10-contenido.md) (hecho) | 2–3 |
 | 11 | [Datos reales: Leaguepedia, campeones reales y atributos de jugadores](11-datos-reales.md) | 3 |

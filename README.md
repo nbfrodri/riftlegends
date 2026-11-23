@@ -16,7 +16,7 @@ Diriges un equipo profesional: preparas el draft, gestionas la plantilla y compi
 </div>
 
 > [!NOTE]
-> Fan project gratuito y no oficial, sin afiliación con Riot Games ([aviso legal](NOTICE.md)). Ya se juega un **draft rápido Bo5 fearless** contra la IA. El proyecto está en la **Fase 3**: contenido real de LoL (equipos, jugadores y campeones de 2026).
+> Fan project gratuito y no oficial, sin afiliación con Riot Games ([aviso legal](NOTICE.md)). Ya se juega un **draft rápido Bo5 fearless** contra la IA, con contenido ficticio o con el **modo LoL real**: los 173 campeones, 397 jugadores y los equipos de las seis ligas top de 2026. El proyecto está cerrando la **Fase 3** (datos reales) y prepara la **Fase 3.5** (simulación por composiciones).
 
 ## El juego
 
@@ -75,7 +75,8 @@ flowchart LR
 | 0 · Cimientos | Monorepo, CI y estilo visual |
 | 1 · Spikes | Validar el draft *broadcast*, las tablas densas y el determinismo |
 | 2 · Draft rápido | Primer hito jugable: serie Bo5 fearless contra la IA (hecho) |
-| **3 · Datos reales** | **Equipos, jugadores y campeones reales de 2026 (en curso)** |
+| **3 · Datos reales** | **Equipos, jugadores y campeones reales de 2026; counters, sinergias y tier por reglas y datos pro (cerrando)** |
+| 3.5 · Simulación por composiciones | Estadísticas por rol, identidades de composición que deciden las jugadas, oro por jugador, nivel, objetos y ultis |
 | 4–5 | Formatos de competición configurables y carrera |
 | 6–8 | Staff, finanzas, mercado y regens, meta, scouting, moral y narrativa |
 | 9–11 | Minimapa, ligas menores, Sandbox y releases |
@@ -122,12 +123,12 @@ mise exec -- pnpm e2e
 
 ### Datos reales
 
-El contenido real sale de Leaguepedia (CC BY-SA) y se guarda como snapshot JSON en `packages/core/content/real/`. Un workflow semanal lo regenera y abre un PR; la app no consulta Leaguepedia. Los retratos, nombres de campeón, iconos y logos se descargan a una caché local al arrancar con red.
+El contenido real sale de Leaguepedia (CC BY-SA) y se guarda como snapshot JSON en `packages/core/content/real/`. Un workflow semanal lo regenera y abre un PR; la app no consulta Leaguepedia. Los retratos, nombres de campeón, iconos y logos se descargan a una caché local al arrancar con red. Los roles, el tier (hasta tres temporadas), los counters y las sinergias de cada campeón mezclan una base de reglas con nombre con los datos pro, según el tamaño de la muestra.
 
 ```sh
 mise exec -- pnpm data:snapshot   # descarga el snapshot de Leaguepedia
 mise exec -- pnpm data:content    # genera jugadores y equipos (sin red)
-mise exec -- pnpm data:champions  # genera los campeones
+mise exec -- pnpm data:champions  # genera los campeones (roles, tier, counters y sinergias)
 ```
 
 El detalle está en [tools/data-pipeline](tools/data-pipeline/README.md).
