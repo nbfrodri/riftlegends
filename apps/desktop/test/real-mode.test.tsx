@@ -252,7 +252,7 @@ describe("real champions on the board (R4, A3)", () => {
 		expect(tile.querySelector("img")?.getAttribute("src")).toBe(
 			`rift-asset://cdragon/champions/${first}.png`,
 		);
-		await user.hover(tile);
+		fireEvent.contextMenu(tile);
 		const card = await screen.findByRole("region", {
 			name: `Champion card: ${first} EN`,
 		});
