@@ -21,6 +21,7 @@ export function registerAssetIpc(
 		[assetChannels.sync, () => cache.sync().then(publicStatus)],
 		[assetChannels.champions, () => cache.getChampions()],
 		[assetChannels.teamLogos, () => cache.getTeamLogos()],
+		[assetChannels.playerPhotos, () => cache.getPlayerPhotos()],
 	] as const) {
 		ipc.handle(channel, (event, ...args: unknown[]) => {
 			if (!event.senderFrame || event.senderFrame !== webContents.mainFrame) {
@@ -43,12 +44,19 @@ export function registerAssetIpc(
 			webContents.send(assetChannels.teamLogosChanged);
 		}
 	});
+	const stopPhotos = cache.subscribePlayerPhotos(() => {
+		if (!webContents.isDestroyed()) {
+			webContents.send(assetChannels.playerPhotosChanged);
+		}
+	});
 	window.once("closed", () => {
 		stop();
 		stopLogos();
+		stopPhotos();
 		ipc.removeHandler(assetChannels.status);
 		ipc.removeHandler(assetChannels.sync);
 		ipc.removeHandler(assetChannels.champions);
 		ipc.removeHandler(assetChannels.teamLogos);
+		ipc.removeHandler(assetChannels.playerPhotos);
 	});
 }

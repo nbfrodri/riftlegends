@@ -254,6 +254,16 @@ export const seriesOptions = z.strictObject({
 						attributes: matchContent.shape.players.element.shape.attributes,
 						/** Attributes estimated rather than measured; the UI marks them. */
 						estimated: aiContent.shape.players.element.shape.estimated,
+						/** Mains, then secondary, then weak champions with their mastery. */
+						pool: z.array(
+							z.strictObject({
+								champion: championId,
+								kind: z.enum(["main", "secondary", "weak"]),
+								mastery:
+									matchContent.shape.players.element.shape.mastery.element.shape
+										.value,
+							}),
+						),
 					}),
 				),
 			}),

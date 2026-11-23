@@ -4,9 +4,11 @@ import type {
 	AssetStatus,
 	ChampionCatalog,
 } from "@rift-legends/contracts";
+import { realPhotoSchema } from "@rift-legends/contracts/real-photos";
 import { isVersion, versionsUrl } from "./catalog";
 import { cachePath } from "./disk";
 import { readTeamLogos, syncTeamLogos, type TeamLogoSource } from "./logos";
+import { readPlayerPhotos, syncPlayerPhotos } from "./photos";
 import {
 	activateVersion,
 	activeCatalog,
@@ -79,17 +81,21 @@ export function createAssetCache(
 	{
 		transport = httpsTransport,
 		logos = [],
+		photos = [],
 	}: {
 		transport?: AssetTransport;
 		logos?: readonly (Omit<TeamLogoSource, "id"> & { team: string })[];
+		photos?: readonly unknown[];
 	} = {},
 ) {
 	let status: CacheStatus = { state: "missing" };
 	let champions: ChampionCatalog | null = null;
 	let running: Promise<CacheStatus> | undefined;
 	let syncingLogos: Promise<void> | undefined;
+	let syncingPhotos: Promise<void> | undefined;
 	const listeners = new Set<(progress: AssetProgress) => void>();
 	const logoListeners = new Set<() => void>();
+	const photoListeners = new Set<() => void>();
 
 	function reportProgress(progress: AssetProgress) {
 		status = { state: "syncing", progress };
@@ -139,6 +145,33 @@ export function createAssetCache(
 	const logoRoot = async () =>
 		dirname(await cachePath(userData, "assets/logos/manifest.json", true));
 
+	const photoRoot = async () =>
+		dirname(await cachePath(userData, "assets/photos/manifest.json", true));
+
+	/** Untrusted snapshot rows; an id listed twice is skipped altogether. */
+	async function syncPhotos(): Promise<void> {
+		const sources = photos.flatMap((photo) => {
+			const parsed = realPhotoSchema.safeParse(photo);
+			if (!parsed.success) return [];
+			const { player, ...source } = parsed.data;
+			return [{ id: player, ...source }];
+		});
+		const counts = new Map<string, number>();
+		for (const { id } of sources) counts.set(id, (counts.get(id) ?? 0) + 1);
+		const root = await photoRoot();
+		const release = await acquireSyncLock(root);
+		try {
+			await syncPlayerPhotos(
+				root,
+				sources.filter(({ id }) => counts.get(id) === 1),
+				transport,
+			);
+		} finally {
+			await release();
+			for (const listener of photoListeners) listener();
+		}
+	}
+
 	const cache = {
 		/** Logos of the given teams (untrusted snapshot input); failures are per logo. */
 		async syncTeamLogos(
@@ -168,6 +201,21 @@ export function createAssetCache(
 		subscribeTeamLogos(listener: () => void): () => void {
 			logoListeners.add(listener);
 			return () => logoListeners.delete(listener);
+		},
+		/** Player id to `rift-asset://` URL of every verified photo on disk. */
+		async getPlayerPhotos(): Promise<Record<string, string>> {
+			await syncingPhotos;
+			const paths = await readPlayerPhotos(await photoRoot());
+			return Object.fromEntries(
+				Object.entries(paths).map(([id, path]) => [
+					id,
+					`rift-asset://photos/${path}`,
+				]),
+			);
+		},
+		subscribePlayerPhotos(listener: () => void): () => void {
+			photoListeners.add(listener);
+			return () => photoListeners.delete(listener);
 		},
 		getStatus: (): CacheStatus => status,
 		getChampions: (): ChampionCatalog | null => champions,
@@ -202,6 +250,14 @@ export function createAssetCache(
 							)
 							.finally(() => {
 								syncingLogos = undefined;
+							});
+					}
+					// Same for the photos: read again when they land.
+					if (result.state === "ready" && photos.length && !syncingPhotos) {
+						syncingPhotos = syncPhotos()
+							.catch(() => undefined)
+							.finally(() => {
+								syncingPhotos = undefined;
 							});
 					}
 					status = result;

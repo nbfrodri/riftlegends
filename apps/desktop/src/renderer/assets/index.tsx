@@ -19,6 +19,7 @@ interface AssetsState {
 	sync(): void;
 	/** Team id to the `rift-asset://` URL of its downloaded logo. */
 	teamLogos: Readonly<Record<string, string>>;
+	playerPhotos: Readonly<Record<string, string>>;
 	/** The verified champion catalog (names in ES and EN), or null without one. */
 	champions: ChampionCatalog | null;
 }
@@ -34,6 +35,7 @@ export function AssetsProvider(props: { api: AssetsApi; children: ReactNode }) {
 	const [status, setStatus] = useState<AssetStatus>();
 	const [ready, setReady] = useState(false);
 	const [teamLogos, setTeamLogos] = useState<Record<string, string>>({});
+	const [playerPhotos, setPlayerPhotos] = useState<Record<string, string>>({});
 	const [catalog, setCatalog] = useState<{
 		status: AssetStatus;
 		champions: ChampionCatalog | null;
@@ -76,6 +78,12 @@ export function AssetsProvider(props: { api: AssetsApi; children: ReactNode }) {
 		settle({ state: "syncing", progress: { completed: 0, total: 0 } });
 		api.sync().then(settle, () => settle({ state: "error" }));
 	}, [api, settle]);
+	const readPlayerPhotos = useCallback(() => {
+		api.playerPhotos().then(
+			(photos) => mounted.current && setPlayerPhotos(photos),
+			() => undefined,
+		);
+	}, [api]);
 
 	const readTeamLogos = useCallback(() => {
 		api.teamLogos().then(
@@ -86,11 +94,16 @@ export function AssetsProvider(props: { api: AssetsApi; children: ReactNode }) {
 
 	// Logos download after the cache is ready: read the map again when they land.
 	useEffect(() => api.subscribeTeamLogos(readTeamLogos), [api, readTeamLogos]);
+	useEffect(
+		() => api.subscribePlayerPhotos(readPlayerPhotos),
+		[api, readPlayerPhotos],
+	);
 
 	useEffect(() => {
 		if (status?.state !== "ready") return;
 		let current = true;
 		readTeamLogos();
+		readPlayerPhotos();
 		api.champions().then(
 			(champions) => current && setCatalog({ status, champions }),
 			() => current && setCatalog({ status, champions: null }),
@@ -98,11 +111,18 @@ export function AssetsProvider(props: { api: AssetsApi; children: ReactNode }) {
 		return () => {
 			current = false;
 		};
-	}, [api, status, readTeamLogos]);
+	}, [api, status, readTeamLogos, readPlayerPhotos]);
 
 	const value = useMemo(
-		() => ({ status, ready, sync, teamLogos, champions }),
-		[status, ready, sync, teamLogos, champions],
+		() => ({
+			status,
+			ready,
+			sync,
+			teamLogos,
+			champions,
+			playerPhotos,
+		}),
+		[status, ready, sync, teamLogos, champions, playerPhotos],
 	);
 	return <AssetsContext value={value}>{props.children}</AssetsContext>;
 }
@@ -135,4 +155,11 @@ export function useAssetSrc(source: "cdragon", path: string) {
 export function useTeamLogoSrc(teamId: string): string | undefined {
 	const logos = use(AssetsContext)?.teamLogos;
 	return logos && Object.hasOwn(logos, teamId) ? logos[teamId] : undefined;
+}
+
+export function usePlayerPhotoSrc(playerId: string): string | undefined {
+	const photos = use(AssetsContext)?.playerPhotos;
+	return photos && Object.hasOwn(photos, playerId)
+		? photos[playerId]
+		: undefined;
 }

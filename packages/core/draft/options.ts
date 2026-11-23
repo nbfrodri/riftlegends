@@ -3,13 +3,33 @@ import { indexContent } from "../ai/content-index";
 import { QueryRejection } from "../server/dispatcher";
 import type { LoadedContent, SeriesState } from "./series";
 
+const KINDS = [
+	["main", "mains"],
+	["secondary", "secondary"],
+	["weak", "weak"],
+] as const;
+
+/** Mains, secondary and weak champions that have a mastery rating. */
+function championPool(
+	picks: Record<"mains" | "secondary" | "weak", readonly string[]>,
+	mastery: readonly { champion: string; value: number }[] = [],
+) {
+	return KINDS.flatMap(([kind, key]) =>
+		picks[key].flatMap((champion) => {
+			const row = mastery.find((m) => m.champion === champion);
+			return row ? [{ champion, kind, mastery: row.value }] : [];
+		}),
+	);
+}
+
 /** Each team's starters, in content order, with their attributes. */
 function lineups({ content, match }: Partial<LoadedContent>) {
+	const masteries = new Map(match?.players.map((p) => [p.id, p.mastery]));
 	const rosters = content ? indexContent(content).rosters : null;
 	const attributes = new Map(match?.players.map((p) => [p.id, p.attributes]));
 	return (team: string) =>
 		(content?.players ?? []).flatMap(
-			({ id, team: of, role, handle, nationality, estimated }) => {
+			({ id, team: of, role, handle, nationality, estimated, ...picks }) => {
 				const rated = attributes.get(id);
 				return of === team && rated && rosters?.get(team)?.get(role)?.id === id
 					? [
@@ -20,6 +40,7 @@ function lineups({ content, match }: Partial<LoadedContent>) {
 								...(nationality && { nationality }),
 								attributes: rated,
 								...(estimated && { estimated }),
+								pool: championPool(picks, masteries.get(id)),
 							},
 						]
 					: [];

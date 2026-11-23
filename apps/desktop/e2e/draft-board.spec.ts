@@ -11,6 +11,11 @@ test("pins a champion card without selecting a ban", async ({
 	await appWindow.getByRole("button", { name: "Start series" }).click();
 	await appWindow.getByRole("button", { name: "Confirm choice" }).click();
 	await appWindow.getByRole("button", { name: "Go to draft" }).click();
+	const player = appWindow.getByRole("group", { name: "Player card" });
+	await player.getByText("Player card", { exact: true }).click();
+	await expect(
+		player.getByRole("img", { name: "Portrait of Kilnara" }),
+	).toBeVisible();
 	const tile = appWindow.getByRole("button", { name: "Cragbell", exact: true });
 	await tile.click({ button: "right" });
 	const card = appWindow.getByRole("region", {

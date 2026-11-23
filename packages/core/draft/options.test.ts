@@ -85,6 +85,38 @@ describe("series.options (plan 09, U1)", () => {
 		});
 	});
 
+	it("gives each starter's champion pool: mains, secondary and weak with mastery", () => {
+		const result = options(
+			draftStateWith(fictionalContent, fictionalMatchContent),
+		);
+		if (!result.ok) throw new Error(JSON.stringify(result));
+		const view = seriesOptions.parse(result.view);
+		for (const player of view.teams.flatMap((t) => t.players)) {
+			const source = fictionalContent.players.find((p) => p.id === player.id);
+			const mastery = fictionalMatchContent.players.find(
+				(p) => p.id === player.id,
+			)?.mastery;
+			const expected = [
+				...(source?.mains ?? []).map((champion) => ({
+					champion,
+					kind: "main",
+				})),
+				...(source?.secondary ?? []).map((champion) => ({
+					champion,
+					kind: "secondary",
+				})),
+				...(source?.weak ?? []).map((champion) => ({ champion, kind: "weak" })),
+			].flatMap((entry) => {
+				const row = mastery?.find((m) => m.champion === entry.champion);
+				return row ? [{ ...entry, mastery: row.value }] : [];
+			});
+			expect(player.pool).toEqual(expected);
+		}
+		expect(
+			view.teams.flatMap((t) => t.players).some((p) => p.pool.length > 0),
+		).toBe(true);
+	});
+
 	it("is empty in a session without content", () => {
 		const result = options(initialSeries);
 		if (!result.ok) throw new Error(JSON.stringify(result));

@@ -22,6 +22,8 @@ test("T1: Caja theme matches ADR 0002", () => {
 		"color-on-action": "#101828",
 		"color-side-blue": "#88d6ff",
 		"color-side-red": "#ff9eab",
+		"color-good": "#8fe3a8",
+		"color-bad": "#ff8f8f",
 		"radius-control": "2px",
 	});
 });
@@ -39,7 +41,7 @@ function luminance(hex: string) {
 test("T2: every Caja text/background pair meets AA for normal text", () => {
 	const tokens = readTokens();
 	const pairs = ["canvas", "panel", "surface"].flatMap((background) =>
-		["text", "muted", "action", "side-blue", "side-red"].map(
+		["text", "muted", "action", "side-blue", "side-red", "good", "bad"].map(
 			(foreground) => [foreground, background] as const,
 		),
 	);

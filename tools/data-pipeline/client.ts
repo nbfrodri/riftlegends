@@ -2,7 +2,10 @@ import { createHash, randomUUID } from "node:crypto";
 import { mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
-import { sniffImageMime } from "@rift-legends/contracts/real-logos";
+import {
+	maxRiotImageBytes,
+	sniffImageMime,
+} from "@rift-legends/contracts/real-logos";
 
 export interface ClientOptions {
 	cacheDir: string;
@@ -18,7 +21,6 @@ const cargoLimit = 500;
 const cargoInterval = 11_000;
 const lolesportsInterval = 1_000;
 const userAgent = "RiftLegendsDataPipeline/0.1";
-const maxImageBytes = 512 * 1024;
 
 /**
  * lolesports.com's own public web client key, shipped in its website. It
@@ -55,12 +57,12 @@ function interval(url: string) {
 
 async function readImage(response: Response): Promise<ImageDigest> {
 	const declared = Number(response.headers.get("content-length") ?? 0);
-	if (declared > maxImageBytes) throw new Permanent("Image is too large");
+	if (declared > maxRiotImageBytes) throw new Permanent("Image is too large");
 	const chunks: Uint8Array[] = [];
 	let size = 0;
 	for await (const chunk of response.body ?? []) {
 		size += chunk.length;
-		if (size > maxImageBytes) throw new Permanent("Image is too large");
+		if (size > maxRiotImageBytes) throw new Permanent("Image is too large");
 		chunks.push(chunk);
 	}
 	const bytes = Buffer.concat(chunks);

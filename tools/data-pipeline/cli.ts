@@ -6,6 +6,7 @@ import { Client } from "./client.ts";
 import { history } from "./history.ts";
 import { writeLogos } from "./logos.ts";
 import { nationalities } from "./nationality.ts";
+import { writePhotos } from "./photos.ts";
 import { snapshot } from "./snapshot.ts";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
@@ -22,7 +23,7 @@ try {
 	});
 	if (values.help) {
 		console.log(
-			"pnpm data:snapshot [--offline] [--cache-dir <path>] [--max-attempts <n>]\npnpm data:logos [--offline] [--cache-dir <path>] [--max-attempts <n>]",
+			"pnpm data:(snapshot|logos|photos) [--offline] [--cache-dir <path>] [--max-attempts <n>]",
 		);
 	} else {
 		const cacheDir = resolve(
@@ -50,17 +51,23 @@ try {
 			}
 		}
 		const outputDir = join(root, "packages/core/content/real");
-		if (positionals[0] === "logos") {
-			const result = await writeLogos({
-				cacheDir,
-				outputDir,
-				offline: values.offline,
-				maxAttempts: Number(values["max-attempts"] ?? "5"),
-				fetch: (input, options) => {
-					console.error(`Fetching ${new URL(String(input)).pathname}`);
-					return fetch(input, options);
-				},
-			});
+		const imageOptions = {
+			cacheDir,
+			outputDir,
+			offline: values.offline,
+			maxAttempts: Number(values["max-attempts"] ?? "5"),
+			fetch: ((input, options) => {
+				console.error(`Fetching ${new URL(String(input)).pathname}`);
+				return fetch(input, options);
+			}) satisfies typeof fetch,
+		};
+		if (positionals[0] === "photos") {
+			const result = await writePhotos(imageOptions);
+			console.log(`${result.photos} of ${result.players} player photos`);
+			for (const miss of result.unmatched)
+				console.log(`unmatched ${miss.player}: ${miss.reason}`);
+		} else if (positionals[0] === "logos") {
+			const result = await writeLogos(imageOptions);
 			console.log(`${result.logos} of ${result.teams.length} logos`);
 			for (const miss of result.unmatched)
 				console.log(`unmatched ${miss.league} ${miss.team}: ${miss.reason}`);

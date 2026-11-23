@@ -15,16 +15,24 @@ export function fakeAssets(
 	let finish: ((status: AssetStatus) => void) | undefined;
 	const listeners = new Set<(progress: AssetProgress) => void>();
 	const logoListeners = new Set<() => void>();
+	const photoListeners = new Set<() => void>();
 	const unsubscribe = vi.fn();
 	const api = {
 		status: vi.fn(async () => current),
 		champions: vi.fn(async () => catalog),
 		teamLogos: vi.fn(async (): Promise<Record<string, string>> => ({})),
+		playerPhotos: vi.fn(async (): Promise<Record<string, string>> => ({})),
 		sync: vi.fn(() => {
 			current = { state: "syncing", progress: { completed: 0, total: 0 } };
 			return new Promise<AssetStatus>((resolve) => {
 				finish = resolve;
 			});
+		}),
+		subscribePlayerPhotos: vi.fn((listener: () => void) => {
+			photoListeners.add(listener);
+			return () => {
+				photoListeners.delete(listener);
+			};
 		}),
 		subscribeTeamLogos: vi.fn((listener: () => void) => {
 			logoListeners.add(listener);
@@ -51,6 +59,10 @@ export function fakeAssets(
 		/** Tells the renderer that main finished downloading team logos. */
 		logosChanged() {
 			for (const listener of [...logoListeners]) listener();
+		},
+		/** Tells the renderer that main finished downloading player photos. */
+		photosChanged() {
+			for (const listener of [...photoListeners]) listener();
 		},
 		/** Ends the pending `sync()` call with `status`. */
 		finish(status: AssetStatus) {

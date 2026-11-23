@@ -6,7 +6,11 @@ import { teamStrategy } from "./plan";
 import { PLAYER_ATTRIBUTES, type PlayerAttribute } from "./player-attributes";
 import { snapshotLogo } from "./snapshot-content";
 
-export { PLAYER_ATTRIBUTES, type PlayerAttribute } from "./player-attributes";
+export {
+	LOW_RELEVANCE,
+	PLAYER_ATTRIBUTES,
+	type PlayerAttribute,
+} from "./player-attributes";
 
 // Match simulation of plan 08: its facts and the content it reads. Points
 // and chances are fixed point (scale 10,000, plan 05).

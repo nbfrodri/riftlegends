@@ -1,0 +1,9 @@
+{
+	"provenance": {
+		"source": "lolesports.com",
+		"endpoint": "https://esports-api.lolesports.com/persisted/gw/getTeams?hl=en-US",
+		"retrievedAt": "2026-11-22T13:36:54.780Z",
+		"note": "The getTeams response is cached. The manifest stays empty until the official images can be downloaded and hashed."
+	},
+	"photos": []
+}

@@ -1,12 +1,47 @@
-import type { PlayerAttribute, SeriesOptions } from "@rift-legends/contracts";
+import {
+	LOW_RELEVANCE,
+	type PlayerAttribute,
+	type Role,
+	type SeriesOptions,
+} from "@rift-legends/contracts";
 import { Tooltip } from "@rift-legends/ui-kit/components/tooltip";
-import { ChevronRight, CircleDashed } from "lucide-react";
-import type { ReactNode } from "react";
+import { ChevronRight } from "lucide-react";
+import { type ReactNode, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { type Stat, StatIcon } from "../../assets/stat-icon";
+import { usePlayerPhotoSrc } from "../../assets";
+import { ChampionPortrait } from "../champion-portrait";
+import { useDraftContent } from "../session";
 
 type Attributes =
 	SeriesOptions["teams"][number]["players"][number]["attributes"];
+
+export function PlayerPortrait({ id, handle }: { id: string; handle: string }) {
+	const { t } = useTranslation();
+	const photo = usePlayerPhotoSrc(id);
+	const content = useDraftContent();
+	const [failed, setFailed] = useState<string>();
+	const label = t("draft.board.playerPortrait", { handle });
+	const frame =
+		"h-20 w-16 shrink-0 border border-line bg-surface short:h-16 short:w-12";
+	return content === "real" && photo && photo !== failed ? (
+		<img
+			src={photo}
+			alt={label}
+			className={`${frame} object-cover object-top`}
+			onError={() => setFailed(photo)}
+		/>
+	) : (
+		<svg
+			role="img"
+			aria-label={label}
+			viewBox="0 0 64 80"
+			className={`${frame} text-muted`}
+		>
+			<circle cx="32" cy="28" r="11" fill="currentColor" />
+			<path d="M12 64v-5c0-10 8-17 20-17s20 7 20 17v5z" fill="currentColor" />
+		</svg>
+	);
+}
 
 /** The 20 attributes by area, in the order of the approved mockup (plan 08). */
 const AREAS = [
@@ -17,11 +52,11 @@ const AREAS = [
 	["team", ["shotcalling", "communication", "versatility"]],
 ] as const satisfies readonly (readonly [string, readonly PlayerAttribute[]])[];
 
-/** Attributes that match a scoreboard stat show its icon. */
-const attributeIcons = {
-	farming: "cs",
-	vision: "vision",
-} as const satisfies Partial<Record<PlayerAttribute, Stat>>;
+/** High is green, low is red; the level is also read out, not only colored. */
+function levelOf(value: number) {
+	return value >= 75 ? "high" : value <= 45 ? "low" : "mid";
+}
+const levelColor = { high: "text-good", mid: "", low: "text-bad" } as const;
 
 /** A collapsible panel under the board, as in the mockup. */
 export function InspectionPanel(props: {
@@ -63,48 +98,27 @@ export function InspectionPanel(props: {
 	);
 }
 
-/** Marks an attribute estimated from the role rather than measured (plan 11). */
-function EstimatedMark() {
-	const { t } = useTranslation();
-	return (
-		<Tooltip content={t("draft.board.estimatedHint")}>
-			<span
-				role="img"
-				aria-label={t("draft.board.estimated")}
-				className="inline-flex text-muted"
-			>
-				<CircleDashed aria-hidden="true" className="size-3" />
-			</span>
-		</Tooltip>
-	);
-}
-
 /**
- * U5: a player's attributes by area; those estimated rather than measured
- * carry a mark. The rival's show the same until scouting (plan 19).
+ * U5: a player's attributes by area. Estimated values (not measurable with
+ * stats) are italic and muted, with a legend at the bottom; attributes that
+ * matter little for the player's role are dimmed and explained.
  */
 export function PlayerAttributes({
 	attributes,
+	role,
 	estimated = [],
 }: {
 	attributes: Attributes;
+	role: Role;
 	estimated?: readonly PlayerAttribute[] | undefined;
 }) {
 	const { t } = useTranslation();
 	const guessed = new Set(estimated);
+	const minor = new Set<PlayerAttribute>(LOW_RELEVANCE[role]);
 	return (
 		<>
-			<p className="mt-1 flex items-center gap-1.5 text-[13px] text-muted">
+			<p className="mt-1 text-[13px] text-muted">
 				{t("draft.board.attributeScale")}
-				{guessed.size > 0 && (
-					<span
-						aria-hidden="true"
-						className="ml-3 inline-flex items-center gap-1"
-					>
-						<CircleDashed className="size-3" />
-						{t("draft.board.estimated")}
-					</span>
-				)}
 			</p>
 			<div className="mt-[9px] grid grid-cols-[1fr_1.2fr_1.06fr_1.16fr_1.22fr] gap-3">
 				{AREAS.map(([area, keys]) => (
@@ -114,21 +128,39 @@ export function PlayerAttributes({
 						</h3>
 						<dl className="text-[12px] leading-[1.47]">
 							{keys.map((key) => (
-								<div key={key} className="flex justify-between gap-2">
-									<dt className="flex items-center gap-1 text-muted">
-										{key in attributeIcons && (
-											<StatIcon
-												stat={
-													attributeIcons[key as keyof typeof attributeIcons]
-												}
-												size={12}
-											/>
+								<div
+									key={key}
+									className={`flex justify-between gap-2 ${minor.has(key) ? "opacity-50" : ""}`}
+								>
+									<dt className="text-muted">
+										{minor.has(key) ? (
+											<Tooltip content={t("draft.board.lowRelevance")}>
+												<span>{t(`draft.board.attr.${key}`)}</span>
+											</Tooltip>
+										) : (
+											t(`draft.board.attr.${key}`)
 										)}
-										{t(`draft.board.attr.${key}`)}
 									</dt>
-									<dd className="flex items-center gap-1 font-semibold tabular-nums">
-										{guessed.has(key) && <EstimatedMark />}
+									<dd
+										className={`font-semibold tabular-nums ${guessed.has(key) ? "font-normal text-muted italic" : levelColor[levelOf(attributes[key])]}`}
+									>
 										{attributes[key]}
+										<span className="sr-only">
+											{" "}
+											{t(`draft.board.level.${levelOf(attributes[key])}`)}
+										</span>
+										{guessed.has(key) && (
+											<span className="sr-only">
+												{" "}
+												{t("draft.board.estimated")}
+											</span>
+										)}
+										{minor.has(key) && (
+											<span className="sr-only">
+												{" "}
+												{t("draft.board.lowRelevance")}
+											</span>
+										)}
 									</dd>
 								</div>
 							))}
@@ -136,6 +168,69 @@ export function PlayerAttributes({
 					</section>
 				))}
 			</div>
+			{guessed.size > 0 && (
+				<p className="mt-2 text-[12px] text-muted italic">
+					{t("draft.board.estimatedHint")}
+				</p>
+			)}
 		</>
+	);
+}
+
+type Pool = SeriesOptions["teams"][number]["players"][number]["pool"];
+
+/** The player's mains, secondary and weak champions with their mastery. */
+export function PlayerPool({
+	pool,
+	names,
+}: {
+	pool: Pool;
+	names: ReadonlyMap<string, string>;
+}) {
+	const { t } = useTranslation();
+	if (pool.length === 0) return null;
+	return (
+		<section aria-label={t("draft.board.pool.title")} className="mt-3">
+			<h3 className="mb-1 font-bold text-[13px] text-action">
+				{t("draft.board.pool.title")}
+			</h3>
+			<div className="flex flex-wrap gap-x-4 gap-y-1.5">
+				{(["main", "secondary", "weak"] as const).map((kind) => {
+					const rows = pool.filter((entry) => entry.kind === kind);
+					return (
+						rows.length > 0 && (
+							<div key={kind} className="flex items-center gap-1.5">
+								<span className="text-[12px] text-muted">
+									{t(`draft.board.pool.${kind}`)}
+								</span>
+								<ul className="flex gap-1.5">
+									{rows.map(({ champion, mastery }) => {
+										const name = names.get(champion) ?? champion;
+										return (
+											<li
+												key={champion}
+												className="flex items-center gap-1"
+												aria-label={t("draft.board.pool.mastery", {
+													champion: name,
+													value: mastery,
+												})}
+											>
+												<ChampionPortrait id={champion} size="compact" />
+												<span
+													aria-hidden="true"
+													className="font-semibold text-[12px] tabular-nums"
+												>
+													{mastery}
+												</span>
+											</li>
+										);
+									})}
+								</ul>
+							</div>
+						)
+					);
+				})}
+			</div>
+		</section>
 	);
 }

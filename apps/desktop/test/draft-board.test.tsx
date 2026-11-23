@@ -498,10 +498,69 @@ describe("player card (U5)", () => {
 		}
 		expect(within(card).getAllByRole("definition")).toHaveLength(20);
 		for (const label of ["Vision", "Farming"]) {
-			expect(within(card).getByText(label).querySelector("svg")).toBeTruthy();
+			expect(within(card).getByText(label).querySelector("svg")).toBeNull();
 		}
 		const composure = within(card).getByText("Composure").nextSibling;
-		expect(composure?.textContent).toBe(String(forgeMid?.attributes.composure));
+		expect(composure?.textContent).toMatch(
+			new RegExp(`^${forgeMid?.attributes.composure}`),
+		);
+	});
+
+	test("lists the player's champion pool with mastery and accessible names", async () => {
+		const user = userEvent.setup();
+		await renderWithDraftCore(<DraftScreen />);
+		await toBoard(user);
+		const blue = screen.getByRole("region", { name: "Blue side Forge" });
+		await user.hover(within(blue).getByRole("button", { name: /Kilnara/ }));
+		const card = screen.getByRole("group", { name: /Player card/ });
+		const pool = within(card).getByRole("region", { name: "Champion pool" });
+		const source = packagedDraftContent.players.find(
+			(p) => p.id === "forge-mid",
+		);
+		const entries = within(pool).getAllByRole("listitem");
+		const total =
+			(source?.mains.length ?? 0) +
+			(source?.secondary.length ?? 0) +
+			(source?.weak.length ?? 0);
+		expect(entries.length).toBeGreaterThan(0);
+		expect(entries.length).toBeLessThanOrEqual(total);
+		for (const entry of entries)
+			expect(entry.getAttribute("aria-label")).toMatch(/, mastery \d+$/);
+		expect(within(pool).getByText("Mains")).toBeTruthy();
+	});
+
+	test("dims attributes that matter little for the role, with an explanation", async () => {
+		const user = userEvent.setup();
+		await renderWithDraftCore(<DraftScreen />);
+		await toBoard(user);
+		const red = screen.getByRole("region", { name: "Red side Shoal" });
+		await user.hover(within(red).getByRole("button", { name: /Gullix/ }));
+		const card = screen.getByRole("group", { name: /Player card/ });
+		const roaming = within(card).getByText("Roaming").closest("div");
+		expect(roaming?.className).toContain("opacity-50");
+		expect(roaming?.textContent).toContain("Matters little for this role");
+		const composure = within(card).getByText("Composure").closest("div");
+		expect(composure?.className).not.toContain("opacity-50");
+	});
+
+	test("colors values on a scale and keeps the level readable without color", async () => {
+		const user = userEvent.setup();
+		await renderWithDraftCore(<DraftScreen />);
+		await toBoard(user);
+		const blue = screen.getByRole("region", { name: "Blue side Forge" });
+		await user.hover(within(blue).getByRole("button", { name: /Kilnara/ }));
+		const card = screen.getByRole("group", { name: /Player card/ });
+		const cells = within(card).getAllByRole("definition");
+		const level = (value: number) =>
+			value >= 75 ? "High" : value <= 45 ? "Low" : "Medium";
+		const composure = within(card).getByText("Composure")
+			.nextSibling as Element;
+		expect(composure.textContent).toContain(
+			level(forgeMid?.attributes.composure ?? 0),
+		);
+		expect(cells.some((c) => c.className.includes("text-good"))).toBe(true);
+		for (const cell of cells)
+			expect(cell.textContent).toMatch(/\d+ (High|Medium|Low)/);
 	});
 
 	test("#376: hovering or focusing a player does not change the card", async () => {
@@ -538,9 +597,9 @@ describe("player card (U5)", () => {
 		await user.keyboard("{Enter}");
 		const card = screen.getByRole("group", { name: /Player card/ });
 		expect(within(card).getByText(/Shoal ADC$/)).toBeTruthy();
-		expect(within(card).getByText("Mechanics").nextSibling?.textContent).toBe(
-			"99",
-		);
+		expect(
+			within(card).getByText("Mechanics").nextSibling?.textContent,
+		).toMatch(/^99/);
 		expect(pressed()).toEqual([gullix]);
 		expect(gullix.className).toMatch(/\baria-pressed:ring-2\b/);
 
