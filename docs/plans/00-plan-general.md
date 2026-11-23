@@ -80,6 +80,13 @@ Cada fase termina con un hito verificable y un commit o PR fusionado en `main`. 
 - Gestión de la caché de assets (integridad, reanudación, versión).
 - **Salida:** `content_version` reproducible y un comando que regenera el snapshot.
 
+### Fase 3.5 — Simulación por composiciones
+- Decisión del usuario del 23-11-2026; diseño en el [plan 08](../archive/plans/08-simulacion-de-partida.md) (#326, #320).
+- Estadísticas por rol con oro por jugador; nota común por rol; identidades de composición y sus cruces; la composición decide las jugadas (cazada, asedio con poke, dive bajo torre, presión en banda, invasión).
+- Ventaja de oro relativa con saturación por full build; early, mid y late viables.
+- Nivel, objetos simplificados y ultis con enfriamientos reales (#338, #339); head2head en la partida (#337).
+- **Salida:** bandas Monte Carlo del plan 08 en verde y goldens con `SIM_VERSION` subida.
+
 ### Fase 4 — Competición
 - Formatos: liga, grupos, Swiss propio (restricciones de región, sin revanchas) y eliminatorias simple y doble; calendario y ligas top; First Stand, MSI y Worlds.
 - **Formatos como datos, configurables al crear la carrera** (decisión del 22-11-2026): por defecto, el formato real de la temporada de cada competición (p. ej. tres splits con round robin y playoffs de doble eliminación; Swiss en Worlds). Al crear la carrera, el usuario puede cambiar por competición: número de splits, vueltas del round robin, Bo1/Bo3/Bo5 por fase, grupos o Swiss, eliminación simple o doble y plazas internacionales por región. Queda fijo durante la carrera salvo para temporadas futuras. Los mismos bloques sirven al modo Torneo.
