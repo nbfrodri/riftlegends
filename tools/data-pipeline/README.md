@@ -33,7 +33,7 @@ Los JSON separan el historial de plantillas de `seasonPlayers`, que asigna cada 
 mise exec -- pnpm data:content
 ```
 
-Lee solo los JSON de `packages/core/content/real/` (sin red) y escribe `players.json`, `teams.json` y `provenance.json` en la misma carpeta, con la forma del contenido ficticio. Dos ejecuciones dan los mismos bytes; un test comprueba que los ficheros del repo están al día.
+Lee solo los JSON de `packages/core/content/real/` (sin red) y escribe `players.json`, `teams.json` y `provenance.json` en la misma carpeta, con la forma del contenido ficticio. Los equipos de cada liga son los que jugaron su **último split** o **más de la mitad de los splits** regulares de la temporada (sin playoffs, play-ins, «Road to» ni Grand Finals), así que los invitados de un solo split quedan fuera (LEC: Los Ratones y Karmine Corp Blue). Un equipo que cambia de nombre conserva su ID. Sus jugadores siguen en los snapshots y el historial, pero no forman plantilla. [league-members.ts](league-members.ts) tiene la lista de excepciones (`include` y `exclude` por liga e ID de equipo). Dos ejecuciones dan los mismos bytes; un test comprueba que los ficheros del repo están al día.
 
 | Pieza | Dónde | Resumen |
 | --- | --- | --- |

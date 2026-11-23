@@ -120,6 +120,7 @@ Cada regla tiene un **id** que viaja en `reasons` para que la ficha explique el 
 | J2 | Ajuste por fuerza de liga: un percentil en LCK vale más que en LCS (coeficiente por liga, configurable) | Coeficientes en un solo fichero con su justificación |
 | J3 | Pools de campeones (mains, secundarios y débiles) y maestría salen de lo jugado | Jugador con menos de 3 campeones: el resto del pool viene de su rol |
 | J4 | Cada equipo tiene nombre, sembrado (por resultados de la temporada), coach y logo | Equipo sin coach en Leaguepedia: coach «sin nombre» con personalidad equilibrada |
+| J4a | Los equipos de una liga son los que jugaron su último split regular o más de la mitad de los de la temporada (#368), con excepciones editables | Invitado de un solo split: fuera, y sus jugadores no forman plantilla; franquicia que jugó 2 de 3 splits: se conserva; equipo renombrado: se conserva |
 | J5 | La personalidad del coach sale del estilo de draft del equipo (primeros picks, arquetipos y curva) | Pocas partidas: `balanced` |
 
 ### App
