@@ -1,8 +1,8 @@
 import type { AiContent, MatchContent } from "@rift-legends/contracts";
 
-export type DraftChampion = AiContent["champions"][number];
-export type MatchChampion = MatchContent["champions"][number];
-export type Role = DraftChampion["positions"][number]["role"];
+type DraftChampion = AiContent["champions"][number];
+type MatchChampion = MatchContent["champions"][number];
+type Role = DraftChampion["positions"][number]["role"];
 export type Profile = readonly [
 	roles: readonly Role[],
 	damage: DraftChampion["damage"],

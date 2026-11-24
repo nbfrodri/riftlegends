@@ -20,7 +20,7 @@ export const tournament = "LCK/2026 Season/Rounds 1-2";
 export const scope = [
 	{ id: "LCK", name: "LoL Champions Korea", pages: [tournament] },
 ];
-export const fixture = async (name: string) =>
+const fixture = async (name: string) =>
 	JSON.parse(
 		await readFile(
 			new URL(`./fixtures/leaguepedia/${name}.json`, import.meta.url),
