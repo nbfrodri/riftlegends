@@ -474,6 +474,7 @@
 	"draft.board.noBan": "Sin veto",
 	"draft.board.pending": "Pendiente",
 	"draft.board.yourPick": "Tu elección",
+	"draft.board.choosing": "Eligiendo",
 	"draft.board.player": "{{handle}} · {{team}} {{role}}",
 	"draft.board.turn.ban": "Veto {{n}} · {{team}}",
 	"draft.board.turn.pick": "{{slot}} · Elección de {{team}}",
