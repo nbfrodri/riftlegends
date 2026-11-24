@@ -8,13 +8,11 @@ const teamId = id;
 const stageId = id;
 const competitionId = id;
 
-/** Best-of lengths a series can have. */
-export const BEST_OF = [1, 3, 5] as const;
+/** Best-of lengths a series can have: 1, 3 or 5. */
 const bestOf = z.union([z.literal(1), z.literal(3), z.literal(5)]);
-export type BestOf = z.infer<typeof bestOf>;
 
 /** Most series a team may play in a match day (decision 4 of plan 12). */
-export const MAX_SERIES_PER_DAY = 4;
+const MAX_SERIES_PER_DAY = 4;
 
 /** Whole days from the season start are counted by the core; weeks only here. */
 const window = z.strictObject({
@@ -113,7 +111,7 @@ const source = z.discriminatedUnion("kind", [
 
 const stage = z.strictObject({ id: stageId, window, entrants: source, play });
 
-export const CRITERIA = [
+const CRITERIA = [
 	"seriesWins",
 	"gameDiff",
 	"headToHead",
@@ -122,7 +120,6 @@ export const CRITERIA = [
 	"draw",
 ] as const;
 const criterion = z.enum(CRITERIA);
-export type Criterion = z.infer<typeof criterion>;
 
 const slot = z.strictObject({
 	to: competitionId,
@@ -201,4 +198,3 @@ export const competitionSchema = z
 	});
 
 export type Competition = z.infer<typeof competitionSchema>;
-export type Stage = Competition["stages"][number];
