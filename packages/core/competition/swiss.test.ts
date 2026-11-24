@@ -303,4 +303,21 @@ describe("pairSwissRound relaxation", () => {
 		);
 		expect(noRules?.relaxed).toEqual([]);
 	});
+
+	test("S1: an odd record pool sends one team to the neighbour pool as a last resort, recorded", () => {
+		const teams = teamsOf(6, () => undefined);
+		const round1 = pairSwissRound(teams, [], RULES, 5, SCOPE);
+		const played = [
+			(round1?.pairings ?? []).map(({ a, b }) => ({ winner: a, loser: b })),
+		];
+		const round2 = pairSwissRound(teams, played, RULES, 5, SCOPE);
+		expect(round2?.relaxed).toEqual(["record"]);
+		const reasons = round2?.pairings.map((p) => p.reason).sort();
+		expect(reasons).toEqual(["cross-record", "same-record", "same-record"]);
+		const cross = round2?.pairings.find((p) => p.reason === "cross-record");
+		const winners = new Set(round1?.pairings.map((p) => p.a));
+		expect(
+			[cross?.a, cross?.b].filter((id) => winners.has(id as string)),
+		).toHaveLength(1);
+	});
 });
