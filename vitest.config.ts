@@ -27,6 +27,9 @@ export default defineConfig({
 				test: {
 					name: "desktop",
 					include: ["apps/desktop/**/*.test.ts"],
+					// The asset cache tests write real files; on Windows CI the
+					// split files run in parallel and pass 5 s (#441).
+					testTimeout: 20_000,
 				},
 			},
 			{
