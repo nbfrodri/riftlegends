@@ -1,8 +1,8 @@
 import { expect, it } from "vitest";
-import { laneHits, teamHits } from "./champion-rules.ts";
-import { championProfile } from "./curated-champions.ts";
 import { deriveChampionContent } from "./champion-content.ts";
+import { laneHits, teamHits } from "./champion-rules.ts";
 import { curatedTraitIds } from "./champion-traits.ts";
+import { championProfile } from "./curated-champions.ts";
 
 const catalog = curatedTraitIds.map((id, key) => ({ id, key, classes: [] }));
 const content = deriveChampionContent(catalog, []);
