@@ -1,4 +1,9 @@
-import { type MatchContent, ROLES, type Side } from "@rift-legends/contracts";
+import {
+	type MatchContent,
+	ROLES,
+	type Role,
+	type Side,
+} from "@rift-legends/contracts";
 import { packagedDraftContent, packagedMatchContent } from "../../content";
 import { shuffle } from "../../rng/helpers";
 import { SCOPES } from "../../rng/scopes";
@@ -103,7 +108,28 @@ export function sample(
 			if (e.minute <= 20)
 				for (const s of ["blue", "red"] as const) at20[s] += e.gold[s];
 		}
+		const teams = (["blue", "red"] as const).map((side) => {
+			const roleOf = new Map(
+				ROLES.map((role) => [state.context[side].players[role], role]),
+			);
+			const line = Object.fromEntries(
+				ROLES.map((role) => [role, { kills: 0, assists: 0 }]),
+			) as Record<Role, { kills: number; assists: number }>;
+			let kills = 0;
+			for (const k of events.flatMap((e) => e.kills)) {
+				const killer = roleOf.get(k.killer);
+				if (!killer) continue;
+				kills++;
+				line[killer].kills++;
+				for (const id of k.assists) {
+					const helper = roleOf.get(id);
+					if (helper) line[helper].assists++;
+				}
+			}
+			return { kills, line };
+		});
 		return {
+			teams,
 			winner: state.winner as Side,
 			minutes: state.minute,
 			kills: state.blue.kills + state.red.kills,

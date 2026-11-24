@@ -8,4 +8,6 @@ export const SCOPES = {
 	ai: 3,
 	/** The AI's side choice (issue #305). */
 	side: 4,
+	/** Who scores and who assists each kill of a match (issue #346). */
+	matchAttribution: 5,
 } as const;

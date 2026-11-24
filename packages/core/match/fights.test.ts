@@ -37,7 +37,9 @@ it("starts fights in the mid game and credits and pays both teams' kills", () =>
 					for (const assist of assists) expect(players[side]).toContain(assist);
 					kills[side]++;
 					credited[side]++;
-					earned[side] += economy.kill + economy.assist * assists.length;
+					if (event.kind === "fight")
+						expect(assists.length).toBeGreaterThanOrEqual(1);
+					earned[side] += economy.kill + economy.assist;
 				}
 				if (event.kind !== "fight") continue;
 				fights++;

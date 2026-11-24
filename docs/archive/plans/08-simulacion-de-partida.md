@@ -220,6 +220,20 @@ Hoy líneas y ganks asignan autores fijos. `fights.ts` sortea autor y un asisten
 | Oro individual | Ver [Oro por jugador](#diseño--oro-por-jugador-y-ventaja-de-oro-326). El equipo no reparte oro: cada jugador lo gana y el equipo es la suma. Daño y oro comparten acumulador entre snapshots y resultado. |
 | Nota | Escala común **0–100**, con **60** para el rendimiento de referencia. Interpolar cada métrica entre P10, media y P90 del rol a 0, 60 y 100 y acotar extremos. Para muertes, invertir el orden de los anclajes y mantener la media en 60. Aplicar los pesos siguientes y redondear una vez. Si una métrica carece de oportunidades, usar 60. El resultado alimenta el MVP y la comparación de la serie. |
 
+#### Atribución implementada y calibrada (#346, 24-11-2026)
+
+Código en `packages/core/match/attribution/`. Ámbito RNG `matchAttribution = 5`, con semilla, game, minuto, disputa, evento y baja. Las tiradas de resolución no cambian (se conservan las dos tiradas antiguas de autor y asistente, descartadas): con las mismas semillas, ganador, duración, bajas, víctimas, oro por lado y probabilidades quedan idénticos a la v4. `SIM_VERSION` 5.
+
+| Pieza | Valor final (K6 en verde en los dos pools) |
+| --- | --- |
+| Peso de remate (top, jungla, mid, ADC, apoyo) | 18 / 16 / 25 / 32 / 5 |
+| Peso de asistencia | 12 / 25 / 55 / 60 / 400 |
+| Factores | Arquetipo 0,75 / 1 / 1,25 (remate: `carry`, `hypercarry`, `dive` suben; `utility`, `peel` bajan. Asistencia: `engage`, `peel`, `utility` suben; `carry`, `hypercarry` bajan). Atributos: mecánicas y posicionamiento (remate), comunicación y pelea de equipo (asistencia), 3 milésimas por punto sobre 50, tope 0,75–1,25 |
+| Asistencias por tipo | Duelo top o mid, 0. Dúo bot, 0–1 (95 % una). Gank, 1–2 (80 % dos). Pelea menor, 1–2 (80 % dos). Pelea de equipo (foso o 4+ bajas), 2–4 (5 / 30 / 65 %) |
+| Gank | El jungla pesa igual que en pelea: duplicarlo dejaba su cuota de bajas 8 pp sobre el pro |
+
+Los pesos de asistencia salen muy por encima de los iniciales porque cada baja ya reparte 2–4 asistentes entre cuatro aliados: solo un peso muy alto hace que el apoyo participe en casi todas, como en el pro (KP 74 %). El oro del evento no cambia con el número de asistentes: una baja con otro jugador paga una sola bolsa y `stats.ts` la divide entre los asistentes (el primero recibe el resto).
+
 Las referencias de bajas, KP y daño salen de la tabla de competición. Para asistencias y muertes, usar el mismo snapshot y método con cifras por 30 minutos (`stat × 1800 / lengthSeconds`). El usuario aprobó los pesos de la nota el 23-11-2026. Visión, objetivos y presión son estimaciones de la simulación.
 
 | Rol | Peso de la nota (%) | Señal específica |
