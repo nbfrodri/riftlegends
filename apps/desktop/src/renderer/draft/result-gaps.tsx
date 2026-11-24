@@ -1,17 +1,51 @@
 import type { Role, SeriesOptions } from "@rift-legends/contracts";
+import { Tooltip } from "@rift-legends/ui-kit/components/tooltip";
 import { useTranslation } from "react-i18next";
 import { GameRoleIcon } from "../assets/game-role-icon";
 import { useGoldDiff } from "../match/scoreboard";
-import type { RoleGap } from "./result-data";
-import { teamName } from "./session";
+import { ChampionPortrait } from "./champion-portrait";
+import type { LanePlayer, RoleGap } from "./result-data";
+import { championLabel, playerProfile } from "./session";
 
 const numbers = (language: string) =>
 	new Intl.NumberFormat(language, { maximumFractionDigits: 1 });
 
+const handleOf = (options: SeriesOptions, player: string) =>
+	playerProfile(options, player)?.handle ?? player;
+
+/** One player of the matchup: champion portrait and handle, in the side colour when ahead. */
+function Player(props: {
+	lane: LanePlayer;
+	options: SeriesOptions;
+	ahead: boolean;
+	color: string;
+}) {
+	const handle = handleOf(props.options, props.lane.player);
+	const champion = championLabel(props.options, props.lane.champion);
+	return (
+		// A 20 px portrait keeps the row as tall as its text, so the results fit (#259).
+		<span className="flex min-w-0 items-center gap-1.5 [&_[role=img]]:size-5">
+			<ChampionPortrait
+				id={props.lane.champion}
+				label={champion}
+				size="compact"
+			/>
+			<Tooltip heading={handle} content={champion}>
+				<span
+					className={`min-w-0 truncate ${props.ahead ? `font-bold ${props.color}` : "text-muted"}`}
+				>
+					{handle}
+				</span>
+			</Tooltip>
+		</span>
+	);
+}
+
 /**
- * The differences by role: who is ahead, by how many points (in words) and
- * how much gold (with a sign). The gap
- * rows (over the core's threshold) are marked and named in the call-out.
+ * The differences by role: the two players of each role, the one ahead in
+ * their side colour, by how many points (in words) and how much gold (with a
+ * sign). The gap rows (over the core's threshold) are marked and named in the
+ * call-out.
  */
 export function GapsTable(props: {
 	gaps: readonly RoleGap[];
@@ -56,7 +90,7 @@ export function GapsTable(props: {
 							{t("draft.result.gaps.role")}
 						</th>
 						<th scope="col" className="px-1.5 py-0.5 font-normal">
-							{t("draft.result.gaps.leader")}
+							{t("draft.result.gaps.players")}
 						</th>
 						<th scope="col" className="px-1.5 py-0.5 text-right font-normal">
 							{t("draft.result.gaps.rating")}
@@ -67,50 +101,65 @@ export function GapsTable(props: {
 					</tr>
 				</thead>
 				<tbody>
-					{props.gaps.map((gap) => (
-						<tr
-							key={gap.role}
-							data-gap={gap.gap}
-							className={`border-line border-t ${gap.gap ? "bg-surface" : ""}`}
-						>
-							<th scope="row" className="px-1.5 py-0.5 text-left font-semibold">
-								<span className="flex items-center gap-1.5">
-									<GameRoleIcon role={gap.role} size={16} />
-									{roleLabel(gap.role)}
-								</span>
-							</th>
-							<td className="px-1.5 py-0.5">
-								{gap.team ? (
-									<strong
-										className={
-											props.sideOf(gap.team) === "blue"
-												? "text-side-blue"
-												: "text-side-red"
-										}
-									>
-										{teamName(props.options, gap.team)}
-									</strong>
-								) : (
-									t("draft.result.gaps.even")
-								)}
-							</td>
-							<td
-								className={`px-1.5 py-0.5 text-right ${gap.gap ? "font-bold text-action" : ""}`}
+					{props.gaps.map((gap) => {
+						const leader = gap.players.find((p) => p.team === gap.team);
+						return (
+							<tr
+								key={gap.role}
+								data-gap={gap.gap}
+								className={`border-line border-t ${gap.gap ? "bg-surface" : ""}`}
 							>
-								{gap.team
-									? t("draft.result.gaps.pointsMore", {
-											count: gap.points,
-											points: format.format(gap.points),
-										})
-									: t("draft.result.gaps.even")}
-							</td>
-							<td className="px-1.5 py-0.5 text-right">
-								{gap.gold === 0
-									? t("draft.result.gaps.even")
-									: goldDiff(gap.gold)}
-							</td>
-						</tr>
-					))}
+								<th
+									scope="row"
+									className="px-1.5 py-0.5 text-left font-semibold"
+								>
+									<span className="flex items-center gap-1.5">
+										<GameRoleIcon role={gap.role} size={16} />
+										{roleLabel(gap.role)}
+									</span>
+								</th>
+								<td className="px-1.5 py-0.5">
+									<span className="grid grid-cols-2 gap-2">
+										{gap.players.map((lane) => (
+											<Player
+												key={lane.team}
+												lane={lane}
+												options={props.options}
+												ahead={gap.team === lane.team}
+												color={
+													props.sideOf(lane.team) === "blue"
+														? "text-side-blue"
+														: "text-side-red"
+												}
+											/>
+										))}
+									</span>
+								</td>
+								<td
+									className={`px-1.5 py-0.5 text-right ${gap.gap ? "font-bold text-action" : ""}`}
+								>
+									{leader && (
+										<span className="sr-only">
+											{t("draft.result.gaps.ahead", {
+												player: handleOf(props.options, leader.player),
+											})}
+										</span>
+									)}
+									{gap.team
+										? t("draft.result.gaps.pointsMore", {
+												count: gap.points,
+												points: format.format(gap.points),
+											})
+										: t("draft.result.gaps.even")}
+								</td>
+								<td className="px-1.5 py-0.5 text-right">
+									{gap.gold === 0
+										? t("draft.result.gaps.even")
+										: goldDiff(gap.gold)}
+								</td>
+							</tr>
+						);
+					})}
 				</tbody>
 			</table>
 		</section>

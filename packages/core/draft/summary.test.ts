@@ -3,6 +3,7 @@ import {
 	GAP_RATING,
 	seriesSummary,
 } from "@rift-legends/contracts";
+import fc from "fast-check";
 import { describe, expect, it } from "vitest";
 import { fictionalContent } from "../ai/fixtures/content";
 import { fictionalMatchContent } from "../match/fixtures/content";
@@ -23,10 +24,10 @@ interface Line {
 }
 
 /** A `match.ended` fact: blue lines then red lines, in role order. */
-const ended = (game: number, blue: Line[], red: Line[]) => ({
+const ended = (game: number, blue: Line[], red: Line[], winner = "a") => ({
 	type: "match.ended",
 	game,
-	winner: "a",
+	winner,
 	duration: 1800,
 	decisive: [],
 	players: [
@@ -89,23 +90,82 @@ describe("summarizeSeries (Q5)", () => {
 		});
 	});
 
-	it("breaks a tie by participation, then by role and side order", () => {
+	it("breaks a tie by participation, then by role", () => {
 		const blue = flat(40);
 		blue[1] = { rating: 80, participation: 4000 };
-		const red = flat(40);
-		red[3] = { rating: 80, participation: 7000 };
-		expect(summarizeSeries([[ended(1, blue, red)]]).mvp?.player).toBe("b-bot");
-
+		blue[3] = { rating: 80, participation: 7000 };
+		expect(summarizeSeries([[ended(1, blue, flat(40))]]).mvp?.player).toBe(
+			"a-bot",
+		);
 		blue[1] = { rating: 80, participation: 7000 };
 		// Same rating and participation: the earlier role wins.
-		expect(summarizeSeries([[ended(1, blue, red)]]).mvp?.player).toBe(
+		expect(summarizeSeries([[ended(1, blue, flat(40))]]).mvp?.player).toBe(
 			"a-jungle",
 		);
-		const tied = flat(40);
-		tied[1] = { rating: 80, participation: 7000 };
-		// Same role: blue (the first team of the game) wins.
-		expect(summarizeSeries([[ended(1, blue, tied)]]).mvp?.player).toBe(
-			"a-jungle",
+	});
+
+	it("#437: the MVP comes from the series winner, even if a loser rated higher", () => {
+		const blue = flat(40);
+		const red = flat(40);
+		red[2] = { rating: 99, participation: 9000 };
+		blue[4] = { rating: 60 };
+		const summary = summarizeSeries([
+			[ended(1, blue, red, "a")],
+			[ended(2, blue, red, "b")],
+			[ended(3, blue, red, "a")],
+		]);
+		expect(summary.mvp?.player).toBe("a-support");
+		expect(summary.mvp?.team).toBe("a");
+	});
+
+	it("#437: on level wins (an unfinished series) every player can be MVP, blue first on a tie", () => {
+		const blue = flat(40);
+		blue[1] = { rating: 80, participation: 7000 };
+		const red = flat(40);
+		red[1] = { rating: 80, participation: 7000 };
+		expect(
+			summarizeSeries([[ended(1, blue, red, "a")], [ended(2, blue, red, "b")]])
+				.mvp?.player,
+		).toBe("a-jungle");
+		red[1] = { rating: 90 };
+		expect(
+			summarizeSeries([[ended(1, blue, red, "a")], [ended(2, blue, red, "b")]])
+				.mvp?.player,
+		).toBe("b-jungle");
+	});
+
+	it("#437: the MVP is always the best player of the series winner (property)", () => {
+		const rating = fc.integer({ min: 0, max: 100 });
+		const game = fc.record({
+			blue: fc.array(rating, { minLength: 5, maxLength: 5 }),
+			red: fc.array(rating, { minLength: 5, maxLength: 5 }),
+			winner: fc.constantFrom("a", "b"),
+		});
+		fc.assert(
+			fc.property(fc.array(game, { minLength: 1, maxLength: 5 }), (games) => {
+				const wins = (team: string) =>
+					games.filter((g) => g.winner === team).length;
+				fc.pre(wins("a") !== wins("b"));
+				const winner = wins("a") > wins("b") ? "a" : "b";
+				const summary = summarizeSeries(
+					games.map((g, i) => [
+						ended(
+							i + 1,
+							g.blue.map((r) => ({ rating: r })),
+							g.red.map((r) => ({ rating: r })),
+							g.winner,
+						),
+					]),
+				);
+				expect(summary.mvp?.team).toBe(winner);
+				const sumOf = (side: "blue" | "red", role: number) =>
+					games.reduce((total, g) => total + (g[side][role] ?? 0), 0);
+				const side = winner === "a" ? "blue" : "red";
+				const sums = ROLES.map((_, i) => sumOf(side, i));
+				const best = sums.reduce((a, b) => (b > a ? b : a));
+				const role = sums.indexOf(best);
+				expect(summary.mvp?.player).toBe(`${winner}-${ROLES[role]}`);
+			}),
 		);
 	});
 
