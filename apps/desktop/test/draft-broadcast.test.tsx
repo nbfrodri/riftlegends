@@ -157,3 +157,11 @@ describe("#419: the turn timer is a bar shrinking from both sides", () => {
 		expect(screen.getByRole("timer").textContent).toBe("00:20");
 	});
 });
+
+test("the broadcast header does not repeat who has first pick; the team column already says it", async () => {
+	await start(false);
+	const live = screen.getByRole("status", { name: "Draft confirmation" });
+	const header = live.parentElement?.parentElement as HTMLElement;
+	expect(header.textContent).not.toMatch(/First pick/);
+	expect(screen.getAllByText("First pick")).toHaveLength(1);
+});
