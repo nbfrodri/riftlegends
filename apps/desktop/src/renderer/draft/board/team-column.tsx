@@ -6,12 +6,15 @@ import {
 	type Side,
 } from "@rift-legends/contracts";
 import { Tooltip } from "@rift-legends/ui-kit/components/tooltip";
+import { useReducedMotion } from "@rift-legends/ui-kit/lib/use-reduced-motion";
 import { memo, useId } from "react";
 import { useTranslation } from "react-i18next";
 import { GameRoleIcon } from "../../assets/game-role-icon";
+import { pacing } from "../broadcast/pacing";
 import { ChampionPortrait } from "../champion-portrait";
 import { championLabel, teamName } from "../session";
 import { TeamCrest } from "../team-crest";
+import { PickArt } from "./pick-art";
 
 export interface PlayerRef {
 	team: string;
@@ -21,6 +24,10 @@ export interface PlayerRef {
 const SIDE = {
 	blue: { letter: "B", text: "text-side-blue", border: "border-side-blue" },
 	red: { letter: "R", text: "text-side-red", border: "border-side-red" },
+} as const;
+
+const PULSE = {
+	animationDuration: `${pacing.pendingPulseMs}ms`,
 } as const;
 
 /**
@@ -47,6 +54,7 @@ export const TeamColumn = memo(function TeamColumn(props: {
 	const players = options.teams.find(({ id }) => id === team.team)?.players;
 	const id = useId();
 	const style = SIDE[props.side];
+	const reduced = useReducedMotion();
 	return (
 		<section
 			data-card-side={props.side}
@@ -82,6 +90,8 @@ export const TeamColumn = memo(function TeamColumn(props: {
 					const champion =
 						team.picks[row] ?? (current ? props.preview : undefined);
 					const slot = style.letter + (row + 1);
+					// Selected in the pool but not confirmed yet (#435).
+					const pending = current && !!champion && !team.picks[row];
 					const label = champion
 						? championLabel(options, champion)
 						: current
@@ -97,19 +107,17 @@ export const TeamColumn = memo(function TeamColumn(props: {
 									aria-keyshortcuts={champion ? "I" : undefined}
 									aria-controls="player-card"
 									aria-pressed={props.selected === role}
+									data-pending={pending || undefined}
 									onClick={() => props.onPlayer({ team: team.team, role })}
 									className={`press relative cursor-pointer isolate flex min-h-[clamp(48px,7.8vh,88px)] w-full items-center gap-2 overflow-hidden border border-line bg-surface/50 px-2 text-left outline-offset-2 hover:bg-surface focus-visible:outline-2 focus-visible:outline-action aria-pressed:bg-action/10 aria-pressed:ring-2 aria-pressed:ring-action aria-pressed:ring-inset ${current ? `bg-surface shadow-[inset_2px_0_currentColor] ${style.text}` : ""}`}
 								>
 									{champion && (
 										<span
-											className={`pointer-events-none absolute inset-y-px right-px -z-10 w-3/5 [mask-image:linear-gradient(to_right,transparent,#000_55%)] motion-safe:transition-opacity motion-safe:duration-300 ${current ? "opacity-50" : "opacity-100 motion-safe:starting:opacity-50"}`}
+											data-preview={pending ? "pending" : "locked"}
+											className={`pointer-events-none absolute inset-y-px right-px -z-10 w-3/5 overflow-hidden [mask-image:linear-gradient(to_right,transparent,#000_55%)] ${pending ? (reduced ? "opacity-50" : "draft-pending") : "opacity-100 motion-safe:transition-opacity motion-safe:duration-300 motion-safe:starting:opacity-50"}`}
+											style={pending && !reduced ? PULSE : undefined}
 										>
-											<ChampionPortrait
-												key={champion}
-												id={champion}
-												size="tile"
-												label={label}
-											/>
+											<PickArt key={champion} id={champion} label={label} />
 										</span>
 									)}
 									<span className={style.text}>
@@ -127,7 +135,11 @@ export const TeamColumn = memo(function TeamColumn(props: {
 										</strong>
 										{current && (
 											<small className="block text-[11px]">
-												{t("draft.board.yourPick")}
+												{t(
+													pending
+														? "draft.board.choosing"
+														: "draft.board.yourPick",
+												)}
 											</small>
 										)}
 									</span>
