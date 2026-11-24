@@ -1,4 +1,5 @@
 export * from "./assets";
+export * from "./competition/index";
 export * from "./debug";
 export * from "./draft/index";
 export * from "./draft/real-logos";
