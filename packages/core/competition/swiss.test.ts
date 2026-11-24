@@ -144,4 +144,34 @@ describe("pairSwissRound later rounds", () => {
 			}
 		}
 	});
+
+	test("S8: within a record pool the draw is seeded, so seeds 1 and 2 do not always meet", () => {
+		const teams = teamsOf(16);
+		const draws = new Set<string>();
+		const t1Rivals = new Set<string>();
+		for (let seed = 0; seed < 30; seed++) {
+			const { played } = play(teams, () => 0, seed);
+			const round2 = pairSwissRound(
+				teams,
+				played.slice(0, 1),
+				RULES,
+				seed,
+				SCOPE,
+			);
+			draws.add(round2?.pairings.map((p) => `${p.a}-${p.b}`).join(",") ?? "");
+			const first = round2?.pairings.find((p) => p.a === "t1" || p.b === "t1");
+			t1Rivals.add(first?.a === "t1" ? first.b : (first?.a ?? ""));
+			// same seed, same draw
+			const again = pairSwissRound(
+				teams,
+				played.slice(0, 1),
+				RULES,
+				seed,
+				SCOPE,
+			);
+			expect(again).toEqual(round2);
+		}
+		expect(draws.size).toBeGreaterThan(10);
+		expect(t1Rivals.size).toBeGreaterThan(2);
+	});
 });
