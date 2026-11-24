@@ -114,4 +114,16 @@ describe("pairSwissRound round 1", () => {
 			expect(pot(a) + pot(b)).toBe(3);
 		}
 	});
+
+	test("S8: the same seed gives the same draw and other seeds or stages give others", () => {
+		const draw = (seed: number, stage = SCOPE.stage) =>
+			pairSwissRound(teamsOf(16), [], RULES, seed, { ...SCOPE, stage })
+				?.pairings.map((p) => `${p.a}-${p.b}`)
+				.join(",");
+		expect(draw(9)).toEqual(draw(9));
+		expect(
+			new Set(Array.from({ length: 20 }, (_, seed) => draw(seed))).size,
+		).toBeGreaterThan(10);
+		expect(draw(9, 4)).not.toEqual(draw(9));
+	});
 });
