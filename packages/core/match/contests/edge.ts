@@ -30,12 +30,6 @@ const LATE_GAME = 26;
 const phaseOf = (minute: number) =>
 	minute < MID_GAME ? "early" : minute < LATE_GAME ? "mid" : "late";
 
-/** Gold of each player of a side: what its events paid plus the passive income. */
-const goldOf = (state: MatchState, side: Side) => {
-	const farm = farmed(state.context.rules.economy.passive, state.minute);
-	return state[side].paid.map((gold, i) => gold + (farm[i] as number));
-};
-
 function strength(state: MatchState, side: Side, contest: Contest) {
 	const { profile } = state.context[side];
 	const parts: Scored[] = [
@@ -99,11 +93,12 @@ export function edge(
 		const points = (blue.get(key) ?? 0) - (red.get(key) ?? 0);
 		if (points !== 0) causes.push({ key, points });
 	}
-	const gold = goldLead(
-		goldOf(state, "blue"),
-		goldOf(state, "red"),
-		state.context.rules,
-	);
+	const { rules } = state.context;
+	// The passive income is the same for both sides; each player farms a share.
+	const farm = farmed(rules.economy.passive, state.minute);
+	const goldOf = (side: Side) =>
+		state[side].paid.map((gold, i) => gold + (farm[i] as number));
+	const gold = goldLead(goldOf("blue"), goldOf("red"), rules);
 	if (gold !== 0) causes.push({ key: "gold", points: gold });
 	const total = causes.reduce((sum, c) => sum + c.points, 0);
 	// Both teams affect how decisive the contest is, independently of who leads.

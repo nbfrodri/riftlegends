@@ -1,5 +1,6 @@
 import fc from "fast-check";
 import { describe, expect, it } from "vitest";
+import { abs, type Fixed, mul } from "../../math";
 import { goldLead, usefulGold } from "./gold";
 
 const rules = {
@@ -25,7 +26,7 @@ describe("G2 · relative gold lead", () => {
 			fc.property(golds, golds, (a, b) => {
 				const lead = goldLead(a, b, rules);
 				expect(goldLead(b, a, rules)).toBe(-lead);
-				expect(Math.abs(lead)).toBeLessThanOrEqual(rules.goldMaxPoints);
+				expect(abs(lead)).toBeLessThanOrEqual(rules.goldMaxPoints);
 			}),
 		);
 	});
@@ -116,6 +117,21 @@ describe("G3 · saturation at the full build", () => {
 			fullBuildGold: 10_000,
 		});
 		expect(tight).toBeLessThan(roomy);
+	});
+
+	it("rounds the overflow half to even, like the fixed-point product", () => {
+		fc.assert(
+			fc.property(
+				fc.integer({ min: 17_000, max: 60_000 }),
+				fc.integer({ min: 0, max: 10_000 }),
+				(gold, goldOverflow) => {
+					const over = gold - rules.fullBuildGold;
+					expect(usefulGold(gold, { ...rules, goldOverflow })).toBe(
+						rules.fullBuildGold + mul(over as Fixed, goldOverflow as Fixed),
+					);
+				},
+			),
+		);
 	});
 
 	it("follows a changed threshold and overflow", () => {

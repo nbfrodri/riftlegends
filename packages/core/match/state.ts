@@ -211,9 +211,9 @@ export function createMatch(setup: MatchSetup): MatchState {
 		["blue", blue],
 		["red", red],
 	] as const) {
-		ROLES.forEach((role, index) =>
-			slots.set(team.players[role], { side: which, index }),
-		);
+		ROLES.forEach((role, index) => {
+			slots.set(team.players[role], { side: which, index });
+		});
 	}
 	return {
 		context: {

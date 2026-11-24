@@ -1,5 +1,5 @@
 import type { MatchContent } from "@rift-legends/contracts";
-import { div, type Fixed, mul } from "../../math";
+import { div, type Fixed, mul, SCALE } from "../../math";
 import { clamp } from "../../math/int";
 
 type GoldRules = Pick<
@@ -12,8 +12,17 @@ type GoldRules = Pick<
  * overflow share of what is above (plan 08, G3).
  */
 export function usefulGold(gold: number, rules: GoldRules): number {
-	const over = gold > rules.fullBuildGold ? gold - rules.fullBuildGold : 0;
-	return gold - over + mul(over as Fixed, rules.goldOverflow as Fixed);
+	if (gold <= rules.fullBuildGold) return gold;
+	const over = gold - rules.fullBuildGold;
+	// `over * overflow` is exact in a double; round half to even like `mul`.
+	const scaled = over * rules.goldOverflow;
+	const whole = (scaled - (scaled % SCALE)) / SCALE;
+	const rest = scaled % SCALE;
+	const counted =
+		rest * 2 > SCALE || (rest * 2 === SCALE && whole % 2 === 1)
+			? whole + 1
+			: whole;
+	return rules.fullBuildGold + counted;
 }
 
 /**
