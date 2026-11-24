@@ -1,10 +1,10 @@
 import fc from "fast-check";
 import { describe, expect, test } from "vitest";
 import {
+	pairSwissRound,
 	type SwissResult,
 	type SwissRules,
 	type SwissTeam,
-	pairSwissRound,
 	swissStandings,
 } from "./swiss";
 
@@ -77,5 +77,29 @@ describe("swissStandings", () => {
 		expect(() =>
 			swissStandings(teamsOf(2), [[{ winner: "x", loser: "t1" }]], RULES),
 		).toThrow(RangeError);
+	});
+});
+
+const pot = (id: string) =>
+	(Number(id.slice(1)) - 1 - ((Number(id.slice(1)) - 1) % 4)) / 4;
+
+describe("pairSwissRound round 1", () => {
+	test("S3: pots meet 1 v 4 and 2 v 3", () => {
+		const round = pairSwissRound(
+			teamsOf(16, () => undefined),
+			[],
+			RULES,
+			1,
+			SCOPE,
+		);
+		expect(round?.round).toBe(1);
+		expect(round?.pairings).toHaveLength(8);
+		const ids = round?.pairings.flatMap(({ a, b }) => [a, b]) ?? [];
+		expect(new Set(ids).size).toBe(16);
+		for (const { a, b, reason } of round?.pairings ?? []) {
+			expect(pot(a) + pot(b)).toBe(3);
+			expect(Number(a.slice(1))).toBeLessThan(Number(b.slice(1)));
+			expect(reason).toBe("pots");
+		}
 	});
 });
