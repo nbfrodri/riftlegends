@@ -1,6 +1,6 @@
 # Handoff · Fase 3, datos reales
 
-Estado: en curso (actualizado el 23-11 por la noche)
+Estado: en curso (actualizado el 24-11 de madrugada)
 
 Para retomar en una sesión nueva. Decisiones en el [registro](../decisions/README.md); detalle en el [plan 11](../plans/11-datos-reales.md) y el [plan general](../plans/00-plan-general.md).
 
@@ -47,22 +47,28 @@ Para retomar en una sesión nueva. Decisiones en el [registro](../decisions/READ
 
 #365 ficha solo con clic derecho, #368 equipos de liga (último split o mayoría de splits), #367 retratos en alta resolución, #337 cara a cara en espejo, #378 logos sin reiniciar, #377 eventos con jugador, logo y rol, #380 iconos oficiales sin silueta, #319 pantalla de Campeones con detalle, #376 pulido del draft y reglas de botones de toda la app (sin subrayado, hover y pulsado, sin flechas). Docs: scouting y leyendas (#344), ascensos y descensos (#370).
 
+## Fusionado el 24-11
+
+#389 fotos y ficha de jugador (#360), #392 logos de ligas (#387), #393 filas del draft y Roles (#379, `SIM_VERSION` 4), #395 pantalla de carga y solo contenido real (#386), #397 reintento al arrancar Electron en el CI (#391), #405 pool y ficha de jugador (#398, #396), #406 pantalla Campeones con lista completa (#400, #402), #404 cursor de mano, botones sin subrayado y filas alternas (#399), #409 bajas y asistencias por rol (#346, Fase 3.5, `SIM_VERSION` 5).
+
 ## En curso
 
-| Issue | PR / worktree | Estado | Cómo seguir |
+| Issue | PR | Estado | Cómo seguir |
 | --- | --- | --- | --- |
-| #360 fotos y ficha de jugador | PR #389, `../riftlegends-360` | 323/397 fotos; capturas en el CI (nuevo estado `quick-draft-player-card.png`) | Revisar la captura con el usuario, subir PNG, fusionar |
-| #387 logos de ligas y eventos | PR #392, `../riftlegends-387` | 8/9 logos (CBLOL sin logo en la API) | Capturas, fusionar |
-| #379 filas del draft y fase de roles | PR #393, `../riftlegends-379` | Listo, `SIM_VERSION` 4 | Rebasar tras #389 y #392, capturas al usuario, fusionar |
-| #386 pantalla de carga y solo contenido real | `../riftlegends-386` | Subagente de Claude trabajando | Revisar, capturas, fusionar |
-
-Codex sin uso hasta el 24-11 a las 3:52. Reanudar a mano con `~/.cache/rift-tmp/codex/resume.sh NN MODELO EFFORT`.
+| #340 rasgos desde los datos del juego | #403 | Aprobado por el usuario; cola de fusión | Rebasar, capturas, fusionar |
+| #361 larvas del vacío | #411 | Subagente: disputa de grupo (decisión del usuario) y `SIM_VERSION` 6 | Revisar, capturas, fusionar |
+| #407 lectura de la IA | — | Subagente | Capturas al usuario |
+| #253 créditos (parte) | #412 | Listo | Capturas al usuario, fusionar |
+| #347 oro por jugador | — | Subagente | Revisar calibración |
+| Plan 12 competición | — | Subagente redacta el plan | Aprobación del usuario y troceado |
 
 ## Siguiente (por orden)
 
-1. Cerrar la Fase 3: lo de «En curso», #340 (rasgos desde los datos del juego), #297 (partir módulos), #391 (Electron a veces no arranca en el CI) y #253 (calibración real, E2E real y créditos).
-2. Fase 3.5 (simulación por composiciones) en el orden de sus issues. Incluye #361 larvas, #362 efectos de objetivos, #363 lado y objetivos, #364 IA por orden y lado, #366 multikills, #374 hechizos de invocador.
-3. Fase 6: #384 colores del mercado, #385 filtros del mercado.
+1. Tras #403: #401 tiers relativos por rol (aprobado), #297 partir módulos de más de 300 líneas y #349 identidades.
+2. Tras #347: #348 nota por rol, #353 oro relativo; #366 multikills; #410 víctimas en la línea inferior.
+3. Tras #411: #363 lado del mapa y objetivos, #362 efectos de objetivos.
+4. Cerrar la Fase 3 con #253: calibración con contenido real (tras #401) y E2E de la Bo5 en modo real; Stryker.
+5. Fase 6: #408 seguir en directo el draft delegado, #384 y #385 mercado.
 
 ## Avisos
 
@@ -70,10 +76,13 @@ Codex sin uso hasta el 24-11 a las 3:52. Reanudar a mano con `~/.cache/rift-tmp/
 - Con varios agentes a la vez, los tests de UI pasan de 5 s y fallan por tiempo. Repetir aislado; el CI decide.
 - Las capturas del CI no tienen caché: salen los iconos de respaldo y el contenido ficticio. Abrirlas al usuario con `xdg-open` antes de fusionar.
 - Títulos de PR siempre en inglés (el squash los convierte en el commit).
+- **Fusiones en cadena:** `~/.cache/rift-tmp/ship.sh PR RAMA WORKTREE` rebasa, regenera capturas, espera el CI, fusiona y limpia; se para ante conflictos que no sean de capturas.
+- **Disco:** al fusionar, borrar worktree, rama local y `~/.cache/rift-tmp/vis-NN`; limpiar `rift-tmp` de lo que tenga más de una hora.
+- **Fable:** solo con permiso del usuario en cada uso.
 
 ## Cómo trabajar
 
-- **Delegación:** Codex (gpt-6.2-sol medium para lógica y datos; gpt-6.2-astra high para lo visual) con la skill `cross-delegate`, un worktree por issue y `TMPDIR=/home/phobos/.cache/rift-tmp`, porque `/tmp` se llena. Si Codex está sin uso, subagentes de Claude (Sonnet medium; Opus medium para lo visual) sin límite de cuántos a la vez; no ofrecer Codex mientras esté sin uso.
+- **Delegación:** Codex (gpt-6.2-sol medium para lógica y datos; gpt-6.2-astra high para lo visual) con la skill `cross-delegate`, un worktree por issue y `TMPDIR=/home/phobos/.cache/rift-tmp`, porque `/tmp` se llena. Si Codex está sin uso, subagentes de Claude (Sonnet medium; Opus medium para lo visual), hasta unos 6 a la vez porque la máquina se satura; no ofrecer Codex mientras esté sin uso.
 - **Repo público** desde el 22-11 (Actions gratis).
 - **Revisión:** revisar siempre antes de fusionar. Los PR en paralelo chocan en `package.json`, `docs/decisions/README.md`, `tools/data-pipeline/README.md` y los JSON de `packages/core/content/real/`. Fusionar uno a uno y rebasar.
 - **Capturas:** se regeneran en el CI («Visual baselines»), se descargan con `gh run download RUN -n visual-baselines` y se revisan a mano.
