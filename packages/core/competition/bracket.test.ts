@@ -215,6 +215,30 @@ describe("B4: grand final reset", () => {
 	});
 });
 
+describe("B5: Bo per round from the format", () => {
+	it("uses Bo3 early and Bo5 later (LEC Versus)", () => {
+		const format: DoubleElim = {
+			type: "doubleElim",
+			size: 8,
+			upper: [3, 3, 5],
+			lower: [3, 3, 5, 5],
+			drop: [0, 1, 3],
+			grandFinal: 5,
+			reset: false,
+		};
+		const state = resolveBracket(buildDoubleElim(format), teamsOf(8), {});
+		const bestOf = (side: string, round: number) =>
+			state.matches.find((m) => m.side === side && m.round === round)?.bestOf;
+		expect([1, 2, 3].map((r) => bestOf("upper", r))).toEqual([3, 3, 5]);
+		expect([1, 2, 3, 4].map((r) => bestOf("lower", r))).toEqual([3, 3, 5, 5]);
+		expect(bestOf("final", 1)).toBe(5);
+	});
+
+	it("rejects a Bo list that does not match the rounds", () => {
+		expect(() => single(8, bo(2))).toThrow(RangeError);
+	});
+});
+
 describe("B6: fixed bracket and game 1 priority", () => {
 	it("gives the better seed the priority with its seeds as the reason", () => {
 		const state = resolveBracket(single(8, bo(3)), teamsOf(8), {});
@@ -248,5 +272,106 @@ describe("B6: fixed bracket and game 1 priority", () => {
 		expect(() => resolveBracket(bracket, teams, { "U1-1": "t2" })).toThrow(
 			RangeError,
 		);
+	});
+});
+
+describe("properties", () => {
+	const results = fc.array(fc.boolean(), { minLength: 64, maxLength: 64 });
+	const picker = (flags: boolean[]) => {
+		let i = 0;
+		return () => flags[i++ % flags.length] as boolean;
+	};
+
+	it("single elim: one champion and every other team loses exactly once", () => {
+		fc.assert(
+			fc.property(fc.integer({ min: 2, max: 32 }), results, (size, flags) => {
+				let rounds = 0;
+				for (let p = 1; p < size; p *= 2) rounds += 1;
+				const teams = teamsOf(size);
+				const state = play(single(size, bo(rounds)), teams, picker(flags));
+				expect(state.champion).not.toBeNull();
+				for (const t of teams) {
+					expect(state.losses[t] ?? 0).toBe(t === state.champion ? 0 : 1);
+				}
+				// Every series is played once: size - 1 matches.
+				expect(state.matches.filter((m) => m.status === "done")).toHaveLength(
+					size - 1,
+				);
+			}),
+		);
+	});
+
+	it("double elim: one champion; the others lose twice (the upper-side runner-up once)", () => {
+		fc.assert(
+			fc.property(
+				fc.constantFrom(...DOUBLE_CASES),
+				fc.boolean(),
+				results,
+				([size, upper, drop, lower], reset, flags) => {
+					const teams = teamsOf(size);
+					const bracket = double(size, upper, drop, lower, { reset });
+					const state = play(bracket, teams, picker(flags));
+					const final = state.matches.find((m) => m.id === "GF");
+					const reseted = state.matches.find((m) => m.id === "RS");
+					expect(state.champion).not.toBeNull();
+					expect(state.matches.every((m) => m.status !== "ready")).toBe(true);
+					for (const t of teams) {
+						const lost = state.losses[t] ?? 0;
+						if (t === state.champion) {
+							expect(lost).toBeLessThanOrEqual(1);
+						} else if (final?.teamA === t && reseted?.status !== "done") {
+							// Upper-side finalist lost the final only.
+							expect(lost).toBe(1);
+						} else {
+							expect(lost).toBe(2);
+						}
+					}
+				},
+			),
+		);
+	});
+
+	it("every team plays at most one match at a time (no team in two ready matches)", () => {
+		fc.assert(
+			fc.property(
+				fc.constantFrom(...DOUBLE_CASES),
+				results,
+				([size, upper, drop, lower], flags) => {
+					const teams = teamsOf(size);
+					const bracket = double(size, upper, drop, lower);
+					const next = picker(flags);
+					const done: Record<string, string> = {};
+					for (;;) {
+						const state = resolveBracket(bracket, teams, done);
+						const ready = state.matches.filter((m) => m.status === "ready");
+						const seen = ready.flatMap((m) => [m.teamA, m.teamB]);
+						expect(new Set(seen).size).toBe(seen.length);
+						const m = ready[0];
+						if (!m) break;
+						done[m.id] = (next() ? m.teamA : m.teamB) as string;
+					}
+				},
+			),
+		);
+	});
+
+	it("never repeats the pairing of the previous round in the lower bracket", () => {
+		for (const [size, upper, drop, lower] of DOUBLE_CASES) {
+			const bracket = double(size, upper, drop, lower);
+			const teams = teamsOf(size);
+			fc.assert(
+				fc.property(results, (flags) => {
+					const state = play(bracket, teams, picker(flags));
+					const seen = new Set<string>();
+					for (const m of state.matches.filter((x) => x.side === "lower")) {
+						const key = [m.teamA, m.teamB].sort().join("-");
+						// A lower pairing may repeat an upper one only after a drop in
+						// the same bracket, never within the lower side.
+						expect(seen.has(key)).toBe(false);
+						seen.add(key);
+					}
+				}),
+			);
+		}
 	});
 });
