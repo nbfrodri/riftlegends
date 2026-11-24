@@ -122,12 +122,11 @@ async function playDraft(page: Page) {
 		const champion = await tile.getAttribute("aria-label");
 		if (!champion) throw new Error("The selected tile needs a champion name");
 		await tile.click();
-		samples.push(
-			await measure(
-				page.getByRole("button", { name: /^Confirm (ban|pick)$/ }),
-				champion,
-			),
-		);
+		const confirm = page.getByRole("button", { name: /^Confirm (ban|pick)$/ });
+		// The tenth input can end the draft: Roles then hides the lock (#432),
+		// so the sweep never shows. Confirm it without measuring.
+		if (turn === 9) await confirm.click();
+		else samples.push(await measure(confirm, champion));
 	}
 	await expect(
 		page.getByRole("button", { name: "Confirm lineup" }),
@@ -156,7 +155,7 @@ test("plays from setup through the AI's side, bans, picks and roles within the S
 			}
 			runs.push(await playDraft(page));
 		}
-		// Five warm-ups as in S1. With 25 measured inputs, nearest-rank p95
+		// Five warm-ups as in S1. With 22 measured inputs, nearest-rank p95
 		// describes the tail independently of the single slowest confirmation.
 		const samples = runs.flat().slice(5);
 		await info.attach("draft-frames.json", {
