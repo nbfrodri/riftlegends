@@ -6,11 +6,11 @@ import { createAssetCache } from "./cache";
 import type { AssetTransport } from "./transport";
 
 export const versions = "/api/versions.json";
-export const gameData = "plugins/rcp-be-lol-game-data/global";
+const gameData = "plugins/rcp-be-lol-game-data/global";
 export const summary = (patch: string, locale: string) =>
 	`/${patch}/${gameData}/${locale}/v1/champion-summary.json`;
 export const portrait = `/16.23/${gameData}/default/v1/champion-icons/103.png`;
-export const postgame = "plugins/rcp-fe-lol-postgame/global/default";
+const postgame = "plugins/rcp-fe-lol-postgame/global/default";
 export const statIcons = {
 	kda: `${postgame}/scoreboard-kda-icon.svg`,
 	gold: `${postgame}/scoreboard-coins-icon.svg`,
@@ -38,7 +38,7 @@ export const ahriData = (tilePath: unknown) =>
 		alias: "Ahri",
 		skins: [{ id: 103000, isBase: true, tilePath }],
 	});
-export const ahriTile =
+const ahriTile =
 	"/lol-game-data/assets/ASSETS/Characters/Ahri/Skins/Base/Images/ahri_splash_tile_0.jpg";
 export const etag = '"assets-1"';
 
