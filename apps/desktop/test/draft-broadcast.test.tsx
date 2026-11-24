@@ -5,7 +5,7 @@ import {
 	screen,
 	within,
 } from "@testing-library/react";
-import { afterEach, expect, test, vi } from "vitest";
+import { afterEach, describe, expect, test, vi } from "vitest";
 import { pacing } from "../src/renderer/draft/broadcast/pacing";
 import { DraftScreen } from "../src/renderer/draft/draft-screen";
 import { renderWithDraftCore, seedNextSeries } from "./draft-core";
@@ -111,4 +111,49 @@ test("confirming just before the deadline cancels that timeout on the rival's tu
 	core.unmount();
 	await advance(pacing.turnMs);
 	expect(core.sent.at(-1)?.kind).toBe("draft.ban");
+});
+
+describe("#419: the turn timer is a bar shrinking from both sides", () => {
+	const bar = () =>
+		screen.getByRole("timer").querySelector("[data-timer-bar]") as HTMLElement;
+	const forgeSide = () =>
+		screen.queryByRole("region", { name: "Blue side Forge" }) ? "blue" : "red";
+
+	test("shrinks to the centre over the whole turn in the picking side's colour", async () => {
+		await start(true);
+		expect(bar().className).toContain(`bg-side-${forgeSide()}`);
+		expect(bar().className).toContain("origin-center");
+		await advance(50);
+		expect(bar().style.transform).toBe("scaleX(0)");
+		expect(bar().style.transitionDuration).toBe(`${pacing.turnMs}ms`);
+		expect(bar().style.transitionTimingFunction).toBe("linear");
+		// The time left stays readable for screen readers, without a sign.
+		expect(screen.getByRole("timer").textContent).toBe("00:30");
+	});
+
+	test("sits above the board, across both team columns and the pool", async () => {
+		await start(true);
+		const timer = screen.getByRole("timer");
+		const blue = screen.getByRole("region", { name: /^Blue side / });
+		const red = screen.getByRole("region", { name: /^Red side / });
+		const board = blue.parentElement;
+		expect(board).toBe(red.parentElement);
+		// One line over the whole board, not a widget in the page header.
+		expect(board?.contains(timer)).toBe(true);
+		expect(timer.className).toMatch(/\binset-x-0\b/);
+		expect(timer.className).toMatch(/\bbottom-full\b/);
+		expect(document.querySelector("header")?.contains(timer)).toBe(false);
+	});
+
+	test("with reduced motion it steps every second, proportional to the time left", async () => {
+		const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+		vi.spyOn(media, "matches", "get").mockReturnValue(true);
+		vi.spyOn(window, "matchMedia").mockReturnValue(media);
+		await start(true);
+		expect(bar().style.transform).toBe("scaleX(1)");
+		await advance(10_000);
+		expect(bar().style.transform).toBe("scaleX(0.667)");
+		expect(bar().style.transitionDuration).toBe("");
+		expect(screen.getByRole("timer").textContent).toBe("00:20");
+	});
 });
