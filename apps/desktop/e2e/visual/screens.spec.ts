@@ -158,6 +158,9 @@ test.describe("Quick draft", () => {
 				await captureScreen(appWindow, "quick-draft-player-card.png");
 				if (!wasOpen) await playerCard.locator("summary").click();
 				// #407: the AI read, latest decision first, rising over the board.
+				// Selecting the player opens the card; close it so only the AI read shows.
+				if (await playerCard.evaluate((e) => (e as HTMLDetailsElement).open))
+					await playerCard.locator("summary").first().click();
 				const aiRead = appWindow.getByRole("group", {
 					name: "Lectura de la IA",
 				});
