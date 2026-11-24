@@ -10,6 +10,7 @@ const at = (values: number[], share: number) => {
 	const list = sorted(values);
 	return list[(list.length * share - ((list.length * share) % 1)) | 0] ?? 0;
 };
+const gap = (a: number, b: number) => (a > b ? a - b : b - a);
 const rate = <T>(list: readonly T[], test: (item: T) => boolean) =>
 	list.filter(test).length / list.length;
 
@@ -93,9 +94,9 @@ describe.each(["control", "packaged"] as const)(
 				want: readonly [number, number, number],
 				[mean, edge]: [number, number],
 			) => {
-				expect(Math.abs(got[0] - want[0])).toBeLessThanOrEqual(mean);
-				expect(Math.abs(got[1] - want[1])).toBeLessThanOrEqual(edge);
-				expect(Math.abs(got[2] - want[2])).toBeLessThanOrEqual(edge);
+				expect(gap(got[0], want[0])).toBeLessThanOrEqual(mean);
+				expect(gap(got[1], want[1])).toBeLessThanOrEqual(edge);
+				expect(gap(got[2], want[2])).toBeLessThanOrEqual(edge);
 			};
 
 			it.each(ROLES)("%s kill share is within 3 pp of the pros", (role) => {

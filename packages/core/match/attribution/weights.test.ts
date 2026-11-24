@@ -1,4 +1,4 @@
-import { ROLES } from "@rift-legends/contracts";
+import { ROLES, type Role } from "@rift-legends/contracts";
 import { describe, expect, it } from "vitest";
 import { ASSIST_BASE, KILL_BASE, roleWeights } from "./weights";
 
@@ -80,11 +80,10 @@ describe("R1: attribution weights", () => {
 	});
 
 	it("leave the support the smallest kill weight and the largest assist weight", () => {
-		const kills = ROLES.map((r) => roleWeights(r, [], neutral).kill);
-		const assists = ROLES.map((r) => roleWeights(r, [], neutral).assist);
-		expect(Math.min(...kills)).toBe(roleWeights("support", [], neutral).kill);
-		expect(Math.max(...assists)).toBe(
-			roleWeights("support", [], neutral).assist,
-		);
+		const of = (role: Role) => roleWeights(role, [], neutral);
+		for (const role of ROLES.filter((r) => r !== "support")) {
+			expect(of("support").kill).toBeLessThan(of(role).kill);
+			expect(of("support").assist).toBeGreaterThan(of(role).assist);
+		}
 	});
 });
