@@ -102,4 +102,16 @@ describe("pairSwissRound round 1", () => {
 			expect(reason).toBe("pots");
 		}
 	});
+
+	test("S3: round 1 never pairs teams of the same region", () => {
+		const teams = teamsOf(16);
+		const round = pairSwissRound(teams, [], RULES, 1, SCOPE);
+		expect(round?.relaxed).toEqual([]);
+		for (const { a, b } of round?.pairings ?? []) {
+			expect(teams.find((t) => t.id === a)?.region).not.toBe(
+				teams.find((t) => t.id === b)?.region,
+			);
+			expect(pot(a) + pot(b)).toBe(3);
+		}
+	});
 });
