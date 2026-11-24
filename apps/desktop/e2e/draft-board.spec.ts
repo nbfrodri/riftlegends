@@ -263,3 +263,41 @@ test("the turn timer spans the whole board right above it", async ({
 		).toEqual({ page: 0, main: 0 });
 	}
 });
+
+test("#469: a click on empty space drops the pick preview", async ({
+	appWindow,
+	electronApp,
+}) => {
+	await seedNextSeries(electronApp, 7);
+	await appWindow.getByRole("button", { name: "Start series" }).click();
+	await appWindow.getByRole("button", { name: "Confirm choice" }).click();
+	await appWindow.getByRole("button", { name: "Go to draft" }).click();
+	const grid = appWindow.getByRole("group", { name: "Champions" });
+	const free = grid.locator("button:not([aria-disabled])").first();
+	for (let ban = 1; ban <= 3; ban++) {
+		await expect(appWindow.getByText(`Ban ${ban} · Forge`)).toBeVisible();
+		await free.click();
+		await appWindow.getByRole("button", { name: "Confirm ban" }).click();
+	}
+	await expect(appWindow.getByText("B1 · Forge pick")).toBeVisible();
+
+	const name = (await free.getAttribute("aria-label")) ?? "";
+	await free.click();
+	const blue = appWindow.getByRole("region", { name: "Blue side Forge" });
+	const row = blue.getByRole("listitem").first();
+	const confirm = appWindow.getByRole("button", { name: "Confirm pick" });
+	await expect(row.getByRole("img", { name })).toBeVisible();
+	await expect(confirm).toBeEnabled();
+
+	// The gap between the blue column and the pool is empty space.
+	const box = await blue.boundingBox();
+	if (!box) throw new Error("The blue column must be visible");
+	await appWindow.mouse.click(box.x + box.width + 6, box.y + box.height / 2);
+
+	await expect(row.getByRole("img", { name })).toHaveCount(0);
+	await expect(confirm).toBeDisabled();
+	await expect(grid.getByRole("button", { name, exact: true })).toHaveAttribute(
+		"aria-pressed",
+		"false",
+	);
+});
