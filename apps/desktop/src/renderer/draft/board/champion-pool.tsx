@@ -5,6 +5,7 @@ import { type KeyboardEvent, memo, useCallback, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { GameRoleIcon } from "../../assets/game-role-icon";
 import { ChampionPortrait } from "../champion-portrait";
+import { PortraitFrame } from "../portrait-frame";
 import { ChampionCardHelp, ChampionCardHint } from "./champion-card-hint";
 
 /** Why a champion cannot be chosen; `null` when it is free. */
@@ -74,13 +75,14 @@ const Tile = memo(function Tile(props: {
 					props.tier ? t("draft.card.tier", { tier: props.tier }) : undefined
 				}
 				onClick={() => !unavailable && props.onSelect(id)}
-				className={`press group relative flex min-h-0 min-w-0 flex-col overflow-hidden rounded-control bg-surface outline-offset-[-3px] focus-visible:z-1 focus-visible:outline-3 focus-visible:outline-action ${unavailable ? "cursor-default" : "cursor-pointer hover:brightness-110"}`}
+				className={`press group relative flex min-h-0 min-w-0 flex-col overflow-hidden rounded-[4px] bg-surface outline-offset-[-3px] focus-visible:z-1 focus-visible:outline-3 focus-visible:outline-action ${unavailable ? "cursor-default" : "cursor-pointer"}`}
 			>
 				<ChampionPortrait
 					id={id}
 					size="pool"
 					unavailable={unavailable !== null}
 				/>
+				<PortraitFrame glow={!unavailable} />
 				{props.tier && (
 					<span
 						data-slot="tier"
@@ -96,11 +98,11 @@ const Tile = memo(function Tile(props: {
 					className="pointer-events-none absolute right-1 top-1 hidden size-5 rounded-control bg-panel/85 p-0.5 text-action group-hover:block group-focus-visible:block"
 				/>
 				{props.selected && (
-					// Tint plus an inset frame: unlike hover (brighter) and focus (outline).
+					// Tint plus an inset ring: hover only glows (no tint); focus is an outline.
 					<span
 						data-slot="selection"
 						aria-hidden
-						className="pointer-events-none absolute inset-0 rounded-control bg-action/20 ring-2 ring-action ring-inset"
+						className="pointer-events-none absolute inset-0 rounded-[4px] bg-action/20 ring-2 ring-action ring-inset"
 					/>
 				)}
 			</button>
