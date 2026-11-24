@@ -91,6 +91,19 @@ Resumen de las decisiones **vigentes**, para empezar cualquier sesión sin volve
 | 2026-11-23 | La simulación nueva (estadísticas por rol, composiciones, jugadas, nivel, objetos y ultis) va en una **Fase 3.5** propia. La Fase 3 se cierra con #315, #318, #319, #340, #297 y #253 | [plan general](../plans/00-plan-general.md) |
 | 2026-11-24 | **Autor y asistentes de cada baja por rol, campeón y atributos** (#346): apoyo casi nunca remata y casi siempre asiste, ADC y mid rematan más; duelo sin asistentes, gank 1–2, pelea menor 1–2 y pelea de equipo 2–4. Ámbito RNG propio `matchAttribution`, que no mueve las tiradas de resolución; el oro del evento no depende del número de asistentes (una bolsa por baja). `SIM_VERSION` 5; K6 en verde | [plan 08](../archive/plans/08-simulacion-de-partida.md#atribución-implementada-y-calibrada-346-24-11-2026), #346 |
 
+## Fase 4 · Competición
+
+| Fecha | Decisión | Fuente |
+| --- | --- | --- |
+| 2026-11-24 | La sección «Competición» y el modo Torneo van en un plan aparte de la Fase 4 | [plan 12](../plans/12-formatos-de-competicion.md#5-decisiones-del-usuario-24-11-2026) |
+| 2026-11-24 | Empate en un corte: **serie de desempate**, Bo3 por defecto (configurable a Bo1 o Bo5; los formatos reales usan su reglamento). Fuera de los cortes, criterios y sorteo | [plan 12](../plans/12-formatos-de-competicion.md#5-decisiones-del-usuario-24-11-2026) |
+| 2026-11-24 | Playoffs con **cuadro fijo por sembrado**, sin elección de rival | [plan 12](../plans/12-formatos-de-competicion.md#5-decisiones-del-usuario-24-11-2026) |
+| 2026-11-24 | Formato personalizado que no cabe: hasta **4 series por día**; si aún no cabe, se rechaza al crear la carrera con una sugerencia. La temporada nunca se alarga | [plan 12](../plans/12-formatos-de-competicion.md#5-decisiones-del-usuario-24-11-2026) |
+| 2026-11-24 | Un año IA contra IA en **≤ 60 s** en el Arch del usuario; en el CI, un split con límite proporcional | [plan 12](../plans/12-formatos-de-competicion.md#5-decisiones-del-usuario-24-11-2026) |
+| 2026-11-24 | Los formatos internacionales se traen de Leaguepedia con el pipeline y se comprueban como los de las ligas | [plan 12](../plans/12-formatos-de-competicion.md#5-decisiones-del-usuario-24-11-2026) |
+| 2026-11-24 | Los formatos reales se adaptan a los equipos de cada liga en el juego; los invitados de segunda división, en la Fase 6 | [plan 12](../plans/12-formatos-de-competicion.md#5-decisiones-del-usuario-24-11-2026) |
+| 2026-11-24 | Prioridad del game 1: el mejor sembrado en eliminatorias y sorteo en liga y Swiss | [plan 12](../plans/12-formatos-de-competicion.md#5-decisiones-del-usuario-24-11-2026) |
+
 ## Estilo visual
 
 | Fecha | Decisión | Fuente |
