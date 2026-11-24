@@ -34,6 +34,7 @@ const communityIcons = {
 	"roles/support.png": `${positions}/icon-position-button-utility.png`,
 	"objectives/dragon.png": `${scoreboard}/_dragon.png`,
 	"objectives/baron.png": `${scoreboard}/_baronnashor.png`,
+	"objectives/grub.png": `${minimap}/grub.png`,
 	"objectives/herald.png": `${scoreboard}/_riftherald.png`,
 	"objectives/elder.png": `${scoreboard}/_elderdrake.png`,
 	"objectives/tower.png": `${minimap}/icon_ui_tower_minimap.png`,

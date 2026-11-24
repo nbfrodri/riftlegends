@@ -56,6 +56,9 @@ it("spawns objectives in plausible order and lowers the weight of gold", () => {
 	const { objectives, goldWeight } = content.rules;
 	expect(objectives.dragon.first).toBeLessThan(objectives.baron.first);
 	expect(objectives.herald.first).toBeLessThan(objectives.baron.first);
+	// Void grubs: up at 8:00 and gone at 14:45, before the Herald at 15:00.
+	expect(objectives.grub).toEqual({ first: 480, despawn: 885 });
+	expect(objectives.grub.despawn).toBeLessThanOrEqual(objectives.herald.first);
 	expect(goldWeight[0]?.minute).toBe(0);
 	for (let i = 1; i < goldWeight.length; i++) {
 		expect(goldWeight[i]?.minute).toBeGreaterThan(

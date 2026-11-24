@@ -23,6 +23,7 @@ export const MATCH_EVENTS = [
 	"siege",
 	"tower",
 	"inhibitor",
+	"grub",
 	"dragon",
 	"herald",
 	"baron",
@@ -89,6 +90,8 @@ export const matchEventFact = {
 	causes: z.array(z.strictObject({ key: id, points })),
 	/** Towers: 1 to 3 along the lane, 4 the nexus towers. */
 	tier: z.int().min(1).max(4).optional(),
+	/** Void grubs: how many each side took of the group of three. */
+	grubs: perSide(z.int().nonnegative()).optional(),
 };
 
 export const matchEndedFact = {
@@ -164,6 +167,8 @@ export const matchContent = z
 		),
 		rules: z.strictObject({
 			objectives: z.strictObject({
+				/** One group of three, up from `first` until `despawn`; no respawn. */
+				grub: z.strictObject({ first: seconds, despawn: seconds }),
 				dragon: timer,
 				herald: timer,
 				baron: timer,
@@ -177,6 +182,8 @@ export const matchContent = z
 				assist: position,
 				tower: position,
 				inhibitor: position,
+				/** Per grub, for the whole team. */
+				grub: position,
 				dragon: position,
 				herald: position,
 				baron: position,
@@ -238,6 +245,8 @@ const mapSide = z.strictObject({
 	dragons: position,
 	/** The side has the soul: four dragons. */
 	soul: z.boolean(),
+	/** Void grubs taken: each is a permanent stack against structures. */
+	grubs: position,
 	heralds: position,
 	barons: position,
 	elders: position,

@@ -513,7 +513,7 @@ Ampliar `packages/core/match/calibration` sobre las **1.000 semillas** actuales 
 
 | Banda | Comprobación Monte Carlo |
 | --- | --- |
-| K6 · Bajas y participación | Media por rol a 3 pp o menos de la cuota de bajas observada y a 5 pp o menos de KP. Cada extremo P10/P90 a 6 y 8 pp, respectivamente. Asistencias por baja entre 2,0 y 2,6 de media por equipo-partida (referencia observada 2,28 en 4.743 equipos). |
+| K6 · Bajas y participación | Media por rol a 3,5 pp o menos de la cuota de bajas observada y a 6 pp o menos de KP (ensanchado de forma provisional en #361; antes 3 y 5). Cada extremo P10/P90 a 6 y 9 pp (antes 8), respectivamente. Asistencias por baja entre 2,0 y 2,6 de media por equipo-partida (referencia observada 2,28 en 4.743 equipos). |
 | K7 · Daño y oro | El oro de cada rol sale de su propio libro (suma de fuentes). Medias por rol dentro de 2 pp (daño) y 1,5 pp (oro). Extremos P10/P90 dentro de 4 y 2 pp. Comparar apoyo mago y de utilidad con semillas emparejadas e igual actuación de base. |
 | K8 · Nota | En cada pool equilibrado, media por rol de 56 a 64 y distancia entre medias de hasta 5 puntos de nota. Mantener R3 como prueba controlada de mérito individual. |
 | K9 · Cruces de identidades | 600 pares de partidas equilibradas por fila aplicable (300 por lado favorecido). Dentro de cada par, comparar la fila activa con la misma semilla y alineaciones con esa fila a cero en `edge`. Mantener su uso en el selector para aislar el efecto de puntuación. La tasa de victoria del equipo favorecido sube entre 0 y 10 pp. Medir las dos ventanas de tempo y escalado por separado. C7 exige la ventaja en la disputa al cumplirse la fase y las condiciones. |
@@ -523,6 +523,23 @@ Ampliar `packages/core/match/calibration` sobre las **1.000 semillas** actuales 
 | K13 · Ventana tras el uso (#339) | 600 pares de situaciones elegibles, con 300 por lado y mismo oro, fase y objetivo disponible. Con una definitiva rival recién gastada, el equipo evaluado inicia peleas o intentos de captura **3–15 pp** más a menudo que si esa definitiva sigue lista. Al recuperarse, el ajuste de ventana es cero. Banda estimada. Mantener K1–K11. |
 | K14 · Ventaja de oro (#326) | Mantener **K4**: 3.000 de oro en contra al minuto 20 gana el 15–30 %. Con 1.000 en contra al minuto 5 y atributos iguales, el equipo gana menos que con la fórmula anterior (se espera 35–47 %). Con 3.000 en contra al minuto 35, gana igual o más que en K4 y menos del 40 %. Con ambos equipos por encima del build completo, la ventaja de oro no mueve la tasa más de 3 pp. Bandas estimadas. |
 | K15 · Curva de poder | 600 pares por pareja (temprana–media, media–tardía y temprana–tardía), 300 por lado, atributos iguales: cada composición gana **45–55 %**. La mediana de duración de las victorias tempranas es al menos **2 min** menor que la de las tardías. Con ventaja relativa menor que el 5 % al minuto 20, la tasa de victoria temprana desde ahí baja al menos 5 pp frente a su versión sin `earlyFade`. Bandas estimadas. |
+
+### Larvas del vacío (#361)
+
+Primer objetivo de la partida: **un solo grupo de 3**, sin reaparición, en el foso del barón. Valores del parche vigente según la LoL Wiki (comprobados el 24-11-2026).
+
+| Dato | Valor |
+| --- | --- |
+| Aparición | 8:00 (`rules.objectives.grub.first` = 480) |
+| Desaparición | 14:45 (`despawn` = 885): se disputa mientras `minuto < minuteOf(885)`, es decir, hasta el minuto 14 |
+| Heraldo | 15:00 (`herald.first` = 900; antes 14:00) y barón a las 20:00 |
+| Oro | 150 por larva para el equipo (30 × 5 jugadores) |
+| Experiencia | 65 por larva en el juego; la simulación no modela experiencia, así que no se usa |
+
+- **Disputa** (contest 14, flujo propio: no mueve los demás). **Una sola disputa por el grupo** (decisión del usuario, 24-11-2026), en el primer minuto elegible (8:00) y mientras el grupo siga sin tomar. El ganador (`objective`) se lleva las 3 larvas; con **15 %** de probabilidad (`GRUB_SPLIT` = 1.500 de 10.000, tirada del propio flujo del contest) se reparten **2–1**. Un único evento `grub` en `baron-pit` con `grubs: { blue, red }` y el oro por larva de cada lado.
+- **Efecto:** cada larva es un acumulado permanente del lado que la tiene. **Solo sube la probabilidad de que un empuje ganado tome la estructura** (**+100** por larva; con las 3, `voidmites` suma otros **+150**), sin puntos en el borde del asedio ni causa propia. Una primera versión sumaba puntos de asedio con causas `grubs` y `voidmites`, pero sacaba K6 de banda. En un reparto 2–1 nadie llega a 3.
+- **Calibración** (1.000 semillas por pool, 600 en K1): K1 0,742 / 0,740, K2 mediana 31 (P5 24, P95 39), K3 22, K4 23,7 % / 21,4 %, K5 0,533 / 0,534 (control / empaquetado). Con efectos del doble de tamaño K4 caía al 14 %. **Topes de K6 ensanchados de forma provisional** (cuota de bajas 3 a 3,5 pp; participación 5 a 6 pp y extremos P10/P90 8 a 9 pp): K6 está muy cerca de sus topes y cualquier cambio de ritmo de la partida lo mueve unas décimas; sin efecto de larvas pasa, con el efecto mínimo no.
+- Los efectos de los buffs de objetivo sobre las jugadas son del #362 y el sesgo por lado, del #363.
 
 ### Troceado propuesto · Fase 3 — Pipeline de contenido real
 

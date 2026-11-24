@@ -25,6 +25,7 @@ export interface TeamMap {
 	objectives: {
 		dragons: number;
 		soul: boolean;
+		grubs: number;
 		heralds: number;
 		barons: number;
 		elders: number;
@@ -72,6 +73,7 @@ export function teamMap(
 		objectives: {
 			dragons: map.dragons,
 			soul: map.soul,
+			grubs: map.grubs,
 			heralds: map.heralds,
 			barons: map.barons,
 			elders: map.elders,

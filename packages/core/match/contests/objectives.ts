@@ -1,6 +1,6 @@
 import type { Side } from "@rift-legends/contracts";
 import { int } from "../../rng/helpers";
-import { type MatchState, minuteOf, SOUL } from "../state";
+import { GRUBS, type MatchState, minuteOf, SOUL } from "../state";
 import { type Contest, paid, roll } from "./contest";
 import { edge, outcome } from "./edge";
 
@@ -57,7 +57,51 @@ const objective = (kind: Objective, id: number): Contest => ({
 	},
 });
 
+/** Chance, per 10,000, that the loser of the group still takes one grub (2-1). */
+const GRUB_SPLIT = 1500;
+
+/**
+ * The one group of void grubs, a single contest from the first minute until
+ * they despawn: the winner usually takes all three, sometimes two and the
+ * other side one. It draws from its own stream (contest 14).
+ */
+const grub: Contest = {
+	id: 14,
+	due: (state) =>
+		state.minute >= state.objectives.grub &&
+		state.minute < minuteOf(state.context.rules.objectives.grub.despawn) &&
+		state.blue.grubs + state.red.grubs === 0,
+	resolve(state, rng) {
+		const priority = (side: Side) =>
+			state.context[side].strategy.objectives === FAVOURED_BY.herald
+				? { key: "strategy", points: PRIORITY_POINTS }
+				: undefined;
+		const result = edge(state, "objective", {
+			blue: priority("blue"),
+			red: priority("red"),
+		});
+		const winner: Side = roll(rng, result.blue) ? "blue" : "red";
+		const split = roll(rng, GRUB_SPLIT);
+		const grubs = { blue: 0, red: 0, [winner]: split ? GRUBS - 1 : GRUBS };
+		if (split) grubs[winner === "blue" ? "red" : "blue"] = 1;
+		const { grub: pay } = state.context.rules.economy;
+		return [
+			{
+				kind: "grub",
+				side: winner,
+				zone: "baron-pit",
+				second: int(rng, 0, 59),
+				kills: [],
+				grubs,
+				gold: { blue: pay * grubs.blue, red: pay * grubs.red },
+				...outcome(result, winner),
+			},
+		];
+	},
+};
+
 export const OBJECTIVE_CONTESTS: readonly Contest[] = [
+	grub,
 	objective("dragon", 10),
 	objective("herald", 11),
 	objective("baron", 12),

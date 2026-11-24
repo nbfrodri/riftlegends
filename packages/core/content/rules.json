@@ -1,11 +1,15 @@
 {
 	"objectives": {
+		"grub": {
+			"first": 480,
+			"despawn": 885
+		},
 		"dragon": {
 			"first": 300,
 			"respawn": 300
 		},
 		"herald": {
-			"first": 840,
+			"first": 900,
 			"respawn": 360
 		},
 		"baron": {
@@ -24,6 +28,7 @@
 		"assist": 150,
 		"tower": 550,
 		"inhibitor": 50,
+		"grub": 150,
 		"dragon": 200,
 		"herald": 300,
 		"baron": 1500,

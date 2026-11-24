@@ -123,6 +123,7 @@ describe("official stat icons", () => {
 
 describe("U2: official objective icons", () => {
 	test.each([
+		["grub", "objectives/grub.png"],
 		["dragon", "objectives/dragon.png"],
 		["baron", "objectives/baron.png"],
 		["herald", "objectives/herald.png"],
@@ -186,15 +187,18 @@ describe("U2: official objective icons", () => {
 		expect(drawing?.getAttribute("class")).toContain(box);
 	});
 
-	test("without the cache the own drawing is used", async () => {
-		const { container } = renderWith(
-			{ state: "missing" },
-			<MapIcon kind="baron" />,
-		);
-		await Promise.resolve();
-		expect(container.querySelector("img")).toBeNull();
-		expect(container.querySelector("svg")).toBeTruthy();
-	});
+	test.each(["baron", "grub"] as const)(
+		"without the cache the own %s drawing is used",
+		async (kind) => {
+			const { container } = renderWith(
+				{ state: "missing" },
+				<MapIcon kind={kind} />,
+			);
+			await Promise.resolve();
+			expect(container.querySelector("img")).toBeNull();
+			expect(container.querySelector("svg")).toBeTruthy();
+		},
+	);
 });
 
 describe("objective events in the feed", () => {
@@ -237,6 +241,28 @@ describe("objective events in the feed", () => {
 		expect(icon(rows[0])).toBeUndefined();
 		expect(icon(rows[1])).toBe("rift-asset://cdragon/objectives/tower.png");
 		expect(icon(rows[2])).toBe("rift-asset://cdragon/objectives/dragon.png");
+	});
+
+	test("a void grub shows its official icon and its name", async () => {
+		renderWith(
+			ready,
+			<EventFeed
+				facts={[event("grub", 10)]}
+				second={60}
+				names={{ blue: "Blue", red: "Red" }}
+				ids={{ blue: "blue", red: "red" }}
+				players={new Map()}
+				ended
+			/>,
+		);
+		const row = await waitFor(() => {
+			const found = screen.getByRole("listitem");
+			if (!found.querySelector("img")) throw new Error("no image yet");
+			return found;
+		});
+		expect(row.querySelector("h3 img")?.getAttribute("src")).toBe(
+			"rift-asset://cdragon/objectives/grub.png",
+		);
 	});
 });
 
@@ -324,6 +350,7 @@ const emptySide = {
 	inhibitors: { top: null, mid: null, bot: null },
 	dragons: 0,
 	soul: false,
+	grubs: 0,
 	heralds: 0,
 	barons: 0,
 	elders: 0,
@@ -339,6 +366,7 @@ describe("team panel", () => {
 		inhibitors: { top: null, mid: null, bot: null },
 		dragons: 2,
 		soul: false,
+		grubs: 0,
 		heralds: 1,
 		barons: 0,
 		elders: 0,
@@ -360,6 +388,7 @@ describe("team panel", () => {
 		const objective = (name: RegExp) =>
 			screen.getByText(name).closest("dt")?.querySelector("img");
 		for (const [name, file] of [
+			[/Grubs/, "grub"],
 			[/Dragons/, "dragon"],
 			[/Heralds/, "herald"],
 			[/Barons/, "baron"],
