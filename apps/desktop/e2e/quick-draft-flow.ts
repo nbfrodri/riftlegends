@@ -7,6 +7,7 @@ declare const riftCore: CoreBridge;
 type QuickDraftScreen =
 	| "setup"
 	| "side-choice"
+	| "side-locked"
 	| "draft"
 	| "roles"
 	| "game-plan"
@@ -58,6 +59,17 @@ export async function playQuickDraftBo5(
 		await expect(choices.first()).toBeVisible();
 		await inspectChoices?.();
 		if (game === 1) await capture?.("side-choice");
+		if (game === 3) {
+			// #434: fearless locks each team's champions, grouped by map.
+			const locked = page.getByRole("region", {
+				name: "Campeones bloqueados",
+			});
+			for (const map of [1, 2])
+				await expect(
+					locked.getByRole("list", { name: `Jugado en el mapa ${map}` }),
+				).toHaveCount(2);
+			await capture?.("side-locked");
+		}
 		await choices.last().check({ force: true });
 		await button("Confirmar decisión").click();
 		await expect(button("Ir al draft")).toBeVisible();

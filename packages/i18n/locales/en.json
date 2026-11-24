@@ -396,6 +396,7 @@
 	"draft.side.toWin_other": "First to {{count}} games",
 	"draft.side.locked": "Locked champions",
 	"draft.side.playedBy": "Played by {{team}}",
+	"draft.side.playedIn": "Played in game {{game}}",
 	"draft.side.pending": "Choosing sides",
 	"draft.side.choseSide": "Chose side",
 	"draft.side.column.blue": "Blue",

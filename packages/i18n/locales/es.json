@@ -396,6 +396,7 @@
 	"draft.side.toWin_other": "Gana quien llegue a {{count}} mapas",
 	"draft.side.locked": "Campeones bloqueados",
 	"draft.side.playedBy": "Jugados por {{team}}",
+	"draft.side.playedIn": "Jugado en el mapa {{game}}",
 	"draft.side.pending": "Eligiendo lados",
 	"draft.side.choseSide": "Eligió lado",
 	"draft.side.column.blue": "Azul",
