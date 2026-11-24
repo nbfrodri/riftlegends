@@ -41,7 +41,7 @@ export const ARCHETYPES = [
 ] as const;
 
 /** Kit traits the composition tables read (#340, #448). */
-export const KIT_TRAITS = [
+const KIT_TRAITS = [
 	"wombo",
 	"aoe",
 	"disengage",
@@ -66,7 +66,7 @@ export const KIT_TRAITS = [
 ] as const;
 
 /** Hard crowd control kinds of a kit; `targeted` is point and click. */
-export const CC_KINDS = ["targeted", "skillshot", "area", "knockup"] as const;
+const CC_KINDS = ["targeted", "skillshot", "area", "knockup"] as const;
 
 /** Where a published trait comes from: game data, a named rule or an estimate. */
 const traitSource = z.enum(["source", "rule", "estimated"]);
