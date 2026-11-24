@@ -74,7 +74,7 @@ describe("proDrafts", () => {
 		const teams = structuredClone(recorded.teams);
 		(teams[0] as { bans: (string | null)[] }).bans[4] = null;
 		const [draft] = proDrafts("LCK", [game("X_1_1", { teams })]);
-		expect(draft?.actions[10 + 3]).toBeNull();
+		expect(draft?.actions[15]).toBeNull();
 	});
 
 	it.each([

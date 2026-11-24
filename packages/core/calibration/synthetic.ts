@@ -33,6 +33,7 @@ export function syntheticDrafts(
 				winner: blue,
 				actions,
 				previous: [],
+				wins: {},
 				fearless: "off",
 				winsNeeded: 1,
 			};

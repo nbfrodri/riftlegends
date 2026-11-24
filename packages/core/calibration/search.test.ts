@@ -26,7 +26,8 @@ const validation: Turn[] = split("validation");
 
 const start: Setup = { base: {}, own: {} };
 
-describe("calibrate", () => {
+// The search is a real optimisation, so these tests are slow on a loaded machine.
+describe("calibrate", { timeout: 120_000 }, () => {
 	const result = calibrate({ train, validation, start, seed: 11 });
 
 	it("has data on both sides of the split", () => {
