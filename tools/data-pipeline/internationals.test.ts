@@ -12,6 +12,8 @@ import {
 	selectInternationalPages,
 } from "./internationals.ts";
 
+const num = (id: string) => Number(id.split("_").at(-1));
+
 const rows = (fixture: typeof matchesFixture): CargoRow[] =>
 	fixture.cargoquery.map(({ title }) => title);
 
@@ -46,13 +48,12 @@ it("I2 reads every series with its score, Bo and date, in play order", () => {
 		score2: 2,
 		bestOf: 5,
 	});
-	const worlds = matches.filter((m) => m.tournament.endsWith("Main Event"));
-	// Natural order: match 2 comes before match 10 on the same day.
-	const day = worlds.filter((m) => m.date === "2026-10-24").map((m) => m.id);
-	expect(day).toEqual([...day].sort((a, b) => num(a) - num(b)));
+	// Natural order: match 2 comes before match 10 inside a tab.
+	const tab = matches
+		.filter((m) => m.tab === "Round 2" && m.tournament.endsWith("Main Event"))
+		.map((m) => num(m.id));
+	expect(tab).toEqual([...tab].sort((a, b) => a - b));
 });
-
-const num = (id: string) => Number(id.split("_").at(-1));
 
 it("I3 rejects a series that is unfinished or has an impossible score", () => {
 	const [row] = rows(matchesFixture);
@@ -93,7 +94,9 @@ it("I4 writes a validated, reproducible internationals.json from Cargo", async (
 		"worlds",
 	]);
 	expect(data.events.map(({ matches }) => matches.length)).toEqual([
-		13, 14 + 6, 40 + 6,
+		13,
+		14 + 6,
+		40 + 6,
 	]);
 	expect(data.provenance.licence).toBe("CC BY-SA 3.0");
 	await internationals({ ...options, offline: true }, 2026);

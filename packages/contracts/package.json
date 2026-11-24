@@ -7,6 +7,7 @@
 		"./country-codes": "./country-codes.ts",
 		"./real-snapshot": "./draft/snapshot-content.ts",
 		"./real-logos": "./draft/real-logos.ts",
+		"./real-internationals": "./draft/real-internationals.ts",
 		"./real-photos": "./draft/real-photos.ts"
 	},
 	"dependencies": {
