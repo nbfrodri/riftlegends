@@ -30,6 +30,7 @@ const side = {
 	dragons: 0,
 	soul: false,
 	heralds: 0,
+	grubs: 0,
 	barons: 0,
 	elders: 0,
 	buffs: { herald: null, baron: null, elder: null },
