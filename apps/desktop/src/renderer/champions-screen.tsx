@@ -94,7 +94,7 @@ function FullList({
 						onClick={(event) => onOpen(id, event.currentTarget)}
 						className="press group flex w-full cursor-pointer items-center gap-3 rounded-control border border-line bg-panel p-1.5 pr-3 text-left outline-offset-[-2px] hover:border-muted hover:bg-surface focus-visible:outline-2 focus-visible:outline-action"
 					>
-						<span className="relative flex shrink-0 [&>span]:size-11">
+						<span className="relative flex shrink-0 overflow-hidden rounded-[4px] [&>span]:size-11">
 							<ChampionPortrait id={id} size="ban" />
 							<PortraitFrame />
 						</span>
@@ -234,7 +234,7 @@ function ChampionsCatalog() {
 															type="button"
 															aria-label={name}
 															onClick={(event) => open(id, event.currentTarget)}
-															className="group relative h-[clamp(64px,9vh,90px)] cursor-pointer w-[clamp(72px,6vw,100px)] overflow-hidden rounded-control bg-surface outline-offset-[-3px] hover:brightness-110 focus-visible:outline-3 focus-visible:outline-action"
+															className="group relative h-[clamp(64px,9vh,90px)] cursor-pointer w-[clamp(72px,6vw,100px)] overflow-hidden rounded-[4px] bg-surface outline-offset-[-3px] focus-visible:outline-3 focus-visible:outline-action"
 														>
 															<ChampionPortrait id={id} size="tile" />
 															<PortraitFrame />
