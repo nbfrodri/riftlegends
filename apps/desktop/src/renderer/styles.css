@@ -44,3 +44,25 @@
 		}
 	}
 }
+
+/* Caja portrait frame (#417): the corners are eight background bars. */
+@layer components {
+	.portrait-frame {
+		--corner: linear-gradient(var(--color-action), var(--color-action));
+		pointer-events: none;
+		position: absolute;
+		inset: 0;
+		border: 1px solid var(--color-line);
+		border-radius: var(--radius-control);
+		box-shadow: inset 0 0 10px rgb(0 0 0 / 0.5);
+		background:
+			var(--corner) top left / 9px 2px no-repeat,
+			var(--corner) top left / 2px 9px no-repeat,
+			var(--corner) top right / 9px 2px no-repeat,
+			var(--corner) top right / 2px 9px no-repeat,
+			var(--corner) bottom left / 9px 2px no-repeat,
+			var(--corner) bottom left / 2px 9px no-repeat,
+			var(--corner) bottom right / 9px 2px no-repeat,
+			var(--corner) bottom right / 2px 9px no-repeat;
+	}
+}

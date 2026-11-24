@@ -5,6 +5,7 @@ import { type KeyboardEvent, memo, useCallback, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { GameRoleIcon } from "../../assets/game-role-icon";
 import { ChampionPortrait } from "../champion-portrait";
+import { PortraitFrame } from "../portrait-frame";
 import { ChampionCardHelp, ChampionCardHint } from "./champion-card-hint";
 
 /** Why a champion cannot be chosen; `null` when it is free. */
@@ -81,6 +82,7 @@ const Tile = memo(function Tile(props: {
 					size="pool"
 					unavailable={unavailable !== null}
 				/>
+				<PortraitFrame hover={!unavailable} />
 				{props.tier && (
 					<span
 						data-slot="tier"

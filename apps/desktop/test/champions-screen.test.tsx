@@ -231,3 +231,19 @@ it("names each team plan with the archetypes the champion brings", async () => {
 	expect(item.textContent).toContain("Engage and dive");
 	expect(item.textContent).toContain("Engage");
 });
+
+it("frames every portrait in the tier list and in the full list", async () => {
+	const user = await open();
+	await screen.findByRole("heading", { name: "Champions" });
+	const tiles = screen
+		.getAllByRole("region")
+		.flatMap((row) => within(row).queryAllByRole("button"));
+	expect(tiles.length).toBeGreaterThan(0);
+	for (const tile of tiles)
+		expect(tile.querySelector("[data-portrait-frame]")).not.toBeNull();
+	await user.click(within(viewSwitch()).getByRole("radio", { name: "Full list" }));
+	const rows = fullList().getAllByRole("button");
+	expect(rows.length).toBeGreaterThan(0);
+	for (const row of rows)
+		expect(row.querySelector("[data-portrait-frame]")).not.toBeNull();
+});
