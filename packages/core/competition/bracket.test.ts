@@ -109,3 +109,40 @@ describe("B2: byes for the top seeds", () => {
 		]);
 	});
 });
+
+describe("B6: fixed bracket and game 1 priority", () => {
+	it("gives the better seed the priority with its seeds as the reason", () => {
+		const state = resolveBracket(single(8, bo(3)), teamsOf(8), {});
+		const m = state.matches.find((x) => x.id === "U1-2");
+		expect(m?.priority).toEqual({ team: "t4", seed: 4, otherSeed: 5 });
+	});
+
+	it("keeps the priority of the better seed in later rounds", () => {
+		const teams = teamsOf(8);
+		const state = play(single(8, bo(3)), teams, (a, b) => a > b);
+		const final = state.matches.at(-1);
+		expect(final?.priority?.seed).toBeLessThan(final?.priority?.otherSeed ?? 0);
+	});
+
+	it("orders teams with the same seed by their source standings", () => {
+		const order = seedEntrants([
+			{ team: "b1", seed: 2, origin: 4 },
+			{ team: "a1", seed: 1, origin: 1 },
+			{ team: "b2", seed: 2, origin: 2 },
+			{ team: "c1", seed: 3, origin: 1 },
+		]);
+		expect(order).toEqual(["a1", "b2", "b1", "c1"]);
+	});
+
+	it("rejects results for matches that are not ready or teams not in them", () => {
+		const bracket = single(4, bo(2));
+		const teams = teamsOf(4);
+		expect(() => resolveBracket(bracket, teams, { "U2-1": "t1" })).toThrow(
+			RangeError,
+		);
+		expect(() => resolveBracket(bracket, teams, { "U1-1": "t2" })).toThrow(
+			RangeError,
+		);
+	});
+});
+
