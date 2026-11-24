@@ -265,7 +265,7 @@ Hoy el oro es **por equipo** y se reparte después. Pasa a ser **por jugador**: 
 
 #### Ventaja de oro relativa con saturación
 
-Hoy: `diferencia absoluta × 40`, ponderada 100 / 85 / 70 / 55 % en los minutos 0 / 15 / 25 / 35 (`rules.goldWeight`). Pasa a la **ventaja relativa**, con saturación por jugador. Todo en punto fijo (escala 10.000, redondeo mitad hacia par, [plan 05](../plans/05-rng-determinismo.md)).
+Hoy: `diferencia absoluta × 40`, ponderada 100 / 85 / 70 / 55 % en los minutos 0 / 15 / 25 / 35 (`rules.goldWeight`, retirada). Pasa a la **ventaja relativa**, con saturación por jugador. Todo en punto fijo (escala 10.000, redondeo mitad hacia par, [plan 05](../plans/05-rng-determinismo.md)).
 
 | Paso | Fórmula |
 | --- | --- |
@@ -282,8 +282,33 @@ Hoy: `diferencia absoluta × 40`, ponderada 100 / 85 / 70 / 55 % en los minutos 
 | `goldMaxPoints` (T) | 250.000 | Tope de la causa `gold` (25 puntos). |
 
 - **Se retira** `goldWeight`: la saturación sustituye al peso por minuto. Una ventaja temprana pesa mucho más (menos oro total) y la tardía pesa poco (jugadores completos). Ya deciden objetivos, definitivas y ejecución.
-- **K4 se mantiene** (3.000 en contra al minuto 20, gana el 15–30 %). A mano: 3.000 sobre unos 100.000 de oro útil dan una ventaja de 300 y unos 102.000 puntos, igual que los 3.000 × 40 × 0,85 de hoy. `goldLeadPoints` se ajusta en la calibración si K4 sale de banda, con el motivo en el PR.
-- **`SIM_VERSION`** sube desde la vigente (hoy 2) al aplicar este cambio, con goldens regenerados.
+- **Implementado (#353).** `contests/gold.ts` (`usefulGold`, `goldLead`). El oro por jugador entra en el estado (`paid`, lo que pagan los eventos; el pasivo se suma al vuelo con `farmed`) con el mismo reparto que las estadísticas (`paidByRole`). `fullBuildGold` es una constante ajustable (17.000): **no usa los precios de #338**, que aún no existen. `goldLeadPoints` y `goldMaxPoints` quedan como en la tabla; K4 sigue en banda sin tocarlos.
+- **Economía recalibrada con K8.** Con los ingresos anteriores el ganador acababa con una mediana de 2.800 de ventaja y el oro total (155.000) estaba muy por encima del pro (123.000). Ahora `passive` 1.000, `kill` 250, `assist` 125, `tower` 2.400, `inhibitor` 1.200, `dragon` 400, `herald` 500, `baron` 1.500 y `elder` 400; `FARM_SHARE` pasa a top 1.660, jungla 2.560, mid 1.800, ADC 2.720 y apoyo 1.260 para mantener K7. El oro de torre e inhibidor hace de proxy de la presión de mapa y el farmeo que un pro gana al hundir al rival.
+- **Límite conocido.** El pro termina con el ganador por detrás en oro el 0,8 % de las veces y la simulación el 12–14 %: en esas partidas ambos equipos pierden las mismas torres y gana quien primero derriba el nexo. Con más oro por torre la mediana sube, pero este grupo no baja; se deja abierto para #320 (curva de poder).
+- **K8 desde el snapshot.** El snapshot trae el oro final por jugador, el ganador y la duración, pero no la serie por minuto: la banda mide el oro **al final**, no la ventaja máxima. Es más alta que el 6.000–9.000 estimado antes (mediana real 10.557).
+- **`SIM_VERSION`** sube al aplicar este cambio, con goldens regenerados.
+
+```sh
+TMPDIR=/home/phobos/.cache/rift-tmp jq -c -s '
+  def pct($v; $p): $v[($v|length) * $p | floor];
+  [.[].games[] | . as $game
+    | select($game.winner != null and $game.lengthSeconds != null)
+    | ($game.lines | group_by(.team)) as $teams
+    | select(($teams|length) == 2 and all($teams[][]; .gold != null)
+        and any($teams[]; .[0].team == $game.winner))
+    | {minutes: ($game.lengthSeconds / 60),
+       won: ([$teams[] | select(.[0].team == $game.winner)][0] | map(.gold) | add),
+       lost: ([$teams[] | select(.[0].team != $game.winner)][0] | map(.gold) | add)}
+    | {minutes, total: (.won + .lost), lead: (.won - .lost)}] as $g
+  | ([$g[] | select(.minutes >= 30 and .minutes <= 34)]) as $mid
+  | {games: ($g | length),
+     lead: ([$g[].lead] | sort | [pct(.; 0.1), pct(.; 0.5), pct(.; 0.9)]),
+     behind: (([$g[] | select(.lead < 0)] | length) / ($g | length)),
+     mid: ($mid | length),
+     midTotal: ([$mid[].total] | sort | [pct(.; 0.1), pct(.; 0.5), pct(.; 0.9)]),
+     midLead: ([$mid[].lead] | sort | [pct(.; 0.1), pct(.; 0.5), pct(.; 0.9)])}
+' packages/core/content/real/{cblol,lck,lcp,lcs,lec,lpl}.json
+```
 
 #### Oro y daño por rol implementados (#347, 24-11-2026)
 
@@ -515,12 +540,13 @@ Ampliar `packages/core/match/calibration` sobre las **1.000 semillas** actuales 
 | --- | --- |
 | K6 · Bajas y participación | Media por rol a 3,5 pp o menos de la cuota de bajas observada y a 6 pp o menos de KP (ensanchado de forma provisional en #361; antes 3 y 5). Cada extremo P10/P90 a 6 y 9 pp (antes 8), respectivamente. Asistencias por baja entre 2,0 y 2,6 de media por equipo-partida (referencia observada 2,28 en 4.743 equipos). |
 | K7 · Daño y oro | El oro de cada rol sale de su propio libro (suma de fuentes). Medias por rol dentro de 2 pp (daño) y 1,5 pp (oro). Extremos P10/P90 dentro de 4 y 2 pp. Comparar apoyo mago y de utilidad con semillas emparejadas e igual actuación de base. |
-| K8 · Nota | En cada pool equilibrado, media por rol de 56 a 64 y distancia entre medias de hasta 5 puntos de nota. Mantener R3 como prueba controlada de mérito individual. |
+| K8b · Nota | En cada pool equilibrado, media por rol de 56 a 64 y distancia entre medias de hasta 5 puntos de nota. Mantener R3 como prueba controlada de mérito individual. |
 | K9 · Cruces de identidades | 600 pares de partidas equilibradas por fila aplicable (300 por lado favorecido). Dentro de cada par, comparar la fila activa con la misma semilla y alineaciones con esa fila a cero en `edge`. Mantener su uso en el selector para aislar el efecto de puntuación. La tasa de victoria del equipo favorecido sube entre 0 y 10 pp. Medir las dos ventanas de tempo y escalado por separado. C7 exige la ventaja en la disputa al cumplirse la fase y las condiciones. |
 | K10 · Mezcla de jugadas | 600 pares por contraste (300 por lado), con semillas, atributos y rival equilibrado iguales. Comparar medianas del equipo evaluado. Atribuir asedios y peleas al iniciador y torres y objetivos a quien los toma. Poke inicia **2–5** asedios en línea y al menos **1 más** que engage. Engage inicia **3–7** peleas 5v5 y al menos **1 más** que poke. Split consigue **1–3** torres laterales más que front-to-back (niveles 1–3 en top y bot). Tempo toma **1–2** objetivos tempranos más que escalado (dragones o heraldo antes del 14). Son estimaciones para calibrar. |
 | K11 · Totales de partida | Mantener K1–K9 en sus muestras, incluida la mediana de bajas de K3 (**15–30**). En las muestras de 1.000 partidas por pool, añadir medianas de **8–15** torres (incluidas las del nexo) y **3–6** dragones (elder aparte). Las bandas nuevas son estimaciones para calibrar. |
 | K12 · Ventaja en disputa (#339) | 600 pares de disputas equilibradas por grupo, con 300 por lado, misma semilla y una definitiva relevante lista frente a la misma en recarga. La tasa de victorias sube **0–4 pp** en el plan equilibrado y **0–6 pp** en engage / wombo. En situaciones sin saturación, la ventaja calculada es positiva y mayor para su iniciación. Bandas estimadas. |
 | K13 · Ventana tras el uso (#339) | 600 pares de situaciones elegibles, con 300 por lado y mismo oro, fase y objetivo disponible. Con una definitiva rival recién gastada, el equipo evaluado inicia peleas o intentos de captura **3–15 pp** más a menudo que si esa definitiva sigue lista. Al recuperarse, el ajuste de ventana es cero. Banda estimada. Mantener K1–K11. |
+| K8 · Oro final (#353) | Fuente: Leaguepedia, 2.378 partidas de las seis ligas (jq abajo). En las partidas de 30 a 34 min (781 en el pro): oro total mediana **123.359** (P10–P90 115.698–131.639); ventaja final del ganador P10 / P50 / P90 = **5.896 / 10.557 / 14.954**; sobre todas, los ganadores por detrás en oro son el **0,8 %**. Banda del juego (1.000 partidas por pool): oro total mediana a ≤ 10 % del pro; mediana de la ventaja del ganador entre **7.500 y 12.500**, P90 ≤ **20.000**, P10 ≥ **−2.500**; ganadores por detrás **≤ 15 %**. Los tres últimos límites son más holgados que el pro: la simulación tiene más partidas de cambio de torres iguales (ver Ventaja de oro relativa). |
 | K14 · Ventaja de oro (#326) | Mantener **K4**: 3.000 de oro en contra al minuto 20 gana el 15–30 %. Con 1.000 en contra al minuto 5 y atributos iguales, el equipo gana menos que con la fórmula anterior (se espera 35–47 %). Con 3.000 en contra al minuto 35, gana igual o más que en K4 y menos del 40 %. Con ambos equipos por encima del build completo, la ventaja de oro no mueve la tasa más de 3 pp. Bandas estimadas. |
 | K15 · Curva de poder | 600 pares por pareja (temprana–media, media–tardía y temprana–tardía), 300 por lado, atributos iguales: cada composición gana **45–55 %**. La mediana de duración de las victorias tempranas es al menos **2 min** menor que la de las tardías. Con ventaja relativa menor que el 5 % al minuto 20, la tasa de victoria temprana desde ahí baja al menos 5 pp frente a su versión sin `earlyFade`. Bandas estimadas. |
 
@@ -549,7 +575,7 @@ Primer objetivo de la partida: **un solo grupo de 3**, sin reaparición, en el f
 | 2 | Limitar `resistVsDamage` a línea (#320) | `area:core` | #320 | C7 en counters de línea y equipo. Tras 1. |
 | 3 | Atribuir bajas y asistencias por rol (#326) | `area:core` | #326 | R1, R4 y K6. |
 | 4 | Ganar oro por jugador y repartir daño por rol (#326) | `area:core` | #326 | G1, R2, R4 y K7. Tras 3. |
-| 5 | Calcular la nota común por rol (#326) | `area:core` | #326 | R3 y K8. Tras 4. |
+| 5 | Calcular la nota común por rol (#326) | `area:core` | #326 | R3 y K8b. Tras 4. |
 | 6 | Detectar identidades desde el catálogo compartido (#320) | `area:core` | #320 | C8 en umbrales, empates, ausencia de identidad y drafts parciales. Tras 1. |
 | 7 | Puntuar perfil de daño frente a primera línea y control contra carries (#320) | `area:core` | #320 | C7 en daño mixto y verdadero neutros, C8 en monotonía del perfil de daño. Tras 1 y 4. |
 | 8 | Aplicar cruces de identidades, coherencia y tope global (#320) | `area:core` | #320 | C7 en cruces, C8 en coherencia y topes, y K9. Tras 6 y 7. |
