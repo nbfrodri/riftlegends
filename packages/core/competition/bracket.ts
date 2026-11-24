@@ -127,8 +127,74 @@ export const buildSingleElim = (format: SingleElim): Bracket => ({
 	reset: false,
 });
 
-export const buildDoubleElim = (format: DoubleElim): Bracket => ({
-	size: format.size,
-	matches: [],
-	reset: format.reset,
-});
+const pairs = (slots: readonly Slot[], fold: boolean) => {
+	const n = slots.length;
+	const out: [Slot, Slot][] = [];
+	for (let i = 0; i < n / 2; i += 1) {
+		out.push(
+			fold
+				? [slots[i] as Slot, slots[n - 1 - i] as Slot]
+				: [slots[2 * i] as Slot, slots[2 * i + 1] as Slot],
+		);
+	}
+	return out;
+};
+
+/**
+ * Double elimination. `drop[r]` is the (0-based) lower round that receives
+ * the losers of upper round r. Each lower round plays the survivors of the
+ * previous one plus the teams dropped into it. Survivors against drops (or
+ * drops from several upper rounds) are paired first-with-last, so teams that
+ * just met do not meet again; one group alone is paired side by side. An odd
+ * pool lets its first team through without playing.
+ */
+export const buildDoubleElim = (format: DoubleElim): Bracket => {
+	const upper = buildUpper(format.size, format.upper);
+	const { drop, lower } = format;
+	if (drop.length !== upper.byRound.length) {
+		throw new RangeError("Expected one drop per upper round");
+	}
+	if (drop.some((k) => k >= lower.length)) {
+		throw new RangeError("A drop points past the last lower round");
+	}
+	const matches = [...upper.matches];
+	let survivors: Slot[] = [];
+	lower.forEach((bestOf, k) => {
+		const sources = upper.byRound.flatMap((ids, r) =>
+			drop[r] === k && ids.length > 0 ? [ids] : [],
+		);
+		const dropped: Slot[] = sources.flat().map((match) => ({
+			kind: "loser",
+			match,
+		}));
+		const pool = [...survivors, ...dropped];
+		const bye = pool.length % 2 === 1 ? pool.slice(0, 1) : [];
+		const playing = pool.slice(bye.length);
+		if (playing.length === 0) {
+			throw new RangeError(`Lower round ${k + 1} has no match`);
+		}
+		const fold =
+			(survivors.length > 0 && dropped.length > 0) || sources.length > 1;
+		survivors = [
+			...bye,
+			...pairs(playing, fold).map(([a, b], i) => {
+				const id = `L${k + 1}-${i + 1}`;
+				matches.push({ id, side: "lower", round: k + 1, bestOf, a, b });
+				return { kind: "winner", match: id } as Slot;
+			}),
+		];
+	});
+	if (survivors.length !== 1) {
+		throw new RangeError("The lower bracket must end with one team");
+	}
+	const final = (id: string, side: "final" | "reset"): BracketMatch => ({
+		id,
+		side,
+		round: 1,
+		bestOf: format.grandFinal,
+		a: upper.champion,
+		b: survivors[0] as Slot,
+	});
+	matches.push(final("GF", "final"));
+	return { size: format.size, matches, reset: format.reset };
+};

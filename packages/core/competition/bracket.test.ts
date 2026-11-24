@@ -217,4 +217,3 @@ describe("B6: fixed bracket and game 1 priority", () => {
 		);
 	});
 });
-
