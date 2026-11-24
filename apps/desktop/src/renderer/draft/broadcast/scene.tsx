@@ -54,7 +54,9 @@ export function BroadcastScene() {
 	const reduced = useReducedMotion();
 	const { t } = useTranslation();
 	const caption = useRef<HTMLSpanElement>(null);
-	const current = lock?.game === view?.game ? lock : null;
+	// Roles no longer replays the last pick of the board (#432).
+	const current =
+		lock?.game === view?.game && view?.phase !== "roles" ? lock : null;
 	useLayoutEffect(() => {
 		if (!current || reduced || !caption.current?.animate) return;
 		const entrance = animate(

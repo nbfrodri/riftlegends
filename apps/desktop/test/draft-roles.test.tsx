@@ -7,6 +7,7 @@ import { cleanup, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useEffect, useRef } from "react";
 import { afterEach, expect, test, vi } from "vitest";
+import { BroadcastScene } from "../src/renderer/draft/broadcast/scene";
 import { RolesScreen } from "../src/renderer/draft/roles-screen";
 import {
 	DraftSessionProvider,
@@ -210,4 +211,22 @@ test("with reduced motion the pending champion keeps a static border", async () 
 	expect(first?.dataset.swap).toBe("pending");
 	expect(first?.classList.contains("swap-pulse")).toBe(false);
 	expect(first?.classList.contains("ring-action")).toBe(true);
+});
+
+test("entering Roles shows no notification of the last draft pick", async () => {
+	await renderWithDraftCore(
+		<DraftSessionProvider>
+			<Driver mine="shoal" />
+			<BroadcastScene />
+			<RolesScreen />
+		</DraftSessionProvider>,
+		"en-US",
+		undefined,
+		namedDraft,
+	);
+	await screen.findByRole("button", { name: "Confirm lineup" });
+	expect(document.querySelector("[data-draft-lock]")).toBeNull();
+	expect(
+		screen.getByRole("status", { name: "Draft confirmation" }).textContent,
+	).toBe("");
 });
