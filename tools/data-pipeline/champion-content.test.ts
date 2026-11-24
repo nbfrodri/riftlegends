@@ -120,7 +120,7 @@ it("counts older presence with half the weight of the previous season", () => {
 			...game(i, champion ? [[champion, "mid"]] : [], []),
 			date: `${year}-01-01T00:00:00Z`,
 		}));
-	const tiers = (annieYear: number, veigarYear: number) => {
+	const tiers = (annieYear: number) => {
 		const { champions } = deriveChampionContent(mids, [
 			...inYear(2026),
 			...inYear(2025, annieYear === 2025 ? "Annie" : "Veigar"),
@@ -128,8 +128,8 @@ it("counts older presence with half the weight of the previous season", () => {
 		]);
 		return champions.map(({ positions }) => positions[0]?.tier);
 	};
-	expect(tiers(2025, 2024)).toEqual(["A", "C"]);
-	expect(tiers(2024, 2025)).toEqual(["C", "A"]);
+	expect(tiers(2025)).toEqual(["A", "C"]);
+	expect(tiers(2024)).toEqual(["C", "A"]);
 });
 
 it("R1/R5 keeps unplayed champions and records class-based estimates", () => {
