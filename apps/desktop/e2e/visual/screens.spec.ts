@@ -195,10 +195,10 @@ test.describe("Quick draft", () => {
 				if (!wasOpen) await playerCard.locator("summary").click();
 				await expect(playerCard.getByText("Mecánicas")).toBeVisible();
 				await appWindow.mouse.move(0, 0);
-				// The whole window: the open card rises over the board (#396).
+				// The whole window: the open card drops over the board (#430).
 				await captureScreen(appWindow, "quick-draft-player-card.png");
 				if (!wasOpen) await playerCard.locator("summary").click();
-				// #407: the AI read, latest decision first, rising over the board.
+				// #407: the AI read, latest decision first, dropping over the board.
 				// Selecting the player opens the card; close it so only the AI read shows.
 				if (await playerCard.evaluate((e) => (e as HTMLDetailsElement).open))
 					await playerCard.locator("summary").first().click();

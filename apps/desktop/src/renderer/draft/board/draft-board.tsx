@@ -154,6 +154,17 @@ export function DraftBoard() {
 
 	return (
 		<>
+			<Inspection
+				player={shown}
+				red={view.red.team}
+				rivalSide={mine ? (mine === view.blue.team ? "red" : "blue") : null}
+				rival={mine === view.blue.team ? view.red.team : view.blue.team}
+				rivalPicks={mine === view.blue.team ? view.red.picks : view.blue.picks}
+				game={view.game}
+				options={options}
+				cardOpen={cardOpen}
+				onCardOpen={setCardOpen}
+			/>
 			<ChampionInspection>
 				{column("blue")}
 				<section
@@ -177,22 +188,11 @@ export function DraftBoard() {
 				</section>
 				{column("red")}
 			</ChampionInspection>
-			<Inspection
-				player={shown}
-				red={view.red.team}
-				rivalSide={mine ? (mine === view.blue.team ? "red" : "blue") : null}
-				rival={mine === view.blue.team ? view.red.team : view.blue.team}
-				rivalPicks={mine === view.blue.team ? view.red.picks : view.blue.picks}
-				game={view.game}
-				options={options}
-				cardOpen={cardOpen}
-				onCardOpen={setCardOpen}
-			/>
 		</>
 	);
 }
 
-/** The collapsible panels under the board: player card (U5) and AI read (#194). */
+/** The collapsible bars above the board: player card (U5) and AI read (#194). */
 const Inspection = memo(function Inspection(props: {
 	player: PlayerRef | null;
 	red: string;
