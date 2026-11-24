@@ -111,14 +111,6 @@ export const TeamColumn = memo(function TeamColumn(props: {
 									onClick={() => props.onPlayer({ team: team.team, role })}
 									className={`press relative cursor-pointer isolate flex min-h-[clamp(48px,7.8vh,88px)] w-full items-center gap-2 overflow-hidden border border-line bg-surface/50 px-2 text-left outline-offset-2 hover:bg-surface focus-visible:outline-2 focus-visible:outline-action aria-pressed:bg-action/10 aria-pressed:ring-2 aria-pressed:ring-action aria-pressed:ring-inset ${current ? `bg-surface shadow-[inset_2px_0_currentColor] ${style.text}` : ""}`}
 								>
-									{pending && (
-										<span
-											data-pending-mark
-											aria-hidden="true"
-											className={`pointer-events-none absolute inset-0 border-2 border-current ${reduced ? "border-dashed" : "draft-pending"}`}
-											style={reduced ? undefined : PULSE}
-										/>
-									)}
 									{champion && (
 										<span
 											data-preview={pending ? "pending" : "locked"}
