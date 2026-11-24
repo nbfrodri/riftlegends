@@ -93,7 +93,11 @@ export const resolveBracket = (
 	if (bracket.upperChampion) {
 		// No grand final: the upper winner is first once the lower final is played.
 		const done = last.status === "done";
-		return { matches, champion: done ? teamOf(bracket.upperChampion) : null, losses };
+		return {
+			matches,
+			champion: done ? teamOf(bracket.upperChampion) : null,
+			losses,
+		};
 	}
 	const decider =
 		last.status === "skipped"
