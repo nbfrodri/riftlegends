@@ -24,12 +24,12 @@ describe("#438: framing a champion in the pick row", () => {
 		expect(frames[2]).toEqual(frames[0]);
 	});
 
-	test("zooms less than the cover framing: the row shows half the tile", () => {
+	test("zooms less than the cover framing: the row shows 5/8 of the tile", () => {
 		const { container } = render(<PickArt id="Braum" label="Braum" />);
 		const art = container.querySelector("[data-framing]") as HTMLElement;
-		// The tile's side is twice the row's height, so faces near the top
+		// The tile's side is 1.6 times the row's height, so faces near the top
 		// or off-centre stay in view.
-		expect(art.style.height).toBe("200%");
+		expect(art.style.height).toBe("160%");
 		expect(art.style.right).toBe("0px");
 	});
 });
