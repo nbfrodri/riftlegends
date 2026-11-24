@@ -1,9 +1,21 @@
 import type { SeriesSummary } from "@rift-legends/contracts";
 import { Button } from "@rift-legends/ui-kit/components/button";
+import { Tooltip } from "@rift-legends/ui-kit/components/tooltip";
+import { RotateCcw } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { GameRoleIcon } from "../assets/game-role-icon";
+import { isObjectiveKind, MapIcon } from "../assets/map-icon";
+import { PlayerPortrait } from "./board/player-card";
+import { ChampionPortrait } from "./champion-portrait";
 import { CountryFlag } from "./country-flag";
-import { clock, type GameResult, gapsOfSeries, percent } from "./result-data";
+import {
+	clock,
+	type GameResult,
+	gapsOfSeries,
+	mostPlayed,
+	percent,
+} from "./result-data";
+import { Victory } from "./result-game";
 import { GapsTable } from "./result-gaps";
 import {
 	championLabel,
@@ -11,6 +23,56 @@ import {
 	teamName,
 	useDraftSession,
 } from "./session";
+import { TeamCrest } from "./team-crest";
+
+/** A team's logo (its own crest without one) in a fixed box. */
+function Crest(props: { team: string; className: string }) {
+	const { options } = useDraftSession();
+	return (
+		<span data-crest className="flex shrink-0">
+			<TeamCrest
+				id={props.team}
+				name={teamName(options, props.team)}
+				className={props.className}
+			/>
+		</span>
+	);
+}
+
+/** The series banner: the winner with its logo, the final score and a new series (#437). */
+export function SeriesBanner(props: { games: readonly GameResult[] }) {
+	const { t } = useTranslation();
+	const { options, restart } = useDraftSession();
+	const first = props.games[0];
+	const last = props.games.at(-1);
+	if (!first || !last) return null;
+	const winsOf = (team: string) =>
+		props.games.filter((game) => game.winner === team).length;
+	return (
+		<Victory
+			label={t("draft.result.series.winner")}
+			title={t("draft.result.victory", {
+				team: teamName(options, last.winner),
+			})}
+			side={last.winner === last.blue ? "blue" : "red"}
+			crest={<Crest team={last.winner} className="h-12 w-16" />}
+		>
+			<div className="flex items-center gap-6">
+				<p className="font-bold">
+					{teamName(options, first.blue)}{" "}
+					<strong className="mx-2 font-display text-[28px]">
+						{winsOf(first.blue)} – {winsOf(first.red)}
+					</strong>{" "}
+					{teamName(options, first.red)}
+				</p>
+				<Button onClick={restart}>
+					{t("draft.result.newSeries")}
+					<RotateCcw aria-hidden="true" className="size-4" />
+				</Button>
+			</div>
+		</Victory>
+	);
+}
 
 function Mvp(props: {
 	mvp: NonNullable<SeriesSummary["mvp"]>;
@@ -23,6 +85,7 @@ function Mvp(props: {
 	const player = playerProfile(options, mvp.player);
 	const role = props.games[0]?.lines.find((l) => l.player === mvp.player)?.role;
 	const name = teamName(options, mvp.team);
+	const champion = mostPlayed(props.games, mvp.player);
 	const stats = [
 		{
 			label: t("draft.result.mvp.rating"),
@@ -47,9 +110,21 @@ function Mvp(props: {
 	return (
 		<section
 			aria-label={t("draft.result.mvp.name")}
-			className={`grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-8 border-t-[3px] bg-panel px-5 py-3 ${props.sideOf(mvp.team) === "blue" ? "border-side-blue" : "border-side-red"}`}
+			className={`grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-5 border-t-[3px] bg-panel px-5 py-3 ${props.sideOf(mvp.team) === "blue" ? "border-side-blue" : "border-side-red"}`}
 		>
-			<div>
+			<div className="flex items-end">
+				<PlayerPortrait id={mvp.player} handle={player?.handle ?? mvp.player} />
+				{champion && (
+					<span className="-ml-3 size-12 shrink-0 border border-line bg-panel">
+						<ChampionPortrait
+							id={champion}
+							label={championLabel(options, champion)}
+							size="tile"
+						/>
+					</span>
+				)}
+			</div>
+			<div className="min-w-0">
 				<p className="font-semibold text-[12px] text-muted uppercase tracking-[0.055em]">
 					{t("draft.result.mvp.label", { team: name })}
 				</p>
@@ -92,6 +167,29 @@ function Mvp(props: {
 	);
 }
 
+/** The decisive dispute that weighed the most, as the core ranked them. */
+function KeyMoment({ game }: { game: GameResult }) {
+	const { t } = useTranslation();
+	const { options } = useDraftSession();
+	const event = game.disputes[0];
+	if (!event) return <span className="text-muted">–</span>;
+	const text = t(`draft.result.event.${event.kind}`, {
+		team: teamName(options, game[event.side]),
+	});
+	return (
+		<span className="flex min-w-0 items-center gap-1.5">
+			<time className="shrink-0 font-bold text-action">
+				{clock(event.minute * 60 + event.second)}
+			</time>
+			{isObjectiveKind(event.kind) && <MapIcon kind={event.kind} />}
+			<Tooltip content={text}>
+				<span className="min-w-0 truncate">{text}</span>
+			</Tooltip>
+		</span>
+	);
+}
+
+/** Map by map: the winner with its logo, the running score, the key moment and the length. */
 function Recap(props: {
 	games: readonly GameResult[];
 	teamA: string;
@@ -102,10 +200,9 @@ function Recap(props: {
 	const { games, teamA } = props;
 	const teamB =
 		games[0]?.blue === teamA ? games[0].red : (games[0]?.blue ?? "");
-	const killsOf = (game: GameResult, team: string) =>
-		game.blue === team ? game.kills.blue : game.kills.red;
 	let winsA = 0;
 	let winsB = 0;
+	const cell = "px-1.5 py-1";
 	return (
 		<section className="bg-panel px-4 py-3">
 			<h2 className="font-bold font-display text-[19px] leading-tight tracking-heading">
@@ -113,27 +210,24 @@ function Recap(props: {
 			</h2>
 			<table
 				aria-label={t("draft.result.recap.name")}
-				className="mt-1 w-full text-[14px] leading-5 tabular-nums"
+				className="mt-1 w-full table-fixed text-[14px] leading-5 tabular-nums"
 			>
 				<thead className="text-left text-muted">
 					<tr>
-						<th scope="col" className="px-1.5 py-1 font-normal">
+						<th scope="col" className={`w-14 font-normal ${cell}`}>
 							{t("draft.result.recap.map")}
 						</th>
-						<th scope="col" className="px-1.5 py-1 font-normal">
+						<th scope="col" className={`w-[30%] font-normal ${cell}`}>
 							{t("draft.result.recap.winner")}
 						</th>
-						<th scope="col" className="px-1.5 py-1 font-normal">
-							{t("draft.result.recap.duration")}
-						</th>
-						<th scope="col" className="px-1.5 py-1 font-normal">
-							{t("draft.result.recap.kills", {
-								a: teamName(options, teamA),
-								b: teamName(options, teamB),
-							})}
-						</th>
-						<th scope="col" className="px-1.5 py-1 font-normal">
+						<th scope="col" className={`w-16 font-normal ${cell}`}>
 							{t("draft.result.recap.score")}
+						</th>
+						<th scope="col" className={`font-normal ${cell}`}>
+							{t("draft.result.recap.moment")}
+						</th>
+						<th scope="col" className={`w-14 font-normal ${cell}`}>
+							{t("draft.result.recap.duration")}
 						</th>
 						<th scope="col" className="w-12 px-1.5 py-1">
 							<span className="sr-only">{t("draft.result.recap.open")}</span>
@@ -144,21 +238,35 @@ function Recap(props: {
 					{games.map((game) => {
 						if (game.winner === teamA) winsA += 1;
 						else winsB += 1;
+						const winner = teamName(options, game.winner);
 						return (
 							<tr key={game.game} className="border-line border-t">
-								<th scope="row" className="px-1.5 py-1 text-left">
+								<th scope="row" className={`text-left ${cell}`}>
 									{game.game}
 								</th>
-								<td className="px-1.5 py-1">
-									{teamName(options, game.winner)}
+								<td className={cell}>
+									<span className="flex min-w-0 items-center gap-2">
+										<Crest team={game.winner} className="h-5 w-7" />
+										<Tooltip content={winner}>
+											<span className="min-w-0 truncate font-bold">
+												{winner}
+											</span>
+										</Tooltip>
+									</span>
 								</td>
-								<td className="px-1.5 py-1">{clock(game.duration)}</td>
-								<td className="px-1.5 py-1">
-									{killsOf(game, teamA)} / {killsOf(game, teamB)}
-								</td>
-								<td className="px-1.5 py-1">
+								<td className={`font-bold ${cell}`}>
+									<span className="sr-only">
+										{t("draft.result.recap.scoreOf", {
+											a: teamName(options, teamA),
+											b: teamName(options, teamB),
+										})}
+									</span>
 									{winsA} – {winsB}
 								</td>
+								<td className={cell}>
+									<KeyMoment game={game} />
+								</td>
+								<td className={`text-muted ${cell}`}>{clock(game.duration)}</td>
 								<td className="px-1 py-0.5 text-right">
 									<Button
 										variant="ghost"

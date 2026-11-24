@@ -85,7 +85,48 @@ export interface RoleGap {
 	gold: number;
 	/** The rating difference passes the threshold. */
 	gap: boolean;
+	/** The two players of the role: blue then red in a game, first team then second in a series. */
+	players: readonly [LanePlayer, LanePlayer];
 }
+
+/** Who played a role: the player, their team and their champion. */
+export interface LanePlayer {
+	player: string;
+	team: string;
+	champion: string;
+}
+
+/**
+ * The champion a player played most in these games; on a tie, the one of
+ * their best-rated game (#437).
+ */
+export function mostPlayed(
+	games: readonly GameResult[],
+	player: string,
+): string | undefined {
+	const played = new Map<string, { count: number; best: number }>();
+	for (const game of games) {
+		const line = game.lines.find((l) => l.player === player);
+		if (!line) continue;
+		const seen = played.get(line.champion) ?? { count: 0, best: -1 };
+		played.set(line.champion, {
+			count: seen.count + 1,
+			best: Math.max(seen.best, line.rating),
+		});
+	}
+	return [...played].sort(
+		([, a], [, b]) => b.count - a.count || b.best - a.best,
+	)[0]?.[0];
+}
+
+const laneOf = (game: GameResult, side: "blue" | "red", role: Role) => {
+	const line = game.lines.find((l) => l.side === side && l.role === role);
+	return {
+		player: line?.player ?? "",
+		team: game[side],
+		champion: line?.champion ?? "",
+	};
+};
 
 /** The gaps of one game, as the core summarised them. */
 export function gapsOfGame(
@@ -101,6 +142,10 @@ export function gapsOfGame(
 			points: Math.abs(line.rating),
 			gold: line.gold * lead,
 			gap: line.gap,
+			players: [
+				laneOf(game, "blue", line.role),
+				laneOf(game, "red", line.role),
+			],
 		};
 	});
 }
@@ -138,6 +183,16 @@ export function gapsOfSeries(
 			points: Math.round(Math.abs(meanRating) * 10) / 10,
 			gold: meanGold * lead,
 			gap: Math.abs(meanRating) > GAP_RATING,
+			players: [teamA, teamB].map((team) => {
+				const player =
+					first.lines.find((l) => l.team === team && l.role === role)?.player ??
+					"";
+				return {
+					player,
+					team,
+					champion: mostPlayed(games, player) ?? "",
+				};
+			}) as [LanePlayer, LanePlayer],
 		};
 	});
 }

@@ -4,7 +4,6 @@ import {
 	type SeriesSummary,
 } from "@rift-legends/contracts";
 import { Button } from "@rift-legends/ui-kit/components/button";
-import { RotateCcw } from "lucide-react";
 import { type KeyboardEvent, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -15,7 +14,7 @@ import {
 } from "../core";
 import { type GameResult, readGame } from "./result-data";
 import { GameReport, Victory } from "./result-game";
-import { SeriesReport } from "./result-series";
+import { SeriesBanner, SeriesReport } from "./result-series";
 import { teamName, useDraftSession } from "./session";
 
 const SERIES = "series";
@@ -83,43 +82,17 @@ function SeriesResult(props: {
 	games: readonly GameResult[];
 	summary: SeriesSummary | undefined;
 }) {
-	const { t } = useTranslation();
-	const { view, options, restart } = useDraftSession();
+	const { view } = useDraftSession();
 	const [selected, setSelected] = useState<TabId>(SERIES);
 	const last = props.games.at(-1);
 	const first = props.games[0];
 	if (!view || !last || !first) return null;
 
-	const teamA = first.blue;
-	const teamB = first.red;
-	const winsOf = (team: string) =>
-		props.games.filter((game) => game.winner === team).length;
 	const game = typeof selected === "number" ? props.games[selected - 1] : null;
-	const side = last.winner === last.blue ? "blue" : "red";
 
 	return (
 		<>
-			<Victory
-				label={t("draft.result.series.winner")}
-				title={t("draft.result.victory", {
-					team: teamName(options, last.winner),
-				})}
-				side={side}
-			>
-				<div className="flex items-center gap-6">
-					<p className="font-bold">
-						{teamName(options, teamA)}{" "}
-						<strong className="mx-2 font-display text-[28px]">
-							{winsOf(teamA)} – {winsOf(teamB)}
-						</strong>{" "}
-						{teamName(options, teamB)}
-					</p>
-					<Button onClick={restart}>
-						{t("draft.result.newSeries")}
-						<RotateCcw aria-hidden="true" className="size-4" />
-					</Button>
-				</div>
-			</Victory>
+			<SeriesBanner games={props.games} />
 			<div className="grid min-w-0 gap-2">
 				<Tabs games={props.games} selected={selected} onSelect={setSelected} />
 				<section
