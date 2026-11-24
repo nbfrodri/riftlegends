@@ -2,7 +2,7 @@
 
 Capturas de pantalla (`toHaveScreenshot`) de cuatro pantallas del shell y de las ocho del draft rápido (de la configuración al resultado de la serie, con semilla fija) a 1366x768 y con el sistema en `es-ES`: Draft con la barra lateral plegada (y, aparte, con el tooltip Caja abierto sobre «Expandir»), Campeones con la lista de Top (y, aparte, con el detalle de un campeón abierto), Mercado con la barra expandida y Ajustes (pantalla entera y, aparte, la sección «Contenido» en su estado sin conexión: «Sin descargar»). También se captura la pantalla de carga inicial con el contenido real todavía sin preparar (`startup.spec.ts`). Corren con `pnpm e2e:visual`, fuera del `pnpm e2e` normal, y solo en Linux (en otros sistemas el test se omite).
 
-El tablero del draft se captura también con la ficha de campeón fijada, con la ficha de jugador abierta y con la «Lectura de la IA» abierta, y en otra serie con el tiempo por turno activado (barra del temporizador llena: el test congela `performance.now`). «Lado y orden» se captura también antes del mapa 3, con los campeones bloqueados agrupados por mapa.
+El tablero del draft se captura también con la ficha de campeón fijada, con la ficha de jugador abierta, con la «Lectura de la IA» abierta y con un campeón elegido sin confirmar (vista previa en la fila del jugador), y en otra serie con el tiempo por turno activado (barra del temporizador llena: el test congela `performance.now`). «Lado y orden» se captura también antes del mapa 3, con los campeones bloqueados agrupados por mapa.
 
 ## Por qué solo en el CI
 
