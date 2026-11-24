@@ -68,10 +68,15 @@ type Objective = "dragon" | "herald" | "baron" | "elder";
 /** A side's dragons that complete its soul and end the dragons. */
 export const SOUL = 4;
 
+/** Void grubs in the one group; with all of them a side gets the voidmites. */
+export const GRUBS = 3;
+
 interface SideState {
 	readonly gold: number;
 	readonly kills: number;
 	readonly dragons: number;
+	/** Void grubs this side has taken; the stacks never wear off. */
+	readonly grubs: number;
 	/** Objectives this side has taken. */
 	readonly heralds: number;
 	readonly barons: number;
@@ -94,7 +99,7 @@ export interface MatchState {
 	readonly blue: SideState;
 	readonly red: SideState;
 	/** Minute from which each objective can be taken. */
-	readonly objectives: Readonly<Record<Objective, number>>;
+	readonly objectives: Readonly<Record<Objective | "grub", number>>;
 	readonly winner: Side | null;
 }
 
@@ -182,6 +187,7 @@ export function createMatch(setup: MatchSetup): MatchState {
 		gold: 0,
 		kills: 0,
 		dragons: 0,
+		grubs: 0,
 		heralds: 0,
 		barons: 0,
 		elders: 0,
@@ -204,6 +210,7 @@ export function createMatch(setup: MatchSetup): MatchState {
 		blue: start,
 		red: start,
 		objectives: {
+			grub: minuteOf(objectives.grub.first),
 			dragon: minuteOf(objectives.dragon.first),
 			herald: minuteOf(objectives.herald.first),
 			baron: minuteOf(objectives.baron.first),
@@ -268,6 +275,12 @@ function mark(state: MatchState, e: MatchEvent): MatchState {
 					[lane(e)]: e.minute + minuteOf(rules.inhibitorRespawn),
 				},
 			};
+			break;
+		case "grub":
+			// One group, so there is nothing to respawn; a split gives the
+			// other side its share.
+			won = { ...won, grubs: won.grubs + (e.grubs?.[e.side] ?? 0) };
+			lost = { ...lost, grubs: lost.grubs + (e.grubs?.[loserSide] ?? 0) };
 			break;
 		case "dragon":
 			won = { ...won, dragons: won.dragons + 1 };

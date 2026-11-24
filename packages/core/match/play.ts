@@ -14,6 +14,7 @@ const CONTEST_OF: Record<MatchEvent["kind"], Contest> = {
 	gank: "jungle",
 	kill: "fight",
 	fight: "fight",
+	grub: "objective",
 	dragon: "objective",
 	herald: "objective",
 	baron: "objective",

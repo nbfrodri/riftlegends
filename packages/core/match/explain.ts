@@ -15,6 +15,7 @@ const WEIGHT: Record<MatchEvent["kind"], number> = {
 	herald: 4000,
 	tower: 4000,
 	kill: 3000,
+	grub: 3000,
 	gank: 3000,
 	lane: 2000,
 	/** The end of the game says nothing about why it was won. */

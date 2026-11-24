@@ -93,7 +93,7 @@ describe("main asset cache", () => {
 		const icons = t.requests.filter(({ url }) =>
 			url.pathname.startsWith("/latest/"),
 		);
-		expect(icons).toHaveLength(12 + Object.keys(statIcons).length);
+		expect(icons).toHaveLength(13 + Object.keys(statIcons).length);
 		expect(
 			t.requests.every(
 				({ url, headers }) =>

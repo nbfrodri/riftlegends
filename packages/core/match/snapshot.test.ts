@@ -40,6 +40,11 @@ describe("map snapshots (Q4)", () => {
 				const count = (kind: string) =>
 					events.filter((e) => e.kind === kind && e.side === side).length;
 				expect(s?.dragons).toBe(count("dragon"));
+				expect(s?.grubs).toBe(
+					events
+						.filter((e) => e.kind === "grub")
+						.reduce((sum, e) => sum + (e.grubs?.[side] ?? 0), 0),
+				);
 				expect(s?.heralds).toBe(count("herald"));
 				expect(s?.barons).toBe(count("baron"));
 				expect(s?.elders).toBe(count("elder"));

@@ -38,6 +38,7 @@ describe("M2 · a game ends when a nexus falls", () => {
 describe("M3 · map rules", () => {
 	it("places each event in a zone that fits its kind", () => {
 		const zones: Record<string, (e: MatchEvent) => string[]> = {
+			grub: () => ["baron-pit"],
 			dragon: () => ["dragon-pit"],
 			elder: () => ["dragon-pit"],
 			herald: () => ["baron-pit"],

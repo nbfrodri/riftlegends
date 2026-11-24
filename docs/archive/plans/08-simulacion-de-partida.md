@@ -524,6 +524,23 @@ Ampliar `packages/core/match/calibration` sobre las **1.000 semillas** actuales 
 | K14 · Ventaja de oro (#326) | Mantener **K4**: 3.000 de oro en contra al minuto 20 gana el 15–30 %. Con 1.000 en contra al minuto 5 y atributos iguales, el equipo gana menos que con la fórmula anterior (se espera 35–47 %). Con 3.000 en contra al minuto 35, gana igual o más que en K4 y menos del 40 %. Con ambos equipos por encima del build completo, la ventaja de oro no mueve la tasa más de 3 pp. Bandas estimadas. |
 | K15 · Curva de poder | 600 pares por pareja (temprana–media, media–tardía y temprana–tardía), 300 por lado, atributos iguales: cada composición gana **45–55 %**. La mediana de duración de las victorias tempranas es al menos **2 min** menor que la de las tardías. Con ventaja relativa menor que el 5 % al minuto 20, la tasa de victoria temprana desde ahí baja al menos 5 pp frente a su versión sin `earlyFade`. Bandas estimadas. |
 
+### Larvas del vacío (#361)
+
+Primer objetivo de la partida: **un solo grupo de 3**, sin reaparición, en el foso del barón. Valores del parche vigente según la LoL Wiki (comprobados el 24-11-2026).
+
+| Dato | Valor |
+| --- | --- |
+| Aparición | 8:00 (`rules.objectives.grub.first` = 480) |
+| Desaparición | 14:45 (`despawn` = 885): se disputa mientras `minuto < minuteOf(885)`, es decir, hasta el minuto 14 |
+| Heraldo | 15:00 (`herald.first` = 900; antes 14:00) y barón a las 20:00 |
+| Oro | 150 por larva para el equipo (30 × 5 jugadores) |
+| Experiencia | 65 por larva en el juego; la simulación no modela experiencia, así que no se usa |
+
+- **Disputa** (contest 14, flujo propio: no mueve los demás). **Una sola disputa por el grupo** (decisión del usuario, 24-11-2026), en el primer minuto elegible (8:00) y mientras el grupo siga sin tomar. El ganador (`objective`) se lleva las 3 larvas; con **15 %** de probabilidad (`GRUB_SPLIT` = 1.500 de 10.000, tirada del propio flujo del contest) se reparten **2–1**. Un único evento `grub` en `baron-pit` con `grubs: { blue, red }` y el oro por larva de cada lado.
+- **Efecto:** cada larva es un acumulado permanente del lado que la tiene. En asedios suma la causa `grubs` (**6.000** puntos por larva) y la probabilidad de que un empuje ganado tome la estructura sube **100** por larva. Con las 3 larvas aparece `voidmites` (**+10.000** puntos y **+150** de probabilidad). Solo cuenta para quien tiene los acumulados; en un reparto 2–1 nadie llega a 3.
+- **Calibración** (1.000 semillas por pool, 600 en K1): ver la tabla de la PR #411. Las constantes son de equilibrio: con efectos del doble de tamaño K4 caía al 14 %.
+- Los efectos de los buffs de objetivo sobre las jugadas son del #362 y el sesgo por lado, del #363.
+
 ### Troceado propuesto · Fase 3 — Pipeline de contenido real
 
 | # | Issue | Área | Issue existente | Test que lo cierra |

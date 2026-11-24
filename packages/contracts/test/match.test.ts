@@ -155,7 +155,7 @@ describe("match.event", () => {
 		for (const kind of ["kill", "fight", "tower", "inhibitor", "nexus"]) {
 			expect(MATCH_EVENTS).toContain(kind);
 		}
-		for (const kind of ["dragon", "herald", "baron", "elder"]) {
+		for (const kind of ["grub", "dragon", "herald", "baron", "elder"]) {
 			expect(MATCH_EVENTS).toContain(kind);
 		}
 		for (const zone of ["lane-top", "dragon-pit", "baron-pit", "base-red"]) {
@@ -263,6 +263,7 @@ describe("MatchContent", () => {
 		champions: [{ id: "azir", cc: 4, mobility: 3, frontline: 1 }],
 		rules: {
 			objectives: {
+				grub: { first: 480, despawn: 885 },
 				dragon: { first: 300, respawn: 300 },
 				herald: { first: 480, respawn: 360 },
 				baron: { first: 1200, respawn: 360 },
@@ -275,6 +276,7 @@ describe("MatchContent", () => {
 				assist: 150,
 				tower: 550,
 				inhibitor: 50,
+				grub: 150,
 				dragon: 200,
 				herald: 300,
 				baron: 1500,
@@ -372,6 +374,7 @@ const side = {
 	inhibitors: { top: null, mid: null, bot: null },
 	dragons: 0,
 	soul: false,
+	grubs: 0,
 	heralds: 0,
 	barons: 0,
 	elders: 0,

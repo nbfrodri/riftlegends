@@ -1,7 +1,7 @@
 import type { Side } from "@rift-legends/contracts";
 import { type Fixed, mul } from "../../math";
 import type { CONTESTS, Scored } from "../profile";
-import { type MatchState, SOUL } from "../state";
+import { GRUBS, type MatchState, SOUL } from "../state";
 import { chance } from "./chance";
 
 type Contest = (typeof CONTESTS)[number];
@@ -11,6 +11,9 @@ const GOLD_POINTS = 40;
 /** Points of each buff in the contests it helps. Balance constants. */
 const DRAGON_POINTS = 20_000;
 const SOUL_POINTS = 60_000;
+/** Siege points per void grub stack, and of the voidmites with all three. */
+const GRUB_POINTS = 6_000;
+const VOIDMITES_POINTS = 10_000;
 const BUFF_POINTS: Record<
 	"herald" | "baron" | "elder",
 	Partial<Record<Contest, number>>
@@ -63,6 +66,10 @@ function strength(state: MatchState, side: Side, contest: Contest) {
 	)
 		add("fight", FIGHT_PUSH_POINTS);
 	add("dragons", own.dragons * DRAGON_POINTS);
+	if (contest === "siege" && own.grubs > 0) {
+		add("grubs", own.grubs * GRUB_POINTS);
+		if (own.grubs >= GRUBS) add("voidmites", VOIDMITES_POINTS);
+	}
 	if (own.dragons >= SOUL) add("soul", SOUL_POINTS);
 	for (const buff of ["herald", "baron", "elder"] as const) {
 		if (own.buffs[buff] > state.minute)
