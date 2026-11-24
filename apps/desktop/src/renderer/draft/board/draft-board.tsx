@@ -146,7 +146,8 @@ export function DraftBoard() {
 				options={options}
 				current={picking}
 				banning={turn?.action === "ban" && turn.side === side}
-				preview={picking === null ? null : (choice?.id ?? null)}
+				// The selection previews in the picking row or the active ban slot.
+				preview={myTurn && turn.side === side ? (choice?.id ?? null) : null}
 				selected={shown?.team === team.team ? shown.role : null}
 				onPlayer={showPlayer}
 			/>
