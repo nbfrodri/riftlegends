@@ -88,7 +88,7 @@ it("scales either team's edge symmetrically and explains the adjustment", () => 
 	const state = {
 		...initial,
 		minute: 20,
-		blue: { ...initial.blue, gold: 3000 },
+		blue: { ...initial.blue, paid: [600, 600, 600, 600, 600] },
 	};
 	const context = (risk: Risk) => ({
 		...state.context,

@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { type KeyboardEvent, useId } from "react";
 import { useTranslation } from "react-i18next";
+import { placeholderToday } from "./placeholder-players";
 
 type SectionPath = "/draft" | "/campeones" | "/mercado" | "/ajustes";
 
@@ -126,7 +127,7 @@ export function Sidebar({
 						{t("placeholder.club.name")}
 					</strong>
 					<time
-						dateTime="2027-06-18"
+						dateTime={placeholderToday}
 						className="mt-[3px] block text-[12px] text-muted"
 					>
 						{t("placeholder.club.seasonDate")}

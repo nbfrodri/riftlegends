@@ -10,6 +10,7 @@ const intact = {
 	inhibitors: { top: null, mid: null, bot: null },
 	dragons: 0,
 	soul: false,
+	grubs: 0,
 	heralds: 0,
 	barons: 0,
 	elders: 0,
@@ -36,6 +37,7 @@ test("an intact base has its eleven towers, three inhibitors and nexus standing"
 	expect(view.objectives).toEqual({
 		dragons: 0,
 		soul: false,
+		grubs: 0,
 		heralds: 0,
 		barons: 0,
 		elders: 0,
@@ -75,12 +77,21 @@ test("a destroyed inhibitor at its respawn second still shows zero, not a negati
 
 test("the captured objectives and the soul come from the side's own map", () => {
 	const view = teamMap(
-		{ ...intact, dragons: 4, soul: true, heralds: 1, barons: 2, elders: 1 },
+		{
+			...intact,
+			dragons: 4,
+			soul: true,
+			grubs: 2,
+			heralds: 1,
+			barons: 2,
+			elders: 1,
+		},
 		0,
 	);
 	expect(view.objectives).toEqual({
 		dragons: 4,
 		soul: true,
+		grubs: 2,
 		heralds: 1,
 		barons: 2,
 		elders: 1,

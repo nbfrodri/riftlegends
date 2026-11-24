@@ -1,7 +1,9 @@
 import type { MapSnapshot, Side } from "@rift-legends/contracts";
+import { Tooltip } from "@rift-legends/ui-kit/components/tooltip";
 import { useTranslation } from "react-i18next";
 import { GameRoleIcon } from "../assets/game-role-icon";
 import { StatIcon } from "../assets/stat-icon";
+import { PlayerPortrait } from "../draft/board/player-card";
 import { ChampionPortrait } from "../draft/champion-portrait";
 import { panel, panelTable, panelTitle } from "./classes";
 import { type TeamNames, useGoldDiff, useGoldFormat } from "./scoreboard";
@@ -107,36 +109,60 @@ export interface LanePlayer {
 	championName: string;
 }
 
-/** Portrait, handle and champion, with the portrait on the outer edge of the side. */
+/**
+ * Photo, champion portrait and the name block, in fixed tracks with the
+ * pictures on the outer edge: a long name is cut, it never moves them (#433).
+ */
 function Player({
+	id,
 	player,
 	side,
 }: {
+	id: string;
 	player: LanePlayer | undefined;
 	side: Side;
 }) {
-	return (
-		<td data-side={side}>
-			{player && (
+	const parts = player && [
+		<span key="photo" data-part="photo" className="flex">
+			<PlayerPortrait id={id} handle={player.handle} size="h-8 w-[26px]" />
+		</span>,
+		// A 20 px champion badge over the photo's lower inner corner leaves the name more room (#450).
+		<span
+			key="champion"
+			data-part="champion"
+			className={`relative flex self-end ring-2 ring-panel [&_[role=img]]:size-5 ${side === "blue" ? "-ml-2" : "-mr-2"}`}
+		>
+			<ChampionPortrait
+				id={player.champion}
+				label={player.championName}
+				size="compact"
+			/>
+		</span>,
+		<Tooltip key="name" heading={player.handle} content={player.championName}>
+			<span
+				data-part="name"
+				className={`min-w-0 text-center ${side === "blue" ? "ml-1.5" : "mr-1.5"}`}
+			>
+				<span className="block truncate font-bold text-(--side)">
+					{player.handle}
+				</span>
 				<span
-					className={`flex min-w-0 items-center justify-center gap-2 ${side === "blue" ? "text-left" : "flex-row-reverse text-right"}`}
+					aria-hidden="true"
+					className="block truncate text-[11px] text-muted"
 				>
-					<ChampionPortrait
-						id={player.champion}
-						label={player.championName}
-						size="compact"
-					/>
-					<span className="min-w-0">
-						<span className="block truncate font-bold text-(--side)">
-							{player.handle}
-						</span>
-						<span
-							aria-hidden="true"
-							className="block truncate text-[11px] text-muted"
-						>
-							{player.championName}
-						</span>
-					</span>
+					{player.championName}
+				</span>
+			</span>
+		</Tooltip>,
+	];
+	return (
+		<td data-side={side} className="px-1!">
+			{parts && (
+				<span
+					data-lane-player
+					className={`grid items-center ${side === "blue" ? "grid-cols-[auto_auto_minmax(0,1fr)]" : "grid-cols-[minmax(0,1fr)_auto_auto]"}`}
+				>
+					{side === "blue" ? parts : parts.reverse()}
 				</span>
 			)}
 		</td>
@@ -144,10 +170,12 @@ function Player({
 }
 
 const columns = ["kda", "cs", "gold"] as const;
+/** Stat cells: 8 px each side, so neighbouring columns stay 16 px apart (#450). */
+const stat = "px-2! tabular-nums";
 
 function Kda({ line, side }: { line: Line; side: Side }) {
 	return (
-		<td data-side={side} className="font-bold text-(--side)">
+		<td data-side={side} className={`font-bold text-(--side) ${stat}`}>
 			{line.kills}/{line.deaths}/{line.assists}
 		</td>
 	);
@@ -156,8 +184,9 @@ function Kda({ line, side }: { line: Line; side: Side }) {
 function StatHeader({ column }: { column: (typeof columns)[number] }) {
 	const { t } = useTranslation();
 	return (
-		<th scope="col">
-			<span className="inline-flex items-center gap-1">
+		// Icon over label: narrow headers; tight padding keeps the row low.
+		<th scope="col" className={`py-0.5! ${stat}`}>
+			<span className="inline-flex flex-col items-center gap-0.5">
 				<StatIcon stat={column} size={18} />
 				{t(`draft.match.faceToFace.${column}`)}
 			</span>
@@ -226,16 +255,17 @@ export function FaceToFace({
 		<section className={`${panel} h-full`}>
 			<h2 className={panelTitle}>{t("draft.match.faceToFace")}</h2>
 			<table aria-label={t("draft.match.faceToFace")} className={panelTable}>
+				{/* Fixed stat columns, 16 px apart (#450); the players take the rest. */}
 				<colgroup>
-					<col className="w-[18.5%]" />
-					<col className="w-[9%]" />
-					<col className="w-[6.5%]" />
-					<col className="w-[9%]" />
 					<col />
-					<col className="w-[9%]" />
-					<col className="w-[6.5%]" />
-					<col className="w-[9%]" />
-					<col className="w-[18.5%]" />
+					<col className="w-[62px]" />
+					<col className="w-[42px]" />
+					<col className="w-[56px]" />
+					<col className="w-[84px]" />
+					<col className="w-[56px]" />
+					<col className="w-[42px]" />
+					<col className="w-[62px]" />
+					<col />
 				</colgroup>
 				<thead>
 					<tr>
@@ -262,10 +292,14 @@ export function FaceToFace({
 				<tbody>
 					{lines.map(({ role, blue, red }) => (
 						<tr key={role}>
-							<Player player={lineup.get(blue.player)} side="blue" />
+							<Player
+								id={blue.player}
+								player={lineup.get(blue.player)}
+								side="blue"
+							/>
 							<Kda line={blue} side="blue" />
-							<td>{blue.cs}</td>
-							<td>{format.format(blue.gold)}</td>
+							<td className={stat}>{blue.cs}</td>
+							<td className={stat}>{format.format(blue.gold)}</td>
 							<th scope="row">
 								<span className="flex flex-col items-center gap-1.5">
 									<span className="inline-flex items-center gap-1.5">
@@ -276,10 +310,14 @@ export function FaceToFace({
 									<LeadText blue={blue} red={red} names={names} />
 								</span>
 							</th>
-							<td>{format.format(red.gold)}</td>
-							<td>{red.cs}</td>
+							<td className={stat}>{format.format(red.gold)}</td>
+							<td className={stat}>{red.cs}</td>
 							<Kda line={red} side="red" />
-							<Player player={lineup.get(red.player)} side="red" />
+							<Player
+								id={red.player}
+								player={lineup.get(red.player)}
+								side="red"
+							/>
 						</tr>
 					))}
 				</tbody>

@@ -11,6 +11,7 @@ import { trackSnapshots } from "./snapshot";
 import {
 	applyEvents,
 	createMatch,
+	earnPassive,
 	type MatchSetup,
 	type MatchState,
 } from "./state";
@@ -40,14 +41,13 @@ export function playMinute(
 	state: MatchState,
 	contests: readonly Contest[],
 ): { state: MatchState; events: MatchEvent[] } {
-	const { seed, game, rules } = state.context;
+	const { seed, game } = state.context;
 	const minute = state.minute + 1;
-	const passive = rules.economy.passive;
 	const current: MatchState = {
 		...state,
 		minute,
-		blue: { ...state.blue, gold: state.blue.gold + passive },
-		red: { ...state.red, gold: state.red.gold + passive },
+		blue: earnPassive(state, "blue"),
+		red: earnPassive(state, "red"),
 	};
 	const events: MatchEvent[] = contests
 		.filter((contest) => contest.due(current))

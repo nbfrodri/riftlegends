@@ -10,4 +10,6 @@ export const SCOPES = {
 	side: 4,
 	/** Who scores and who assists each kill of a match (issue #346). */
 	matchAttribution: 5,
+	/** Competition draws: game-1 priority, Swiss, groups and the final tiebreak (plan 12). */
+	competition: 6,
 } as const;

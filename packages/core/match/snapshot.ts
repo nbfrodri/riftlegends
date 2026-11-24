@@ -46,6 +46,7 @@ const side = (state: MatchState, which: Side): MapSnapshot["blue"] => {
 		},
 		dragons: s.dragons,
 		soul: s.dragons >= SOUL,
+		grubs: s.grubs,
 		heralds: s.heralds,
 		barons: s.barons,
 		elders: s.elders,

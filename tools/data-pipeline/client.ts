@@ -2,10 +2,13 @@ import { createHash, randomUUID } from "node:crypto";
 import { mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
+import { maxRiotImageBytes } from "@rift-legends/contracts/real-logos";
 import {
-	maxRiotImageBytes,
-	sniffImageMime,
-} from "@rift-legends/contracts/real-logos";
+	type ImageDigest,
+	Permanent,
+	parseDigest,
+	readImage,
+} from "./client-image.ts";
 
 export interface ClientOptions {
 	cacheDir: string;
@@ -34,13 +37,6 @@ const lolesportsHosts = new Set([
 	"lolstatic-a.akamaihd.net",
 ]);
 
-export interface ImageDigest {
-	sha256: string;
-	size: number;
-	mime: string;
-}
-
-class Permanent extends Error {}
 export class OfflineCacheMiss extends Error {}
 
 function requestHeaders(url: string): Record<string, string> {
@@ -53,40 +49,6 @@ function interval(url: string) {
 	const parsed = new URL(url);
 	if (parsed.searchParams.get("action") === "cargoquery") return cargoInterval;
 	return lolesportsHosts.has(parsed.hostname) ? lolesportsInterval : 0;
-}
-
-const readImage =
-	(limit: number) =>
-	async (response: Response): Promise<ImageDigest> => {
-		const declared = Number(response.headers.get("content-length") ?? 0);
-		if (declared > limit) throw new Permanent("Image is too large");
-		const chunks: Uint8Array[] = [];
-		let size = 0;
-		for await (const chunk of response.body ?? []) {
-			size += chunk.length;
-			if (size > limit) throw new Permanent("Image is too large");
-			chunks.push(chunk);
-		}
-		const bytes = Buffer.concat(chunks);
-		const mime = sniffImageMime(bytes);
-		if (!mime) throw new Permanent("Not a PNG, JPEG or WebP image");
-		return {
-			sha256: createHash("sha256").update(bytes).digest("hex"),
-			size,
-			mime,
-		};
-	};
-
-function parseDigest(body: unknown): ImageDigest {
-	const { sha256, size, mime } = (body ?? {}) as Partial<ImageDigest>;
-	if (
-		typeof sha256 !== "string" ||
-		!/^[0-9a-f]{64}$/.test(sha256) ||
-		!Number.isSafeInteger(size) ||
-		typeof mime !== "string"
-	)
-		throw new Error("Invalid image digest");
-	return { sha256, size: size as number, mime };
 }
 
 export function wikiUrl(params: Record<string, string>) {

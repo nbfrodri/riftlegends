@@ -10,14 +10,46 @@ export const roles = [
 	"support",
 ] as const satisfies typeof ROLES;
 type Profile = ReturnType<typeof championProfile>;
-const tiers = [
-	[70, "S+"],
-	[45, "S"],
-	[30, "A"],
-	[10, "B"],
-	[0.25, "C"],
+/** Share of each role's champions per tier (cumulative cuts are rounded half up). */
+const quotas = [
+	["S+", 3],
+	["S", 8],
+	["A", 17],
+	["B", 27],
+	["C", 30],
+	["D", 15],
 ] as const;
-type Tier = (typeof tiers)[number][1] | "D";
+export type Tier = (typeof quotas)[number][0];
+/** Weighted picks in a role under which a champion cannot rank above B. */
+export const SMALL_SAMPLE = 8;
+const topSmallTier = quotas.findIndex(([tier]) => tier === "B");
+
+interface Ranked {
+	id: string;
+	score: number;
+	samples: number;
+}
+
+/** Tiers of one role: same score for all, assigned by quota, ties broken by id. */
+export function rankTiers(rows: readonly Ranked[]) {
+	const sorted = [...rows].sort(
+		(a, b) => b.score - a.score || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0),
+	);
+	const tiers = new Map<string, Tier>();
+	let cumulative = 0;
+	let next = 0;
+	for (const [index, [tier, share]] of quotas.entries()) {
+		cumulative += share;
+		const end = Math.floor((sorted.length * cumulative + 50) / 100);
+		for (; next < end; next++) {
+			const row = sorted[next];
+			if (!row) continue;
+			const capped = row.samples < SMALL_SAMPLE && index < topSmallTier;
+			tiers.set(row.id, capped ? "B" : tier);
+		}
+	}
+	return tiers;
+}
 const proStyles = new Set([
 	"engage",
 	"peel",
@@ -70,7 +102,7 @@ export function tierSeasons(
 		.map((season) => ({ ...season, weight: 0.5 ** (current - season.year) }));
 }
 
-export function positions(
+export function scorePositions(
 	id: string,
 	profile: Profile,
 	seasons: ReturnType<typeof tierSeasons>,
@@ -110,9 +142,7 @@ export function positions(
 		const score =
 			((weights ? presence / weights : 0) * samples + 3 * prior) /
 			(samples + 3);
-		const tier: Tier =
-			tiers.find(([threshold]) => score >= threshold)?.[1] ?? "D";
-		return { role, tier, samples };
+		return { role, score, samples };
 	});
 	return observed
 		.filter(
@@ -120,5 +150,5 @@ export function positions(
 				profile.roles.includes(role) || (samples > 0 && samples * 20 >= picks),
 		)
 		.sort((a, b) => b.samples - a.samples)
-		.map(({ role, tier }) => ({ role, tier }));
+		.map(({ role, score, samples }) => ({ role, score, samples }));
 }

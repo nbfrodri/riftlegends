@@ -23,6 +23,7 @@ export const MATCH_EVENTS = [
 	"siege",
 	"tower",
 	"inhibitor",
+	"grub",
 	"dragon",
 	"herald",
 	"baron",
@@ -89,6 +90,8 @@ export const matchEventFact = {
 	causes: z.array(z.strictObject({ key: id, points })),
 	/** Towers: 1 to 3 along the lane, 4 the nexus towers. */
 	tier: z.int().min(1).max(4).optional(),
+	/** Void grubs: how many each side took of the group of three. */
+	grubs: perSide(z.int().nonnegative()).optional(),
 };
 
 export const matchEndedFact = {
@@ -164,6 +167,8 @@ export const matchContent = z
 		),
 		rules: z.strictObject({
 			objectives: z.strictObject({
+				/** One group of three, up from `first` until `despawn`; no respawn. */
+				grub: z.strictObject({ first: seconds, despawn: seconds }),
 				dragon: timer,
 				herald: timer,
 				baron: timer,
@@ -177,15 +182,21 @@ export const matchContent = z
 				assist: position,
 				tower: position,
 				inhibitor: position,
+				/** Per grub, for the whole team. */
+				grub: position,
 				dragon: position,
 				herald: position,
 				baron: position,
 				elder: position,
 			}),
-			/** How much gold counts from each minute on; it falls as games go on. */
-			goldWeight: z
-				.array(z.strictObject({ minute: position, weight: share }))
-				.min(1),
+			/** Gold of a full build per player: above it gold helps little (G3). */
+			fullBuildGold: z.int().min(1),
+			/** Share of the gold above the full build that still counts, per 10,000. */
+			goldOverflow: share,
+			/** Points of a full relative gold lead, in fixed-point points (G2). */
+			goldLeadPoints: points,
+			/** Cap of the gold cause, in fixed-point points. */
+			goldMaxPoints: z.int().min(0),
 			/** Edge of the blue side, in fixed-point points (30,000 = 3 points). */
 			blueSide: points,
 		}),
@@ -238,6 +249,8 @@ const mapSide = z.strictObject({
 	dragons: position,
 	/** The side has the soul: four dragons. */
 	soul: z.boolean(),
+	/** Void grubs taken: each is a permanent stack against structures. */
+	grubs: position,
 	heralds: position,
 	barons: position,
 	elders: position,

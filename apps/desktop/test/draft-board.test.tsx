@@ -85,6 +85,22 @@ describe("draft board (U3)", () => {
 		expect(bans.querySelector("s")).toBeNull();
 	});
 
+	test("#430: the inspection bars sit above the board and open downward", async () => {
+		const user = userEvent.setup();
+		await renderWithDraftCore(<DraftScreen />);
+		await toBoard(user);
+		const board = screen.getByRole("region", { name: "Blue side Forge" });
+		for (const name of [/^Player card/, /^AI decisions/]) {
+			const bar = screen.getByRole("group", { name });
+			expect(
+				bar.compareDocumentPosition(board) & Node.DOCUMENT_POSITION_FOLLOWING,
+			).toBeTruthy();
+			const body = bar.querySelector('[data-slot="panel-body"]');
+			expect(body?.className).toContain("top-full");
+			expect(body?.className).not.toContain("bottom-full");
+		}
+	});
+
 	test("the user cannot confirm while the rival is choosing", async () => {
 		const user = userEvent.setup();
 		await renderWithDraftCore(<DraftScreen />);

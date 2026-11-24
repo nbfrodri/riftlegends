@@ -6,6 +6,8 @@ interface Sample {
 	latency: number;
 	intervals: number[];
 	animations: Array<{ delay: number; duration: number | string }>;
+	/** WebGL renderer of the lock sweep, read while the lock is on screen. */
+	renderer: string;
 }
 
 declare global {
@@ -53,7 +55,31 @@ async function measure(confirm: Locator, champion: string) {
 								)
 									intervals.push(now - previous);
 								if (to >= pacing.captionDelayMs + pacing.captionEnterMs) {
-									resolve({ latency, intervals, animations });
+									const canvas = document.querySelector<HTMLCanvasElement>(
+										"[data-draft-lock] canvas",
+									);
+									const gl = canvas?.getContext("webgl2");
+									let renderer = "unavailable";
+									if (gl) {
+										// A transparent clear alone is not the Pixi sweep. Sample its bright centre.
+										const pixel = new Uint8Array(4);
+										gl.readPixels(
+											46,
+											32,
+											1,
+											1,
+											gl.RGBA,
+											gl.UNSIGNED_BYTE,
+											pixel,
+										);
+										const debug = gl.getExtension("WEBGL_debug_renderer_info");
+										renderer = !pixel[3]
+											? "blank"
+											: debug
+												? String(gl.getParameter(debug.UNMASKED_RENDERER_WEBGL))
+												: "unavailable";
+									}
+									resolve({ latency, intervals, animations, renderer });
 									return;
 								}
 							} else if (
@@ -96,12 +122,11 @@ async function playDraft(page: Page) {
 		const champion = await tile.getAttribute("aria-label");
 		if (!champion) throw new Error("The selected tile needs a champion name");
 		await tile.click();
-		samples.push(
-			await measure(
-				page.getByRole("button", { name: /^Confirm (ban|pick)$/ }),
-				champion,
-			),
-		);
+		const confirm = page.getByRole("button", { name: /^Confirm (ban|pick)$/ });
+		// The tenth input can end the draft: Roles then hides the lock (#432),
+		// so the sweep never shows. Confirm it without measuring.
+		if (turn === 9) await confirm.click();
+		else samples.push(await measure(confirm, champion));
 	}
 	await expect(
 		page.getByRole("button", { name: "Confirm lineup" }),
@@ -130,7 +155,7 @@ test("plays from setup through the AI's side, bans, picks and roles within the S
 			}
 			runs.push(await playDraft(page));
 		}
-		// Five warm-ups as in S1. With 25 measured inputs, nearest-rank p95
+		// Five warm-ups as in S1. With 22 measured inputs, nearest-rank p95
 		// describes the tail independently of the single slowest confirmation.
 		const samples = runs.flat().slice(5);
 		await info.attach("draft-frames.json", {
@@ -141,21 +166,9 @@ test("plays from setup through the AI's side, bans, picks and roles within the S
 		const latency = p95(samples.map((sample) => sample.latency));
 		const fps = (1000 * frames.length) / frames.reduce((a, b) => a + b, 0);
 		const interval = p95(frames);
-		const renderer = await page
-			.locator("[data-draft-lock] canvas")
-			.evaluate((canvas) => {
-				const gl = (canvas as HTMLCanvasElement).getContext("webgl2");
-				if (gl) {
-					// A transparent clear alone is not the Pixi sweep. Sample its bright centre.
-					const pixel = new Uint8Array(4);
-					gl.readPixels(46, 32, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel);
-					if (!pixel[3]) throw new Error("The WebGL2 sweep is blank");
-				}
-				const debug = gl?.getExtension("WEBGL_debug_renderer_info");
-				return gl && debug
-					? String(gl.getParameter(debug.UNMASKED_RENDERER_WEBGL))
-					: "unavailable";
-			});
+		// Roles hides the lock (#432), so each sample reads the renderer in-page.
+		const renderer = samples.at(-1)?.renderer ?? "unavailable";
+		expect(renderer).not.toBe("blank");
 		console.log(
 			`S1 (${samples.length} confirmations, ${frames.length} intervals): p95 ${latency.toFixed(1)} ms, ${fps.toFixed(2)} FPS, frame p95 ${interval.toFixed(1)} ms. ${renderer}`,
 		);

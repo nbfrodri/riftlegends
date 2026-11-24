@@ -23,6 +23,10 @@ describe("draft board pool (U3)", () => {
 
 		const banned = await waitFor(() => tile("Cragbell. Banned in this game"));
 		expect(banned.getAttribute("aria-disabled")).toBe("true");
+		// #417: an unavailable tile keeps its frame but never glows.
+		expect(
+			banned.querySelector("[data-portrait-frame]")?.hasAttribute("data-glow"),
+		).toBe(false);
 		// The pointer is still on the tile from the first click.
 		await user.unhover(banned);
 		await user.hover(banned);
@@ -176,6 +180,34 @@ describe("draft board pool (U3)", () => {
 		expect(mark(cragbell)).toBeNull();
 		expect(mark(rimefoil)).not.toBeNull();
 		expect(cragbell.getAttribute("aria-pressed")).toBe("false");
+	});
+
+	test("#417: every tile is framed and the selection stays distinct from normal, hover and focus", async () => {
+		const user = userEvent.setup();
+		await renderWithDraftCore(<DraftScreen />);
+		await toBoard(user);
+		const grid = screen.getByRole("group", { name: "Champions" });
+		const tiles = within(grid).getAllByRole("button");
+		for (const button of tiles)
+			expect(button.querySelector("[data-portrait-frame]")).not.toBeNull();
+
+		const cragbell = tile("Cragbell");
+		await user.click(cragbell);
+		const frame = cragbell.querySelector("[data-portrait-frame]");
+		const mark = cragbell.querySelector('[data-slot="selection"]');
+		// The selection (action ring and tint) is painted over the frame.
+		expect(frame?.compareDocumentPosition(mark as Node)).toBe(
+			Node.DOCUMENT_POSITION_FOLLOWING,
+		);
+		expect(mark?.className).toMatch(/\bring-action\b/);
+		expect(mark?.className).toMatch(/\bbg-action\//);
+		// Normal and hover (the frame's glow) never carry the tint; focus is an outline.
+		expect(frame?.hasAttribute("data-glow")).toBe(true);
+		for (const cls of [frame?.className ?? "", cragbell.className]) {
+			expect(cls).not.toMatch(/\bring-action\b|\bbg-action\//);
+		}
+		expect(cragbell.className).toMatch(/\bfocus-visible:outline-action\b/);
+		expect(cragbell.className).not.toMatch(/\bhover:/);
 	});
 
 	test("the keyboard moves through the grid with arrows, selects with Enter and confirms", async () => {

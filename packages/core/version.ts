@@ -6,7 +6,7 @@ import * as content from "./content/data";
  * the same seed and commands change on purpose (algorithm, RNG library,
  * scoring formulas...). Goldens are bound to it.
  */
-export const SIM_VERSION = 6;
+export const SIM_VERSION = 9;
 
 /** FNV-1a over canonical JSON encoded as UTF-16 little-endian. */
 export function contentVersionOf(data: object): number {

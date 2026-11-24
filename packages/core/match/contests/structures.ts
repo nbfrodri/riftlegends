@@ -1,6 +1,7 @@
 import type { Side } from "@rift-legends/contracts";
 import { int } from "../../rng/helpers";
 import {
+	GRUBS,
 	inhibitorDown,
 	LANES,
 	type Lane,
@@ -13,8 +14,11 @@ import { edge, outcome } from "./edge";
 /** First minute teams push for structures, once the lanes are over. */
 const PUSH_FROM = 12;
 /** Chance, per 10,000, that a won push takes a structure. Balance constants. */
-const TAKE = 3500;
+const TAKE = 2700;
 const BUFF_TAKE = { herald: 2500, baron: 4000, elder: 5000 } as const;
+/** Extra chance per grub stack, and for the voidmites of the third. */
+const GRUB_TAKE = 100;
+const VOIDMITES_TAKE = 150;
 
 type Loss = Pick<MatchState["blue"], "towers" | "nexusTowers" | "inhibitors">;
 
@@ -31,9 +35,11 @@ function target(loser: Loss, lane: Lane, minute: number) {
 	return null;
 }
 
-function take(state: MatchState, winner: Side) {
-	const { buffs } = state[winner];
-	let chance = TAKE;
+/** Chance, per 10,000, that a push won by `winner` takes a structure. */
+export function takeChance(state: MatchState, winner: Side) {
+	const { buffs, grubs } = state[winner];
+	let chance = TAKE + grubs * GRUB_TAKE;
+	if (grubs >= GRUBS) chance += VOIDMITES_TAKE;
 	for (const buff of ["herald", "baron", "elder"] as const) {
 		if (buffs[buff] > state.minute) chance += BUFF_TAKE[buff];
 	}
@@ -58,7 +64,7 @@ const push: Contest = {
 			const winner: Side = roll(rng, result.blue) ? "blue" : "red";
 			const loser = other(winner);
 			const next = target(lost[loser], lane, state.minute);
-			if (!next || !roll(rng, take(state, winner))) continue;
+			if (!next || !roll(rng, takeChance(state, winner))) continue;
 			const base = {
 				side: winner,
 				second: seconds[events.length] ?? 59,

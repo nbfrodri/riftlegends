@@ -155,7 +155,7 @@ describe("match.event", () => {
 		for (const kind of ["kill", "fight", "tower", "inhibitor", "nexus"]) {
 			expect(MATCH_EVENTS).toContain(kind);
 		}
-		for (const kind of ["dragon", "herald", "baron", "elder"]) {
+		for (const kind of ["grub", "dragon", "herald", "baron", "elder"]) {
 			expect(MATCH_EVENTS).toContain(kind);
 		}
 		for (const zone of ["lane-top", "dragon-pit", "baron-pit", "base-red"]) {
@@ -263,6 +263,7 @@ describe("MatchContent", () => {
 		champions: [{ id: "azir", cc: 4, mobility: 3, frontline: 1 }],
 		rules: {
 			objectives: {
+				grub: { first: 480, despawn: 885 },
 				dragon: { first: 300, respawn: 300 },
 				herald: { first: 480, respawn: 360 },
 				baron: { first: 1200, respawn: 360 },
@@ -275,15 +276,16 @@ describe("MatchContent", () => {
 				assist: 150,
 				tower: 550,
 				inhibitor: 50,
+				grub: 150,
 				dragon: 200,
 				herald: 300,
 				baron: 1500,
 				elder: 300,
 			},
-			goldWeight: [
-				{ minute: 0, weight: 10000 },
-				{ minute: 30, weight: 6000 },
-			],
+			fullBuildGold: 17000,
+			goldOverflow: 1000,
+			goldLeadPoints: 3400000,
+			goldMaxPoints: 250000,
 			blueSide: 300,
 		},
 	};
@@ -338,11 +340,15 @@ describe("MatchContent", () => {
 			{ ...content, champions: [{ ...content.champions[0], cc: 11 }] },
 		],
 		[
-			"a gold weight above 100 %",
+			"a gold overflow above 100 %",
 			{
 				...content,
-				rules: { ...content.rules, goldWeight: [{ minute: 0, weight: 10001 }] },
+				rules: { ...content.rules, goldOverflow: 10001 },
 			},
+		],
+		[
+			"a zero full build",
+			{ ...content, rules: { ...content.rules, fullBuildGold: 0 } },
 		],
 	])("rejects %s", (_, bad) => {
 		expect(matchContent.safeParse(bad).success).toBe(false);
@@ -372,6 +378,7 @@ const side = {
 	inhibitors: { top: null, mid: null, bot: null },
 	dragons: 0,
 	soul: false,
+	grubs: 0,
 	heralds: 0,
 	barons: 0,
 	elders: 0,

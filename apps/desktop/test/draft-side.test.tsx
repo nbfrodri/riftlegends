@@ -331,13 +331,81 @@ describe("side choice with fearless", () => {
 				.map(
 					(p) => namedDraft.champions.find((c) => c.id === p.champion)?.name,
 				);
-			expect(await within(list).findAllByRole("listitem")).toHaveLength(5);
+			const game1 = await within(list).findByRole("list", {
+				name: "Played in game 1",
+			});
+			expect(within(game1).getAllByRole("listitem")).toHaveLength(5);
 			for (const name of played) {
 				expect(
-					within(list).getByRole("img", { name: name as string }),
+					within(game1).getByRole("img", { name: name as string }),
 				).toBeTruthy();
 			}
 		}
 		expect(screen.getByText(/lost the last game/)).toBeTruthy();
 	});
+});
+
+/** The champions each team played in a game, by name, from its match view. */
+async function playedIn(
+	core: Awaited<ReturnType<typeof renderWithDraftCore>>,
+	game: number,
+	team: string,
+) {
+	const result = await core.api.query({
+		v: CONTRACT_VERSION,
+		kind: "match.view",
+		sessionId: 1,
+		params: { game },
+	});
+	if (!result.ok) throw new Error(JSON.stringify(result));
+	const ended = (result.view as MatchView).facts.find(
+		(f) => f.type === "match.ended",
+	);
+	if (ended?.type !== "match.ended") throw new Error("no match.ended");
+	return ended.players
+		.filter((p) => p.team === team)
+		.map((p) => namedDraft.champions.find((c) => c.id === p.champion)?.name);
+}
+
+test("#434: each locked champion says the game it was played in, grouped by game", async () => {
+	const core = await renderWithDraftCore(
+		<DraftSessionProvider>
+			<Driver stopAt={3} />
+			<Flow />
+		</DraftSessionProvider>,
+		"en-US",
+		undefined,
+		namedDraft,
+	);
+	await screen.findByRole("row", { name: /Game 3 Choosing sides/ });
+	const locked = await screen.findByRole("region", {
+		name: "Locked champions",
+	});
+	for (const team of ["forge", "shoal"]) {
+		const name = team === "forge" ? "Forge" : "Shoal";
+		const list = within(locked).getByRole("list", {
+			name: `Played by ${name}`,
+		});
+		const games = await within(list).findAllByRole("list");
+		// In game order, each group under its visible game label.
+		expect(games.map((g) => g.getAttribute("aria-label"))).toEqual([
+			"Played in game 1",
+			"Played in game 2",
+		]);
+		for (const [i, group] of games.entries()) {
+			const game = i + 1;
+			expect(group.closest("li")?.textContent).toContain(`Game ${game}`);
+			const portraits = within(group).getAllByRole("img");
+			expect(portraits.map((p) => p.getAttribute("aria-label"))).toEqual(
+				await playedIn(core, game, team),
+			);
+			for (const portrait of portraits) {
+				const trigger = portrait.closest<HTMLElement>("[data-tooltip]");
+				expect(trigger?.dataset.tooltip).toBe(`Played in game ${game}`);
+				expect(trigger?.dataset.tooltipHeading).toBe(
+					portrait.getAttribute("aria-label") ?? "",
+				);
+			}
+		}
+	}
 });

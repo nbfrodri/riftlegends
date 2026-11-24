@@ -7,6 +7,7 @@ declare const riftCore: CoreBridge;
 type QuickDraftScreen =
 	| "setup"
 	| "side-choice"
+	| "side-locked"
 	| "draft"
 	| "roles"
 	| "game-plan"
@@ -58,6 +59,17 @@ export async function playQuickDraftBo5(
 		await expect(choices.first()).toBeVisible();
 		await inspectChoices?.();
 		if (game === 1) await capture?.("side-choice");
+		if (game === 3) {
+			// #434: fearless locks each team's champions, grouped by map.
+			const locked = page.getByRole("region", {
+				name: "Campeones bloqueados",
+			});
+			for (const map of [1, 2])
+				await expect(
+					locked.getByRole("list", { name: `Jugado en el mapa ${map}` }),
+				).toHaveCount(2);
+			await capture?.("side-locked");
+		}
 		await choices.last().check({ force: true });
 		await button("Confirmar decisión").click();
 		await expect(button("Ir al draft")).toBeVisible();
@@ -80,8 +92,12 @@ export async function playQuickDraftBo5(
 		await expect(swaps).toHaveCount(5);
 		const first = await swaps.first().getAttribute("aria-label");
 		await swaps.first().click();
-		await swaps.nth(1).click();
+		await expect(own.locator('[data-swap="pending"]')).toHaveCount(1);
+		await own.getByRole("article").nth(1).click();
 		await expect(swaps.nth(1)).toHaveAttribute("aria-label", first ?? "");
+		await expect(
+			page.getByRole("status").filter({ hasText: "Intercambiados" }),
+		).toBeVisible();
 		if (game === 1) await capture?.("roles");
 		await button("Confirmar reparto").click();
 

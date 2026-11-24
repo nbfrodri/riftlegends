@@ -9,20 +9,29 @@ import { ChevronRight } from "lucide-react";
 import { type ReactNode, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { usePlayerPhotoSrc } from "../../assets";
+import { levelColor, levelOf } from "../../level-scale";
 import { ChampionPortrait } from "../champion-portrait";
 import { useDraftContent } from "../session";
 
 type Attributes =
 	SeriesOptions["teams"][number]["players"][number]["attributes"];
 
-export function PlayerPortrait({ id, handle }: { id: string; handle: string }) {
+export function PlayerPortrait({
+	id,
+	handle,
+	size = "h-20 w-16 short:h-16 short:w-12",
+}: {
+	id: string;
+	handle: string;
+	/** Tailwind size classes of the frame; the card's by default. */
+	size?: string;
+}) {
 	const { t } = useTranslation();
 	const photo = usePlayerPhotoSrc(id);
 	const content = useDraftContent();
 	const [failed, setFailed] = useState<string>();
 	const label = t("draft.board.playerPortrait", { handle });
-	const frame =
-		"h-20 w-16 shrink-0 border border-line bg-surface short:h-16 short:w-12";
+	const frame = `${size} shrink-0 border border-line bg-surface`;
 	return content === "real" && photo && photo !== failed ? (
 		<img
 			src={photo}
@@ -52,15 +61,9 @@ const AREAS = [
 	["team", ["shotcalling", "communication", "versatility"]],
 ] as const satisfies readonly (readonly [string, readonly PlayerAttribute[]])[];
 
-/** High is green, low is red; the level is also read out, not only colored. */
-function levelOf(value: number) {
-	return value >= 75 ? "high" : value <= 45 ? "low" : "mid";
-}
-const levelColor = { high: "text-good", mid: "", low: "text-bad" } as const;
-
 /**
- * A collapsible panel under the board, as in the mockup. Open, its content
- * rises over the lower board and scrolls inside, so the page never grows (#396).
+ * A collapsible bar above the board. Open, its content drops over the board
+ * and scrolls inside, so neither the board nor the page moves (#430).
  */
 export function InspectionPanel(props: {
 	id: string;
@@ -98,7 +101,7 @@ export function InspectionPanel(props: {
 			</summary>
 			<div
 				data-slot="panel-body"
-				className={`absolute inset-x-0 bottom-full z-30 max-h-[min(62vh,440px)] overflow-y-auto overscroll-contain border-t-2 bg-panel px-[15px] pb-3 shadow-[0_-12px_32px_rgb(0_0_0/0.45)] ${props.accent}`}
+				className={`absolute inset-x-0 top-full z-30 max-h-[min(62vh,440px)] overflow-y-auto overscroll-contain border-t-2 bg-panel px-[15px] pb-3 shadow-[0_12px_32px_rgb(0_0_0/0.45)] ${props.accent}`}
 				// biome-ignore lint/a11y/noNoninteractiveTabindex: the panel's body scrolls by keyboard.
 				tabIndex={0}
 			>

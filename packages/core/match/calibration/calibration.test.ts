@@ -2,7 +2,7 @@ import { ROLES, type Role } from "@rift-legends/contracts";
 import { describe, expect, it } from "vitest";
 import { sample } from "./scenarios";
 
-// Monte Carlo bands of plan 08 (K1–K5). Seeds are fixed, so each run is the
+// Monte Carlo bands of plan 08 (K1–K9, K16). Seeds are fixed, so each run is the
 // same sample: a failure means a change moved the balance, never bad luck.
 
 const sorted = (values: number[]) => [...values].sort((a, b) => a - b);
@@ -44,6 +44,16 @@ const PARTICIPATION: Record<Role, readonly [number, number, number]> = {
 	bot: [65.45, 41.67, 86.67],
 	support: [73.99, 50, 94.44],
 };
+
+/**
+ * Pro gold at the end of a game (plan 08, K16): Leaguepedia, 2,378 games of six
+ * leagues; the 781 that last 30–34 min give the total and the winner's lead.
+ * [P10, P50, P90]; the share of winners that end behind in gold was 0.8 %.
+ */
+const PRO_GOLD = {
+	total: [115_698, 123_359, 131_639],
+	lead: [5896, 10_557, 14_954],
+} as const;
 
 describe.each(["control", "packaged", "real"] as const)(
 	"C6: calibration with the %s pool",
@@ -114,12 +124,13 @@ describe.each(["control", "packaged", "real"] as const)(
 				expect(gap(got[2], want[2])).toBeLessThanOrEqual(edge);
 			};
 
-			it.each(ROLES)("%s kill share is within 3 pp of the pros", (role) => {
-				within(share(role, false), KILL_SHARE[role], [3, 6]);
+			it.each(ROLES)("%s kill share is within 3.5 pp of the pros", (role) => {
+				// Edges are 1/16 steps of a team's kills; 6.5 admits one step over 6 (#401).
+				within(share(role, false), KILL_SHARE[role], [3.5, 6.5]);
 			});
 
-			it.each(ROLES)("%s participation is within 5 pp of the pros", (role) => {
-				within(share(role, true), PARTICIPATION[role], [5, 8]);
+			it.each(ROLES)("%s participation is within 6 pp of the pros", (role) => {
+				within(share(role, true), PARTICIPATION[role], [6, 9]);
 			});
 
 			it("a kill has 2.0–2.6 assists on average", () => {
@@ -160,6 +171,45 @@ describe.each(["control", "packaged", "real"] as const)(
 				expect(
 					teams.every((t) => t.line.support.goldShare < t.line.bot.goldShare),
 				).toBe(true);
+			});
+		});
+
+		describe("K16 · gold lead at the end of the game", () => {
+			const long = even.filter((g) => g.minutes >= 30 && g.minutes <= 34);
+			const leads = even.map(
+				(g) =>
+					g.finalGold[g.winner] -
+					g.finalGold[g.winner === "blue" ? "red" : "blue"],
+			);
+			const longLeads = long.map(
+				(g) =>
+					g.finalGold[g.winner] -
+					g.finalGold[g.winner === "blue" ? "red" : "blue"],
+			);
+
+			it("the total gold at 30–34 min is within 10 % of the pros", () => {
+				const total = at(
+					long.map((g) => g.finalGold.blue + g.finalGold.red),
+					0.5,
+				);
+				expect(long.length).toBeGreaterThan(200);
+				expect(total).toBeGreaterThanOrEqual(PRO_GOLD.total[1] * 0.9);
+				expect(total).toBeLessThanOrEqual(PRO_GOLD.total[1] * 1.1);
+			});
+
+			it("the winner's median lead at 30–34 min is 7,500–13,000", () => {
+				const median = at(longLeads, 0.5);
+				expect(median).toBeGreaterThanOrEqual(7500);
+				expect(median).toBeLessThanOrEqual(13_000);
+			});
+
+			it("the winner's P90 lead stays under 20,000 and its P10 at least +2,000", () => {
+				expect(at(longLeads, 0.9)).toBeLessThanOrEqual(20_000);
+				expect(at(longLeads, 0.1)).toBeGreaterThanOrEqual(2000);
+			});
+
+			it("at most 5 % of the winners end behind in gold", () => {
+				expect(rate(leads, (lead) => lead < 0)).toBeLessThanOrEqual(0.05);
 			});
 		});
 

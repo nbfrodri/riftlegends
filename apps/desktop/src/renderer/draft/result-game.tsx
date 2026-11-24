@@ -26,21 +26,27 @@ export function Victory(props: {
 	label: string;
 	title: string;
 	side: "blue" | "red";
+	/** The winner's logo, before the title. */
+	crest?: React.ReactNode;
 	children?: React.ReactNode;
 }) {
 	return (
 		<section
+			aria-label={props.label}
 			className={`flex items-center justify-between gap-4 border-t-[3px] bg-panel px-6 py-2 ${props.side === "blue" ? "border-side-blue" : "border-side-red"}`}
 		>
-			<div>
-				<p className="mb-1 font-semibold text-[12px] text-muted uppercase tracking-[0.055em]">
-					{props.label}
-				</p>
-				<h2
-					className={`font-bold font-display text-[32px] leading-none tracking-heading short:text-[28px] ${props.side === "blue" ? "text-side-blue" : "text-side-red"}`}
-				>
-					{props.title}
-				</h2>
+			<div className="flex items-center gap-4">
+				{props.crest}
+				<div>
+					<p className="mb-1 font-semibold text-[12px] text-muted uppercase tracking-[0.055em]">
+						{props.label}
+					</p>
+					<h2
+						className={`font-bold font-display text-[32px] leading-none tracking-heading short:text-[28px] ${props.side === "blue" ? "text-side-blue" : "text-side-red"}`}
+					>
+						{props.title}
+					</h2>
+				</div>
 			</div>
 			{props.children}
 		</section>

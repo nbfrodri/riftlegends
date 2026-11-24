@@ -21,6 +21,7 @@ const side = {
 	inhibitors: { top: null, mid: null, bot: null },
 	dragons: 0,
 	soul: false,
+	grubs: 0,
 	heralds: 0,
 	barons: 0,
 	elders: 0,
@@ -539,11 +540,11 @@ test("face to face shows each player's portrait and name, with the champion as s
 		expect(within(cell).getByText(player)).toBeTruthy();
 		expect(within(cell).getByText(champion)).toBeTruthy();
 	}
-	// The portrait sits on the outer edge, mirrored.
-	expect(
-		cells[0]?.querySelector("[role=img]")?.parentElement?.className,
-	).not.toMatch(/flex-row-reverse/);
-	expect(
-		cells[8]?.querySelector("[role=img]")?.parentElement?.className,
-	).toMatch(/flex-row-reverse/);
+	// The pictures sit on the outer edge, mirrored (#433).
+	const order = (cell: Element | undefined) =>
+		[...(cell?.querySelector("[data-lane-player]")?.children ?? [])].map(
+			(part) => (part as HTMLElement).dataset.part,
+		);
+	expect(order(cells[0])).toEqual(["photo", "champion", "name"]);
+	expect(order(cells[8])).toEqual(["name", "champion", "photo"]);
 });

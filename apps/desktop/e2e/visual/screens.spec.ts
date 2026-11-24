@@ -54,6 +54,33 @@ test("Mercado with the sidebar expanded", async ({ appWindow }) => {
 	await captureScreen(appWindow, "mercado-expanded.png");
 });
 
+const filterMarket = async (page: Page) => {
+	await goTo(page, "Mercado");
+	const panel = page.getByRole("complementary", { name: "Filtros" });
+	await panel
+		.getByRole("group", { name: "Posición" })
+		.getByRole("button", { name: "Mid" })
+		.click();
+	await panel.getByRole("button", { name: "Jóvenes" }).click();
+	await expect(
+		page.getByRole("list", { name: "Filtros activos" }),
+	).toBeVisible();
+	await page.mouse.move(0, 0);
+};
+
+test("Mercado with the filter panel, a preset and the color scale", async ({
+	appWindow,
+}) => {
+	await filterMarket(appWindow);
+	await captureScreen(appWindow, "mercado-filters.png");
+});
+
+test("Mercado filters fit the minimum window", async ({ appWindow }) => {
+	await appWindow.setViewportSize({ width: 1280, height: 720 });
+	await filterMarket(appWindow);
+	await captureScreen(appWindow, "mercado-filters-1280.png");
+});
+
 test.describe("Campeones", () => {
 	test.use({ appEnv: { RIFT_E2E_CONTENT: "fictional" } });
 
@@ -168,10 +195,10 @@ test.describe("Quick draft", () => {
 				if (!wasOpen) await playerCard.locator("summary").click();
 				await expect(playerCard.getByText("Mecánicas")).toBeVisible();
 				await appWindow.mouse.move(0, 0);
-				// The whole window: the open card rises over the board (#396).
+				// The whole window: the open card drops over the board (#430).
 				await captureScreen(appWindow, "quick-draft-player-card.png");
 				if (!wasOpen) await playerCard.locator("summary").click();
-				// #407: the AI read, latest decision first, rising over the board.
+				// #407: the AI read, latest decision first, dropping over the board.
 				// Selecting the player opens the card; close it so only the AI read shows.
 				if (await playerCard.evaluate((e) => (e as HTMLDetailsElement).open))
 					await playerCard.locator("summary").first().click();
@@ -192,6 +219,13 @@ test.describe("Quick draft", () => {
 			if (screen === "match") {
 				const panel = appWindow.getByRole("radiogroup", { name: "Panel" });
 				await panel.getByRole("radio", { name: "Cara a cara" }).check();
+				// #433: one long handle, cut without moving the pictures.
+				await appWindow
+					.locator("[data-lane-player] [data-part=name] > span")
+					.first()
+					.evaluate((handle) => {
+						handle.textContent = "Averyveryveryverylonghandlethatneverends";
+					});
 				await appWindow.mouse.move(0, 0);
 				await captureScreen(appWindow, "quick-draft-face-to-face.png");
 				await panel.getByRole("radio", { name: "Mapa" }).check();

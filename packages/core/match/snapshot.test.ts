@@ -40,6 +40,11 @@ describe("map snapshots (Q4)", () => {
 				const count = (kind: string) =>
 					events.filter((e) => e.kind === kind && e.side === side).length;
 				expect(s?.dragons).toBe(count("dragon"));
+				expect(s?.grubs).toBe(
+					events
+						.filter((e) => e.kind === "grub")
+						.reduce((sum, e) => sum + (e.grubs?.[side] ?? 0), 0),
+				);
 				expect(s?.heralds).toBe(count("herald"));
 				expect(s?.barons).toBe(count("baron"));
 				expect(s?.elders).toBe(count("elder"));
@@ -48,7 +53,7 @@ describe("map snapshots (Q4)", () => {
 	});
 
 	it("ends with the same player ids, K/D/A and gold as match.ended", () => {
-		const seeds = Array.from({ length: 64 }, (_, index) => index + 1);
+		const seeds = Array.from({ length: 400 }, (_, index) => index + 1);
 		let endsOnMinuteBoundary = false;
 		for (const seed of seeds) {
 			const { snapshots, facts } = playGame(matchSetup({ seed }));

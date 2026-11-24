@@ -16,6 +16,8 @@ test("pins a champion card without selecting a ban", async ({
 	await expect(
 		player.getByRole("img", { name: "Portrait of Kilnara" }),
 	).toBeVisible();
+	// #430: the open card drops over the board; close it to reach the pool.
+	await player.getByText("Player card", { exact: true }).click();
 	const tile = appWindow.getByRole("button", { name: "Cragbell", exact: true });
 	await tile.click({ button: "right" });
 	const card = appWindow.getByRole("region", {
@@ -96,9 +98,9 @@ test("search and all six role buttons fit on one row in the champion pool", asyn
 	}
 });
 
-// #376: the board and the panels under it stay together at any window size,
-// and nothing scrolls at the minimum and default sizes.
-test("the draft fits and keeps the player card right under the board", async ({
+// #376 #430: the bars above the board stay right on top of it at any window
+// size, and nothing scrolls at the minimum and default sizes.
+test("the draft fits and keeps the player card right above the board", async ({
 	appWindow,
 	electronApp,
 }) => {
@@ -115,8 +117,8 @@ test("the draft fits and keeps the player card right under the board", async ({
 	]) {
 		await appWindow.setViewportSize(viewport);
 		await expect(card).toBeInViewport({ ratio: 1 });
-		const above = await board.boundingBox();
-		const below = await card.boundingBox();
+		const above = await card.boundingBox();
+		const below = await board.boundingBox();
 		if (!above || !below) throw new Error("The board and the card must show");
 		const gap = below.y - (above.y + above.height);
 		expect(gap).toBeGreaterThanOrEqual(0);
@@ -161,8 +163,9 @@ test("opening a champion card keeps the pool's scroll position", async ({
 	expect(await scrollTop()).toBe(before);
 });
 
-// #396: the open player card and AI read do not push the page down.
-test("the open player card and AI read fit without scrolling the page", async ({
+// #396 #430: each open panel drops over the board from its bar, without
+// moving the board or scrolling the page.
+test("each open panel drops below its bar without scrolling the page", async ({
 	appWindow,
 	electronApp,
 }) => {
@@ -170,29 +173,48 @@ test("the open player card and AI read fit without scrolling the page", async ({
 	await appWindow.getByRole("button", { name: "Start series" }).click();
 	await appWindow.getByRole("button", { name: "Confirm choice" }).click();
 	await appWindow.getByRole("button", { name: "Go to draft" }).click();
-	const player = appWindow.getByRole("group", { name: "Player card" });
-	await player.getByText("Player card", { exact: true }).click();
-	await expect(
-		player.getByRole("img", { name: "Portrait of Kilnara" }),
-	).toBeVisible();
-	await appWindow
-		.getByRole("group", { name: "AI decisions" })
-		.getByText("AI decisions", { exact: true })
-		.click();
-	for (const viewport of [
-		{ width: 1280, height: 720 },
-		{ width: 1366, height: 768 },
-	]) {
-		await appWindow.setViewportSize(viewport);
-		await expect(player.getByText("Composure")).toBeInViewport({ ratio: 1 });
-		expect(
-			await appWindow.evaluate(() => {
-				const main = document.querySelector("main");
-				return {
-					page: document.documentElement.scrollHeight - innerHeight,
-					main: main ? main.scrollHeight - main.clientHeight : 0,
-				};
-			}),
-		).toEqual({ page: 0, main: 0 });
+	const board = appWindow.getByRole("region", { name: "Blue side Forge" });
+	const panels = [
+		{ name: "Player card", ready: "Composure" },
+		{ name: "AI decisions", ready: null },
+	];
+	for (const { name, ready } of panels) {
+		const group = appWindow.getByRole("group", {
+			name: new RegExp(`^${name}`),
+		});
+		const bar = group.locator("summary");
+		const body = group.locator('[data-slot="panel-body"]');
+		for (const viewport of [
+			{ width: 1280, height: 720 },
+			{ width: 1366, height: 768 },
+		]) {
+			await appWindow.setViewportSize(viewport);
+			const closedBoard = await board.boundingBox();
+			if (!(await group.evaluate((e) => (e as HTMLDetailsElement).open)))
+				await bar.click();
+			await expect(body).toBeVisible();
+			if (ready) await expect(body.getByText(ready)).toBeInViewport();
+			const top = await bar.boundingBox();
+			const panel = await body.boundingBox();
+			const openBoard = await board.boundingBox();
+			if (!top || !panel || !openBoard || !closedBoard)
+				throw new Error("The bar, its panel and the board must show");
+			// The panel hangs from its bar, over the board, inside the window.
+			expect(panel.y).toBeGreaterThanOrEqual(top.y + top.height - 1);
+			expect(panel.y).toBeLessThan(openBoard.y + openBoard.height);
+			expect(panel.y + panel.height).toBeLessThanOrEqual(viewport.height);
+			expect(openBoard).toEqual(closedBoard);
+			expect(
+				await appWindow.evaluate(() => {
+					const main = document.querySelector("main");
+					return {
+						page: document.documentElement.scrollHeight - innerHeight,
+						main: main ? main.scrollHeight - main.clientHeight : 0,
+					};
+				}),
+			).toEqual({ page: 0, main: 0 });
+			await bar.click();
+			await expect(body).toBeHidden();
+		}
 	}
 });

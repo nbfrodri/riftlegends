@@ -103,7 +103,7 @@ function Structures({ name, view }: { name: string; view: TeamMap }) {
 	);
 }
 
-const objectives = ["dragon", "herald", "baron", "elder"] as const;
+const objectives = ["grub", "dragon", "herald", "baron", "elder"] as const;
 
 function Objectives({ view }: { view: TeamMap }) {
 	const { t } = useTranslation();
@@ -124,7 +124,7 @@ function Objectives({ view }: { view: TeamMap }) {
 	];
 	return (
 		<>
-			<dl className="grid grid-cols-4 gap-x-3 text-center">
+			<dl className="grid grid-cols-5 gap-x-3 text-center">
 				{objectives.map((kind) => {
 					const taken = view.objectives[`${kind}s`] > 0;
 					return (

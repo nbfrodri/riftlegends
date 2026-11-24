@@ -149,6 +149,7 @@ Slot       = { to: CompetitionId, rule: "stageWinner" | "standing" | "points", c
   - `Source` y `play` se distinguen por `kind` y `type`. La ventana añade `maxSeriesPerDay` (1–4, por defecto 4) y `DoubleElim` añade `grandFinal`.
   - `validateFormat` comprueba un formato por sí solo (V2) y responde `invalid-format` con la ruta. `format-too-long` lo emite el calendario (entregable 7).
 - **Personalización al crear la carrera:** el usuario edita estos mismos campos (splits, vueltas, Bo por fase, grupos o Swiss, simple o doble eliminación, plazas por región). La pantalla es del plan 14; este plan valida el resultado.
+- **Swiss implementado (#422)** en `swiss.ts` (`pairSwissRound`, `swissStandings`): exige un número par de equipos. Ronda 1: cuatro bombos iguales por sembrado (1 contra 4, 2 contra 3; si el número no es múltiplo de 4, mitad superior contra inferior), sorteo y sin la misma región. Después, sorteo dentro de cada grupo de igual balance, sin revanchas (como el Swiss de Worlds). El sorteo usa un flujo propio del ámbito `competition`: se baraja y una búsqueda con vuelta atrás completa el emparejamiento. Si no hay emparejamiento se relaja, por este orden, la región (solo cuenta en la ronda 1), la revancha y, como último recurso, el balance; `relaxed` registra lo que rompe el resultado. Con 16 equipos a 3-3 los grupos son siempre pares, así que el balance nunca se cruza y pasan exactamente 8. Cada serie lleva su Bo, la prioridad del game 1 (sorteo) y el motivo (`pots`, `same-record`, `cross-record`).
 - **Bloqueo:** el formato se copia en el hecho `season.created`. Solo se puede cambiar el de la temporada siguiente (V6, P4).
 
 ### Módulos del núcleo (`packages/core/competition/`)
@@ -177,7 +178,7 @@ Reglas del núcleo: sin reloj ni `Math.random`, solo enteros, módulos de unas 3
 - **Consultas:** `competition.standings`, `competition.bracket`, `competition.schedule` y `competition.qualified`. Son proyecciones de los hechos; el plan 13 las guardará.
 - **Idempotencia:** por `expectedPosition`, como el resto de comandos.
 - **Partidas de otros equipos:** draft de la IA de cada coach y `match.play`, sin animación (decisión del 22-11-2026). La serie del usuario sigue el flujo del draft rápido.
-- **RNG:** dos ámbitos nuevos, `competition` (sorteos de Swiss, grupos y desempate final) y `schedule` (reparto en días), con id por competición, temporada, fase y ronda. Los ids de texto se convierten en el índice de la competición dentro de la temporada, no en un hash.
+- **RNG:** dos ámbitos nuevos, `competition` (sorteos de Swiss, grupos y desempate final) y `schedule` (reparto en días), con id por competición, temporada, fase y ronda. Los ids de texto se convierten en el índice de la competición dentro de la temporada, no en un hash. `competition = 6` ya está en el registro (#420). La prioridad del game 1 en liga usa una semilla por serie (competición, temporada, fase, jornada y posición de la serie), sin depender de las demás series del día. El reparto en grupos no sortea nada: serpiente y, después, permutas entre grupos solo para separar regiones.
 
 ### Calendario
 
