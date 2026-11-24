@@ -1,4 +1,5 @@
 import { LOCALES } from "@rift-legends/i18n";
+import { buttonStyle } from "@rift-legends/ui-kit/components/button";
 import {
 	Select,
 	SelectContent,
@@ -73,7 +74,7 @@ export function SettingsScreen() {
 				<p className="mt-1 text-muted">{t("settings.credits.description")}</p>
 				<Link
 					to="/ajustes/creditos"
-					className="mt-3 inline-block text-action underline underline-offset-3 hover:text-text focus-visible:outline-2 focus-visible:outline-action"
+					className={`mt-3 ${buttonStyle("secondary")}`}
 				>
 					{t("settings.credits.open")}
 				</Link>

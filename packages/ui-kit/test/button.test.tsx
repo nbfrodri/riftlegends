@@ -1,7 +1,7 @@
 import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, expect, test, vi } from "vitest";
-import { Button } from "../components/button";
+import { Button, buttonStyle } from "../components/button";
 
 afterEach(cleanup);
 
@@ -81,4 +81,19 @@ test("#376: every variant shows hover and a press, and a disabled button neither
 	for (const className of [confirm, back]) {
 		expect(className).toMatch(/(^|\s)press(\s|$)/);
 	}
+});
+
+test("a link can look like a button and stay a link", () => {
+	render(
+		<>
+			<Button variant="secondary">Cancel</Button>
+			<a href="#settings" className={buttonStyle("secondary")}>
+				Back
+			</a>
+		</>,
+	);
+	const button = screen.getByRole("button", { name: "Cancel" });
+	const link = screen.getByRole("link", { name: "Back" });
+	expect(button.className).toContain(link.className);
+	expect(link.className).toContain("border-line");
 });
