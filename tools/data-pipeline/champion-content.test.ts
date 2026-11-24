@@ -111,19 +111,25 @@ it("uses an explicitly curated role even when the professional sample is elsewhe
 });
 
 it("counts older presence with half the weight of the previous season", () => {
-	const inYear = (year: number, picked: boolean) =>
+	const mids = [
+		{ id: "Annie", key: 1, classes: ["mage"] },
+		{ id: "Veigar", key: 45, classes: ["mage"] },
+	];
+	const inYear = (year: number, champion?: string) =>
 		Array.from({ length: 60 }, (_, i) => ({
-			...game(i, picked ? [["Annie", "mid"]] : [], []),
+			...game(i, champion ? [[champion, "mid"]] : [], []),
 			date: `${year}-01-01T00:00:00Z`,
 		}));
-	const tier = (year: number) =>
-		deriveChampionContent(catalog, [
-			...inYear(2026, false),
-			...inYear(2025, year === 2025),
-			...inYear(2024, year === 2024),
-		]).champions.find(({ id }) => id === "Annie")?.positions[0]?.tier;
-	expect(tier(2025)).toBe("A");
-	expect(tier(2024)).toBe("B");
+	const tiers = (annieYear: number, veigarYear: number) => {
+		const { champions } = deriveChampionContent(mids, [
+			...inYear(2026),
+			...inYear(2025, annieYear === 2025 ? "Annie" : "Veigar"),
+			...inYear(2024, annieYear === 2024 ? "Annie" : "Veigar"),
+		]);
+		return champions.map(({ positions }) => positions[0]?.tier);
+	};
+	expect(tiers(2025, 2024)).toEqual(["A", "C"]);
+	expect(tiers(2024, 2025)).toEqual(["C", "A"]);
 });
 
 it("R1/R5 keeps unplayed champions and records class-based estimates", () => {
@@ -132,16 +138,16 @@ it("R1/R5 keeps unplayed champions and records class-based estimates", () => {
 		expect.objectContaining({
 			id: "Annie",
 			name: "Annie",
-			positions: [{ role: "mid", tier: "C" }],
+			positions: [{ role: "mid", tier: "B" }],
 		}),
 		expect.objectContaining({
 			id: "MonkeyKing",
-			positions: [{ role: "jungle", tier: "C" }],
+			positions: [{ role: "jungle", tier: "B" }],
 		}),
 		expect.objectContaining({
 			id: "TestChampion",
 			name: "TestChampion",
-			positions: [{ role: "bot", tier: "C" }],
+			positions: [{ role: "bot", tier: "B" }],
 			damage: "physical",
 			power: "late",
 			archetypes: ["carry"],
@@ -168,8 +174,8 @@ it("R2 includes exactly 5% of picks, counts roleless picks and weights unlabelle
 	);
 	const { champions } = deriveChampionContent(catalog, games);
 	expect(champions.find(({ id }) => id === "Annie")?.positions).toEqual([
-		{ role: "mid", tier: "A" },
-		{ role: "support", tier: "C" },
+		{ role: "mid", tier: "B" },
+		{ role: "support", tier: "B" },
 	]);
 	expect(champions.find(({ id }) => id === "MonkeyKing")?.positions).toEqual([
 		{ role: "jungle", tier: "B" },

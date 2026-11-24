@@ -3,7 +3,8 @@ import type { RealSnapshot } from "@rift-legends/contracts/real-snapshot";
 import type { ChampionKit } from "./champion-kit-source.ts";
 import {
 	countsFor,
-	positions,
+	rankTiers,
+	scorePositions,
 	recordPick,
 	roles,
 	type SeasonPresence,
@@ -177,13 +178,30 @@ export function deriveChampionContent(
 			seasons.set(past.year, past);
 	}
 	const presence = tierSeasons(seasons.values(), season);
-	const entries = orderBy(catalog, ({ id }) => id).map(({ id, classes }) => {
+	const scored = orderBy(catalog, ({ id }) => id).map(({ id, classes }) => {
 		const profile = championProfile(id, classes, kits.get(id));
+		return { id, profile, scores: scorePositions(id, profile, presence) };
+	});
+	const tiers = new Map(
+		roles.map((role) => [
+			role,
+			rankTiers(
+				scored.flatMap(({ id, scores }) => {
+					const row = scores.find((position) => position.role === role);
+					return row ? [{ id, score: row.score, samples: row.samples }] : [];
+				}),
+			),
+		]),
+	);
+	const entries = scored.map(({ id, profile, scores }) => {
 		const { damage, power, archetypes, cc, mobility, frontline } = profile;
 		const champion: Champion = {
 			id,
 			name: id,
-			positions: positions(id, profile, presence),
+			positions: scores.map(({ role }) => ({
+				role,
+				tier: tiers.get(role)?.get(id) ?? "D",
+			})),
 			damage,
 			power,
 			archetypes: [...archetypes],
