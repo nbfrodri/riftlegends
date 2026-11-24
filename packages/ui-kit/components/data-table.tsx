@@ -56,6 +56,10 @@ export type DataTableProps<Row extends RowData> = {
 	/** Locale for text sorting; defaults to the runtime's. */
 	locale?: string;
 	className?: string;
+	/** Makes rows open something on click, Enter or Space. */
+	onRowActivate?: (row: Row) => void;
+	/** What activating a row does, read after the row by screen readers. */
+	rowActionLabel?: (row: Row) => string;
 };
 
 const features = tableFeatures({
@@ -93,6 +97,8 @@ export function DataTable<Row extends RowData>({
 	countLabel,
 	locale,
 	className,
+	onRowActivate,
+	rowActionLabel,
 }: DataTableProps<Row>) {
 	const filterId = useId();
 	const [activeId, setActiveId] = useState<string>();
@@ -188,6 +194,12 @@ export function DataTable<Row extends RowData>({
 	};
 
 	const onRowKeyDown = (event: KeyboardEvent, index: number) => {
+		const row = rows[index];
+		if (onRowActivate && row && (event.key === "Enter" || event.key === " ")) {
+			event.preventDefault();
+			onRowActivate(row.original);
+			return;
+		}
 		const target = {
 			ArrowDown: Math.min(index + 1, rows.length - 1),
 			ArrowUp: Math.max(index - 1, 0),
@@ -306,14 +318,17 @@ export function DataTable<Row extends RowData>({
 									tabIndex={isTabStop ? 0 : -1}
 									data-active={isTabStop}
 									data-odd={index % 2 === 1}
+									aria-description={rowActionLabel?.(row.original)}
 									onFocus={() => setActiveId(row.id)}
 									onKeyDown={(event) => onRowKeyDown(event, index)}
+									onClick={onRowActivate && (() => onRowActivate(row.original))}
 									// Two-tone rows by index (the window moves, positions do not
 									// hold). The darker tone is a plain class so hover and the
 									// active row, both variants, still win over it.
 									className={cn(
 										"h-[clamp(24px,3vh,30px)] hover:bg-surface focus-visible:outline-3 focus-visible:outline-action focus-visible:-outline-offset-3 data-[active=true]:bg-surface data-[active=true]:[&>td:first-child]:shadow-[inset_3px_0_var(--color-action)]",
 										index % 2 === 1 && "bg-canvas/50",
+										onRowActivate && "cursor-pointer",
 									)}
 								>
 									{row.getAllCells().map((cell) => (
