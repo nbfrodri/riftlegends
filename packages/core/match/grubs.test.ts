@@ -113,23 +113,18 @@ describe("void grubs (#361)", () => {
 		);
 	});
 
-	it("explains the effect as causes only for the holder", () => {
+	it("raises the take chance only, with the voidmites at three stacks", () => {
 		const start = { ...createMatch(matchSetup()), minute: 20 };
-		const none = edge(withGrubs(start, 0, 0), "siege").causes;
-		expect(none.find((c) => c.key === "grubs")).toBeUndefined();
-		const blue = edge(withGrubs(start, 2, 0), "siege").causes;
-		expect(blue.find((c) => c.key === "grubs")?.points).toBeGreaterThan(0);
-		const red = edge(withGrubs(start, 0, 2), "siege").causes;
-		expect(red.find((c) => c.key === "grubs")?.points).toBeLessThan(0);
-		expect(
-			edge(withGrubs(start, 3, 0), "siege").causes.some(
-				(c) => c.key === "voidmites",
-			),
-		).toBe(true);
-		expect(
-			edge(withGrubs(start, 2, 0), "siege").causes.some(
-				(c) => c.key === "voidmites",
-			),
-		).toBe(false);
+		const chance = (n: number) => takeChance(withGrubs(start, n, 0), "blue");
+		expect(chance(1)).toBeGreaterThan(chance(0));
+		expect(chance(2)).toBeGreaterThan(chance(1));
+		// The third grub adds the voidmites on top of its own stack.
+		expect(chance(3) - chance(2)).toBeGreaterThan(chance(2) - chance(1));
+		// It does not move the siege edge: only the push's take chance changes.
+		for (const n of [1, 2, 3]) {
+			expect(edge(withGrubs(start, n, 0), "siege").blue).toBe(
+				edge(withGrubs(start, 0, 0), "siege").blue,
+			);
+		}
 	});
 });

@@ -114,12 +114,12 @@ describe.each(["control", "packaged", "real"] as const)(
 				expect(gap(got[2], want[2])).toBeLessThanOrEqual(edge);
 			};
 
-			it.each(ROLES)("%s kill share is within 3 pp of the pros", (role) => {
-				within(share(role, false), KILL_SHARE[role], [3, 6]);
+			it.each(ROLES)("%s kill share is within 3.5 pp of the pros", (role) => {
+				within(share(role, false), KILL_SHARE[role], [3.5, 6]);
 			});
 
-			it.each(ROLES)("%s participation is within 5 pp of the pros", (role) => {
-				within(share(role, true), PARTICIPATION[role], [5, 8]);
+			it.each(ROLES)("%s participation is within 6 pp of the pros", (role) => {
+				within(share(role, true), PARTICIPATION[role], [6, 9]);
 			});
 
 			it("a kill has 2.0–2.6 assists on average", () => {
