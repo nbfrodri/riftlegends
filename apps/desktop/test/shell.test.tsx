@@ -244,6 +244,8 @@ describe("T6: collapsing and keyboard", () => {
 		await user.tab();
 		expect(document.activeElement).toBe(section("Campeones"));
 		await user.tab();
+		expect(document.activeElement).toBe(section("Base de datos"));
+		await user.tab();
 		expect(document.activeElement).toBe(section("Mercado"));
 		await user.tab();
 		expect(document.activeElement).toBe(section("Ajustes"));
