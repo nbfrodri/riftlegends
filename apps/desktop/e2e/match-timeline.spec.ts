@@ -145,6 +145,16 @@ test("replays a drafted game and continues to its result", async ({
 		const faceToFace = page.getByRole("table", { name: "Cara a cara" });
 		await expect(faceToFace).toBeInViewport({ ratio: 1 });
 		await expect(faceToFace.getByRole("row")).toHaveCount(7);
+		// #450: each stat header (icon and label) keeps clear of its neighbours.
+		const headerGaps = await faceToFace.evaluate((table) => {
+			const boxes = [...table.querySelectorAll("thead th[scope=col]")]
+				.map((th) => th.firstElementChild)
+				.filter((label) => label?.querySelector("svg"))
+				.map((label) => (label as Element).getBoundingClientRect());
+			return boxes.slice(1).map((box, i) => box.left - (boxes[i]?.right ?? 0));
+		});
+		expect(headerGaps).toHaveLength(5);
+		for (const gap of headerGaps) expect(gap).toBeGreaterThanOrEqual(12);
 		// #433: a long handle is cut, and the pictures and the name block keep
 		// their place in every row.
 		await faceToFace

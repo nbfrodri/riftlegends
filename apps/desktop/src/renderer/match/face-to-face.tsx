@@ -126,7 +126,12 @@ function Player({
 		<span key="photo" data-part="photo" className="flex">
 			<PlayerPortrait id={id} handle={player.handle} size="h-8 w-[26px]" />
 		</span>,
-		<span key="champion" data-part="champion" className="flex">
+		// A 20 px champion badge over the photo's lower inner corner leaves the name more room (#450).
+		<span
+			key="champion"
+			data-part="champion"
+			className={`relative flex self-end ring-2 ring-panel [&_[role=img]]:size-5 ${side === "blue" ? "-ml-2" : "-mr-2"}`}
+		>
 			<ChampionPortrait
 				id={player.champion}
 				label={player.championName}
@@ -134,7 +139,10 @@ function Player({
 			/>
 		</span>,
 		<Tooltip key="name" heading={player.handle} content={player.championName}>
-			<span data-part="name" className="min-w-0 text-center">
+			<span
+				data-part="name"
+				className={`min-w-0 text-center ${side === "blue" ? "ml-1.5" : "mr-1.5"}`}
+			>
 				<span className="block truncate font-bold text-(--side)">
 					{player.handle}
 				</span>
@@ -148,11 +156,11 @@ function Player({
 		</Tooltip>,
 	];
 	return (
-		<td data-side={side}>
+		<td data-side={side} className="px-1!">
 			{parts && (
 				<span
 					data-lane-player
-					className={`grid items-center gap-1 ${side === "blue" ? "grid-cols-[auto_auto_minmax(0,1fr)]" : "grid-cols-[minmax(0,1fr)_auto_auto]"}`}
+					className={`grid items-center ${side === "blue" ? "grid-cols-[auto_auto_minmax(0,1fr)]" : "grid-cols-[minmax(0,1fr)_auto_auto]"}`}
 				>
 					{side === "blue" ? parts : parts.reverse()}
 				</span>
@@ -162,10 +170,12 @@ function Player({
 }
 
 const columns = ["kda", "cs", "gold"] as const;
+/** Stat cells: 8 px each side, so neighbouring columns stay 16 px apart (#450). */
+const stat = "px-2! tabular-nums";
 
 function Kda({ line, side }: { line: Line; side: Side }) {
 	return (
-		<td data-side={side} className="font-bold text-(--side)">
+		<td data-side={side} className={`font-bold text-(--side) ${stat}`}>
 			{line.kills}/{line.deaths}/{line.assists}
 		</td>
 	);
@@ -174,8 +184,9 @@ function Kda({ line, side }: { line: Line; side: Side }) {
 function StatHeader({ column }: { column: (typeof columns)[number] }) {
 	const { t } = useTranslation();
 	return (
-		<th scope="col">
-			<span className="inline-flex items-center gap-1">
+		// Icon over label: narrow headers; tight padding keeps the row low.
+		<th scope="col" className={`py-0.5! ${stat}`}>
+			<span className="inline-flex flex-col items-center gap-0.5">
 				<StatIcon stat={column} size={18} />
 				{t(`draft.match.faceToFace.${column}`)}
 			</span>
@@ -244,16 +255,17 @@ export function FaceToFace({
 		<section className={`${panel} h-full`}>
 			<h2 className={panelTitle}>{t("draft.match.faceToFace")}</h2>
 			<table aria-label={t("draft.match.faceToFace")} className={panelTable}>
+				{/* Fixed stat columns, 16 px apart (#450); the players take the rest. */}
 				<colgroup>
-					<col className="w-[21%]" />
-					<col className="w-[8.5%]" />
-					<col className="w-[6.5%]" />
-					<col className="w-[8.5%]" />
 					<col />
-					<col className="w-[8.5%]" />
-					<col className="w-[6.5%]" />
-					<col className="w-[8.5%]" />
-					<col className="w-[21%]" />
+					<col className="w-[62px]" />
+					<col className="w-[42px]" />
+					<col className="w-[56px]" />
+					<col className="w-[84px]" />
+					<col className="w-[56px]" />
+					<col className="w-[42px]" />
+					<col className="w-[62px]" />
+					<col />
 				</colgroup>
 				<thead>
 					<tr>
@@ -286,8 +298,8 @@ export function FaceToFace({
 								side="blue"
 							/>
 							<Kda line={blue} side="blue" />
-							<td>{blue.cs}</td>
-							<td>{format.format(blue.gold)}</td>
+							<td className={stat}>{blue.cs}</td>
+							<td className={stat}>{format.format(blue.gold)}</td>
 							<th scope="row">
 								<span className="flex flex-col items-center gap-1.5">
 									<span className="inline-flex items-center gap-1.5">
@@ -298,8 +310,8 @@ export function FaceToFace({
 									<LeadText blue={blue} red={red} names={names} />
 								</span>
 							</th>
-							<td>{format.format(red.gold)}</td>
-							<td>{red.cs}</td>
+							<td className={stat}>{format.format(red.gold)}</td>
+							<td className={stat}>{red.cs}</td>
 							<Kda line={red} side="red" />
 							<Player
 								id={red.player}
