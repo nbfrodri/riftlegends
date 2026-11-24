@@ -3,6 +3,9 @@
 // when the market reads real players from the core (spike S2 and phase 2);
 // do not move it into `packages/core`.
 
+/** Today in the placeholder season (the sidebar shows it too). */
+export const placeholderToday = "2027-06-18";
+
 type PlayerRole = "top" | "jungle" | "mid" | "bot" | "support";
 
 export type PlaceholderPlayer = {

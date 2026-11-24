@@ -269,7 +269,9 @@ describe("T11: reduced motion", () => {
 	test("the shell animates only when the user allows motion", async () => {
 		const { user } = await renderShell("/mercado");
 		await user.click(toggle());
-		const shell = screen.getByRole("complementary").parentElement;
+		const shell = screen.getByRole("complementary", {
+			name: "Barra lateral",
+		}).parentElement;
 		const animated = [...(shell?.querySelectorAll("[class]") ?? [])].flatMap(
 			(element) =>
 				[...element.classList].filter((name) =>

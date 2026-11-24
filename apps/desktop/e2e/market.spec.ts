@@ -67,3 +67,36 @@ test("Market moves between rows with the arrow keys", async ({ appWindow }) => {
 	await expect(rows.last()).toHaveAttribute("aria-rowindex", "37");
 	await expect(rows.last()).toHaveCSS("outline-style", "solid");
 });
+
+test("Market combines panel filters, presets and a cell filter, then clears them", async ({
+	appWindow,
+}) => {
+	await openMarket(appWindow);
+	const panel = appWindow.getByRole("complementary", { name: "Filters" });
+	const status = appWindow.getByRole("status");
+	await expect(status).toHaveText("36 of 36 players");
+	await panel
+		.getByRole("group", { name: "Role" })
+		.getByRole("button", { name: "Mid" })
+		.click();
+	await dataRows(appWindow)
+		.filter({ hasText: "Nadir" })
+		.getByRole("button", { name: "Bruma" })
+		.click();
+	await expect(status).toHaveText("2 of 36 players");
+	const chips = appWindow.getByRole("list", { name: "Active filters" });
+	await expect(chips.getByRole("listitem")).toHaveText([
+		"Role: Mid",
+		"Team: Bruma",
+	]);
+	await chips
+		.getByRole("button", { name: "Remove filter Team: Bruma" })
+		.click();
+	await expect(status).toHaveText("8 of 36 players");
+	await panel.getByRole("button", { name: "Young" }).click();
+	await expect(
+		panel.getByRole("slider", { name: "Maximum age" }),
+	).toHaveAttribute("aria-valuenow", "21");
+	await panel.getByRole("button", { name: "Clear filters" }).click();
+	await expect(status).toHaveText("36 of 36 players");
+});
