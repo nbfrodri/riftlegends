@@ -54,17 +54,31 @@ test("Mercado with the sidebar expanded", async ({ appWindow }) => {
 	await captureScreen(appWindow, "mercado-expanded.png");
 });
 
-test("Mercado with active filters and the color scale", async ({
+const filterMarket = async (page: Page) => {
+	await goTo(page, "Mercado");
+	const panel = page.getByRole("complementary", { name: "Filtros" });
+	await panel
+		.getByRole("group", { name: "Posición" })
+		.getByRole("button", { name: "Mid" })
+		.click();
+	await panel.getByRole("button", { name: "Jóvenes" }).click();
+	await expect(
+		page.getByRole("list", { name: "Filtros activos" }),
+	).toBeVisible();
+	await page.mouse.move(0, 0);
+};
+
+test("Mercado with the filter panel, a preset and the color scale", async ({
 	appWindow,
 }) => {
-	await goTo(appWindow, "Mercado");
-	await appWindow.getByRole("button", { name: "Mid" }).click();
-	await appWindow.getByRole("spinbutton", { name: "Edad máxima" }).fill("25");
-	await expect(
-		appWindow.getByRole("list", { name: "Filtros activos" }),
-	).toBeVisible();
-	await appWindow.mouse.move(0, 0);
+	await filterMarket(appWindow);
 	await captureScreen(appWindow, "mercado-filters.png");
+});
+
+test("Mercado filters fit the minimum window", async ({ appWindow }) => {
+	await appWindow.setViewportSize({ width: 1280, height: 720 });
+	await filterMarket(appWindow);
+	await captureScreen(appWindow, "mercado-filters-1280.png");
 });
 
 test.describe("Campeones", () => {

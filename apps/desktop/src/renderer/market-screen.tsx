@@ -2,14 +2,15 @@ import {
 	DataTable,
 	type DataTableColumn,
 } from "@rift-legends/ui-kit/components/data-table";
+import { Tooltip } from "@rift-legends/ui-kit/components/tooltip";
 import { Minus, TrendingDown, TrendingUp } from "lucide-react";
-import { useMemo, useState } from "react";
+import { type ReactNode, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { GameRoleIcon } from "./assets/game-role-icon";
 import { levelColor, levelOf } from "./level-scale";
-import { MarketFilterBar } from "./market-filter-bar";
+import { ActiveFilterChips, MarketFilterPanel } from "./market-filter-panel";
 import {
-	contractYear,
+	cheapSalaryMax,
 	EMPTY_FILTERS,
 	filterPlayers,
 	type MarketFilters,
@@ -17,6 +18,7 @@ import {
 import {
 	type PlaceholderPlayer,
 	placeholderPlayers,
+	placeholderToday,
 } from "./placeholder-players";
 
 const formTrend = (form: number) =>
@@ -26,24 +28,65 @@ const formTrend = (form: number) =>
 			? { key: "down" as const, Icon: TrendingDown, color: "text-bad" }
 			: { key: "flat" as const, Icon: Minus, color: "text-muted" };
 
-const unique = <T,>(values: readonly T[]) =>
-	[...new Set(values)].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
+const unique = (values: readonly string[]) =>
+	[...new Set(values)].sort((a, b) => a.localeCompare(b));
+
+const bounds = (values: readonly number[], step = 1) =>
+	[
+		Math.floor(Math.min(...values) / step) * step,
+		Math.ceil(Math.max(...values) / step) * step,
+	] as const;
+
+/** A small button in a cell that filters the table by that cell's value. */
+function CellFilter(props: {
+	label: string;
+	onClick: () => void;
+	children: ReactNode;
+}) {
+	return (
+		<Tooltip content={props.label}>
+			{/* Rows move with the arrow keys; the panel offers the same filters by keyboard. */}
+			<button
+				type="button"
+				tabIndex={-1}
+				onClick={props.onClick}
+				className="press -mx-1 inline-flex cursor-pointer items-center gap-2 rounded-control px-1 align-middle hover:bg-panel hover:text-action"
+			>
+				{props.children}
+			</button>
+		</Tooltip>
+	);
+}
 
 export function MarketScreen({
 	players = placeholderPlayers,
+	season = Number(placeholderToday.slice(0, 4)),
 }: {
 	/** The market rows; tests pass larger sets. */
 	players?: readonly PlaceholderPlayer[];
+	/** The current season, for "contract ends this year". */
+	season?: number;
 }) {
 	const { t, i18n } = useTranslation();
 	const language = i18n.language;
 	const [filters, setFilters] = useState<MarketFilters>(EMPTY_FILTERS);
 	const shown = useMemo(
-		() => filterPlayers(players, filters),
-		[players, filters],
+		() => filterPlayers(players, filters, season),
+		[players, filters, season],
 	);
-	const teams = useMemo(() => unique(players.map((p) => p.team)), [players]);
-	const years = useMemo(() => unique(players.map(contractYear)), [players]);
+	const ranges = useMemo(
+		() => ({
+			teams: unique(players.map((p) => p.team)),
+			age: bounds(players.map((p) => p.age)),
+			rating: bounds(players.map((p) => p.rating)),
+			salary: bounds(
+				players.map((p) => p.salary),
+				100,
+			),
+			presets: { cheapMax: cheapSalaryMax(players) },
+		}),
+		[players],
+	);
 
 	// Spanish skips the thousands separator on four digits unless forced,
 	// which would misalign a right-aligned column.
@@ -76,17 +119,33 @@ export function MarketScreen({
 				id: "role",
 				header: t("market.column.role"),
 				value: (player) => t(`market.role.${player.role}`),
-				cell: (player) => (
-					<span className="inline-flex items-center gap-2 align-middle">
-						<GameRoleIcon role={player.role} size={16} />
-						{t(`market.role.${player.role}`)}
-					</span>
-				),
+				cell: (player) => {
+					const role = t(`market.role.${player.role}`);
+					return (
+						<CellFilter
+							label={t("market.filterBy", { value: role })}
+							onClick={() =>
+								setFilters((f) => ({ ...f, roles: [player.role] }))
+							}
+						>
+							<GameRoleIcon role={player.role} size={16} />
+							{role}
+						</CellFilter>
+					);
+				},
 			},
 			{
 				id: "team",
 				header: t("market.column.team"),
 				value: (player) => player.team,
+				cell: (player) => (
+					<CellFilter
+						label={t("market.filterBy", { value: player.team })}
+						onClick={() => setFilters((f) => ({ ...f, team: player.team }))}
+					>
+						{player.team}
+					</CellFilter>
+				),
 			},
 			{
 				id: "age",
@@ -152,27 +211,39 @@ export function MarketScreen({
 			<h1 className="font-bold font-display text-[clamp(29px,2.5vw,48px)] uppercase leading-none tracking-heading">
 				{t("shell.nav.market")}
 			</h1>
-			<MarketFilterBar
-				filters={filters}
-				onChange={setFilters}
-				teams={teams}
-				years={years}
-				formatSalary={formatSalary}
-			/>
-			<DataTable
-				className="flex-1"
-				label={t("market.table.label")}
-				data={shown}
-				columns={columns}
-				getRowId={(player) => player.id}
-				filterLabel={t("market.filter.label")}
-				filterPlaceholder={t("market.filter.placeholder")}
-				emptyText={t("market.empty")}
-				countLabel={(count) =>
-					t("market.count", { shown: count, total: players.length })
-				}
-				locale={language}
-			/>
+			<div className="flex min-h-0 flex-1 gap-[clamp(10px,1vw,16px)]">
+				<MarketFilterPanel
+					filters={filters}
+					onChange={setFilters}
+					teams={ranges.teams}
+					age={ranges.age}
+					rating={ranges.rating}
+					salary={ranges.salary}
+					presets={ranges.presets}
+					formatSalary={formatSalary}
+				/>
+				<div className="flex min-w-0 flex-1 flex-col gap-2">
+					<ActiveFilterChips
+						filters={filters}
+						onChange={setFilters}
+						formatSalary={formatSalary}
+					/>
+					<DataTable
+						className="min-h-0 flex-1"
+						label={t("market.table.label")}
+						data={shown}
+						columns={columns}
+						getRowId={(player) => player.id}
+						filterLabel={t("market.filter.label")}
+						filterPlaceholder={t("market.filter.placeholder")}
+						emptyText={t("market.empty")}
+						countLabel={(count) =>
+							t("market.count", { shown: count, total: players.length })
+						}
+						locale={language}
+					/>
+				</div>
+			</div>
 		</section>
 	);
 }

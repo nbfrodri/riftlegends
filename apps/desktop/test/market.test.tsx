@@ -170,99 +170,168 @@ describe("Mercado color scale (#384)", () => {
 	});
 });
 
-describe("Mercado filters (#385)", () => {
+describe("Mercado filter panel (#385)", () => {
 	const status = () => screen.getByRole("status").textContent;
 	const names = () => rowsOf().map((row) => cellText(row, 0));
+	const panel = (name = "Filters") =>
+		screen.getByRole("complementary", { name });
+	const year = (p: (typeof placeholderPlayers)[number]) =>
+		Number(p.contractEnd.slice(0, 4));
 
 	test("filters by role with the role icons and combines with the team", async () => {
 		const user = userEvent.setup();
 		await renderInLocale(<MarketScreen />, "en-US");
-		const mid = screen.getByRole("button", { name: "Mid" });
+		const mid = within(panel()).getByRole("button", { name: "Mid" });
 		await user.click(mid);
 		expect(mid.getAttribute("aria-pressed")).toBe("true");
 		const mids = placeholderPlayers.filter((p) => p.role === "mid");
 		expect(status()).toBe(`${mids.length} of 36 players`);
-		await user.click(screen.getByRole("combobox", { name: "Team" }));
+		await user.click(within(panel()).getByRole("combobox", { name: "Team" }));
 		await user.click(await screen.findByRole("option", { name: "Bruma" }));
 		expect(names()).toEqual(
 			mids.filter((p) => p.team === "Bruma").map((p) => p.name),
 		);
 	});
 
-	test("filters by age, rating, contract end and maximum salary", async () => {
+	test("narrows age with a two-thumb slider and shows the range as text", async () => {
 		const user = userEvent.setup();
 		await renderInLocale(<MarketScreen />, "en-US");
-		await user.type(
-			screen.getByRole("spinbutton", { name: "Minimum age" }),
-			"25",
+		const age = within(panel()).getByRole("group", { name: "Age" });
+		expect(age.textContent).toContain("18 – 30");
+		within(age).getByRole("slider", { name: "Maximum age" }).focus();
+		await user.keyboard("{PageDown}");
+		expect(age.textContent).toContain("18 – 20");
+		expect(names()).toEqual(
+			placeholderPlayers.filter((p) => p.age <= 20).map((p) => p.name),
 		);
-		await user.type(
-			screen.getByRole("spinbutton", { name: "Maximum rating" }),
-			"84",
-		);
-		await user.type(
-			screen.getByRole("spinbutton", { name: "Maximum monthly salary" }),
-			"15000",
-		);
-		await user.click(
-			screen.getByRole("combobox", { name: "Contract ends by" }),
-		);
-		await user.click(await screen.findByRole("option", { name: "2027" }));
+		expect(within(panel()).queryByRole("spinbutton")).toBeNull();
+	});
+
+	test("filters form and contract with segmented buttons", async () => {
+		const user = userEvent.setup();
+		await renderInLocale(<MarketScreen />, "en-US");
+		await user.click(within(panel()).getByRole("radio", { name: "Rising" }));
+		await user.click(within(panel()).getByRole("radio", { name: "Next year" }));
 		expect(names()).toEqual(
 			placeholderPlayers
-				.filter(
-					(p) =>
-						p.age >= 25 &&
-						p.rating <= 84 &&
-						p.salary <= 15000 &&
-						Number(p.contractEnd.slice(0, 4)) <= 2027,
-				)
+				.filter((p) => p.form > 0 && year(p) === 2028)
 				.map((p) => p.name),
 		);
+		await user.click(within(panel()).getByRole("radio", { name: "This year" }));
+		expect(names()).toEqual(
+			placeholderPlayers
+				.filter((p) => p.form > 0 && year(p) <= 2027)
+				.map((p) => p.name),
+		);
+	});
+
+	test("presets set the sections, combine, and a second click removes them", async () => {
+		const user = userEvent.setup();
+		await renderInLocale(<MarketScreen />, "es-ES");
+		const presets = within(panel("Filtros")).getByRole("group", {
+			name: "Atajos",
+		});
+		const young = within(presets).getByRole("button", { name: "Jóvenes" });
+		await user.click(young);
+		expect(young.getAttribute("aria-pressed")).toBe("true");
+		expect(
+			screen
+				.getByRole("slider", { name: "Edad máxima" })
+				.getAttribute("aria-valuenow"),
+		).toBe("21");
+		await user.click(within(presets).getByRole("button", { name: "Baratos" }));
+		expect(names()).toEqual(
+			placeholderPlayers
+				.filter((p) => p.age <= 21 && p.salary <= 6400)
+				.map((p) => p.name),
+		);
+		const top = within(presets).getByRole("button", { name: "Top nivel" });
+		await user.click(top);
+		expect(
+			screen
+				.getByRole("slider", { name: "Nivel mínimo" })
+				.getAttribute("aria-valuenow"),
+		).toBe("80");
+		await user.click(young);
+		expect(young.getAttribute("aria-pressed")).toBe("false");
+		expect(
+			screen
+				.getByRole("slider", { name: "Edad máxima" })
+				.getAttribute("aria-valuenow"),
+		).toBe("30");
+		await user.click(
+			within(presets).getByRole("button", { name: "Fin de contrato" }),
+		);
+		expect(
+			(screen.getByRole("radio", { name: "Este año" }) as HTMLInputElement)
+				.checked,
+		).toBe(true);
+		await user.click(within(presets).getByRole("button", { name: "En forma" }));
+		expect(
+			(screen.getByRole("radio", { name: "En alza" }) as HTMLInputElement)
+				.checked,
+		).toBe(true);
+	});
+
+	test("filters by a player's team or role from the table", async () => {
+		const user = userEvent.setup();
+		await renderInLocale(<MarketScreen />, "en-US");
+		const nadir = screen.getByRole("row", { name: /^Nadir\b/ });
+		await user.click(within(nadir).getByRole("button", { name: "Bruma" }));
+		expect(names()).toEqual(
+			placeholderPlayers.filter((p) => p.team === "Bruma").map((p) => p.name),
+		);
+		const row = screen.getByRole("row", { name: /^Nadir\b/ });
+		await user.click(within(row).getByRole("button", { name: "Mid" }));
+		expect(names()).toEqual(["Nadir", "Bruno"]);
+		expect(
+			within(panel())
+				.getByRole("button", { name: "Mid" })
+				.getAttribute("aria-pressed"),
+		).toBe("true");
 	});
 
 	test("shows each active filter as a chip that removes it, and clears them all", async () => {
 		const user = userEvent.setup();
 		await renderInLocale(<MarketScreen />, "es-ES");
-		expect(
-			screen.queryByRole("button", { name: "Limpiar filtros" }),
-		).toBeNull();
-		await user.click(screen.getByRole("button", { name: "Top" }));
-		await user.type(
-			screen.getByRole("spinbutton", { name: "Edad máxima" }),
-			"22",
+		const clear = within(panel("Filtros")).getByRole("button", {
+			name: "Limpiar filtros",
+		});
+		expect(clear.hasAttribute("disabled")).toBe(true);
+		await user.click(
+			within(screen.getByRole("group", { name: "Posición" })).getByRole(
+				"button",
+				{ name: "Top" },
+			),
 		);
+		screen.getByRole("slider", { name: "Edad máxima" }).focus();
+		await user.keyboard("{PageDown}");
 		const chips = screen.getByRole("list", { name: "Filtros activos" });
 		expect(
 			within(chips)
 				.getAllByRole("listitem")
 				.map((chip) => chip.textContent),
-		).toEqual(["Posición: Top", "Edad: hasta 22"]);
+		).toEqual(["Posición: Top", "Edad: hasta 20"]);
 		await user.click(
 			within(chips).getByRole("button", {
 				name: "Quitar filtro Posición: Top",
 			}),
 		);
-		expect(
-			screen.getByRole("button", { name: "Top" }).getAttribute("aria-pressed"),
-		).toBe("false");
-		expect(rowsOf().every((row) => Number(cellText(row, 3)) <= 22)).toBe(true);
-		await user.click(screen.getByRole("button", { name: "Limpiar filtros" }));
+		expect(rowsOf().every((row) => Number(cellText(row, 3)) <= 20)).toBe(true);
+		await user.click(clear);
 		expect(status()).toBe("36 de 36 jugadores");
 		expect(screen.queryByRole("list", { name: "Filtros activos" })).toBeNull();
 		expect(
-			(
-				screen.getByRole("spinbutton", {
-					name: "Edad máxima",
-				}) as HTMLInputElement
-			).value,
-		).toBe("");
+			screen
+				.getByRole("slider", { name: "Edad máxima" })
+				.getAttribute("aria-valuenow"),
+		).toBe("30");
 	});
 
 	test("keeps sorting the filtered rows by any header", async () => {
 		const user = userEvent.setup();
 		await renderInLocale(<MarketScreen />, "en-US");
-		await user.click(screen.getByRole("button", { name: "ADC" }));
+		await user.click(within(panel()).getByRole("button", { name: "ADC" }));
 		const age = screen.getByRole("columnheader", { name: "Age" });
 		await user.click(within(age).getByRole("button"));
 		await user.click(within(age).getByRole("button"));
@@ -292,7 +361,7 @@ describe("Mercado filters (#385)", () => {
 			id: `p${index}`,
 		}));
 		await renderInLocale(<MarketScreen players={many} />, "en-US");
-		await user.click(screen.getByRole("button", { name: "Support" }));
+		await user.click(within(panel()).getByRole("button", { name: "Support" }));
 		const supports = many.filter((p) => p.role === "support").length;
 		expect(status()).toBe(`${supports} of 5000 players`);
 		await user.click(
