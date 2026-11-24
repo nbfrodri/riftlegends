@@ -162,9 +162,13 @@ test.describe("Quick draft", () => {
 			force: true,
 		});
 		await appWindow.getByRole("button", { name: "Empezar serie" }).click();
-		await appWindow.getByRole("radiogroup").getByRole("radio").last().check({
-			force: true,
-		});
+		// Wait for the side screen: the setup has radio groups of its own.
+		await expect(
+			appWindow.getByRole("heading", { level: 1, name: "Lado y orden" }),
+		).toBeVisible();
+		const choices = appWindow.getByRole("radiogroup").getByRole("radio");
+		await expect(choices.first()).toBeVisible();
+		await choices.last().check({ force: true });
 		await appWindow.getByRole("button", { name: "Confirmar decisión" }).click();
 		// Freeze the clock the countdown reads so the bar stays full (30 s left).
 		await appWindow.evaluate(() => {
