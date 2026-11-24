@@ -2,6 +2,7 @@ import { shuffle } from "../rng/helpers";
 import { SCOPES } from "../rng/scopes";
 import { deriveSeed } from "../rng/seeds";
 import { createRng } from "../rng/streams";
+import { drawGame1Priority } from "./round-robin";
 
 export interface SwissTeam {
 	readonly id: string;
@@ -193,28 +194,23 @@ export function pairSwissRound(
 		);
 	});
 	if (matching === null) throw new RangeError("Swiss round cannot be paired");
+	const sorted = matching
+		.map(([x, y]) =>
+			(seedOf.get(x.id) as number) < (seedOf.get(y.id) as number)
+				? { a: x.id, b: y.id }
+				: { a: y.id, b: x.id },
+		)
+		.sort((p, q) => (seedOf.get(p.a) as number) - (seedOf.get(q.a) as number));
+	const priorities = drawGame1Priority(rootSeed, { ...scope, round }, sorted);
 	return {
 		round,
 		relaxed: [],
-		pairings: matching
-			.map(([x, y]) =>
-				(seedOf.get(x.id) as number) < (seedOf.get(y.id) as number)
-					? { a: x, b: y }
-					: { a: y, b: x },
-			)
-			.sort(
-				(p, q) =>
-					(seedOf.get(p.a.id) as number) - (seedOf.get(q.a.id) as number),
-			)
-			.map(({ a, b }) => ({
-				a: a.id,
-				b: b.id,
-				bestOf:
-					decisive(a.id) || decisive(b.id)
-						? rules.decisiveBestOf
-						: rules.bestOf,
-				priority: a.id,
-				reason: round === 1 ? "pots" : "same-record",
-			})),
+		pairings: sorted.map(({ a, b }, index) => ({
+			a,
+			b,
+			bestOf: decisive(a) || decisive(b) ? rules.decisiveBestOf : rules.bestOf,
+			priority: priorities[index] as string,
+			reason: round === 1 ? "pots" : "same-record",
+		})),
 	};
 }
