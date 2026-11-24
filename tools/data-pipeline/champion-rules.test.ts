@@ -1,4 +1,6 @@
 import { expect, it } from "vitest";
+import { laneHits, teamHits } from "./champion-rules.ts";
+import { championProfile } from "./curated-champions.ts";
 import { deriveChampionContent } from "./champion-content.ts";
 import { curatedTraitIds } from "./champion-traits.ts";
 
@@ -80,3 +82,39 @@ it.each([
 		content.synergies.find((m) => m.a === a && m.b === b)?.reasons,
 	).toContain(rule);
 });
+
+// C7 (#345): anti-AP and anti-AD traits count only in lane matchups, at most
+// 2 points, and never in the team composition score.
+it("resistVsDamage never explains a team counter", () => {
+	expect(
+		content.counters.filter((m) => m.reasons?.includes("resistVsDamage")),
+	).toEqual([]);
+});
+
+it("resistVsDamage never explains a team counter by rule", () => {
+	const profile = (id: string) => championProfile(id, []);
+	for (const [a, b] of [
+		["Galio", "Veigar"],
+		["Malphite", "Tryndamere"],
+		["Rammus", "Graves"],
+	] as const)
+		expect(teamHits(profile(a), profile(b)).map((h) => h.reason)).not.toContain(
+			"resistVsDamage",
+		);
+});
+
+it.each([
+	["Galio", "Veigar", "mid"],
+	["Malphite", "Tryndamere", "top"],
+	["Rammus", "Graves", "jungle"],
+] as const)(
+	"resistVsDamage gives %s at most 2 lane points against %s",
+	(a, b, role) => {
+		const hit = laneHits(
+			championProfile(a, []),
+			championProfile(b, []),
+			role,
+		).find((h) => h.reason === "resistVsDamage");
+		expect(hit?.points).toBe(2);
+	},
+);
