@@ -18,8 +18,8 @@ it.each([
 	["shieldVsPoke", "Karma", "Brand", "support"],
 	["shieldVsSustain", "Sett", "Aatrox", "top"],
 	["tankShred", "Fiora", "Sion", "top"],
-	["resistVsDamage", "Galio", "Veigar", "mid"],
-	["resistVsDamage", "Malphite", "Tryndamere", "top"],
+	["resistVsDamage", "Galio", "Diana", "mid"],
+	["resistVsDamage", "Malphite", "Riven", "top"],
 	["resistVsDamage", "Rammus", "Graves", "jungle"],
 	["splitDuel", "Fiora", "Sion", "top"],
 	["tankVsBurst", "Galio", "Zed", "mid"],
@@ -94,8 +94,8 @@ it("resistVsDamage never explains a team counter", () => {
 it("resistVsDamage never explains a team counter by rule", () => {
 	const profile = (id: string) => championProfile(id, []);
 	for (const [a, b] of [
-		["Galio", "Veigar"],
-		["Malphite", "Tryndamere"],
+		["Galio", "Diana"],
+		["Malphite", "Riven"],
 		["Rammus", "Graves"],
 	] as const)
 		expect(teamHits(profile(a), profile(b)).map((h) => h.reason)).not.toContain(
@@ -104,8 +104,8 @@ it("resistVsDamage never explains a team counter by rule", () => {
 });
 
 it.each([
-	["Galio", "Veigar", "mid"],
-	["Malphite", "Tryndamere", "top"],
+	["Galio", "Diana", "mid"],
+	["Malphite", "Riven", "top"],
 	["Rammus", "Graves", "jungle"],
 ] as const)(
 	"resistVsDamage gives %s at most 2 lane points against %s",
