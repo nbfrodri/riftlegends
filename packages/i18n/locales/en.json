@@ -540,7 +540,6 @@
 	"draft.aiPanel.behind.some": "A little behind in the score",
 	"draft.aiPanel.behind.outside": "Not on its shortlist",
 	"draft.aiPanel.reply": "The reply it expects from you",
-	"draft.broadcast.first": "First pick · {{side}}",
 	"draft.aiPanel.factor.blueSide": "Blue map advantage",
 	"draft.aiPanel.factor.meta": "Strength in this patch",
 	"draft.aiPanel.factor.comfort": "Player familiarity",
