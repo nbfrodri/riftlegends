@@ -205,6 +205,90 @@ describe("validateFormat (V2)", () => {
 	});
 });
 
+describe("validateFormat, more rules", () => {
+	const withStage = (stage: object) => {
+		const c = league();
+		return { ...c, stages: [c.stages[0], { ...c.stages[1], ...stage }] };
+	};
+	const double = {
+		type: "doubleElim",
+		size: 8,
+		upper: [3, 5, 5],
+		lower: [3, 3, 5, 5],
+		drop: [0, 1, 3],
+		grandFinal: 5,
+		reset: false,
+	};
+
+	it("accepts a double elimination and checks its Bo and drop lists", () => {
+		expect(validateFormat(withStage({ play: double })).ok).toBe(true);
+		invalidAt(
+			withStage({ play: { ...double, upper: [3, 5] } }),
+			"stages.1.play.upper",
+		);
+		invalidAt(
+			withStage({ play: { ...double, drop: [0, 1] } }),
+			"stages.1.play.drop",
+		);
+	});
+
+	it("rejects repeated tiebreak criteria", () => {
+		invalidAt(
+			{ ...league(), tiebreak: ["seriesWins", "seriesWins"] },
+			"tiebreak",
+		);
+	});
+
+	it("rejects a standing range that ends before it starts", () => {
+		invalidAt(
+			withStage({
+				entrants: { kind: "standing", stage: "regular", from: 4, to: 2 },
+			}),
+			"stages.1.entrants.to",
+		);
+	});
+
+	it("caps maxSeriesPerDay at 4, at least 1, and defaults it to 4", () => {
+		const c = league();
+		const win = (maxSeriesPerDay: number) => ({
+			...c,
+			stages: [
+				{
+					...c.stages[0],
+					window: { startWeek: 0, weeks: 8, matchDays: 3, maxSeriesPerDay },
+				},
+				c.stages[1],
+			],
+		});
+		invalidAt(win(0), "stages.0.window.maxSeriesPerDay");
+		invalidAt(win(5), "stages.0.window.maxSeriesPerDay");
+		expect(validateFormat(win(4)).ok).toBe(true);
+		const { maxSeriesPerDay: _, ...bare } =
+			c.stages[0]?.window ?? ({} as never);
+		const parsed = validateFormat({
+			...c,
+			stages: [{ ...c.stages[0], window: bare }, c.stages[1]],
+		});
+		expect(
+			parsed.ok && parsed.competition.stages[0]?.window.maxSeriesPerDay,
+		).toBe(4);
+	});
+
+	it("rejects unknown fields in a nested object too", () => {
+		const c = league();
+		invalidAt(
+			{
+				...c,
+				stages: [
+					{ ...c.stages[0], window: { ...c.stages[0]?.window, extra: 1 } },
+					c.stages[1],
+				],
+			},
+			"stages.0.window",
+		);
+	});
+});
+
 describe("competition commands and queries", () => {
 	const create = {
 		v: 1,
