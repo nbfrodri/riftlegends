@@ -227,7 +227,15 @@ describe("validateFormat, more rules", () => {
 			"stages.1.play.upper",
 		);
 		invalidAt(
-			withStage({ play: { ...double, drop: [[0, 0, 0, 0], [1, 1]] } }),
+			withStage({
+				play: {
+					...double,
+					drop: [
+						[0, 0, 0, 0],
+						[1, 1],
+					],
+				},
+			}),
 			"stages.1.play.drop",
 		);
 	});
