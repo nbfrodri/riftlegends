@@ -7,7 +7,8 @@ import {
 } from "@rift-legends/contracts";
 import { Tooltip } from "@rift-legends/ui-kit/components/tooltip";
 import { useReducedMotion } from "@rift-legends/ui-kit/lib/use-reduced-motion";
-import { memo, useId } from "react";
+import { Ban } from "lucide-react";
+import { type CSSProperties, memo, useId, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { GameRoleIcon } from "../../assets/game-role-icon";
 import { pacing } from "../broadcast/pacing";
@@ -30,9 +31,153 @@ const PULSE = {
 	animationDuration: `${pacing.pendingPulseMs}ms`,
 } as const;
 
+const STAMP = {
+	animationDuration: `${pacing.banStampMs}ms`,
+	"--ban-ms": `${pacing.banStampMs}ms`,
+} as CSSProperties;
+
+/** How a new ban arrives: entering its slot, or from the user's preview. */
+type Fresh = "enter" | "preview";
+
+/**
+ * The ban this side has just made, while it is its latest one. Bans already
+ * there on mount, skipped bans and reduced motion give `null`, so only a new
+ * ban plays its stamp and nothing replays on a remount. A ban the user was
+ * previewing is already in place, so it only greys out and is stamped.
+ */
+function useFreshBan(
+	bans: readonly (string | null)[],
+	preview: string | null,
+): { index: number; from: Fresh } | null {
+	const seen = useRef(bans.length);
+	const previewed = useRef<string | null>(null);
+	const fresh = useRef<{ index: number; from: Fresh } | null>(null);
+	if (bans.length !== seen.current) {
+		const ban = bans.at(-1);
+		fresh.current =
+			bans.length > seen.current && ban
+				? {
+						index: bans.length - 1,
+						from: ban === previewed.current ? "preview" : "enter",
+					}
+				: null;
+		seen.current = bans.length;
+	}
+	previewed.current = preview;
+	return fresh.current;
+}
+
+/** Three bans in the first phase and two in the second, as on broadcasts. */
+const BAN_PHASES = [1, 1, 1, 2, 2] as const;
+
+/**
+ * One of the five fixed ban slots (#436): empty with a dimmed ban icon, the
+ * banned champion's greyed portrait, or a skipped ban. The slot of the active
+ * ban turn is outlined in the side's colour and pulses.
+ */
+function BanSlot(props: {
+	phase: 1 | 2;
+	/** The first slot of the second phase keeps a gap from the first three. */
+	opensPhase: boolean;
+	/** `undefined` until its turn comes, `null` when the ban was skipped. */
+	ban: string | null | undefined;
+	active: boolean;
+	options: SeriesOptions;
+	/** The side's border and text colour, for the active slot. */
+	sideClass: string;
+	/** A ban just made: it enters (unless previewed), greys out and is stamped once. */
+	fresh: Fresh | null;
+	/** The champion the user has selected for the active ban, not confirmed yet. */
+	preview: string | null;
+	reduced: boolean;
+}) {
+	const { t } = useTranslation();
+	const { ban, preview, reduced } = props;
+	const fresh = reduced ? null : props.fresh;
+	const state =
+		ban === undefined
+			? preview
+				? "preview"
+				: "empty"
+			: ban === null
+				? "skipped"
+				: "banned";
+	const label = ban ? championLabel(props.options, ban) : "";
+
+	return (
+		<li
+			data-ban-slot={state}
+			data-ban-phase={props.phase}
+			aria-current={props.active ? "step" : undefined}
+			className={`flex min-w-0 flex-1 ${props.opensPhase ? "ml-2.5" : ""}`}
+		>
+			{ban ? (
+				<Tooltip content={label}>
+					<button
+						type="button"
+						data-card-champion={ban}
+						aria-keyshortcuts="I"
+						aria-label={label}
+						className={`relative flex size-full cursor-pointer overflow-hidden rounded-control focus-visible:outline-action ${fresh === "enter" ? "draft-ban-enter" : ""}`}
+						style={fresh ? STAMP : undefined}
+					>
+						<ChampionPortrait id={ban} label={label} size="tile" unavailable />
+						{fresh && (
+							<span
+								data-ban-stamp
+								style={STAMP}
+								className="pointer-events-none absolute inset-0 grid place-items-center"
+							>
+								<span className="draft-ban-colour absolute inset-0 flex">
+									<ChampionPortrait id={ban} size="tile" />
+								</span>
+								<Ban
+									aria-hidden="true"
+									className="draft-ban-mark relative size-5 text-text drop-shadow"
+								/>
+							</span>
+						)}
+					</button>
+				</Tooltip>
+			) : state === "preview" && preview ? (
+				// Only the portrait pulses, without a border (#435, #436).
+				<span
+					data-ban-preview
+					className={`flex size-full overflow-hidden rounded-control ${reduced ? "opacity-50" : "draft-pending"}`}
+					style={reduced ? undefined : PULSE}
+				>
+					<ChampionPortrait
+						id={preview}
+						label={championLabel(props.options, preview)}
+						size="tile"
+					/>
+				</span>
+			) : (
+				<span
+					className={`grid size-full place-items-center rounded-control border ${
+						props.active
+							? `draft-pending border-2 bg-surface ${props.sideClass}`
+							: state === "skipped"
+								? "border-line border-dashed text-muted"
+								: "border-line/60 text-muted/40"
+					}`}
+					style={props.active ? PULSE : undefined}
+				>
+					<Ban aria-hidden="true" className="size-4" />
+					<span className="sr-only">
+						{t(
+							state === "skipped" ? "draft.board.noBan" : "draft.board.pending",
+						)}
+					</span>
+				</span>
+			)}
+		</li>
+	);
+}
+
 /**
  * A side of the draft: a fixed row per player, top to support, with the pick
- * placed in it, and its bans as greyed portraits. Clicking a row (or Enter and
+ * placed in it, and its five ban slots. Clicking a row (or Enter and
  * Space) selects its player for the player card; hover and focus do not (#376).
  */
 export const TeamColumn = memo(function TeamColumn(props: {
@@ -46,6 +191,8 @@ export const TeamColumn = memo(function TeamColumn(props: {
 	preview?: string | null;
 	/** The role whose player the player card shows, if they are on this team. */
 	selected?: Role | null;
+	/** Whether this side bans now: its next ban slot is marked. */
+	banning?: boolean;
 	onPlayer: (player: PlayerRef) => void;
 }) {
 	const { t } = useTranslation();
@@ -55,6 +202,8 @@ export const TeamColumn = memo(function TeamColumn(props: {
 	const id = useId();
 	const style = SIDE[props.side];
 	const reduced = useReducedMotion();
+	const banPreview = (props.banning && props.preview) || null;
+	const freshBan = useFreshBan(team.bans, banPreview);
 	return (
 		<section
 			data-card-side={props.side}
@@ -157,37 +306,24 @@ export const TeamColumn = memo(function TeamColumn(props: {
 			</p>
 			<ul
 				aria-labelledby={`${id}-bans`}
-				className="mt-[3px] grid min-h-10 grid-cols-5 items-center gap-1 text-[13px] text-muted leading-[1.45]"
+				className="mt-[3px] flex h-[clamp(37px,5.4vh,62px)] gap-1"
 			>
-				{team.bans.map((ban, index) => {
-					if (!ban)
-						return (
-							// biome-ignore lint/suspicious/noArrayIndexKey: bans only grow, in order.
-							<li key={index} className="truncate text-xs italic">
-								{t("draft.board.noBan")}
-							</li>
-						);
-					const label = championLabel(options, ban);
+				{BAN_PHASES.map((phase, index) => {
+					const active = props.banning === true && index === team.bans.length;
 					return (
-						// biome-ignore lint/suspicious/noArrayIndexKey: bans only grow, in order.
-						<li key={index} className="flex">
-							<Tooltip content={label}>
-								<button
-									type="button"
-									data-card-champion={ban}
-									aria-keyshortcuts="I"
-									aria-label={label}
-									className="flex cursor-pointer h-[clamp(37px,5.4vh,62px)] w-full rounded-control focus-visible:outline-action"
-								>
-									<ChampionPortrait
-										id={ban}
-										label={label}
-										size="tile"
-										unavailable
-									/>
-								</button>
-							</Tooltip>
-						</li>
+						<BanSlot
+							// biome-ignore lint/suspicious/noArrayIndexKey: the five slots are fixed.
+							key={index}
+							phase={phase}
+							opensPhase={index === 3}
+							ban={team.bans[index]}
+							active={active}
+							options={options}
+							sideClass={`${style.border} ${style.text}`}
+							fresh={freshBan?.index === index ? freshBan.from : null}
+							preview={active ? banPreview : null}
+							reduced={reduced}
+						/>
 					);
 				})}
 			</ul>
