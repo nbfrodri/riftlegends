@@ -27,7 +27,7 @@ export interface Calibration {
 
 const scaled = (value: number, by: number) => mul(value as Fixed, by as Fixed);
 
-/** What a personality weighs: its multipliers applied on the base (x1 where the base is silent). */
+/** What a personality weighs: its own weights replace the base for the keys it names. */
 export const resolver =
 	(setup: Setup) =>
 	(personality: Personality): WeightMap =>
@@ -36,25 +36,10 @@ export const resolver =
 			(setup.own[personality] ?? {}) as Weights,
 		);
 
-/**
- * Ranking does not change when every weight is scaled, but the temperatures
- * of the difficulties are in points: keep the average component at x1.
- */
-function normalised(base: WeightMap): WeightMap {
-	const total = COMPONENT_KEYS.reduce((sum, k) => sum + (base[k] ?? SCALE), 0);
-	return Object.fromEntries(
-		COMPONENT_KEYS.map((key) => {
-			const scaled =
-				((base[key] ?? SCALE) * COMPONENT_KEYS.length * SCALE) / total;
-			return [key, scaled - (scaled % 1)];
-		}),
-	);
-}
-
 /** Steps tried on a weight, as fixed-point multipliers. */
 const BASE_STEPS = [5_000, 7_500, 9_000, 11_000, 13_000, 20_000];
 const OWN_STEPS = [8_000, 9_000, 11_000, 12_000];
-const BASE_RANGE = [5_000, 20_000] as const;
+const BASE_RANGE = [2_500, 20_000] as const;
 /** A personality keeps its character: its own weights stay near where they started. */
 const OWN_RANGE = [7_000, 14_000] as const;
 const MIN_PERSONALITY_TURNS = 400;
@@ -149,7 +134,8 @@ export function calibrate(input: {
 	let tuned = descend(
 		sample,
 		start,
-		COMPONENT_KEYS.map((key) => ({ key })),
+		// Meta stays at x1: it is the yardstick the personalities are written against.
+		COMPONENT_KEYS.filter((key) => key !== "meta").map((key) => ({ key })),
 		BASE_STEPS,
 		() => BASE_RANGE,
 		rng,
@@ -175,7 +161,6 @@ export function calibrate(input: {
 		if (evaluate(theirs, resolver(own)).overall.top3 >= was) tuned = own;
 	}
 
-	tuned = { ...tuned, base: normalised(tuned.base) };
 	const before = report(validation, start).overall.top3;
 	const after = report(validation, tuned).overall.top3;
 	return after > before ? outcome(tuned, true) : outcome(start, false);
