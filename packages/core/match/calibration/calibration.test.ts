@@ -22,6 +22,21 @@ const KILL_SHARE: Record<Role, readonly [number, number, number]> = {
 	bot: [29.05, 8.33, 50],
 	support: [5.14, 0, 14.29],
 };
+/** Pro mean and P10–P90 of the share of team gold and damage (plan 08). */
+const GOLD_SHARE: Record<Role, readonly [number, number, number]> = {
+	top: [20.09, 17.75, 22.52],
+	jungle: [20.23, 18.2, 22.39],
+	mid: [21.02, 18.8, 23.33],
+	bot: [25, 22.42, 27.77],
+	support: [13.65, 12.64, 14.71],
+};
+const DAMAGE_SHARE: Record<Role, readonly [number, number, number]> = {
+	top: [22.56, 14.69, 30.54],
+	jungle: [16.72, 10.84, 23.3],
+	mid: [24.7, 17.55, 32.31],
+	bot: [28.12, 20.03, 36.5],
+	support: [7.9, 4.62, 11.93],
+};
 const PARTICIPATION: Record<Role, readonly [number, number, number]> = {
 	top: [51.84, 27.27, 75],
 	jungle: [71.96, 50, 93.33],
@@ -115,6 +130,36 @@ describe.each(["control", "packaged", "real"] as const)(
 				const kills = teams.reduce((sum, t) => sum + t.kills, 0);
 				expect(assists / kills).toBeGreaterThanOrEqual(2);
 				expect(assists / kills).toBeLessThanOrEqual(2.6);
+			});
+		});
+
+		describe("K7 · gold and damage by role", () => {
+			const teams = even.flatMap((g) => g.teams);
+			const stat = (role: Role, key: "goldShare" | "damageShare") => {
+				const list = sorted(teams.map((t) => t.line[role][key]));
+				const mean = list.reduce((a, b) => a + b, 0) / list.length;
+				return [mean, at(list, 0.1), at(list, 0.9)] as const;
+			};
+
+			it.each(ROLES)("%s gold share is within 1.5 pp of the pros", (role) => {
+				const got = stat(role, "goldShare");
+				expect(gap(got[0], GOLD_SHARE[role][0])).toBeLessThanOrEqual(1.5);
+				expect(gap(got[1], GOLD_SHARE[role][1])).toBeLessThanOrEqual(2);
+				expect(gap(got[2], GOLD_SHARE[role][2])).toBeLessThanOrEqual(2);
+			});
+
+			it.each(ROLES)("%s damage share is within 2 pp of the pros", (role) => {
+				const got = stat(role, "damageShare");
+				expect(gap(got[0], DAMAGE_SHARE[role][0])).toBeLessThanOrEqual(2);
+			});
+
+			it("the support earns 13–15 % of the gold and less than the ADC", () => {
+				const support = stat("support", "goldShare")[0];
+				expect(support).toBeGreaterThanOrEqual(13);
+				expect(support).toBeLessThanOrEqual(15);
+				expect(
+					teams.every((t) => t.line.support.goldShare < t.line.bot.goldShare),
+				).toBe(true);
 			});
 		});
 
