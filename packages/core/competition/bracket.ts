@@ -40,7 +40,16 @@ export interface Entrant {
 	origin: number;
 }
 
-export const seedEntrants = (_entrants: readonly Entrant[]): string[] => [];
+/** Teams from best to worst seed; equal seeds go by their source standings. */
+export const seedEntrants = (entrants: readonly Entrant[]): string[] =>
+	[...entrants]
+		.sort(
+			(x, y) =>
+				x.seed - y.seed ||
+				x.origin - y.origin ||
+				(x.team < y.team ? -1 : x.team > y.team ? 1 : 0),
+		)
+		.map((e) => e.team);
 
 /** Seed order of a bracket of `n` (a power of two): 1-8, 4-5, 2-7, 3-6. */
 const seedOrder = (n: number): number[] => {

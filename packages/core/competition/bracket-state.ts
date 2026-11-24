@@ -40,6 +40,12 @@ export const resolveBracket = (
 	}
 	const byId = new Map<string, ResolvedMatch>();
 	const seedOf = (team: string) => teams.indexOf(team) + 1;
+	const priorityOf = (a: string, b: string) => {
+		const [seedA, seedB] = [seedOf(a), seedOf(b)];
+		return seedA < seedB
+			? { team: a, seed: seedA, otherSeed: seedB }
+			: { team: b, seed: seedB, otherSeed: seedA };
+	};
 	const teamOf = (slot: Slot): string | null => {
 		if (slot.kind === "seed") return teams[slot.rank - 1] ?? null;
 		const m = byId.get(slot.match);
@@ -64,7 +70,7 @@ export const resolveBracket = (
 			bestOf: m.bestOf,
 			teamA,
 			teamB,
-			priority: null,
+			priority: ready ? priorityOf(teamA, teamB) : null,
 			status: skipped
 				? "skipped"
 				: played !== null
