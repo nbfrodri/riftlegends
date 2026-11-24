@@ -137,37 +137,58 @@ export function pairSwissRound(
 	rootSeed: number,
 	scope: SwissScope,
 ): SwissRound | null {
-	if (played.length > 0) return null;
+	const rows = new Map(
+		swissStandings(teams, played, rules).map((row) => [row.id, row]),
+	);
 	const seedOf = new Map(teams.map((team, seed) => [team.id, seed]));
-	const order = shuffle(
-		createRng(
-			deriveSeed(
-				rootSeed,
-				SCOPES.competition,
-				scope.competition,
-				scope.season,
-				scope.stage,
-				1,
-				UINT32_MAX,
-			),
-		),
-		teams,
-	);
-	const matching = findMatching(
-		order,
+	const active = teams.filter((team) => rows.get(team.id)?.status === "active");
+	if (active.length === 0) return null;
+
+	const round = played.length + 1;
+	const record = (id: string) => rows.get(id) as SwissRow;
+	const sameRecord = (a: string, b: string) =>
+		record(a).wins === record(b).wins && record(a).losses === record(b).losses;
+	const shuffled =
+		round > 1
+			? active
+			: shuffle(
+					createRng(
+						deriveSeed(
+							rootSeed,
+							SCOPES.competition,
+							scope.competition,
+							scope.season,
+							scope.stage,
+							round,
+							UINT32_MAX,
+						),
+					),
+					active,
+				);
+	const order = [...shuffled].sort(
 		(x, y) =>
-			potOf(seedOf.get(x.id) as number, teams.length) +
-				potOf(seedOf.get(y.id) as number, teams.length) ===
-				3 &&
-			!(
-				rules.avoid.includes("region") &&
-				x.region !== undefined &&
-				x.region === y.region
-			),
+			record(y.id).wins - record(x.id).wins ||
+			record(x.id).losses - record(y.id).losses ||
+			(seedOf.get(x.id) as number) - (seedOf.get(y.id) as number),
 	);
+	const matching = findMatching(order, (x, y) => {
+		if (round === 1) {
+			return (
+				potOf(seedOf.get(x.id) as number, teams.length) +
+					potOf(seedOf.get(y.id) as number, teams.length) ===
+					3 &&
+				!(
+					rules.avoid.includes("region") &&
+					x.region !== undefined &&
+					x.region === y.region
+				)
+			);
+		}
+		return sameRecord(x.id, y.id);
+	});
 	if (matching === null) throw new RangeError("Swiss round cannot be paired");
 	return {
-		round: 1,
+		round,
 		relaxed: [],
 		pairings: matching
 			.map(([x, y]) =>
@@ -184,7 +205,7 @@ export function pairSwissRound(
 				b: b.id,
 				bestOf: rules.bestOf,
 				priority: a.id,
-				reason: "pots",
+				reason: round === 1 ? "pots" : "same-record",
 			})),
 	};
 }
