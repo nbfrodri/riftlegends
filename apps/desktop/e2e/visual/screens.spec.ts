@@ -54,6 +54,47 @@ test("Mercado with the sidebar expanded", async ({ appWindow }) => {
 	await captureScreen(appWindow, "mercado-expanded.png");
 });
 
+const filterDatabase = async (page: Page) => {
+	await goTo(page, "Base de datos");
+	const panel = page.getByRole("complementary", { name: "Filtros" });
+	await panel
+		.getByRole("group", { name: "Posición" })
+		.getByRole("button", { name: "Mid" })
+		.click();
+	await expect(
+		page.getByRole("list", { name: "Filtros activos" }),
+	).toBeVisible();
+	await page.mouse.move(0, 0);
+};
+
+test("Base de datos: players with the filter panel", async ({ appWindow }) => {
+	await filterDatabase(appWindow);
+	await captureScreen(appWindow, "base-de-datos-jugadores.png");
+});
+
+test("Base de datos: player card", async ({ appWindow }) => {
+	await appWindow.emulateMedia({ reducedMotion: "reduce" });
+	await filterDatabase(appWindow);
+	await appWindow.getByRole("row", { name: /Kilnara/ }).click();
+	await expect(
+		appWindow.getByRole("dialog", { name: "Ficha de jugador: Kilnara" }),
+	).toBeVisible();
+	await captureScreen(appWindow, "base-de-datos-ficha.png");
+});
+
+test("Base de datos: teams", async ({ appWindow }) => {
+	await goTo(appWindow, "Base de datos");
+	await appWindow
+		.getByRole("radiogroup", { name: "Sección" })
+		.getByText("Equipos")
+		.click();
+	await expect(
+		appWindow.getByRole("list", { name: "Todos los equipos" }),
+	).toBeVisible();
+	await appWindow.mouse.move(0, 0);
+	await captureScreen(appWindow, "base-de-datos-equipos.png");
+});
+
 const filterMarket = async (page: Page) => {
 	await goTo(page, "Mercado");
 	const panel = page.getByRole("complementary", { name: "Filtros" });
