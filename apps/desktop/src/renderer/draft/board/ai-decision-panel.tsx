@@ -1,12 +1,16 @@
 import {
 	draftFacts,
+	ROLES,
+	type Role,
 	type SeriesOptions,
 	type Side,
 } from "@rift-legends/contracts";
-import { ChevronRight } from "lucide-react";
-import { memo, useState } from "react";
+import { Ban, Minus, Plus } from "lucide-react";
+import { memo, useId, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { GameRoleIcon } from "../../assets/game-role-icon";
 import { useFacts } from "../../core";
+import { ChampionPortrait } from "../champion-portrait";
 import { championLabel, teamName } from "../session";
 import { InspectionPanel } from "./player-card";
 
@@ -14,10 +18,14 @@ type Decision = Extract<
 	ReturnType<typeof draftFacts.schema.parse>,
 	{ type: "ai.decided" }
 >;
+type Component = Decision["components"][number];
+type Alternative = Decision["alternatives"][number];
 
 const OPEN_PREFERENCE = "riftlegends.draft.aiPanel.open";
-// The contract uses fixed-point scores and probabilities per 10,000.
-const SCALE = 10_000;
+// Scores are fixed point per 10,000: half a point apart is a close call.
+const CLOSE_GAP = 5_000;
+const LABEL =
+	"font-semibold text-[11px] text-muted uppercase tracking-[0.055em]";
 
 function storedOpen() {
 	try {
@@ -27,108 +35,204 @@ function storedOpen() {
 	}
 }
 
-function DecisionDetails({
-	decision,
-	options,
+/** Weight of a factor relative to the strongest one of its decision. */
+const weightOf = (points: number, strongest: number) => {
+	const share = Math.abs(points) / strongest;
+	return share >= 0.6 ? "high" : share >= 0.3 ? "medium" : "low";
+};
+
+/** Why an option the AI weighed ranked behind its choice, in words. */
+const behindOf = (alternative: Alternative, chosen: Decision) => {
+	if (alternative.total >= chosen.total) return "higher";
+	if (alternative.chance === 0) return "outside";
+	return chosen.total - alternative.total <= CLOSE_GAP ? "close" : "some";
+};
+
+/** Factors as words with a short bar each; the weight is read out as a word. */
+function Factors({
+	id,
+	title,
+	factors,
+	strongest,
+	tone,
 }: {
-	decision: Decision;
-	options: SeriesOptions;
+	id: string;
+	title: string;
+	factors: readonly Component[];
+	strongest: number;
+	tone: "bg-good" | "bg-bad";
 }) {
-	const { t, i18n } = useTranslation();
-	const number = new Intl.NumberFormat(i18n.language, {
-		maximumFractionDigits: 4,
-	});
-	const percent = new Intl.NumberFormat(i18n.language, {
-		style: "percent",
-		maximumFractionDigits: 2,
-	});
-	const points = (value: number) =>
-		t(
-			value > 0
-				? "draft.aiPanel.pointsFor"
-				: value < 0
-					? "draft.aiPanel.pointsAgainst"
-					: "draft.aiPanel.pointsNone",
-			{ points: number.format(Math.abs(value) / SCALE) },
-		);
+	const { t } = useTranslation();
+	if (factors.length === 0) return null;
 	return (
 		<>
-			<p className="mt-1 font-semibold tabular-nums">
-				{t("draft.aiPanel.total", { points: points(decision.total) })}
-			</p>
-			<div className="mt-2 grid grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] items-start gap-3">
-				{decision.components.length > 0 ? (
-					<table className="w-full">
-						<caption className="mb-1 text-left font-bold">
-							{t("draft.aiPanel.factors")}
-						</caption>
-						<tbody>
-							{decision.components.map(({ key, points: value }) => (
-								<tr key={key} className="border-line border-b">
-									<th
-										scope="row"
-										className="py-1 pr-2 text-left font-normal text-muted [overflow-wrap:anywhere]"
-									>
-										{t(
-											`draft.aiPanel.factor.${key}` as "draft.aiPanel.factor.meta",
-											{
-												defaultValue: key,
-											},
-										)}
-									</th>
-									<td className="py-1 text-right tabular-nums">
-										{points(value)}
-									</td>
-								</tr>
-							))}
-						</tbody>
-					</table>
+			<h4 id={id} className={`mt-2 mb-1 ${LABEL}`}>
+				{title}
+			</h4>
+			<ul aria-labelledby={id} className="grid gap-1">
+				{factors.map(({ key, points }) => (
+					<li
+						key={key}
+						className="grid grid-cols-[minmax(0,1fr)_64px] items-center gap-3"
+					>
+						<span className="truncate">
+							{t(`draft.aiPanel.factor.${key}` as "draft.aiPanel.factor.meta", {
+								defaultValue: key,
+							})}
+						</span>
+						<span
+							aria-hidden="true"
+							className="h-1.5 overflow-hidden rounded-full bg-surface"
+						>
+							<span
+								className={`block h-full rounded-full ${tone}`}
+								style={{
+									width: `${Math.max(10, Math.round((Math.abs(points) * 100) / strongest))}%`,
+								}}
+							/>
+						</span>
+						<span className="sr-only">
+							{t(`draft.aiPanel.weight.${weightOf(points, strongest)}`)}
+						</span>
+					</li>
+				))}
+			</ul>
+		</>
+	);
+}
+
+function DecisionEntry({
+	decision,
+	open,
+	options,
+	role,
+}: {
+	decision: Decision;
+	open: boolean;
+	options: SeriesOptions;
+	role: Role | null;
+}) {
+	const { t } = useTranslation();
+	const id = useId();
+	const { champion, reply } = decision;
+	const factors = [...decision.components].sort(
+		(a, b) => Math.abs(b.points) - Math.abs(a.points),
+	);
+	const strongest = Math.max(1, ...factors.map((f) => Math.abs(f.points)));
+	const handle =
+		role &&
+		options.teams
+			.find((team) => team.id === decision.team)
+			?.players.find((player) => player.role === role)?.handle;
+	return (
+		<details open={open} className="group/decision">
+			<summary className="flex cursor-pointer list-none items-center gap-2.5 py-2 outline-offset-2 hover:bg-surface/60 focus-visible:outline-2 focus-visible:outline-action [&::-webkit-details-marker]:hidden">
+				{champion ? (
+					<ChampionPortrait
+						id={champion}
+						size="ban"
+						label={championLabel(options, champion)}
+					/>
 				) : (
-					<p className="text-muted">{t("draft.aiPanel.noFactors")}</p>
+					<span className="grid size-8 shrink-0 place-items-center bg-surface text-muted">
+						<Ban aria-hidden="true" className="size-4" />
+					</span>
 				)}
-				{decision.alternatives.length > 0 ? (
-					<table className="w-full">
-						<caption className="mb-1 text-left font-bold">
-							{t("draft.aiPanel.alternatives")}
-						</caption>
-						<thead>
-							<tr className="text-muted">
-								<th scope="col" className="sr-only">
-									{t("draft.aiPanel.champion")}
-								</th>
-								<th scope="col" className="pb-1 text-right font-normal">
-									{t("draft.aiPanel.chance")}
-								</th>
-							</tr>
-						</thead>
-						<tbody>
-							{decision.alternatives.map(({ champion, chance }) => (
-								<tr key={champion} className="border-line border-b">
-									<th
-										scope="row"
-										className="max-w-0 truncate py-1 pr-2 text-left font-normal text-muted"
-									>
-										{championLabel(options, champion)}
-									</th>
-									<td className="whitespace-nowrap py-1 text-right tabular-nums">
-										{percent.format(chance / SCALE)}
-									</td>
-								</tr>
-							))}
-						</tbody>
-					</table>
+				<span className="min-w-0 flex-1">
+					<span className={`block ${LABEL}`}>
+						{t(`draft.aiPanel.action.${decision.action}`)}
+					</span>
+					<strong className="block truncate">
+						{champion
+							? championLabel(options, champion)
+							: t("draft.aiPanel.skippedBan")}
+					</strong>
+				</span>
+				{role && (
+					<span className="flex min-w-0 shrink items-center gap-1.5 text-muted">
+						<GameRoleIcon role={role} label={t(`market.role.${role}`)} />
+						<span className="truncate">{handle}</span>
+					</span>
+				)}
+				<Plus
+					aria-hidden="true"
+					className="size-3.5 shrink-0 text-muted group-open/decision:hidden"
+				/>
+				<Minus
+					aria-hidden="true"
+					className="hidden size-3.5 shrink-0 text-muted group-open/decision:block"
+				/>
+			</summary>
+			<div className="pb-3 pl-[42px]">
+				{factors.length === 0 ? (
+					<p className="mt-1 text-muted">{t("draft.aiPanel.noFactors")}</p>
 				) : (
-					<p className="text-muted">{t("draft.aiPanel.noAlternatives")}</p>
+					<>
+						<Factors
+							id={`${id}-reasons`}
+							title={t("draft.aiPanel.reasons")}
+							factors={factors.filter((f) => f.points > 0)}
+							strongest={strongest}
+							tone="bg-good"
+						/>
+						<Factors
+							id={`${id}-against`}
+							title={t("draft.aiPanel.against")}
+							factors={factors.filter((f) => f.points < 0)}
+							strongest={strongest}
+							tone="bg-bad"
+						/>
+					</>
+				)}
+				{reply && (
+					<>
+						<h4 className={`mt-3 mb-1 ${LABEL}`}>{t("draft.aiPanel.reply")}</h4>
+						<p className="flex items-center gap-2">
+							<ChampionPortrait
+								id={reply.champion}
+								size="compact"
+								label={championLabel(options, reply.champion)}
+							/>
+							<span className="truncate">
+								{championLabel(options, reply.champion)}
+							</span>
+						</p>
+					</>
+				)}
+				{decision.alternatives.length > 0 && (
+					<>
+						<h4 id={`${id}-alternatives`} className={`mt-3 mb-1 ${LABEL}`}>
+							{t("draft.aiPanel.alternatives")}
+						</h4>
+						<ul aria-labelledby={`${id}-alternatives`} className="grid gap-1.5">
+							{decision.alternatives.map((alternative) => {
+								const name = championLabel(options, alternative.champion);
+								return (
+									<li
+										key={alternative.champion}
+										className="flex items-center gap-2"
+									>
+										<ChampionPortrait
+											id={alternative.champion}
+											size="compact"
+											label={name}
+										/>
+										<span className="min-w-0">
+											<span className="block truncate">{name}</span>
+											<span className="block text-[12px] text-muted">
+												{t(
+													`draft.aiPanel.behind.${behindOf(alternative, decision)}`,
+												)}
+											</span>
+										</span>
+									</li>
+								);
+							})}
+						</ul>
+					</>
 				)}
 			</div>
-			{decision.reply && (
-				<p className="mt-2 truncate text-muted">
-					{t("draft.aiPanel.reply", {
-						champion: championLabel(options, decision.reply.champion),
-					})}
-				</p>
-			)}
-		</>
+		</details>
 	);
 }
 
@@ -137,11 +241,14 @@ export const AiDecisionPanel = memo(function AiDecisionPanel({
 	game,
 	options,
 	rival,
+	picks,
 	side,
 }: {
 	game: number;
 	options: SeriesOptions;
 	rival: string | null;
+	/** The rival's picks in player-row order: a pick's row is its player's role. */
+	picks: readonly string[];
 	side: Side | null;
 }) {
 	const { t } = useTranslation();
@@ -167,19 +274,19 @@ export const AiDecisionPanel = memo(function AiDecisionPanel({
 		}
 	});
 
-	const [latest, ...earlier] = decisions;
-	const label = ({ champion, action }: Decision) =>
-		champion === null
-			? t("draft.aiPanel.skippedBan")
-			: t(`draft.aiPanel.${action}`, {
-					champion: championLabel(options, champion),
-				});
+	// Until the board's view catches up, the order of the AI's picks gives the row.
+	const pickOrder = decisions.filter((d) => d.action === "pick").reverse();
+	const roleOf = (decision: Decision): Role | null => {
+		if (decision.action !== "pick" || !decision.champion) return null;
+		const row = picks.indexOf(decision.champion);
+		return ROLES[row >= 0 ? row : pickOrder.indexOf(decision)] ?? null;
+	};
 
 	return (
 		<InspectionPanel
 			id="ai-read"
 			title={t("draft.aiPanel.title")}
-			note={latest ? teamName(options, latest.team) : undefined}
+			note={decisions[0] ? teamName(options, decisions[0].team) : undefined}
 			open={open}
 			onOpenChange={(next) => {
 				setOpen(next);
@@ -191,41 +298,25 @@ export const AiDecisionPanel = memo(function AiDecisionPanel({
 			}}
 			accent={side === "blue" ? "border-side-blue" : "border-side-red"}
 		>
-			{latest ? (
-				<div className="mt-3 text-[13px]">
-					<section aria-labelledby="latest-ai-decision">
-						<h3 id="latest-ai-decision" className="truncate font-bold text-sm">
-							{label(latest)}
-						</h3>
-						<DecisionDetails decision={latest} options={options} />
-					</section>
-					{earlier.length > 0 && (
-						<>
-							<h3 id="ai-history-title" className="mt-4 mb-1 font-bold">
-								{t("draft.aiPanel.history")}
-							</h3>
-							<ul aria-labelledby="ai-history-title">
-								{earlier.map((decision) => (
-									<li
-										key={decision.position}
-										className="border-line border-t py-1.5"
-									>
-										<details className="group/decision">
-											<summary className="flex cursor-pointer list-none items-center gap-1.5 [&::-webkit-details-marker]:hidden">
-												<ChevronRight
-													aria-hidden="true"
-													className="size-3.5 shrink-0 group-open/decision:rotate-90"
-												/>
-												<span className="truncate">{label(decision)}</span>
-											</summary>
-											<DecisionDetails decision={decision} options={options} />
-										</details>
-									</li>
-								))}
-							</ul>
-						</>
-					)}
-				</div>
+			{decisions.length > 0 ? (
+				<ol
+					aria-label={t("draft.aiPanel.decisions")}
+					className="mt-1 text-[13px]"
+				>
+					{decisions.map((decision, index) => (
+						<li
+							key={decision.position}
+							className="border-line border-t first:border-t-0"
+						>
+							<DecisionEntry
+								decision={decision}
+								open={index === 0}
+								options={options}
+								role={roleOf(decision)}
+							/>
+						</li>
+					))}
+				</ol>
 			) : (
 				<p className="mt-2 text-[13px] text-muted">
 					{t("draft.aiPanel.empty")}
