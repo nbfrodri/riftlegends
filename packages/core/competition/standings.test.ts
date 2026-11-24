@@ -1,8 +1,8 @@
 import fc from "fast-check";
 import { describe, expect, test } from "vitest";
 import {
-	computeStandings,
 	type Criterion,
+	computeStandings,
 	type SeriesResult,
 	type StandingsInput,
 } from "./standings";
