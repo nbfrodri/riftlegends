@@ -12,6 +12,7 @@ import { GameRoleIcon } from "../../assets/game-role-icon";
 import { ChampionPortrait } from "../champion-portrait";
 import { championLabel, teamName } from "../session";
 import { TeamCrest } from "../team-crest";
+import { PickArt } from "./pick-art";
 
 export interface PlayerRef {
 	team: string;
@@ -102,14 +103,9 @@ export const TeamColumn = memo(function TeamColumn(props: {
 								>
 									{champion && (
 										<span
-											className={`pointer-events-none absolute inset-y-px right-px -z-10 w-3/5 [mask-image:linear-gradient(to_right,transparent,#000_55%)] motion-safe:transition-opacity motion-safe:duration-300 ${current ? "opacity-50" : "opacity-100 motion-safe:starting:opacity-50"}`}
+											className={`pointer-events-none absolute inset-y-px right-px -z-10 w-3/5 overflow-hidden [container-type:size] [mask-image:linear-gradient(to_right,transparent,#000_55%)] motion-safe:transition-opacity motion-safe:duration-300 ${current ? "opacity-50" : "opacity-100 motion-safe:starting:opacity-50"}`}
 										>
-											<ChampionPortrait
-												key={champion}
-												id={champion}
-												size="tile"
-												label={label}
-											/>
+											<PickArt key={champion} id={champion} label={label} />
 										</span>
 									)}
 									<span className={style.text}>
