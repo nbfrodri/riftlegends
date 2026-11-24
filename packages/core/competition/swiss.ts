@@ -139,6 +139,11 @@ export function pairSwissRound(
 	rootSeed: number,
 	scope: SwissScope,
 ): SwissRound | null {
+	if (teams.length < 2 || teams.length % 2 !== 0) {
+		throw new RangeError(
+			`A Swiss stage needs an even number of teams, got ${teams.length}`,
+		);
+	}
 	const rows = new Map(
 		swissStandings(teams, played, rules).map((row) => [row.id, row]),
 	);
