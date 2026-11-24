@@ -43,3 +43,33 @@ it("changes the relationships when the game data changes a trait", () => {
 	const again = deriveChampionContent([...catalog].reverse(), [], { kits });
 	expect(JSON.stringify(again)).toBe(JSON.stringify(withKits));
 });
+
+it("publishes kit traits, CC kinds, damage split and provenance on each champion (#448)", () => {
+	const { champions } = deriveChampionContent(catalog, [], { kits });
+	const byId = new Map(champions.map((champion) => [champion.id, champion]));
+	const galio = byId.get("Galio");
+	expect(galio?.kit).toContain("antiAp");
+	expect(galio?.ccKinds?.length).toBeGreaterThan(0);
+	expect(galio?.split?.reduce((sum, share) => sum + share, 0)).toBe(100);
+	expect(galio?.traitSources).toEqual({
+		ccKinds: "rule",
+		split: "rule",
+		kit: "rule",
+	});
+	// No kit data: the estimates are published and marked as such.
+	expect(byId.get("Jinx")?.traitSources).toEqual({
+		ccKinds: "estimated",
+		split: "estimated",
+		kit: "estimated",
+	});
+	expect(byId.get("Jinx")?.kit).toBeDefined();
+});
+
+it("keeps a known kit without traits apart from an unknown one (#448)", () => {
+	const { champions } = deriveChampionContent(catalog, [], { kits });
+	// Soraka and Jinx have no kit traits worth the tables, yet the kit is known.
+	for (const champion of champions) {
+		expect(Array.isArray(champion.kit), champion.id).toBe(true);
+		expect(Array.isArray(champion.ccKinds), champion.id).toBe(true);
+	}
+});

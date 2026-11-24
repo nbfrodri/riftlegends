@@ -303,3 +303,74 @@ describe("#436: the ban preview pulses in the active slot", () => {
 		expect(preview()).toBeNull();
 	});
 });
+
+describe("#435: the pick preview pulses until it is locked in", () => {
+	const team = (picks: string[]): DraftView["blue"] => ({
+		team: "forge",
+		bans: [],
+		picks,
+	});
+	const row = () =>
+		within(screen.getByRole("region")).getAllByRole("button")[0] as HTMLElement;
+	const portrait = (name: string) =>
+		within(row()).getByRole("img", { name }).closest("[data-preview]");
+	const mark = () => row().querySelector("[data-pending-mark]");
+
+	afterEach(() => vi.restoreAllMocks());
+
+	test("the unconfirmed preview is pending and pulses", async () => {
+		await renderInLocale(
+			<TeamColumn
+				side="blue"
+				first
+				team={team([])}
+				options={options}
+				current={0}
+				preview="toppy"
+				onPlayer={() => {}}
+			/>,
+		);
+		expect(row().dataset.pending).toBe("true");
+		expect(portrait("Toppy")?.className).toContain("draft-pending");
+		// Only the portrait pulses: no border around the row (user, 24-11).
+		expect(mark()).toBeNull();
+		expect(row().textContent).toContain("Choosing");
+	});
+
+	test("a locked pick stops pulsing", async () => {
+		await renderInLocale(
+			<TeamColumn
+				side="blue"
+				first
+				team={team(["toppy"])}
+				options={options}
+				current={null}
+				onPlayer={() => {}}
+			/>,
+		);
+		expect(row().dataset.pending).toBeUndefined();
+		expect(portrait("Toppy")?.className).not.toContain("draft-pending");
+		expect(mark()).toBeNull();
+	});
+
+	test("with reduced motion it does not pulse and says it is still choosing", async () => {
+		const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+		vi.spyOn(media, "matches", "get").mockReturnValue(true);
+		vi.spyOn(window, "matchMedia").mockReturnValue(media);
+		await renderInLocale(
+			<TeamColumn
+				side="blue"
+				first
+				team={team([])}
+				options={options}
+				current={0}
+				preview="toppy"
+				onPlayer={() => {}}
+			/>,
+		);
+		expect(row().dataset.pending).toBe("true");
+		expect(portrait("Toppy")?.className).not.toContain("draft-pending");
+		expect(mark()).toBeNull();
+		expect(row().textContent).toContain("Choosing");
+	});
+});

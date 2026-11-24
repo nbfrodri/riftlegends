@@ -137,7 +137,7 @@ RoundRobin = { rounds: 1 | 2, bestOf }
 Groups     = { count, seeding: "snake" | "cross", inner: RoundRobin }
 Swiss      = { wins, losses, bestOf, decisiveBestOf, round1: "pots", avoid: ["region", "rematch"] }
 SingleElim = { size, byes, bestOf: BestOf[] }
-DoubleElim = { size, upper: BestOf[], lower: BestOf[], drop: number[], reset: boolean }
+DoubleElim = { size, upper: BestOf[], lower: BestOf[], drop: (number | null)[][], lowerSeeds: number[], reset: boolean }
 Criterion  = "seriesWins" | "gameDiff" | "headToHead" | "gameWins" | { tiebreakerSeries: BestOf } | "draw"
 Slot       = { to: CompetitionId, rule: "stageWinner" | "standing" | "points", cascade: ... }
 ```
@@ -150,6 +150,7 @@ Slot       = { to: CompetitionId, rule: "stageWinner" | "standing" | "points", c
   - `validateFormat` comprueba un formato por sí solo (V2) y responde `invalid-format` con la ruta. `format-too-long` lo emite el calendario (entregable 7).
 - **Personalización al crear la carrera:** el usuario edita estos mismos campos (splits, vueltas, Bo por fase, grupos o Swiss, simple o doble eliminación, plazas por región). La pantalla es del plan 14; este plan valida el resultado.
 - **Swiss implementado (#422)** en `swiss.ts` (`pairSwissRound`, `swissStandings`): exige un número par de equipos. Ronda 1: cuatro bombos iguales por sembrado (1 contra 4, 2 contra 3; si el número no es múltiplo de 4, mitad superior contra inferior), sorteo y sin la misma región. Después, sorteo dentro de cada grupo de igual balance, sin revanchas (como el Swiss de Worlds). El sorteo usa un flujo propio del ámbito `competition`: se baraja y una búsqueda con vuelta atrás completa el emparejamiento. Si no hay emparejamiento se relaja, por este orden, la región (solo cuenta en la ronda 1), la revancha y, como último recurso, el balance; `relaxed` registra lo que rompe el resultado. Con 16 equipos a 3-3 los grupos son siempre pares, así que el balance nunca se cruza y pasan exactamente 8. Cada serie lleva su Bo, la prioridad del game 1 (sorteo) y el motivo (`pots`, `same-record`, `cross-record`).
+- **Clasificación implementada (#421)** en `standings.ts` (`computeStandings`) y `tiebreak.ts` (`orderTies`). Cada criterio separa a los empatados; si solo separa a parte, cada grupo restante vuelve al primer criterio (la minitable de `headToHead` se recalcula solo con ellos). `tiebreakerSeries` solo actúa si el grupo cruza un corte (`cuts` = equipos que pasan): devuelve en `pending` las series entre todas las parejas del grupo que faltan y deja a los empatados en orden de sembrado con explicación `none`; cuando están jugadas (`tiebreakerResults`) decide por series ganadas entre ellos. El sorteo final (`draw`, siempre al final aunque la lista no lo nombre) usa el ámbito `competition` con una ronda reservada (`0xfffffffe`) y la posición del grupo. Cada fila lleva `explanation` con el criterio, los empatados y sus valores.
 - **Bloqueo:** el formato se copia en el hecho `season.created`. Solo se puede cambiar el de la temporada siguiente (V6, P4).
 
 ### Módulos del núcleo (`packages/core/competition/`)
@@ -186,6 +187,36 @@ Reglas del núcleo: sin reloj ni `Math.random`, solo enteros, módulos de unas 3
 - Cada fase tiene una **ventana** (semana de inicio, semanas y días de partido por semana). Con los formatos reales, las ventanas salen de `startsOn` y `endsOn` de cada torneo del snapshot.
 - `calendar.ts` reparte las jornadas en los días de partido de la ventana, con 4 series por día como máximo. Si no caben, el formato se rechaza al crear la carrera; la temporada nunca se alarga (C4). Las series de eliminatoria quedan con equipos pendientes hasta que termina la serie que los alimenta (Q5).
 - Los internacionales tienen su ventana; las ligas no programan series de un equipo clasificado durante ella (C2).
+
+### Cuadros (`bracket.ts`, #423)
+
+- `buildSingleElim` y `buildDoubleElim` devuelven la estructura (partidos que apuntan a un sembrado, al ganador o al perdedor de otro); `resolveBracket` pone los equipos según los resultados y calcula la prioridad del game 1 (mejor sembrado, con sus dos sembrados como explicación). `seedEntrants` ordena por sembrado y, a igualdad, por la clasificación de origen.
+- **Byes:** el cuadro se completa hasta la potencia de dos; los sembrados que faltan dan el paso directo a sus rivales (con 6, pasan el 1 y el 2; con 10, del 1 al 6).
+- **Caídas (decisión 24-11-2026):** `drop[r][m]` es la ronda inferior (desde 0) a la que cae el perdedor de la serie `m` de la ronda superior `r`; `null` = eliminado. `lowerSeeds[k]` es cuántos sembrados entran directos en la ronda inferior `k` (los peores en las primeras rondas); `size` cuenta todos los equipos y el cuadro superior usa los demás. Cada ronda inferior junta supervivientes, caídos y entrantes. Si hay grupos mezclados (o caídos de varias rondas), se cruzan el primero con el último (sin revanchas inmediatas); un solo grupo se empareja por orden. Con un número impar, el primero pasa sin jugar. Una ronda inferior sin partidos, un `drop` a una ronda que no existe o un cuadro inferior que no termina con un solo equipo es un formato inválido.
+- Ejemplos de `drop`: 4 → `[[0,0],[1]]`; 8 → `[[0,0,0,0],[1,1],[3]]`; LCK, LCS Summer y CBLOL (6, los perdedores de la ronda 2 caen a rondas distintas) → `[[0,0],[1,2],[3]]`; LCP (6, la ronda 1 queda eliminada) → `[[null,null],[0,0],[1]]`; LEC Spring/Summer y LCS Spring (4 arriba, sembrados 5-6 abajo) → `[[0,0],[2]]` con `lowerSeeds [2,0,0]`; LPL Grand Finals (6 + 2 de Knight's Road) → `[[0,0],[1,1],[3]]` con `[2,0,0,0]`; LCK Road to MSI → `[[3]]` con `[2,1,1,0]`. Un test por cada uno comprueba que construye y termina con un campeón.
+- **Final:** sin reset, el ganador de la final es el campeón; con `reset`, si gana el del cuadro inferior se juega una segunda final (`RS`), y si no, se omite.
+
+#### Estudio de los cuadros reales (24-11-2026)
+
+Fuente: partidas de Leaguepedia (Cargo `MatchSchedule`) de 2026, reconstruyendo quién jugó contra quién y adónde fue cada perdedor. **No se han leído los reglamentos**: los emparejamientos exactos y el sembrado siguen `(?)`.
+
+| Cuadro (2026) | Forma real | ¿Lo expresaba el modelo anterior (`drop` por ronda)? |
+| --- | --- | --- |
+| LPL split 1 y 2 (tras play-in), LEC Versus, MSI (cuadro) | Doble eliminación estándar de 8, sin reset (gana el inferior en la final de MSI y LPL GF) | Sí: `[0,1,3]` |
+| Play-in de MSI y Worlds | Doble eliminación de 4; la final solo ordena a los dos que pasan | Sí: `[0,1]` |
+| Worlds (cuartos), First Stand (semis) | Eliminatoria simple de 8 y de 4, todo Bo5 | Sí |
+| LCK Playoffs y Cup, LCS Summer, CBLOL split 1 y 2 | 6 equipos: 1.º y 2.º con bye; perdedores de la ronda 1 → inferior 1; **los dos perdedores de la ronda 2 caen a rondas inferiores distintas** (2 y 3); perdedor de la final → inferior 4 | No (un `drop` por ronda) |
+| LCP split 1 y 2 | 6 equipos: **los perdedores de la ronda 1 quedan eliminados**; los de la ronda 2 → inferior 1; perdedor de la final → inferior 2 | No (no hay «eliminado») |
+| LEC Spring y Summer, LCS Spring | 6 equipos: 4 en el cuadro superior y **los sembrados 5 y 6 entran directos al cuadro inferior 1** contra los perdedores de la ronda 1 | No (no hay entrantes al inferior) |
+| LPL Grand Finals | Superior de 6 + **2 ganadores de Knight's Road que entran en la inferior 1**; después como el de 8 | No (entrantes) |
+| LCK Road to MSI (King of the Hill) | Superior de 2 (una serie); sembrados 5-6, 4 y 3 entran a la inferior en las rondas 1, 2 y 3; perdedor de la final superior → inferior 4 | No (entrantes en varias rondas) |
+| Play-in de LPL y LCK Cup | Tres rondas donde los ganadores de la ronda 1 pasan al cuadro principal y los perdedores se cruzan con los ganadores de la 2 | Fuera de `bracket.ts`: es otra fase (escalera) |
+
+Ningún cuadro de 2026 usa reset. Las 4 versiones de 6 equipos (LCK, LCP, LEC, LCS) son distintas entre sí.
+
+**Resultado:** el modelo adoptado (`drop` por serie y `lowerSeeds`) cubre todas las filas salvo los play-in en escalera de LPL y LCK Cup, que no son cuadros: pasan a #424 como un tipo de fase aparte (los ganadores de la ronda 1 pasan directos al cuadro principal y los perdedores se cruzan con los ganadores de la 2).
+
+Pendiente al verificar reglamentos: el cruce exacto en cada ronda inferior (primero con último o por orden) y quién cae adónde dentro de una ronda.
 
 ### Desempates
 

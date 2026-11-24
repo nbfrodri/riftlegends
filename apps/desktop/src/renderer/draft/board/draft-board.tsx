@@ -5,6 +5,7 @@ import { memo, useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { CountryFlag } from "../country-flag";
 import { teamName, useDraftSession } from "../session";
+import { TurnTimer } from "../turn-controls";
 import { AiDecisionPanel } from "./ai-decision-panel";
 import { ChampionInspection } from "./champion-inspection";
 import { ChampionPool, type PoolChampion } from "./champion-pool";
@@ -168,6 +169,7 @@ export function DraftBoard() {
 				onCardOpen={setCardOpen}
 			/>
 			<ChampionInspection>
+				<TurnTimer />
 				{column("blue")}
 				<section
 					aria-labelledby="pool-title"
