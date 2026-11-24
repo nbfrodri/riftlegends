@@ -145,11 +145,15 @@ describe("R2 unconfirmed data is marked and listed", () => {
 		).toEqual(["first-stand", "worlds"]);
 	});
 
-	it("records that First Stand groups end without a grand final", () => {
-		const reasons = unverifiedFormats(formats).find(
-			({ id }) => id === "first-stand",
-		)?.reasons;
-		expect(reasons?.join(" ")).toMatch(/grand final/i);
+	it("models the First Stand groups as GSL without a grand final", () => {
+		const groups = formats["first-stand"].stages.filter((s) =>
+			s.id.startsWith("group"),
+		);
+		expect(groups).toHaveLength(2);
+		for (const { play } of groups)
+			expect(play).toMatchObject({ type: "doubleElim", grandFinal: null });
+		const reasons = unverifiedFormats(formats).flatMap((f) => f.reasons);
+		expect(reasons.join(" ")).not.toMatch(/grand final/i);
 	});
 });
 
