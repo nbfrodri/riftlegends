@@ -321,3 +321,70 @@ describe("pairSwissRound relaxation", () => {
 		).toHaveLength(1);
 	});
 });
+
+describe("whole Swiss stage", () => {
+	const results = fc.array(fc.integer({ min: 0, max: 1 }), {
+		minLength: 80,
+		maxLength: 80,
+	});
+
+	test("S5: 16 teams at 3-3 always send exactly 8 in at most 5 rounds, never crossing records", () => {
+		fc.assert(
+			fc.property(results, fc.integer({ min: 0, max: 1000 }), (bits, seed) => {
+				const { rounds, rows } = play(
+					teamsOf(16),
+					(r, i) => bits[r * 8 + i] as number,
+					seed,
+				);
+				expect(rounds.length).toBeLessThanOrEqual(5);
+				expect(rows.filter((row) => row.status === "qualified")).toHaveLength(
+					8,
+				);
+				expect(rows.filter((row) => row.status === "eliminated")).toHaveLength(
+					8,
+				);
+				for (const round of rounds) {
+					expect(round.relaxed).not.toContain("record");
+					expect(round.pairings.every((p) => p.reason !== "cross-record")).toBe(
+						true,
+					);
+				}
+			}),
+		);
+	});
+
+	test("S7: any result sequence pairs and finishes, for 8 and 16 teams and any regions", () => {
+		const shapes = [
+			{ n: 16, rules: RULES },
+			{ n: 8, rules: RULES },
+			{ n: 8, rules: { ...RULES, wins: 2, losses: 2 } },
+		];
+		for (const { n, rules } of shapes) {
+			fc.assert(
+				fc.property(results, fc.boolean(), (bits, oneRegion) => {
+					const teams = teamsOf(n, oneRegion ? () => "LCK" : undefined);
+					const { rounds, rows } = play(
+						teams,
+						(r, i) => bits[r * 8 + i] as number,
+						7,
+						rules,
+					);
+					expect(rounds.length).toBeLessThanOrEqual(
+						rules.wins + rules.losses - 1,
+					);
+					expect(rows.every((row) => row.status !== "active")).toBe(true);
+					for (const round of rounds) {
+						const ids = round.pairings.flatMap(({ a, b }) => [a, b]);
+						expect(new Set(ids).size).toBe(ids.length);
+					}
+				}),
+			);
+		}
+	});
+
+	test("rejects an odd number of teams", () => {
+		expect(() => pairSwissRound(teamsOf(5), [], RULES, 1, SCOPE)).toThrow(
+			RangeError,
+		);
+	});
+});
