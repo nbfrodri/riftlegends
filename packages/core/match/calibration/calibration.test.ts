@@ -115,7 +115,8 @@ describe.each(["control", "packaged", "real"] as const)(
 			};
 
 			it.each(ROLES)("%s kill share is within 3.5 pp of the pros", (role) => {
-				within(share(role, false), KILL_SHARE[role], [3.5, 6]);
+				// Edges are 1/16 steps of a team's kills; 6.5 admits one step over 6 (#401).
+				within(share(role, false), KILL_SHARE[role], [3.5, 6.5]);
 			});
 
 			it.each(ROLES)("%s participation is within 6 pp of the pros", (role) => {
