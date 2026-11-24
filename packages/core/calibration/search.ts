@@ -37,7 +37,9 @@ const BASE_RANGE = [2_500, 40_000] as const;
 /** A personality keeps its character: its own weights stay near where they started. */
 const OWN_RANGE = [7_000, 14_000] as const;
 const MIN_PERSONALITY_TURNS = 400;
-const SWEEPS = 4;
+const SWEEPS = 3;
+/** The descent looks at an even sample of the training turns; the reports use all of them. */
+const SEARCH_TURNS = 6_000;
 
 const scaled = (value: number, by: number) => mul(value as Fixed, by as Fixed);
 
@@ -120,8 +122,13 @@ export function calibrate(input: {
 		},
 	});
 
+	const stride =
+		train.length > SEARCH_TURNS
+			? (train.length - (train.length % SEARCH_TURNS)) / SEARCH_TURNS
+			: 1;
+	const sample = train.filter((_, i) => i % stride === 0);
 	let tuned = descend(
-		train,
+		sample,
 		start,
 		COMPONENT_KEYS.map((key) => ({ key })),
 		BASE_STEPS,
@@ -134,7 +141,7 @@ export function calibrate(input: {
 	) as [Personality, { turns: number }][]) {
 		const named = Object.keys(start.own[personality] ?? {});
 		if (count.turns < MIN_PERSONALITY_TURNS || named.length === 0) continue;
-		const mine = train.filter((t) => t.personality === personality);
+		const mine = sample.filter((t) => t.personality === personality);
 		const own = descend(
 			mine,
 			tuned,

@@ -19,7 +19,14 @@ const balanced: Profile = {
 	wildcard: SCALE,
 };
 
-export const PROFILES: Record<Personality, Profile> = {
+/**
+ * Weights every personality shares for the components it does not name.
+ * Calibrated against pro drafts (issue #468, `pnpm calibrate`).
+ */
+export const BASE_WEIGHTS: Weights = {};
+
+/** What each personality changes on top of `BASE_WEIGHTS`. */
+export const PROFILE_DEFINITIONS: Record<Personality, Profile> = {
 	balanced,
 	// One draw policy covers picks and bans. Use DraftSim's pick settings where they differ.
 	meta: {
@@ -105,3 +112,10 @@ export const PROFILES: Record<Personality, Profile> = {
 		weights: { identity: 22_000 as Fixed, threatBan: 16_000 as Fixed },
 	},
 };
+
+export const PROFILES = Object.fromEntries(
+	Object.entries(PROFILE_DEFINITIONS).map(([personality, profile]) => [
+		personality,
+		{ ...profile, weights: { ...BASE_WEIGHTS, ...profile.weights } },
+	]),
+) as Record<Personality, Profile>;
