@@ -16,7 +16,7 @@ export function SelectTrigger({
 		<Primitive.Trigger
 			data-slot="select-trigger"
 			className={withState(
-				"press inline-flex min-w-0 items-center justify-between gap-2 whitespace-nowrap rounded-control border border-line bg-surface px-2 py-[5px] text-text select-none hover:not-data-disabled:border-muted data-popup-open:border-action data-disabled:cursor-default data-disabled:text-muted",
+				"press inline-flex min-w-0 cursor-pointer items-center justify-between gap-2 whitespace-nowrap rounded-control border border-line bg-surface px-2 py-[5px] text-text select-none hover:not-data-disabled:border-muted data-popup-open:border-action data-disabled:cursor-default data-disabled:text-muted",
 				className,
 			)}
 			{...props}
@@ -75,7 +75,7 @@ export function SelectItem({
 		<Primitive.Item
 			data-slot="select-item"
 			className={withState(
-				"flex cursor-default items-center justify-between gap-3 px-2 py-[5px] outline-none select-none data-highlighted:bg-surface data-highlighted:outline-2 data-highlighted:-outline-offset-2 data-highlighted:outline-solid data-highlighted:outline-action data-selected:font-semibold data-disabled:text-muted",
+				"flex cursor-pointer items-center justify-between gap-3 px-2 py-[5px] outline-none select-none data-highlighted:bg-surface data-highlighted:outline-2 data-highlighted:-outline-offset-2 data-highlighted:outline-solid data-highlighted:outline-action data-selected:font-semibold data-disabled:cursor-default data-disabled:text-muted",
 				className,
 			)}
 			{...props}

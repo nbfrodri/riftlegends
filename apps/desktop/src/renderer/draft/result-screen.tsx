@@ -68,7 +68,7 @@ function Tabs(props: {
 					tabIndex={props.selected === tab ? 0 : -1}
 					onClick={() => props.onSelect(tab)}
 					onKeyDown={(event) => move(event, index)}
-					className="press rounded-control border border-transparent px-4 py-1.5 text-muted outline-offset-2 hover:bg-surface hover:text-text focus-visible:outline-2 focus-visible:outline-action aria-selected:border-action aria-selected:bg-action/15 aria-selected:font-bold aria-selected:text-text"
+					className="press cursor-pointer rounded-control border border-transparent px-4 py-1.5 text-muted outline-offset-2 hover:bg-surface hover:text-text focus-visible:outline-2 focus-visible:outline-action aria-selected:border-action aria-selected:bg-action/15 aria-selected:font-bold aria-selected:text-text"
 				>
 					{tab === SERIES
 						? t("draft.result.tabs.series")

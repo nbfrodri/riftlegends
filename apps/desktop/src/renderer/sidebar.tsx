@@ -5,7 +5,6 @@ import { useNavigate } from "@tanstack/react-router";
 import {
 	ArrowLeftRight,
 	Binoculars,
-	BookOpen,
 	CalendarDays,
 	Columns2,
 	Dumbbell,
@@ -17,6 +16,7 @@ import {
 	PanelLeftClose,
 	PanelLeftOpen,
 	SlidersHorizontal,
+	Swords,
 	Trophy,
 	Users,
 } from "lucide-react";
@@ -48,7 +48,7 @@ const sections: readonly Section[] = [
 	{ label: "shell.nav.home", icon: House },
 	{ label: "shell.nav.calendar", icon: CalendarDays },
 	{ label: "shell.nav.draft", icon: Columns2, to: "/draft" },
-	{ label: "shell.nav.champions", icon: BookOpen, to: "/campeones" },
+	{ label: "shell.nav.champions", icon: Swords, to: "/campeones" },
 	{ label: "shell.nav.roster", icon: Users },
 	{ label: "shell.nav.market", icon: ArrowLeftRight, to: "/mercado" },
 	{ label: "shell.nav.scouting", icon: Binoculars },
@@ -165,7 +165,7 @@ export function Sidebar({
 								className={cn(
 									"flex h-[clamp(38px,4.8vh,44px)] shrink-0 items-center gap-[11px] whitespace-nowrap px-3 text-left font-[550]",
 									to
-										? "press text-text hover:bg-surface"
+										? "press cursor-pointer text-text hover:bg-surface"
 										: "cursor-default text-muted",
 									current &&
 										"bg-surface text-action shadow-[inset_2px_0_var(--color-action)]",
@@ -204,7 +204,7 @@ export function Sidebar({
 					aria-expanded={expanded}
 					aria-keyshortcuts="Alt+B"
 					onClick={onToggle}
-					className="flex h-11 shrink-0 items-center gap-[11px] border-line border-t pr-2.5 pl-[18px] text-left text-muted hover:bg-surface"
+					className="flex h-11 shrink-0 cursor-pointer items-center gap-[11px] border-line border-t pr-2.5 pl-[18px] text-left text-muted hover:bg-surface"
 				>
 					<ToggleIcon aria-hidden="true" size={19} strokeWidth={1.65} />
 					{expanded && (

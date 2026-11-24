@@ -24,7 +24,7 @@ const RoleFilterButtons = memo(function RoleFilterButtons(props: {
 							aria-pressed={props.value === value}
 							aria-label={label}
 							onClick={() => props.onChange(value)}
-							className="grid size-[30px] place-items-center rounded-control border border-line bg-surface text-muted outline-offset-2 hover:text-text focus-visible:outline-2 focus-visible:outline-action aria-pressed:border-action aria-pressed:bg-action/15 aria-pressed:text-text"
+							className="grid size-[30px] cursor-pointer place-items-center rounded-control border border-line bg-surface text-muted outline-offset-2 hover:text-text focus-visible:outline-2 focus-visible:outline-action aria-pressed:border-action aria-pressed:bg-action/15 aria-pressed:text-text"
 						>
 							<GameRoleIcon role={value} size={16} />
 						</button>

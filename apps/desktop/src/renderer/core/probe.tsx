@@ -39,6 +39,7 @@ export function CoreProbe() {
 			<button
 				type="button"
 				disabled={!session || tick.isPending}
+				className="cursor-pointer disabled:cursor-default"
 				onClick={() =>
 					session &&
 					tick.mutate(

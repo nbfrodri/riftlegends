@@ -91,7 +91,7 @@ function FullList({
 						aria-label={name}
 						aria-describedby={`champion-roles-${id}`}
 						onClick={(event) => onOpen(id, event.currentTarget)}
-						className="press flex w-full items-center gap-3 rounded-control border border-line bg-panel p-1.5 pr-3 text-left outline-offset-[-2px] hover:border-muted hover:bg-surface focus-visible:outline-2 focus-visible:outline-action"
+						className="press flex w-full cursor-pointer items-center gap-3 rounded-control border border-line bg-panel p-1.5 pr-3 text-left outline-offset-[-2px] hover:border-muted hover:bg-surface focus-visible:outline-2 focus-visible:outline-action"
 					>
 						<span className="flex shrink-0 [&>span]:size-11">
 							<ChampionPortrait id={id} size="ban" />
@@ -232,7 +232,7 @@ function ChampionsCatalog() {
 															type="button"
 															aria-label={name}
 															onClick={(event) => open(id, event.currentTarget)}
-															className="relative h-[clamp(64px,9vh,90px)] w-[clamp(72px,6vw,100px)] overflow-hidden rounded-control bg-surface outline-offset-[-2px] hover:brightness-110 focus-visible:outline-2 focus-visible:outline-action"
+															className="relative h-[clamp(64px,9vh,90px)] cursor-pointer w-[clamp(72px,6vw,100px)] overflow-hidden rounded-control bg-surface outline-offset-[-2px] hover:brightness-110 focus-visible:outline-2 focus-visible:outline-action"
 														>
 															<ChampionPortrait id={id} size="tile" />
 														</button>

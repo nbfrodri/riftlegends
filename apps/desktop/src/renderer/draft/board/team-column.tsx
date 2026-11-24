@@ -98,7 +98,7 @@ export const TeamColumn = memo(function TeamColumn(props: {
 									aria-controls="player-card"
 									aria-pressed={props.selected === role}
 									onClick={() => props.onPlayer({ team: team.team, role })}
-									className={`press relative isolate flex min-h-[clamp(48px,7.8vh,88px)] w-full items-center gap-2 overflow-hidden border border-line bg-surface/50 px-2 text-left outline-offset-2 hover:bg-surface focus-visible:outline-2 focus-visible:outline-action aria-pressed:bg-action/10 aria-pressed:ring-2 aria-pressed:ring-action aria-pressed:ring-inset ${current ? `bg-surface shadow-[inset_2px_0_currentColor] ${style.text}` : ""}`}
+									className={`press relative cursor-pointer isolate flex min-h-[clamp(48px,7.8vh,88px)] w-full items-center gap-2 overflow-hidden border border-line bg-surface/50 px-2 text-left outline-offset-2 hover:bg-surface focus-visible:outline-2 focus-visible:outline-action aria-pressed:bg-action/10 aria-pressed:ring-2 aria-pressed:ring-action aria-pressed:ring-inset ${current ? `bg-surface shadow-[inset_2px_0_currentColor] ${style.text}` : ""}`}
 								>
 									{champion && (
 										<span
@@ -165,7 +165,7 @@ export const TeamColumn = memo(function TeamColumn(props: {
 									data-card-champion={ban}
 									aria-keyshortcuts="I"
 									aria-label={label}
-									className="flex h-[clamp(37px,5.4vh,62px)] w-full rounded-control focus-visible:outline-action"
+									className="flex cursor-pointer h-[clamp(37px,5.4vh,62px)] w-full rounded-control focus-visible:outline-action"
 								>
 									<ChampionPortrait
 										id={ban}

@@ -309,12 +309,16 @@ describe("with a short scrolling region", () => {
 		expect(document.activeElement).toBe(active);
 	});
 
-	test("draws the rule under every fifth row by index, not by position", () => {
+	// #399: two-tone rows instead of a rule every five; the tone follows the
+	// row index, so it stays put while the virtual window scrolls.
+	test("alternates the row tone by index, not by position", () => {
 		render(<Table />);
 		scrollTo(7 * 24);
 		for (const row of rows()) {
-			const position = Number(row.getAttribute("aria-rowindex")) - 1;
-			expect(row.getAttribute("data-fifth")).toBe(String(position % 5 === 0));
+			const index = Number(row.getAttribute("aria-rowindex")) - 2;
+			expect(row.getAttribute("data-odd")).toBe(String(index % 2 === 1));
+			expect(row.className.includes("bg-canvas/50")).toBe(index % 2 === 1);
+			expect(row.hasAttribute("data-fifth")).toBe(false);
 		}
 	});
 });

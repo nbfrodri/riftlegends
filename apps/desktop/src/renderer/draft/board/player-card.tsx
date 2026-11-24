@@ -79,7 +79,7 @@ export function InspectionPanel(props: {
 			onToggle={(event) => props.onOpenChange(event.currentTarget.open)}
 			className={`group relative min-w-0 border-t-2 bg-panel px-[15px] py-3 ${props.accent}`}
 		>
-			<summary className="flex cursor-default list-none items-center gap-2 [&::-webkit-details-marker]:hidden">
+			<summary className="flex cursor-pointer list-none items-center gap-2 [&::-webkit-details-marker]:hidden">
 				<ChevronRight
 					aria-hidden="true"
 					className="size-4 shrink-0 transition-transform group-open:rotate-90 motion-reduce:transition-none"
