@@ -44,39 +44,62 @@ export function damageOf(
 	return "mixed" as const;
 }
 
+const skillshotTags = [
+	"Ranged_StopsFirstHit",
+	"Ranged_Piercing",
+	"Target_Directional",
+];
+const confirmed = ["ImmobilizingCCSpell", "ImmobilizingCCAbility"];
+const hardCount = (slot: KitSlot) =>
+	slot.statuses.filter((status) => hardStatuses.has(status)).length;
+
 /**
- * Crowd control level 0 to 10. Per ability: hard CC 3, +1 in an area, +1
- * more in the ultimate; only slows or silences 1. The sum is capped at 10.
+ * Crowd control level 0 to 10, by how reliable each ability is.
+ * Hard CC the game tags as immobilizing: 3, +1 in an area, +1 with two or
+ * more kinds, +1 in the ultimate, -1 for a single-target skillshot (it can
+ * be dodged). Hard CC the tags do not confirm (conditional, minions only)
+ * counts 0. Only slows or silences: 1. The sum is capped at 10.
  */
 export function ccLevel(kit: ChampionKit) {
 	let points = 0;
 	for (const id of castSlots) {
 		const slot = kit.slots[id];
-		if (isHardCc(slot)) {
-			points += 3 + (has(slot, ...areaTags) ? 1 : 0) + (id === "r" ? 1 : 0);
-		} else if (
-			slot.statuses.some((status) => status === "slow" || status === "silence")
-		) {
-			points += 1;
+		const area = has(slot, ...areaTags);
+		if (!isHardCc(slot)) {
+			if (slot.statuses.some((s) => s === "slow" || s === "silence"))
+				points += 1;
+		} else if (has(slot, ...confirmed)) {
+			points +=
+				3 +
+				(area ? 1 : 0) +
+				(hardCount(slot) >= 2 ? 1 : 0) +
+				(id === "r" ? 1 : 0) -
+				(!area && has(slot, ...skillshotTags) ? 1 : 0);
 		}
 	}
 	return Math.min(10, points);
 }
 
 /**
- * Mobility 0 to 10: 2, +1 for melee range, +2 per ability that dashes,
- * blinks or teleports (tag or tooltip) and +1 per other ability (or the
- * passive) that grants speed.
+ * Mobility 0 to 10: 2, +1 for melee range. Each ability that dashes, blinks
+ * or warps (tag or tooltip) adds 3 for the first and 2 for the next ones,
+ * +2 if it is a teleport or blink tag and +1 in the ultimate. Other abilities
+ * that grant movement speed add 1. The passive only adds 1.
  */
 export function mobilityOf(kit: ChampionKit) {
 	let points = 2 + (kit.attackRange <= 300 ? 1 : 0);
-	for (const slot of Object.values(kit.slots)) {
-		if (
+	let dashes = 0;
+	for (const [id, slot] of Object.entries(kit.slots)) {
+		const teleport = has(slot, "PositiveEffect_Teleport");
+		const moves =
 			slot.marks.includes("dash") ||
-			has(slot, "PlayerSelectedDashDirection", "PositiveEffect_Teleport")
-		)
-			points += 2;
-		else if (slot.marks.includes("speed")) points += 1;
+			teleport ||
+			has(slot, "PlayerSelectedDashDirection");
+		if (id === "p") {
+			if (moves || slot.marks.includes("speed")) points += 1;
+		} else if (moves) {
+			points += (dashes++ ? 2 : 3) + (teleport ? 2 : 0) + (id === "r" ? 1 : 0);
+		} else if (slot.marks.includes("speed")) points += 1;
 	}
 	return Math.min(10, points);
 }

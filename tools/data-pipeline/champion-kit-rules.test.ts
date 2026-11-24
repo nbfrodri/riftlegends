@@ -39,8 +39,8 @@ it("derives the crowd control kinds from statuses and targeting tags", () => {
 it("splits the damage by the damage types of the tooltips", () => {
 	expect(traits("Galio").split).toEqual([0, 100, 0]);
 	expect(traits("Soraka").split).toEqual([0, 100, 0]);
-	expect(traits("Malphite").split).toEqual([25, 75, 0]);
-	expect(traits("Yasuo").split).toEqual([75, 25, 0]);
+	expect(traits("Malphite").split).toEqual([40, 60, 0]);
+	expect(traits("Yasuo").split).toEqual([80, 20, 0]);
 	// Marksmen add their basic attacks as physical damage.
 	expect(traits("Jinx", ["marksman"]).split).toEqual([83, 17, 0]);
 	expect(traits("Jinx").split).toEqual([75, 25, 0]);
@@ -80,7 +80,7 @@ it("never replaces a trait from the game data with an estimate", () => {
 		// Yasuo: the curated table says all physical, the tooltips list a magic hit.
 		if (id === "Yasuo") {
 			expect(estimate.split).toEqual([100, 0, 0]);
-			expect(derived.split).toEqual([75, 25, 0]);
+			expect(derived.split).toEqual([80, 20, 0]);
 		}
 		// Thresh: curated "skillshots" does not survive, the tags do not support it.
 		if (id === "Thresh") {
@@ -139,9 +139,9 @@ it("derives the damage type from the damage split", () => {
 	expect(traits("Soraka").profile.damage).toBe("magic");
 	expect(traits("Yasuo").profile.damage).toBe("physical");
 	expect(traits("Jinx", ["marksman"]).profile.damage).toBe("physical");
-	expect(traits("Malphite").profile.damage).toBe("magic");
+	expect(traits("Malphite").profile.damage).toBe("mixed");
 	expect(traits("Soraka", ["support"]).profile.damage).toBe("utility");
-	expect(traits("Yasuo", []).split).toEqual([75, 25, 0]);
+	expect(traits("Yasuo", []).split).toEqual([80, 20, 0]);
 	expect(traits("Galio").sources.damage).toBe("rule");
 });
 
@@ -176,4 +176,41 @@ it("falls back to the curated damage when the tooltips list none", () => {
 	const result = kitTraits("Galio", [], bare);
 	expect(result.profile.damage).toBeUndefined();
 	expect(result.sources.damage).toBe("estimated");
+});
+
+it("counts basic-attack reliance: melee fighters and abilities that empower attacks", () => {
+	const plain = traits("Galio", []).split;
+	const fighter = traits("Galio", ["fighter"]).split;
+	expect(plain).toEqual([0, 100, 0]);
+	// Galio is melee: a fighter adds a share of physical basic attacks.
+	expect(fighter[0]).toBeGreaterThan(0);
+	// Malphite's W resets attacks: physical weight even though its tooltips list magic.
+	expect(traits("Malphite").split[0]).toBeGreaterThan(25);
+});
+
+it("weighs crowd control by reliability", () => {
+	const galio = kit("Galio");
+	const full = traits("Galio").profile.cc as number;
+	// Without the tag that confirms the CC, a hard status only counts as conditional.
+	galio.slots.r.tags = galio.slots.r.tags.filter(
+		(tag) => !tag.startsWith("ImmobilizingCC"),
+	);
+	expect(kitTraits("Galio", [], galio).profile.cc).toBeLessThan(full);
+	// A single-target skillshot can be dodged: less than the same CC unaimed.
+	const aimed = kit("Thresh").slots.q;
+	expect(aimed.tags).toContain("Ranged_StopsFirstHit");
+});
+
+it("scores dashes, blinks and ultimate dashes higher, with diminishing returns", () => {
+	const base = kit("Galio");
+	for (const slot of Object.values(base.slots))
+		slot.tags = slot.tags.filter((t) => t !== "PlayerSelectedDashDirection");
+	const still = kitTraits("Galio", [], base).profile.mobility as number;
+	base.slots.e.tags.push("PlayerSelectedDashDirection");
+	const one = kitTraits("Galio", [], base).profile.mobility as number;
+	base.slots.q.tags.push("PositiveEffect_Teleport");
+	const two = kitTraits("Galio", [], base).profile.mobility as number;
+	expect(one - still).toBe(3);
+	// A blink as the second movement ability: 2 for the second + 2 for the blink.
+	expect(two - one).toBe(4);
 });

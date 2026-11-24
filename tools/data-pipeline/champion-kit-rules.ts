@@ -105,8 +105,9 @@ function sustainOf(kit: ChampionKit) {
 	return Math.min(3, healing) as 0 | 1 | 2 | 3;
 }
 
-// Each ability that deals damage weighs 12 (shared evenly between its types);
-// marksmen add their basic attacks as two abilities of physical damage.
+// Each ability that deals damage weighs 12 (shared evenly between its types).
+// Basic attacks add physical weight: 24 for marksmen, 12 for melee fighters
+// and assassins, and 12 for each ability that empowers or resets them.
 function splitOf(kit: ChampionKit, classes: readonly string[]) {
 	const weight = { physical: 0, magic: 0, true: 0 };
 	for (const slot of Object.values(kit.slots)) {
@@ -114,8 +115,24 @@ function splitOf(kit: ChampionKit, classes: readonly string[]) {
 	}
 	const total = weight.physical + weight.magic + weight.true;
 	if (!total) return undefined;
-	if (classes.includes("marksman")) weight.physical += 24;
-	const sum = total + (classes.includes("marksman") ? 24 : 0);
+	const meleeFighter =
+		kit.attackRange <= 300 &&
+		(classes.includes("fighter") || classes.includes("assassin"));
+	const autos =
+		(classes.includes("marksman") ? 24 : 0) +
+		(meleeFighter ? 12 : 0) +
+		12 *
+			Object.values(kit.slots).filter((slot) =>
+				hasTag(
+					slot,
+					"AttackReset",
+					"AttackBuff_Duration",
+					"PositiveEffect_EmpowerAttack",
+					"Strike",
+				),
+			).length;
+	weight.physical += autos;
+	const sum = total + autos;
 	const parts = [weight.physical, weight.magic, weight.true].map(
 		(w) => (w * 100) / sum,
 	);

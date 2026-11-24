@@ -44,6 +44,10 @@ const tagWhitelist = new Set([
 	"ActiveHeal",
 	"SelfHeal",
 	"PositiveEffect_Teleport",
+	"AttackReset",
+	"AttackBuff_Duration",
+	"PositiveEffect_EmpowerAttack",
+	"Strike",
 ]);
 
 const slotIds = ["q", "w", "e", "r"] as const;
@@ -129,8 +133,12 @@ function describe(text: string) {
 	if (text.includes("<shield>")) marks.push("shield");
 	if (/grievous wounds/i.test(text)) marks.push("antiheal");
 	if (text.includes("<speed>")) marks.push("speed");
-	// The champion moves itself: dashes, blinks, leaps and jumps.
-	if (/\b(dash(es|ing)?|blinks?|leaps?|jumps?)\b/i.test(text))
+	// The champion moves itself: dashes, blinks, leaps, jumps and warps.
+	if (
+		/\b(dash(es|ing)?|blinks?|leaps?|jumps?|vaults?|warps?|teleports?)\b/i.test(
+			text,
+		)
+	)
 		marks.push("dash");
 	return { statuses: [...statuses], damage, marks };
 }
