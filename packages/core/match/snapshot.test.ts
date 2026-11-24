@@ -53,7 +53,7 @@ describe("map snapshots (Q4)", () => {
 	});
 
 	it("ends with the same player ids, K/D/A and gold as match.ended", () => {
-		const seeds = Array.from({ length: 64 }, (_, index) => index + 1);
+		const seeds = Array.from({ length: 400 }, (_, index) => index + 1);
 		let endsOnMinuteBoundary = false;
 		for (const seed of seeds) {
 			const { snapshots, facts } = playGame(matchSetup({ seed }));
