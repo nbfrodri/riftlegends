@@ -36,7 +36,7 @@ async function toBoard(user: User) {
 const panel = () => screen.getByRole("group", { name: "AI decisions" });
 
 const displayChampion = (id: string) =>
-	namedDraft.champions.find((c) => c.id === id)?.name;
+	namedDraft.champions.find((c) => c.id === id)?.name ?? id;
 
 // Exercise the board with the real core while the test controls turn timing.
 function ManualDraft() {
@@ -117,7 +117,7 @@ test("shows each rival decision with portrait, role, player and reasons by weigh
 	expect([...entries].map((entry) => entry.textContent)).toEqual(
 		decisions.map((d) =>
 			expect.stringContaining(
-				d.champion ? (displayChampion(d.champion) as string) : "Skipped ban",
+				d.champion ? displayChampion(d.champion) : "Skipped ban",
 			),
 		),
 	);
@@ -158,7 +158,7 @@ test("shows each rival decision with portrait, role, player and reasons by weigh
 		);
 	});
 	expect(
-		within(latest).getByText(displayChampion(decision.reply.champion) ?? ""),
+		within(latest).getByText(displayChampion(decision.reply.champion)),
 	).toBeTruthy();
 
 	const earlierBan = entries[1] as HTMLElement;
