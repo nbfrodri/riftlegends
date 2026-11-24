@@ -581,7 +581,8 @@ const classDefaults: Readonly<Record<string, Traits>> = {
 };
 const generic: Traits = ["melee", 1, [], [50, 50, 0], []];
 
-export function championTraits(id: string, classes: readonly string[]) {
+/** Curated estimates; {@link kitTraits} replaces what the game data decides. */
+export function estimatedTraits(id: string, classes: readonly string[]) {
 	const traits = Object.hasOwn(curated, id) ? curated[id] : undefined;
 	const fallback = classes.find((tag) => Object.hasOwn(classDefaults, tag));
 	const [range, sustain, cc, split, kit, uncertain] =

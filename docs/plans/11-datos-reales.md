@@ -45,7 +45,46 @@ Queda fuera: ligas menores (plan 24), regens y evolución (plan 16), meta por pa
 
 #### Base de reglas y mezcla con los datos pro (#321)
 
-Cada campeón tiene un **perfil** en [curated-champions.ts](../../tools/data-pipeline/curated-champions.ts) y sus **rasgos** en [champion-traits.ts](../../tools/data-pipeline/champion-traits.ts): alcance (melee, rango, largo), sustain (0–3), tipos de CC (punto y click, skillshot, área, knock-up), reparto de daño (físico, mágico y verdadero en %) y rasgos de kit (wombo, daño en área, disengage, enchanter, asedio, invasor, farmeo, anti-curación, escudos, daño a tanques, visión, duelista, skillshots lentos, anti-dash, anti-AP, anti-AD y ultimate de knock-up). Los estilos engage, poke, split y pick salen de los arquetipos. Los dudosos van en `estimated`.
+Cada campeón tiene un **perfil** en [curated-champions.ts](../../tools/data-pipeline/curated-champions.ts) y sus **rasgos**: alcance (melee, rango, largo), sustain (0–3), tipos de CC (punto y click, skillshot, área, knock-up), reparto de daño (físico, mágico y verdadero en %) y rasgos de kit (wombo, daño en área, disengage, enchanter, asedio, invasor, farmeo, anti-curación, escudos, daño a tanques, visión, duelista, skillshots lentos, anti-dash, anti-AP, anti-AD y ultimate de knock-up). Los estilos engage, poke, split y pick salen de los arquetipos.
+
+#### Rasgos desde los datos del juego (#340)
+
+Los rasgos **salen de los datos del juego** y solo lo que estos no deciden queda en la tabla curada ([champion-traits.ts](../../tools/data-pipeline/champion-traits.ts)), marcado como `estimated`. La app no consulta estas fuentes: todo llega en el contenido generado.
+
+| Fuente | Qué aporta |
+| --- | --- |
+| `characters/<id>/<id>.bin.json` (CommunityDragon, parche fijado) | Alcance de ataque, etiquetas de habilidad (`mSpellTags`) y enfriamiento de la ulti por rango |
+| `lol.stringtable.json` (tooltips oficiales) | Estados (`<status>`), tipos de daño (`<magicDamage>`, `<physicalDamage>`, `<trueDamage>`), `<healing>`, `<shield>` y «Grievous Wounds» |
+
+`kits.json` guarda solo hechos (etiquetas, estados normalizados, tipos de daño, marcas y números), sin texto de Riot. `traits.json` dice de dónde sale cada rasgo: `source` (dato directo), `rule` (regla con nombre sobre el dato) o `estimated` (tabla curada). La procedencia lista los campeones con algún rasgo estimado (`traitsToReview`), los que no tienen enfriamiento de ulti en el dato (`kits.noUltimateCooldown`) y los kits que faltan (`kits.missing`).
+
+| Rasgo | Origen | Regla |
+| --- | --- | --- |
+| Alcance | `source` | Alcance de ataque: ≤ 300 melee, ≥ 575 largo, el resto rango |
+| Enfriamiento de la ulti | `source` | `cooldownTime` de la ulti en los rangos 1 a 3 (la posición 0 repite el rango 1). Sin etiqueta `Ultimate` o con enfriamiento 0 (scripteado): `null`, no se inventa |
+| Sustain | `rule` | Habilidades (con pasiva) que curan (`<healing>`, `ActiveHeal`, `SelfHeal`), máximo 3 |
+| CC | `rule` | Habilidad con CC duro (estado duro o `ImmobilizingCC*`) y: `AoE` o `Target_Area` es área; `Target_Directional`, `PlayerSelectedDashDirection` o proyectil es skillshot; ninguna de las dos, punto y click. Knock-up si un estado lo es. «Airborne» solo como condición (Yasuo R) no es CC |
+| Daño del perfil (`damage`) | `rule` | Del reparto: ≥ 70 % físico es físico, ≥ 70 % mágico es mágico, si no mixto. Los enchanters son `utility`. Sin tipos en los tooltips: `estimated` |
+| CC del perfil (`cc`, 0–10) | `rule` | Por fiabilidad: CC duro que el dato marca como inmovilizante 3, +1 en área, +1 con dos o más tipos, +1 en la ulti, −1 si es un skillshot de un objetivo (se esquiva). CC duro sin esa marca (condicional, solo súbditos) 0. Solo ralentiza o silencia 1. Suma con tope 10 |
+| Movilidad (`mobility`, 0–10) | `rule` | 2, +1 si es melee. Cada habilidad con dash, blink o salto (etiqueta o tooltip: dash, blink, leap, jump, vault, warp, teleport) suma 3 la primera y 2 las siguientes, +2 si es una etiqueta de teletransporte o blink y +1 en la ulti. Velocidad de movimiento: +1 por habilidad. La pasiva solo suma 1 |
+| `frontline`, `power`, `archetypes` | `estimated` | El dato no los decide: siguen de la tabla curada y la procedencia los marca siempre como estimados (no entran en `traitsToReview`) |
+| Reparto de daño | `rule` | Cada habilidad con daño pesa 12 repartido entre sus tipos. Los ataques básicos suman físico: 24 los tiradores, 12 los luchadores y asesinos melee y 12 por cada habilidad que potencia o reinicia el ataque (`AttackReset`, `AttackBuff_Duration`, `EmpowerAttack`, `Strike`). Sin tipos en los tooltips: `estimated` |
+| `wombo` | `rule` | La ulti inmoviliza en área |
+| `aoe` | `rule` | Al menos dos habilidades con daño en área |
+| `disengage` | `rule` | Una habilidad empuja (`KnockBack` o estado de empuje) |
+| `enchanter` | `rule` | Clase soporte sin clase tanque y al menos dos habilidades que curan o dan escudo |
+| `antiheal`, `shield`, `shred` | `rule` | «Grievous Wounds» en un tooltip; escudo (`<shield>`, `Shield`, `PassiveShield`); daño verdadero |
+| `skillshots`, `projectiles` | `rule` | Al menos dos habilidades dirigidas o con proyectil que se detiene o atraviesa |
+| `projectileBlock` | `rule` | Etiqueta `ProjectileDestruction` |
+| `hook` | `rule` | Estado de arrastre en una habilidad dirigida |
+| `knockupUlt` | `rule` | La ulti necesita un objetivo en el aire (solo «Airborne», sin CC propio) |
+| `siege`, `invade`, `farm`, `vision`, `duel`, `antiDash`, `antiAp`, `antiAd`, `competitive` | `estimated` | El dato del juego no los decide: siguen de la tabla curada y salen en `estimatedKit` para revisarlos |
+
+`damage`, `cc` y `mobility` ya no se leen de la tabla curada cuando hay dato: la tabla solo rellena huecos (Kayn sin tipos de daño, o un campeón sin kit). Calibración K1–K5 con contenido real en verde (pool `real` en `calibration.test.ts`).
+
+**Prueba de cordura** ([champion-sanity.test.ts](../../tools/data-pipeline/champion-sanity.test.ts)): 25 campeones conocidos (Aatrox, Jax, Renekton, K'Sante, Ornn, Rumble, Azir, Orianna, Ahri, Sylas, Syndra, Kai'Sa, Ezreal, Varus, Jinx, Xayah, Nautilus, Rell, Thresh, Lulu, Lee Sin, Vi, Sejuani, Kindred y Zed) con el tipo de daño y los rangos de `cc` y `mobility` que aceptaría un jugador. Parten de los valores curados antiguos (±2) y solo se ensanchan donde el dato difiere con motivo (p. ej. Ornn con la carga de su ulti). Si un campeón solo pasa con una excepción por nombre, no se retoca: se lista en `traitsToReview`. Las reglas no llevan excepciones por campeón.
+
+Lo que el dato decide no lo sobrescribe la tabla (ni para añadir ni para quitar). Sin kit de un campeón, todos sus rasgos son `estimated`. **Meraki Analytics** (subclases y `attributeRatings`) no se usa: su último dato es de agosto de 2025 y la regla de `enchanter` cubre su único uso.
 
 Cada regla tiene un **id** que viaja en `reasons` para que la ficha explique el porqué. La ficha no dice de dónde sale el dato.
 

@@ -19,6 +19,22 @@
 		"licence": "CC BY-SA 3.0",
 		"attribution": "Datos normalizados de los colaboradores de Leaguepedia (https://lol.fandom.com/wiki/Leaguepedia), CC BY-SA 3.0 Unported."
 	},
+	"kits": {
+		"source": "CommunityDragon game data (characters bin files and the official string table)",
+		"patch": "16.23",
+		"url": "https://raw.communitydragon.org/16.23/game/en_us/data/menu/en_us/lol.stringtable.json",
+		"retrievedAt": "2026-11-23T23:11:06.548Z",
+		"champions": 173,
+		"missing": [],
+		"noUltimateCooldown": [
+			"Udyr",
+			"Shyvana",
+			"TahmKench"
+		]
+	},
+	"traitsToReview": [
+		"Kayn"
+	],
 	"games": 2378,
 	"priorGames": 20,
 	"tierSeasons": {
@@ -32,9 +48,9 @@
 	},
 	"counts": {
 		"champions": 173,
-		"matchups": 11854,
-		"counters": 11638,
-		"synergies": 9856
+		"matchups": 12162,
+		"counters": 14936,
+		"synergies": 10600
 	},
 	"estimated": [
 		"Kayn",

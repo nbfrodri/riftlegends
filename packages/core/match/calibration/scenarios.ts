@@ -5,6 +5,7 @@ import {
 	type Side,
 } from "@rift-legends/contracts";
 import { packagedDraftContent, packagedMatchContent } from "../../content";
+import { loadRealContent } from "../../content/real";
 import { shuffle } from "../../rng/helpers";
 import { SCOPES } from "../../rng/scopes";
 import { deriveSeed } from "../../rng/seeds";
@@ -26,31 +27,33 @@ const lineup = (team: string, champions: readonly (string | undefined)[]) => ({
 		}),
 	) as MatchSetup["blue"]["roles"],
 });
-const primaryPools = ROLES.map((role) =>
-	packagedDraftContent.champions
-		.filter((champion) => champion.positions[0]?.role === role)
-		.map((champion) => champion.id),
-);
+type Pool = "control" | "packaged" | "real";
+const primaryPools = (draft: typeof packagedDraftContent) =>
+	ROLES.map((role) =>
+		draft.champions
+			.filter((champion) => champion.positions[0]?.role === role)
+			.map((champion) => champion.id),
+	);
 
 /** Two average teams; `edge` adds to every attribute of team "a". */
-function scenario(
-	edge: number,
-	seed: number,
-	pool: "control" | "packaged",
-): MatchSetup {
+function scenario(edge: number, seed: number, pool: Pool): MatchSetup {
 	const { draft: control, match } = syntheticContent(POOL, ["a", "b"]);
-	const packaged = pool === "packaged";
+	const packaged = pool !== "control";
+	const source =
+		pool === "real"
+			? loadRealContent()
+			: { draft: packagedDraftContent, match: packagedMatchContent };
 	// Hold player strength and team strategy constant while sampling the real
 	// champion profiles, matchups and synergies across both sides.
 	const draft = packaged
 		? {
-				...packagedDraftContent,
+				...source.draft,
 				players: control.players.map((player) => ({ ...player, mains: [] })),
 			}
 		: control;
 	const boosted: MatchContent = {
 		...match,
-		champions: packaged ? packagedMatchContent.champions : match.champions,
+		champions: packaged ? source.match.champions : match.champions,
 		players: match.players.map((p) =>
 			p.id.startsWith("a-")
 				? {
@@ -64,7 +67,9 @@ function scenario(
 	};
 	const rng = createRng(deriveSeed(seed, SCOPES.draft));
 	const pairs = packaged
-		? primaryPools.map((choices) => shuffle(rng, choices).slice(0, 2))
+		? primaryPools(source.draft).map((choices) =>
+				shuffle(rng, choices).slice(0, 2),
+			)
 		: ROLES.map((_, i) => [POOL[i], POOL[i + ROLES.length]]);
 	const blue = lineup(
 		"a",
@@ -95,11 +100,7 @@ function scenario(
 }
 
 /** Many games of a scenario, with what the calibration bands read. */
-export function sample(
-	games: number,
-	edge: number,
-	pool: "control" | "packaged",
-) {
+export function sample(games: number, edge: number, pool: Pool) {
 	return Array.from({ length: games }, (_, seed) => {
 		const setup = scenario(edge, seed, pool);
 		const { state, events } = playMatch(setup, MATCH_CONTESTS);

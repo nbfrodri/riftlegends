@@ -17,7 +17,9 @@ import {
 	deriveChampionContent,
 } from "./champion-content.ts";
 import { championHistory } from "./champion-history.ts";
+import { fetchKits } from "./champion-kit-fetch.ts";
 import { Client, type ClientOptions } from "./client.ts";
+import { orderBy } from "./normalization.ts";
 import { compare } from "./queries.ts";
 import { leagues } from "./scope.ts";
 import { seasonOf } from "./season.ts";
@@ -105,6 +107,15 @@ export async function championFiles(options: ChampionOptions) {
 		season,
 		picks ? bans / picks : 0,
 	);
+	const {
+		kits,
+		missing: missingKits,
+		...kitSource
+	} = await fetchKits(
+		client.withCache(join(options.cacheDir, "kits")),
+		communityDragonPatch,
+		catalog.map(({ id }) => id),
+	);
 	const tierSeasons = {
 		current: season,
 		available: [season, ...history.seasons.map(({ year }) => year)],
@@ -118,10 +129,12 @@ export async function championFiles(options: ChampionOptions) {
 		estimated,
 		classFallbacks,
 		priorGames,
+		traits,
 	} = deriveChampionContent(catalog, games, {
 		priorGames: options.priorGames,
 		season,
 		history: history.seasons,
+		kits,
 	});
 	const provenance = {
 		source: `Derived from champion kit profiles and Leaguepedia (CC BY-SA 3.0); see real/LICENSE`,
@@ -140,6 +153,26 @@ export async function championFiles(options: ChampionOptions) {
 			licence: snapshots[0]?.provenance.licence,
 			attribution: snapshots[0]?.provenance.attribution,
 		},
+		kits: {
+			source:
+				"CommunityDragon game data (characters bin files and the official string table)",
+			patch: communityDragonPatch,
+			url: kitSource.url,
+			retrievedAt: kitSource.retrievedAt,
+			champions: kits.size,
+			missing: missingKits,
+			// No ultimate cooldown in the game data (zero or scripted).
+			noUltimateCooldown: [...kits.values()]
+				.filter(({ ultCooldown }) => !ultCooldown)
+				.map(({ id }) => id),
+		},
+		// Champions whose data-decidable traits include an estimate. Frontline,
+		// power and archetypes are always estimates and not listed here.
+		traitsToReview: traits
+			.filter(({ sources: { frontline, power, archetypes, ...decidable } }) =>
+				Object.values(decidable).includes("estimated"),
+			)
+			.map(({ id }) => id),
 		games: games.length,
 		priorGames,
 		tierSeasons,
@@ -157,6 +190,8 @@ export async function championFiles(options: ChampionOptions) {
 		["matchups.json", rows(matchups)],
 		["counters.json", rows(counters)],
 		["synergies.json", rows(synergies)],
+		["kits.json", rows(orderBy([...kits.values()], ({ id }) => id))],
+		["traits.json", rows(traits)],
 		["provenance.json", `${JSON.stringify(provenance, null, "\t")}\n`],
 	]);
 	const staging = join(

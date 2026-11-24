@@ -1,0 +1,206 @@
+{
+	"Characters/Galio/CharacterRecords/Root": {
+		"mCharacterName": "Galio",
+		"attackRangeModifiable": {
+			"baseValue": 150.0,
+			"__type": "ModifiableFloat"
+		},
+		"spellNames": [
+			"GalioQAbility/GalioQ",
+			"GalioWAbility/GalioW",
+			"GalioEAbility/GalioE",
+			"GalioRAbility/GalioR"
+		],
+		"mAbilities": [
+			"Characters/Galio/Spells/GalioQAbility",
+			"Characters/Galio/Spells/GalioWAbility",
+			"Characters/Galio/Spells/GalioEAbility",
+			"Characters/Galio/Spells/GalioRAbility",
+			"Characters/Galio/Spells/GalioPassiveAbility"
+		],
+		"__type": "CharacterRecord"
+	},
+	"Characters/Galio/Spells/GalioRAbility": {
+		"mRootSpell": "Characters/Galio/Spells/GalioRAbility/GalioR",
+		"mChildSpells": [
+			"Characters/Galio/Spells/GalioRAbility/GalioR",
+			"Characters/Galio/Spells/GalioRAbility/GalioRShield",
+			"Characters/Galio/Spells/GalioRAbility/GalioRSpellPassive"
+		],
+		"__type": "AbilityObject"
+	},
+	"Characters/Galio/Spells/GalioRAbility/GalioRSpellPassive": {
+		"ObjectName": "GalioRSpellPassive",
+		"mSpell": {
+			"mSpellTags": [
+				"PositiveEffect_MoveBlock",
+				"Trait_Ultimate",
+				"Trait_ChannelSpell",
+				"PositiveEffect_Boon"
+			],
+			"cooldownTime": [200.0, 200.0, 180.0, 160.0, 140.0, 120.0, 120.0]
+		},
+		"__type": "SpellObject"
+	},
+	"Characters/Galio/Spells/GalioRAbility/GalioR": {
+		"ObjectName": "GalioR",
+		"mSpell": {
+			"mSpellTags": [
+				"PositiveEffect_MoveBlock",
+				"Trait_Ultimate",
+				"Trait_ChannelSpell",
+				"PositiveEffect_Boon",
+				"Trait_ImmobilizingCCSpell",
+				"Trait_DamageAbility",
+				"Trait_Shield",
+				"Trait_AoE"
+			],
+			"cooldownTime": [180.0, 180.0, 160.0, 140.0, 140.0, 140.0, 140.0],
+			"mClientData": {
+				"mTooltipData": {
+					"mLocKeys": {
+						"keyTooltip": "Spell_GalioR_Tooltip"
+					}
+				}
+			}
+		},
+		"__type": "SpellObject"
+	},
+	"Characters/Galio/Spells/GalioWAbility": {
+		"mRootSpell": "Characters/Galio/Spells/GalioWAbility/GalioW",
+		"mChildSpells": [
+			"Characters/Galio/Spells/GalioWAbility/GalioW",
+			"Characters/Galio/Spells/GalioWAbility/GalioWBuff",
+			"Characters/Galio/Spells/GalioWAbility/GalioWPassive",
+			"Characters/Galio/Spells/GalioWAbility/GalioWPassiveCD",
+			"Characters/Galio/Spells/GalioWAbility/GalioWPassiveDefense",
+			"Characters/Galio/Spells/GalioWAbility/GalioW2"
+		],
+		"__type": "AbilityObject"
+	},
+	"Characters/Galio/Spells/GalioWAbility/GalioW2": {
+		"ObjectName": "GalioW2",
+		"mSpell": {
+			"cooldownTime": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+		},
+		"__type": "SpellObject"
+	},
+	"Characters/Galio/Spells/GalioWAbility/GalioW": {
+		"ObjectName": "GalioW",
+		"mSpell": {
+			"mSpellTags": [
+				"Trait_ImmobilizingCCSpell",
+				"Trait_DamageAbility",
+				"Trait_RecastOrReplaceSpell",
+				"Trait_PassiveShield",
+				"Trait_Parry",
+				"Trait_SignatureSpell",
+				"Trait_Low_Damage",
+				"Trait_AoE"
+			],
+			"cooldownTime": [18.0, 18.0, 17.0, 16.0, 15.0, 14.0, 14.0],
+			"mClientData": {
+				"mTooltipData": {
+					"mLocKeys": {
+						"keyTooltip": "Spell_GalioW_Tooltip"
+					}
+				}
+			}
+		},
+		"__type": "SpellObject"
+	},
+	"Characters/Galio/Spells/GalioEAbility": {
+		"mRootSpell": "Characters/Galio/Spells/GalioEAbility/GalioE",
+		"mChildSpells": ["Characters/Galio/Spells/GalioEAbility/GalioE"],
+		"__type": "AbilityObject"
+	},
+	"Characters/Galio/Spells/GalioPassiveAbility": {
+		"mRootSpell": "Characters/Galio/Spells/GalioPassiveAbility/GalioPassive",
+		"mChildSpells": [
+			"Characters/Galio/Spells/GalioPassiveAbility/GalioPassive",
+			"Characters/Galio/Spells/GalioPassiveAttack",
+			"Characters/Galio/Spells/GalioPassiveAbility/GalioPassiveBuff",
+			"Characters/Galio/Spells/GalioPassiveAbility/GalioPassiveCD"
+		],
+		"__type": "AbilityObject"
+	},
+	"Characters/Galio/Spells/GalioPassiveAbility/GalioPassive": {
+		"ObjectName": "GalioPassive",
+		"mSpell": {
+			"mClientData": {
+				"mTooltipData": {
+					"mLocKeys": {
+						"keyTooltip": "Spell_GalioPassive_Tooltip"
+					}
+				}
+			}
+		},
+		"__type": "SpellObject"
+	},
+	"Characters/Galio/Spells/GalioQAbility": {
+		"mRootSpell": "Characters/Galio/Spells/GalioQAbility/GalioQ",
+		"mChildSpells": [
+			"Characters/Galio/Spells/GalioQAbility/GalioQ",
+			"Characters/Galio/Spells/GalioQAbility/GalioQMissile",
+			"Characters/Galio/Spells/GalioQAbility/GalioQMissileR",
+			"Characters/Galio/Spells/GalioQAbility/GalioQSuper"
+		],
+		"__type": "AbilityObject"
+	},
+	"Characters/Galio/Spells/GalioQAbility/GalioQMissileR": {
+		"ObjectName": "GalioQMissileR",
+		"mSpell": {
+			"cooldownTime": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+		},
+		"__type": "SpellObject"
+	},
+	"Characters/Galio/Spells/GalioQAbility/GalioQSuper": {
+		"ObjectName": "GalioQSuper",
+		"mSpell": {
+			"cooldownTime": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+		},
+		"__type": "SpellObject"
+	},
+	"Characters/Galio/Spells/GalioQAbility/GalioQMissile": {
+		"ObjectName": "GalioQMissile",
+		"mSpell": {
+			"cooldownTime": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+		},
+		"__type": "SpellObject"
+	},
+	"Characters/Galio/Spells/GalioQAbility/GalioQ": {
+		"ObjectName": "GalioQ",
+		"mSpell": {
+			"mSpellTags": ["Trait_DamageAbility", "Trait_DoT", "Trait_AoE"],
+			"cooldownTime": [11.0, 11.0, 10.0, 9.0, 8.0, 7.0, 7.0],
+			"mClientData": {
+				"mTooltipData": {
+					"mLocKeys": {
+						"keyTooltip": "Spell_GalioQ_Tooltip"
+					}
+				}
+			}
+		},
+		"__type": "SpellObject"
+	},
+	"Characters/Galio/Spells/GalioEAbility/GalioE": {
+		"ObjectName": "GalioE",
+		"mSpell": {
+			"mSpellTags": [
+				"PositiveEffect_MoveBlock",
+				"Trait_ImmobilizingCCSpell",
+				"Trait_PlayerSelectedDashDirection",
+				"Trait_DamageAbility"
+			],
+			"cooldownTime": [11.0, 11.0, 10.0, 9.0, 8.0, 7.0, 7.0],
+			"mClientData": {
+				"mTooltipData": {
+					"mLocKeys": {
+						"keyTooltip": "Spell_GalioE_Tooltip"
+					}
+				}
+			}
+		},
+		"__type": "SpellObject"
+	}
+}

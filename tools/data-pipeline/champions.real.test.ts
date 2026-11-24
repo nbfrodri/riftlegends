@@ -1,7 +1,8 @@
 import { readFileSync } from "node:fs";
 import { aiContent, matchContent } from "@rift-legends/contracts";
 import { expect, it } from "vitest";
-import { championTraits, curatedTraitIds } from "./champion-traits.ts";
+import { kitTraits } from "./champion-kit-rules.ts";
+import { curatedTraitIds, estimatedTraits } from "./champion-traits.ts";
 
 const read = (file: string) =>
 	JSON.parse(
@@ -77,7 +78,7 @@ it("R1/R3 give the entire playable catalog curated traits and meaningful relatio
 	const { estimated, classFallbacks } = read("provenance");
 	expect(classFallbacks).toEqual([]);
 	for (const { id, positions } of champions) {
-		const traits = championTraits(id, []);
+		const traits = estimatedTraits(id, []);
 		expect(
 			traits.split.reduce((sum, damage) => sum + damage, 0),
 			id,
@@ -123,4 +124,56 @@ it("R1/R3 give the entire playable catalog curated traits and meaningful relatio
 	for (const { champion, against, value } of counters)
 		expect(team.get(JSON.stringify([against, champion]))).toBe(-value);
 	expect(synergies.every(({ a, b, value }) => a < b && value > 0)).toBe(true);
+});
+
+it("#340 takes control, damage and the ultimate cooldown from the game data", () => {
+	const champions = read("champions") as { id: string }[];
+	const kits = read("kits") as {
+		id: string;
+		attackRange: number;
+		ultCooldown: number[] | null;
+		slots: Record<string, { damage: string[] }>;
+	}[];
+	const traits = read("traits") as {
+		id: string;
+		sources: Record<string, string>;
+	}[];
+	const { kits: kitSource, traitsToReview } = read("provenance");
+	expect(kitSource.missing).toEqual([]);
+	expect(kits.map(({ id }) => id)).toEqual(champions.map(({ id }) => id));
+	expect(traits.map(({ id }) => id)).toEqual(champions.map(({ id }) => id));
+	for (const { id, attackRange, ultCooldown, slots } of kits) {
+		expect(attackRange, id).toBeGreaterThan(0);
+		// Zero or scripted cooldowns are listed, never invented.
+		expect(kitSource.noUltimateCooldown.includes(id), id).toBe(!ultCooldown);
+		if (ultCooldown) {
+			expect(ultCooldown, id).toHaveLength(3);
+			expect(
+				ultCooldown.every((seconds) => seconds > 0),
+				id,
+			).toBe(true);
+		}
+		const damage = Object.values(slots).some((slot) => slot.damage.length);
+		expect(traitsToReview.includes(id), id).toBe(!damage);
+	}
+	// Few champions lack the data; the list is the review queue.
+	expect(kitSource.noUltimateCooldown.length).toBeLessThanOrEqual(5);
+	expect(traitsToReview.length).toBeLessThanOrEqual(5);
+	for (const { id, sources } of traits)
+		expect(sources.range, id).toBe("source");
+});
+
+it("#340 never replaces a trait from the game data with an estimate", () => {
+	const champions = read("champions") as { id: string }[];
+	const kits = new Map(
+		(read("kits") as { id: string }[]).map((kit) => [kit.id, kit]),
+	);
+	for (const { id } of champions) {
+		const derived = kitTraits(id, [], kits.get(id) as never);
+		for (const trait of derived.estimatedKit)
+			expect(estimatedTraits(id, []).kit, id).toContain(trait);
+		// What the data decides is absent from the estimated list.
+		for (const trait of ["wombo", "hook", "projectileBlock", "knockupUlt"])
+			expect(derived.estimatedKit, `${id} ${trait}`).not.toContain(trait);
+	}
 });

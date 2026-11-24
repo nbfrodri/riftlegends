@@ -30,7 +30,7 @@ const PARTICIPATION: Record<Role, readonly [number, number, number]> = {
 	support: [73.99, 50, 94.44],
 };
 
-describe.each(["control", "packaged"] as const)(
+describe.each(["control", "packaged", "real"] as const)(
 	"C6: calibration with the %s pool",
 	(pool) => {
 		const even = sample(1000, 0, pool);

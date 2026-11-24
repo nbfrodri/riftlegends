@@ -1,9 +1,25 @@
+import { readFileSync } from "node:fs";
 import { mkdir, mkdtemp, readFile, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { expect, it } from "vitest";
+import { bin, stringtableUrl } from "./champion-kit-source.ts";
 import { catalogUrl, championFiles, readCatalog } from "./champions.ts";
 import { Client } from "./client.ts";
+
+const fixture = (name: string): unknown =>
+	JSON.parse(
+		readFileSync(
+			new URL(`./fixtures/communitydragon/${name}`, import.meta.url),
+			"utf8",
+		),
+	);
+// Annie and Wukong borrow the kit files of Soraka and Yasuo.
+const kitFiles = new Map([
+	[bin("16.23", "Annie"), "soraka.bin.json"],
+	[bin("16.23", "MonkeyKing"), "yasuo.bin.json"],
+	[stringtableUrl("16.23"), "stringtable.json"],
+]);
 
 const summary = [
 	{ id: -1, alias: "None", name: "None", roles: [] },
@@ -96,6 +112,8 @@ it("R1-R3 writes reproducible files from the cache and the snapshot", async () =
 		fetch: async (url: string | URL | Request) => {
 			requests++;
 			if (String(url) === catalogUrl) return Response.json(summary);
+			const kitFile = kitFiles.get(String(url));
+			if (kitFile) return Response.json(fixture(kitFile));
 			const query = new URL(String(url)).searchParams;
 			const historicalPicks = query
 				.get("tables")
@@ -134,21 +152,22 @@ it("R1-R3 writes reproducible files from the cache and the snapshot", async () =
 		),
 	);
 	expect(second).toEqual(first);
-	expect(requests).toBe(5);
+	// catalog, 3 history queries, then the string table and one file per champion
+	expect(requests).toBe(8);
 	expect(JSON.parse(first[1] ?? "")).toEqual([
 		{
 			champion: "Annie",
 			against: "MonkeyKing",
 			role: "mid",
-			value: 2,
-			reasons: ["range", "lockdownVsDash"],
+			value: 1,
+			reasons: ["range"],
 		},
 		{
 			champion: "MonkeyKing",
 			against: "Annie",
 			role: "mid",
-			value: -2,
-			reasons: ["range", "lockdownVsDash"],
+			value: -1,
+			reasons: ["range"],
 		},
 	]);
 	const provenance = JSON.parse(first[3] ?? "");
@@ -165,4 +184,21 @@ it("R1-R3 writes reproducible files from the cache and the snapshot", async () =
 		tier: "B",
 	});
 	expect(first[3]).not.toContain('"name"');
+	expect(provenance.kits).toMatchObject({
+		patch: "16.23",
+		champions: 2,
+		missing: [],
+	});
+	const kits = JSON.parse(
+		await readFile(join(outputDir, "kits.json"), "utf8"),
+	) as { id: string; ultCooldown: number[] }[];
+	expect(kits.map(({ id, ultCooldown }) => [id, ultCooldown])).toEqual([
+		["Annie", [150, 135, 120]],
+		["MonkeyKing", [70, 50, 30]],
+	]);
+	const traits = JSON.parse(
+		await readFile(join(outputDir, "traits.json"), "utf8"),
+	);
+	expect(traits[0].sources.range).toBe("source");
+	expect(provenance.traitsToReview).toEqual([]);
 });

@@ -1,5 +1,6 @@
 import type { AiContent, MatchContent } from "@rift-legends/contracts";
 import type { RealSnapshot } from "@rift-legends/contracts/real-snapshot";
+import type { ChampionKit } from "./champion-kit-source.ts";
 import {
 	countsFor,
 	positions,
@@ -149,6 +150,8 @@ interface ContentOptions {
 	priorGames?: number | undefined;
 	season?: number | undefined;
 	history?: readonly SeasonPresence[] | undefined;
+	/** Kit facts from the game data (#340); champions without one use estimates. */
+	kits?: ReadonlyMap<string, ChampionKit> | undefined;
 }
 
 export function deriveChampionContent(
@@ -160,6 +163,7 @@ export function deriveChampionContent(
 		priorGames = pairPriorGames,
 		season = games.reduce((year, game) => Math.max(year, yearOf(game.date)), 0),
 		history = [],
+		kits = new Map<string, ChampionKit>(),
 	} = options;
 	if (!Number.isSafeInteger(priorGames) || priorGames < 1)
 		throw new Error("Pair prior games must be a positive integer");
@@ -174,7 +178,7 @@ export function deriveChampionContent(
 	}
 	const presence = tierSeasons(seasons.values(), season);
 	const entries = orderBy(catalog, ({ id }) => id).map(({ id, classes }) => {
-		const profile = championProfile(id, classes);
+		const profile = championProfile(id, classes, kits.get(id));
 		const { damage, power, archetypes, cc, mobility, frontline } = profile;
 		const champion: Champion = {
 			id,
@@ -254,6 +258,11 @@ export function deriveChampionContent(
 			key(champion, against),
 		),
 		synergies,
+		traits: entries.map(({ champion, profile }) => ({
+			id: champion.id,
+			sources: profile.sources,
+			estimatedKit: profile.estimatedKit,
+		})),
 		estimated: entries
 			.filter(({ profile }) => profile.estimate)
 			.map(({ champion }) => champion.id),

@@ -86,17 +86,17 @@ it("keeps the real matchup and team counter separate without duplicating mirrore
 	const result = card("Aatrox", draft, match) as {
 		relations: { other: string; kind: string }[];
 	};
-	const akali = result.relations.filter(
-		(r) => r.other === "Akali" && r.kind !== "synergy",
+	const garen = result.relations.filter(
+		(r) => r.other === "Garen" && r.kind !== "synergy",
 	);
-	expect(akali).toHaveLength(2);
-	expect(akali).toEqual(
+	expect(garen).toHaveLength(2);
+	expect(garen).toEqual(
 		expect.arrayContaining([
 			expect.objectContaining({
 				kind: "lane",
 				role: "top",
 				value: -2,
-				reasons: ["mobilityVsSkillshots"],
+				reasons: ["tankShred"],
 			}),
 			expect.objectContaining({ kind: "counter", value: -1 }),
 		]),
