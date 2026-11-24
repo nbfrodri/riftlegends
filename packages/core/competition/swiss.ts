@@ -169,7 +169,9 @@ export function pairSwissRound(
 		(x, y) =>
 			record(y.id).wins - record(x.id).wins ||
 			record(x.id).losses - record(y.id).losses ||
-			(seedOf.get(x.id) as number) - (seedOf.get(y.id) as number),
+			(round === 1
+				? 0
+				: (seedOf.get(x.id) as number) - (seedOf.get(y.id) as number)),
 	);
 	const matching = findMatching(order, (x, y) => {
 		if (round === 1) {
