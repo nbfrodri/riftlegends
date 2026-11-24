@@ -685,5 +685,18 @@
 	"draft.plan.cause.risk.poke.up": "El rival tiene más poke: fuerza peleas antes de que te desgaste.",
 	"draft.plan.cause.risk.poke.down": "Tienes más poke que el rival: espera y juega seguro.",
 	"draft.plan.cause.risk.late.up": "El rival escala mejor: necesitas jugadas atrevidas para ganar.",
-	"draft.plan.cause.risk.late.down": "Escalas mejor: jugar seguro gana al final."
+	"draft.plan.cause.risk.late.down": "Escalas mejor: jugar seguro gana al final.",
+	"settings.credits.title": "Créditos",
+	"settings.credits.description": "Fuentes de datos, licencias y aviso legal.",
+	"settings.credits.open": "Ver créditos",
+	"credits.title": "Créditos",
+	"credits.back": "Volver a Ajustes",
+	"credits.sources.title": "Fuentes de datos",
+	"credits.sources.leaguepedia": "Equipos, plantillas y resultados de esports, de los colaboradores de Leaguepedia. Licencia CC BY-SA 3.0; los datos normalizados se comparten con la misma licencia.",
+	"credits.sources.communityDragon": "Retratos, iconos y datos de campeones, descargados a una caché local.",
+	"credits.sources.lolesports": "API pública para los logos de equipos y ligas y las fotos de jugadores, descargados a una caché local.",
+	"credits.legal.title": "Aviso legal",
+	"credits.legal.assets": "Los nombres, ilustraciones e iconos de League of Legends pertenecen a Riot Games. El juego los descarga en tiempo de ejecución; este repositorio y sus binarios no los incluyen.",
+	"credits.libraries.title": "Librerías de código abierto",
+	"credits.libraries.description": "Rift Legends usa estas librerías, cada una con su propia licencia."
 }

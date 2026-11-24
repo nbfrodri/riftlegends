@@ -6,6 +6,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@rift-legends/ui-kit/components/select";
+import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import { ContentSettings } from "./assets/content-settings";
 import { isLocale, storeLanguage } from "./language";
@@ -59,6 +60,24 @@ export function SettingsScreen() {
 				</Select>
 			</div>
 			<ContentSettings />
+			<section
+				aria-labelledby="settings-credits"
+				className="mx-[clamp(14px,1.35vw,28px)] mt-[clamp(14px,2.1vh,24px)] max-w-[640px] bg-panel px-[clamp(12px,1.15vw,18px)] py-[clamp(10px,1.5vh,16px)]"
+			>
+				<h2
+					id="settings-credits"
+					className="font-bold font-display text-[clamp(16px,1.45vw,23px)] leading-[1.1] tracking-[-0.045em]"
+				>
+					{t("settings.credits.title")}
+				</h2>
+				<p className="mt-1 text-muted">{t("settings.credits.description")}</p>
+				<Link
+					to="/ajustes/creditos"
+					className="mt-3 inline-block text-action underline underline-offset-3 hover:text-text focus-visible:outline-2 focus-visible:outline-action"
+				>
+					{t("settings.credits.open")}
+				</Link>
+			</section>
 		</>
 	);
 }

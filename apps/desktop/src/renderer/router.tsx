@@ -7,6 +7,7 @@ import {
 } from "@tanstack/react-router";
 import { StartupGate } from "./assets/startup-gate";
 import { ChampionsScreen } from "./champions-screen";
+import { CreditsScreen } from "./credits/credits-screen";
 import { DraftScreen, MarketScreen, SettingsScreen } from "./screens";
 import { Shell } from "./shell";
 
@@ -53,12 +54,19 @@ const settingsRoute = createRoute({
 	component: SettingsScreen,
 });
 
+const creditsRoute = createRoute({
+	getParentRoute: () => rootRoute,
+	path: "ajustes/creditos",
+	component: CreditsScreen,
+});
+
 const routeTree = rootRoute.addChildren([
 	indexRoute,
 	draftRoute,
 	championsRoute,
 	marketRoute,
 	settingsRoute,
+	creditsRoute,
 ]);
 
 export function createAppRouter(initialPath = "/") {

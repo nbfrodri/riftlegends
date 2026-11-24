@@ -50,7 +50,19 @@ test("opens the Leaguepedia attribution in the system browser only", () => {
 });
 
 test.each([
+	"https://creativecommons.org/licenses/by-sa/3.0/",
+	"https://www.communitydragon.org/",
+	"https://lolesports.com/",
+	"https://www.npmjs.com/package/react",
+])("opens the credits link %s in the system browser", (url) => {
+	const { open, openExternal } = navigation();
+	expect(open({ url })).toEqual({ action: "deny" });
+	expect(openExternal).toHaveBeenCalledExactlyOnceWith(url);
+});
+
+test.each([
 	"https://other.example/",
+	"https://evil.creativecommons.org/",
 	"https://lol.fandom.com.example/",
 	"https://lol.fandom.com@other.example/",
 	"https://user@lol.fandom.com/",
