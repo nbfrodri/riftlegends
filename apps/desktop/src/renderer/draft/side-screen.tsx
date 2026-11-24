@@ -82,8 +82,11 @@ type AiChoice = Extract<
 	{ type: "ai.sideDecided" }
 >;
 
-/** The champions a team played in earlier games, which fearless locks. */
-function PlayedBy(props: { team: string; champions: readonly string[] }) {
+/** A team's champions locked by fearless, grouped by the game they were played in (#434). */
+function PlayedBy(props: {
+	team: string;
+	games: readonly { game: number; champions: readonly string[] }[];
+}) {
 	const { t } = useTranslation();
 	const { options } = useDraftSession();
 	const id = useId();
@@ -92,22 +95,37 @@ function PlayedBy(props: { team: string; champions: readonly string[] }) {
 			<h3 id={id} className="font-bold">
 				{t("draft.side.playedBy", { team: teamName(options, props.team) })}
 			</h3>
-			<ul aria-labelledby={id} className="flex flex-wrap gap-1.5">
-				{props.champions.map((champion) => {
-					const name = championLabel(options, champion);
-					// Greyed portraits like the bans, named by their tooltip (#376).
+			<ul aria-labelledby={id} className="flex flex-col gap-1.5">
+				{props.games.map(({ game, champions }) => {
+					const playedIn = t("draft.side.playedIn", { game });
 					return (
-						<li key={champion} className="flex">
-							<Tooltip content={name}>
-								<span className="flex rounded-control">
-									<ChampionPortrait
-										id={champion}
-										label={name}
-										size="ban"
-										unavailable
-									/>
-								</span>
-							</Tooltip>
+						<li key={game} className="flex items-center gap-2">
+							<span
+								aria-hidden="true"
+								className="w-14 shrink-0 text-[13px] text-muted"
+							>
+								{t("draft.score.game", { game })}
+							</span>
+							<ul aria-label={playedIn} className="flex flex-wrap gap-1.5">
+								{champions.map((champion) => {
+									const name = championLabel(options, champion);
+									// Greyed portraits like the bans, named by their tooltip (#376).
+									return (
+										<li key={champion} className="flex">
+											<Tooltip heading={name} content={playedIn}>
+												<span className="flex rounded-control">
+													<ChampionPortrait
+														id={champion}
+														label={name}
+														size="ban"
+														unavailable
+													/>
+												</span>
+											</Tooltip>
+										</li>
+									);
+								})}
+							</ul>
 						</li>
 					);
 				})}
@@ -124,9 +142,12 @@ function LockedChampions(props: {
 	const { t } = useTranslation();
 	const id = useId();
 	const played = (team: string) =>
-		props.games.flatMap((game) =>
-			game.lines.filter((l) => l.team === team).map((l) => l.champion),
-		);
+		props.games.map((game) => ({
+			game: game.game,
+			champions: game.lines
+				.filter((l) => l.team === team)
+				.map((l) => l.champion),
+		}));
 	return (
 		<section aria-labelledby={id} className={`${panel} border-line`}>
 			<h2 id={id} className={panelTitle}>
@@ -134,7 +155,7 @@ function LockedChampions(props: {
 			</h2>
 			<div className="grid grid-cols-2 gap-gap">
 				{props.teams.map((team) => (
-					<PlayedBy key={team} team={team} champions={played(team)} />
+					<PlayedBy key={team} team={team} games={played(team)} />
 				))}
 			</div>
 		</section>
