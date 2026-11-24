@@ -54,7 +54,7 @@ function normalised(base: WeightMap): WeightMap {
 /** Steps tried on a weight, as fixed-point multipliers. */
 const BASE_STEPS = [5_000, 7_500, 9_000, 11_000, 13_000, 20_000];
 const OWN_STEPS = [8_000, 9_000, 11_000, 12_000];
-const BASE_RANGE = [2_500, 40_000] as const;
+const BASE_RANGE = [5_000, 20_000] as const;
 /** A personality keeps its character: its own weights stay near where they started. */
 const OWN_RANGE = [7_000, 14_000] as const;
 const MIN_PERSONALITY_TURNS = 400;

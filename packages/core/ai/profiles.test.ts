@@ -1,6 +1,6 @@
 import { PERSONALITIES, type Personality } from "@rift-legends/contracts";
 import { describe, expect, it } from "vitest";
-import { type Fixed, mul, SCALE } from "../math";
+import { SCALE } from "../math";
 import { SCOPES } from "../rng/scopes";
 import { deriveSeed } from "../rng/seeds";
 import { createRng } from "../rng/streams";
@@ -109,10 +109,8 @@ describe("balanced (D2)", () => {
 		expect(profile.weights).toEqual(BASE_WEIGHTS);
 	});
 
-	it("scales a personality's weights from the base, not from x1", () => {
-		const { meta } = PROFILES.meta.weights;
-		const { meta: baseMeta = SCALE } = BASE_WEIGHTS;
-		const own = PROFILE_DEFINITIONS.meta.weights.meta ?? SCALE;
-		expect(meta).toBe(mul(baseMeta as Fixed, own as Fixed));
+	it("lets a personality override the base for the keys it names", () => {
+		const own = PROFILE_DEFINITIONS.comfort.weights;
+		expect(PROFILES.comfort.weights).toEqual({ ...BASE_WEIGHTS, ...own });
 	});
 });

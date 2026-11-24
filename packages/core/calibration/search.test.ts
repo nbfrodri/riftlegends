@@ -1,10 +1,10 @@
 import type { Personality } from "@rift-legends/contracts";
 import { describe, expect, it } from "vitest";
 import { fictionalContent } from "../ai/fixtures/content";
-import { abs, SCALE } from "../math";
+import { SCALE } from "../math";
 import { splitOf } from "./bank";
 import { evaluate } from "./metric";
-import { COMPONENT_KEYS, replay, type Turn } from "./replay";
+import { replay, type Turn } from "./replay";
 import { calibrate, resolver, type Setup } from "./search";
 import { syntheticDrafts } from "./synthetic";
 
@@ -27,7 +27,7 @@ const validation: Turn[] = split("validation");
 const start: Setup = { base: {}, own: {} };
 
 describe("resolver", () => {
-	it("multiplies the base by what a personality changes", () => {
+	it("lets a personality override the base for the keys it names", () => {
 		const resolve = resolver({
 			base: { meta: 20_000, comfort: 5_000 },
 			own: { comfort: { comfort: 30_000, matchup: 20_000 } },
@@ -35,7 +35,7 @@ describe("resolver", () => {
 		expect(resolve("balanced")).toEqual({ meta: 20_000, comfort: 5_000 });
 		expect(resolve("comfort")).toEqual({
 			meta: 20_000,
-			comfort: 15_000,
+			comfort: 30_000,
 			matchup: 20_000,
 		});
 	});
@@ -62,11 +62,8 @@ describe("calibrate", { timeout: 120_000 }, () => {
 		expect(result.validation.before.overall.top3).toBe(before);
 	});
 
-	it("scales the base so the average component weighs x1, keeping the AI's temperature meaning", () => {
-		const weights = COMPONENT_KEYS.map((k) => result.setup.base[k] ?? SCALE);
-		const total = weights.reduce((a, b) => a + b, 0);
-		// Each weight loses less than one unit to truncation.
-		expect(abs(total - weights.length * SCALE)).toBeLessThan(weights.length);
+	it("keeps meta at x1, the yardstick of every personality's weights", () => {
+		expect(result.setup.base.meta ?? SCALE).toBe(SCALE);
 	});
 
 	it("is deterministic for a seed", () => {
