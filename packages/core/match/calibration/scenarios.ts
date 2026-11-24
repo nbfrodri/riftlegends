@@ -11,9 +11,10 @@ import { SCOPES } from "../../rng/scopes";
 import { deriveSeed } from "../../rng/seeds";
 import { createRng } from "../../rng/streams";
 import { syntheticContent } from "../../test/synthetic-content";
-import { MATCH_CONTESTS, playMatch } from "../loop";
+import { MATCH_CONTESTS, matchDuration, playMatch } from "../loop";
 import { mentalEdge } from "../mental";
 import type { MatchSetup } from "../state";
+import { playerStats } from "../stats";
 
 const POOL = Array.from({ length: 10 }, (_, i) => `c${i}`);
 const lineup = (team: string, champions: readonly (string | undefined)[]) => ({
@@ -114,8 +115,19 @@ export function sample(games: number, edge: number, pool: Pool) {
 				ROLES.map((role) => [state.context[side].players[role], role]),
 			);
 			const line = Object.fromEntries(
-				ROLES.map((role) => [role, { kills: 0, assists: 0 }]),
-			) as Record<Role, { kills: number; assists: number }>;
+				ROLES.map((role) => [
+					role,
+					{ kills: 0, assists: 0, goldShare: 0, damageShare: 0 },
+				]),
+			) as Record<
+				Role,
+				{
+					kills: number;
+					assists: number;
+					goldShare: number;
+					damageShare: number;
+				}
+			>;
 			let kills = 0;
 			for (const k of events.flatMap((e) => e.kills)) {
 				const killer = roleOf.get(k.killer);
@@ -126,6 +138,26 @@ export function sample(games: number, edge: number, pool: Pool) {
 					const helper = roleOf.get(id);
 					if (helper) line[helper].assists++;
 				}
+			}
+			// Gold and damage by role, as a share of the team (plan 08, K7).
+			const stats = playerStats(
+				events.map((e, i) => ({ ...e, position: i + 1 })),
+				{
+					blue: {
+						...state.context.blue,
+						champions: state.context.blue.players,
+					},
+					red: { ...state.context.red, champions: state.context.red.players },
+				},
+				state.context.rules,
+				matchDuration(events.at(-1)),
+			).filter((p) => p.team === state.context[side].team);
+			const gold = stats.reduce((sum, p) => sum + p.gold, 0);
+			const damage = stats.reduce((sum, p) => sum + p.damage, 0);
+			for (const role of ROLES) {
+				const mine = stats[ROLES.indexOf(role)];
+				line[role].goldShare = ((mine?.gold ?? 0) / gold) * 100;
+				line[role].damageShare = ((mine?.damage ?? 0) / damage) * 100;
 			}
 			return { kills, line };
 		});

@@ -7,6 +7,7 @@ import {
 } from "@rift-legends/contracts";
 import { SCALE } from "../math";
 import { clamp } from "../math/int";
+import { farmed, restOfEvent, splitDamage } from "./economy";
 import { minuteOf } from "./state";
 
 export type { EventFact } from "./explain";
@@ -56,14 +57,15 @@ interface Line {
 	kills: number;
 	deaths: number;
 	assists: number;
-	/** Kill and assist gold only; the shared gold is added at the end. */
+	/** Kill and assist gold only; the rest of the gold is added at the end. */
 	gold: number;
 	damage: number;
 }
 
 /**
- * Records each event once. Kill and assist gold goes to who earned it.
- * All other gold is shared evenly, with the remainder going to the first role.
+ * Records each event once. Every gold has an owner (plan 08, #347): kills and
+ * assists pay who made them; lane gold and towers pay the laners; objectives
+ * and the rest pay the five; the passive income goes by role farm share.
  */
 export function trackPlayerStats(
 	teams: Readonly<Record<Side, Pick<SideTeam, "players">>>,
@@ -78,7 +80,10 @@ export function trackPlayerStats(
 		lines.set(player, { kills: 0, deaths: 0, assists: 0, gold: 0, damage: 0 });
 		sideOf.set(player, side);
 	}
-	const shared = { blue: 0, red: 0 };
+	const rest = {
+		blue: ROLES.map(() => 0),
+		red: ROLES.map(() => 0),
+	};
 	const teamKills = { blue: 0, red: 0 };
 
 	const record = (event: MatchEvent) => {
@@ -122,7 +127,11 @@ export function trackPlayerStats(
 				}
 			}
 		}
-		for (const side of SIDES) shared[side] += left[side];
+		for (const side of SIDES) {
+			restOfEvent(event, left[side]).forEach((gold, i) => {
+				rest[side][i] = (rest[side][i] as number) + gold;
+			});
+		}
 		if (FIGHTS.has(event.kind)) {
 			for (const { player, side } of slots) {
 				const line = lines.get(player) as Line;
@@ -137,15 +146,28 @@ export function trackPlayerStats(
 			slot: (typeof slots)[number],
 			line: Readonly<Line>,
 			gold: number,
+			damage: number,
 		) => T,
 	): T[] => {
-		const passive = rules.economy.passive * minutes;
+		const farm = farmed(rules.economy.passive, minutes);
+		const bySide = Object.fromEntries(
+			SIDES.map((side) => [
+				side,
+				splitDamage(
+					ROLES.map(
+						(role) =>
+							(lines.get(teams[side].players[role]) as Line).damage +
+							DAMAGE_PER_MINUTE * minutes,
+					),
+				),
+			]),
+		) as Record<Side, number[]>;
 		return slots.map((slot) => {
-			const rest = shared[slot.side] + passive;
-			const share = div(rest, ROLES.length);
-			const extra = slot.role === ROLES[0] ? rest % ROLES.length : 0;
+			const i = ROLES.indexOf(slot.role);
 			const line = lines.get(slot.player) as Line;
-			return project(slot, line, line.gold + share + extra);
+			const gold =
+				line.gold + (rest[slot.side][i] as number) + (farm[i] as number);
+			return project(slot, line, gold, bySide[slot.side][i] as number);
 		});
 	};
 
@@ -162,8 +184,8 @@ export function playerStats(
 	const stats = trackPlayerStats(teams, rules);
 	for (const event of events) stats.record(event);
 	const minutes = minuteOf(duration);
-	return stats.at(minutes, ({ side, role, player }, line, gold) => {
-		const { kills, deaths, assists, damage } = line;
+	return stats.at(minutes, ({ side, role, player }, line, gold, damage) => {
+		const { kills, deaths, assists } = line;
 		const teamKills = stats.teamKills[side];
 		const participation =
 			teamKills === 0
@@ -177,7 +199,7 @@ export function playerStats(
 			deaths,
 			assists,
 			gold,
-			damage: damage + DAMAGE_PER_MINUTE * minutes,
+			damage,
 			participation,
 			rating: clamp(
 				RATING.base +

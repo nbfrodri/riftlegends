@@ -10,6 +10,7 @@ import {
 import fc from "fast-check";
 import { describe, expect, it } from "vitest";
 import { fictionalContent } from "../ai/fixtures/content";
+import { farmed } from "./economy";
 import { decisive } from "./explain";
 import { fictionalMatchContent } from "./fixtures/content";
 import { type Contest, LANE_CONTESTS, playMatch } from "./loop";
@@ -241,9 +242,13 @@ describe("M5 · stats come from the facts", () => {
 	});
 
 	it("pays kill and assist gold to who earned it", () => {
-		const share = (rules.economy.passive * 10) / 5;
-		expect(of("b-mid").gold).toBe(share + 2 * rules.economy.kill);
-		expect(of("b-jungle").gold).toBe(share + rules.economy.assist);
+		const passive = farmed(rules.economy.passive, 10);
+		expect(of("b-mid").gold).toBe(
+			(passive[ROLES.indexOf("mid")] as number) + 2 * rules.economy.kill,
+		);
+		expect(of("b-jungle").gold).toBe(
+			(passive[ROLES.indexOf("jungle")] as number) + rules.economy.assist,
+		);
 	});
 
 	it("participation is kills plus assists over the team kills", () => {
@@ -332,8 +337,8 @@ describe("fights where both sides score", () => {
 	});
 
 	it("pays the losing side's killers from that side's gold", () => {
-		const share = (rules.economy.passive * 10) / 5;
-		expect(of("r-bot")?.gold).toBe(share + k);
-		expect(of("b-mid")?.gold).toBe(share + k);
+		const farm = farmed(rules.economy.passive, 10);
+		expect(of("r-bot")?.gold).toBe((farm[ROLES.indexOf("bot")] as number) + k);
+		expect(of("b-mid")?.gold).toBe((farm[ROLES.indexOf("mid")] as number) + k);
 	});
 });

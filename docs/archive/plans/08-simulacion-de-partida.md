@@ -285,6 +285,15 @@ Hoy: `diferencia absoluta × 40`, ponderada 100 / 85 / 70 / 55 % en los minutos 
 - **K4 se mantiene** (3.000 en contra al minuto 20, gana el 15–30 %). A mano: 3.000 sobre unos 100.000 de oro útil dan una ventaja de 300 y unos 102.000 puntos, igual que los 3.000 × 40 × 0,85 de hoy. `goldLeadPoints` se ajusta en la calibración si K4 sale de banda, con el motivo en el PR.
 - **`SIM_VERSION`** sube desde la vigente (hoy 2) al aplicar este cambio, con goldens regenerados.
 
+#### Oro y daño por rol implementados (#347, 24-11-2026)
+
+Código en `packages/core/match/economy.ts`, usado por `stats.ts` (estadísticas finales y snapshots). `SIM_VERSION` 6: ganador, duración, bajas y oro por lado no cambian; cambian el oro y el daño por jugador.
+
+- **Oro.** El oro de cada jugador sale de los hechos, sin tiradas nuevas: bajas y asistencias como antes; el oro de un duelo de línea, al laner (bot: 80 % ADC, 20 % apoyo); una torre de línea, mitad a los roles de su línea y mitad a los cinco; objetivos, inhibidores y el resto, a los cinco. El pasivo se reparte por rol (top 19,5 %, jungla 21 %, mid 20,5 %, ADC 25,5 %, apoyo 13,5 %), calibrado con K7. Los restos van a los mayores residuos, con desempate por `ROLES`. La suma de los cinco es el oro del lado en cada snapshot.
+- **Daño.** El total del equipo es el de la fórmula anterior; se reparte 90 % por la cuota de daño de su rol (tabla de competición) y 10 % por lo que hizo cada jugador (bajas, asistencias, peleas).
+- **K7 (1.000 partidas por pool).** Oro por rol: media a ≤ 1,5 pp del pro y P10/P90 a ≤ 2 pp; apoyo entre 13 y 15 % y siempre por debajo del ADC. Daño por rol: media a ≤ 2 pp. Los extremos de daño (P10/P90 a 4 pp) no se cumplen: la simulación no tiene la dispersión de un pro, y se quedan sin banda.
+- **Pendiente.** Los multiplicadores de fase y arquetipo del daño; el dato `playerGold` en los hechos (el oro por jugador se deriva de los hechos, así que los logs antiguos se leen igual); el CS del snapshot sigue siendo cosmético.
+
 ### Bandas observadas en competición
 
 Leaguepedia (CC BY-SA 3.0), [snapshot versionado](../../../packages/core/content/real/LICENSE) del commit `e0c27bd`. CBLOL, LCK, LCP, LCS, LEC y LPL aportan **2.378 partidas distintas** del 14 de enero al 10 de octubre de 2026 y **4.756 equipos-partida** con cinco roles completos. Cada equipo-partida pesa igual. Los cuatro campos de `ScoreboardPlayers` están completos (`Kills`, `Assists`, `DamageToChampions`, `Gold`). Se excluyen 13 equipos con cero bajas al calcular cuota de bajas y KP. KP es (bajas + asistencias) dividido por bajas del equipo.
