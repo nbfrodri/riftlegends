@@ -38,6 +38,8 @@ const RoleFilterButtons = memo(function RoleFilterButtons(props: {
 export function ChampionFilters(props: {
 	role: Role;
 	onRole: (role: Role) => void;
+	/** The tier list is per role; the full list shows every role. */
+	roles: boolean;
 	query: string;
 	onQuery: (query: string) => void;
 }) {
@@ -52,7 +54,9 @@ export function ChampionFilters(props: {
 				placeholder={t("draft.board.searchPlaceholder")}
 				className="min-w-0 max-w-60 flex-1 rounded-control border border-line bg-surface px-2.5 py-[5px] text-[13px] text-text placeholder:text-muted hover:border-muted focus-visible:border-action"
 			/>
-			<RoleFilterButtons value={props.role} onChange={props.onRole} />
+			{props.roles && (
+				<RoleFilterButtons value={props.role} onChange={props.onRole} />
+			)}
 		</div>
 	);
 }

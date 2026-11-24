@@ -66,6 +66,21 @@ test.describe("Campeones", () => {
 		await captureScreen(appWindow, "campeones-top.png");
 	});
 
+	test("Campeones with the full list", async ({ appWindow }) => {
+		await goTo(appWindow, "Campeones");
+		await appWindow
+			.getByRole("radiogroup", { name: "Vista" })
+			.getByText("Lista completa")
+			.click();
+		await expect(
+			appWindow
+				.getByRole("list", { name: "Todos los campeones" })
+				.getByRole("button", { name: "Cragbell" }),
+		).toBeVisible();
+		await appWindow.mouse.move(0, 0);
+		await captureScreen(appWindow, "campeones-lista.png");
+	});
+
 	test("Campeones with a champion's detail open", async ({ appWindow }) => {
 		await goTo(appWindow, "Campeones");
 		await appWindow.getByRole("button", { name: "Rimefoil" }).click();

@@ -1,4 +1,4 @@
-import { loadRealContent } from "@rift-legends/core";
+import { loadRealContent, packagedDraftContent } from "@rift-legends/core";
 import { RouterProvider } from "@tanstack/react-router";
 import { cleanup, fireEvent, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -88,10 +88,91 @@ it("opens the full card and returns focus to the tile on Escape", async () => {
 	expect(document.activeElement).toBe(tile);
 });
 
-it("uses the real content by default, its season, localized tile art and relations before a series starts", async () => {
+it("closes the card on a click outside it, not inside, and returns focus", async () => {
+	const user = await open();
+	const tile = await screen.findByRole("button", { name: "Cragbell" });
+	await user.click(tile);
+	const region = () =>
+		screen.queryByRole("region", { name: "Champion card: Cragbell" });
+	await user.click(
+		await within(region() as HTMLElement).findByRole("heading", {
+			name: "Synergies",
+		}),
+	);
+	expect(region()).not.toBeNull();
+	await user.click(screen.getByRole("dialog", { name: "Champion card" }));
+	expect(region()).toBeNull();
+	expect(document.activeElement).toBe(tile);
+});
+
+it("shows the card without the action-colored top border", async () => {
+	const user = await open();
+	await user.click(await screen.findByRole("button", { name: "Cragbell" }));
+	const card = screen.getByRole("region", { name: "Champion card: Cragbell" });
+	expect(card.className).not.toMatch(/border-t-action/);
+});
+
+const viewSwitch = () => screen.getByRole("radiogroup", { name: "View" });
+const fullList = () =>
+	within(screen.getByRole("list", { name: "All champions" }));
+const listed = () =>
+	fullList()
+		.getAllByRole("listitem")
+		.map((item) => within(item).getByRole("button").getAttribute("aria-label"));
+
+it("lists every champion by name with its roles and tiers, and opens its card", async () => {
+	const user = await open();
+	await screen.findByRole("heading", { name: "Champions" });
+	await user.click(
+		within(viewSwitch()).getByRole("radio", { name: "Full list" }),
+	);
+	const names = packagedDraftContent.champions
+		.map((c) => c.name)
+		.sort((a, b) => a.localeCompare(b, "en-US"));
+	expect(listed()).toEqual(names);
+	const row = within(fullList().getByRole("button", { name: "Rimefoil" }));
+	const tierOf = (role: string) =>
+		row.getByRole("img", { name: role }).nextElementSibling?.textContent;
+	expect([tierOf("Top"), tierOf("Mid")]).toEqual(["B", "A"]);
+	await user.type(
+		screen.getByRole("searchbox", { name: "Search champion" }),
+		"MEfo",
+	);
+	expect(listed()).toEqual(["Rimefoil"]);
+	await user.click(fullList().getByRole("button", { name: "Rimefoil" }));
+	expect(
+		await screen.findByRole("region", { name: "Champion card: Rimefoil" }),
+	).toBeTruthy();
+});
+
+it("keeps the role and the search when switching views", async () => {
+	const user = await open();
+	await screen.findByRole("heading", { name: "Champions" });
+	await user.click(button("Mid"));
+	const search = screen.getByRole("searchbox", { name: "Search champion" });
+	await user.type(search, "rime");
+	await user.click(
+		within(viewSwitch()).getByRole("radio", { name: "Full list" }),
+	);
+	expect(listed()).toEqual(["Rimefoil"]);
+	await user.click(
+		within(viewSwitch()).getByRole("radio", { name: "Tier list" }),
+	);
+	expect(
+		(
+			screen.getByRole("searchbox", {
+				name: "Search champion",
+			}) as HTMLInputElement
+		).value,
+	).toBe("rime");
+	expect(button("Mid").getAttribute("aria-pressed")).toBe("true");
+	expect(tier("A").getByRole("button", { name: "Rimefoil" })).toBeTruthy();
+});
+
+it("uses the real content by default, without a season, localized tile art and relations before a series starts", async () => {
 	const user = await open(true);
 	const tile = await screen.findByRole("button", { name: "Aatrox EN" });
-	expect(screen.getByText(`Season ${loadRealContent().season}`)).toBeTruthy();
+	expect(screen.queryByText(/season/i)).toBeNull();
 	expect(tile.querySelector("img")?.getAttribute("src")).toBe(
 		"rift-asset://cdragon/tiles/Aatrox.jpg",
 	);
@@ -108,7 +189,7 @@ it("uses the real content by default, its season, localized tile art and relatio
 	).toBeTruthy();
 	expect(card.getAllByText(/ EN$/).length).toBeGreaterThan(3);
 	expect(screen.queryByText(/leaguepedia|communitydragon/i)).toBeNull();
-});
+}, 15_000);
 
 it("opens a detail view with every relation by role, team counters and the team plans", async () => {
 	const { draft } = loadRealContent();

@@ -108,7 +108,7 @@ export function ChampionCard({
 			ref={panel}
 			tabIndex={-1}
 			aria-label={t("draft.card.name", { name })}
-			className={`flex flex-col overflow-hidden rounded-control border border-line border-t-[3px] border-t-action bg-panel leading-snug shadow-2xl focus-visible:outline-action ${large ? "h-full text-sm" : `absolute inset-y-0 z-20 w-[calc((100%-24px)/4)] text-[13px] ${left ? "left-0" : "right-0"}`}`}
+			className={`flex flex-col overflow-hidden rounded-control border border-line bg-panel leading-snug shadow-2xl focus-visible:outline-action ${large ? "h-full text-sm" : `border-t-[3px] border-t-action absolute inset-y-0 z-20 w-[calc((100%-24px)/4)] text-[13px] ${left ? "left-0" : "right-0"}`}`}
 		>
 			<header className="flex shrink-0 items-start gap-2 border-b border-line bg-surface px-3 py-2.5">
 				<div
