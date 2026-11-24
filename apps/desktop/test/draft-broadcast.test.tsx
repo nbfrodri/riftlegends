@@ -128,7 +128,7 @@ describe("#419: the turn timer is a bar shrinking from both sides", () => {
 		expect(bar().style.transitionDuration).toBe(`${pacing.turnMs}ms`);
 		expect(bar().style.transitionTimingFunction).toBe("linear");
 		// The time left stays readable for screen readers, without a sign.
-		expect(screen.getByRole("timer").textContent).toBe("Turn time00:30");
+		expect(screen.getByRole("timer").textContent).toBe("00:30");
 	});
 
 	test("sits above the board, across both team columns and the pool", async () => {
@@ -154,6 +154,6 @@ describe("#419: the turn timer is a bar shrinking from both sides", () => {
 		await advance(10_000);
 		expect(bar().style.transform).toBe("scaleX(0.667)");
 		expect(bar().style.transitionDuration).toBe("");
-		expect(screen.getByRole("timer").textContent).toBe("Turn time00:20");
+		expect(screen.getByRole("timer").textContent).toBe("00:20");
 	});
 });

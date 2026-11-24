@@ -12,7 +12,8 @@ const steps = (seconds: number) =>
 
 /**
  * The turn timer (#419): a line in the picking side's colour that shrinks from
- * both ends to the centre. It animates its transform once over the whole turn;
+ * both ends to the centre, laid over the gap above the board so it spans both
+ * team columns and the pool without taking height. It animates its transform once over the whole turn;
  * with reduced motion it steps every second. The time left is screen-reader text.
  */
 function Countdown(props: { side: Side }) {
@@ -49,28 +50,22 @@ function Countdown(props: { side: Side }) {
 		<div
 			role="timer"
 			aria-label={t("draft.timer.label")}
-			className="w-[clamp(140px,14vw,220px)]"
+			className="pointer-events-none absolute inset-x-0 bottom-full mb-1 h-1 overflow-hidden bg-line/50"
 		>
-			<p className="text-center text-xs font-bold uppercase tracking-wider text-muted">
-				{t("draft.timer.label")}
-			</p>
-			<div className="mt-1.5 h-1 overflow-hidden bg-line/50">
-				<div
-					ref={bar}
-					data-timer-bar
-					className={`h-full origin-center ${BAR[props.side]}`}
-					style={
-						reduced ? { transform: `scaleX(${steps(seconds)})` } : undefined
-					}
-				/>
-			</div>
+			<div
+				ref={bar}
+				data-timer-bar
+				className={`h-full origin-center ${BAR[props.side]}`}
+				style={reduced ? { transform: `scaleX(${steps(seconds)})` } : undefined}
+			/>
 			<span className="sr-only">{clockTime(seconds)}</span>
 		</div>
 	);
 }
 
+/** Lets the AI act on its own turns after a short pause; renders nothing. */
 export function TurnControls() {
-	const { view, timer, send, mine, present, presentation } = useDraftSession();
+	const { view, send, mine, present, presentation } = useDraftSession();
 	const turn = view?.turn;
 	useEffect(() => {
 		if (presentation || !mine || !turn || turn.team === mine) return;
@@ -82,6 +77,13 @@ export function TurnControls() {
 		return () => window.clearTimeout(id);
 	}, [turn, mine, presentation, send, present]);
 
+	return null;
+}
+
+/** The turn timer above the board, on the user's own ban or pick (#419). */
+export function TurnTimer() {
+	const { view, timer, mine, presentation } = useDraftSession();
+	const turn = view?.turn;
 	if (
 		!view ||
 		!timer ||
