@@ -2,7 +2,7 @@ import { ROLES, type Role } from "@rift-legends/contracts";
 import { describe, expect, it } from "vitest";
 import { sample } from "./scenarios";
 
-// Monte Carlo bands of plan 08 (K1–K9). Seeds are fixed, so each run is the
+// Monte Carlo bands of plan 08 (K1–K9, K16). Seeds are fixed, so each run is the
 // same sample: a failure means a change moved the balance, never bad luck.
 
 const sorted = (values: number[]) => [...values].sort((a, b) => a - b);
@@ -46,7 +46,7 @@ const PARTICIPATION: Record<Role, readonly [number, number, number]> = {
 };
 
 /**
- * Pro gold at the end of a game (plan 08, K9): Leaguepedia, 2,378 games of six
+ * Pro gold at the end of a game (plan 08, K16): Leaguepedia, 2,378 games of six
  * leagues; the 781 that last 30–34 min give the total and the winner's lead.
  * [P10, P50, P90]; the share of winners that end behind in gold was 0.8 %.
  */
@@ -174,7 +174,7 @@ describe.each(["control", "packaged", "real"] as const)(
 			});
 		});
 
-		describe("K9 · gold lead at the end of the game", () => {
+		describe("K16 · gold lead at the end of the game", () => {
 			const long = even.filter((g) => g.minutes >= 30 && g.minutes <= 34);
 			const leads = even.map(
 				(g) =>

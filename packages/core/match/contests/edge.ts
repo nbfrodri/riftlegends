@@ -12,7 +12,7 @@ const DRAGON_POINTS = 20_000;
 /**
  * Points per rival nexus tower or inhibitor down: once a base is open the
  * side that opened it decides the game, so equal tower trades end with the
- * leader ahead in gold too (K9).
+ * leader ahead in gold too (K16).
  */
 const STRUCTURE_POINTS = 1_300_000;
 const SOUL_POINTS = 60_000;
