@@ -7,8 +7,8 @@ import {
 import { Button } from "@rift-legends/ui-kit/components/button";
 import { useReducedMotion } from "@rift-legends/ui-kit/lib/use-reduced-motion";
 import { Check } from "lucide-react";
-import { motion } from "motion/react";
-import { useEffect, useId, useState } from "react";
+import { animate } from "motion/mini";
+import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { GameRoleIcon } from "../assets/game-role-icon";
 import { ChampionPortrait } from "./champion-portrait";
@@ -17,7 +17,28 @@ import { championLabel, teamName, useDraftSession } from "./session";
 
 /** Portraits cross to their new rows when two champions swap (#432). */
 const CROSS = { duration: 0.25, ease: [0.23, 1, 0.32, 1] } as const;
-const INSTANT = { duration: 0 } as const;
+
+/** FLIP: each swapped portrait starts at the other's row and slides home. */
+function useCrossSwap(swap: readonly [Role, Role] | null) {
+	const reduced = useReducedMotion();
+	const portraits = useRef(new Map<Role, HTMLElement>());
+	useLayoutEffect(() => {
+		const [a, b] = (swap ?? []).map((role) => portraits.current.get(role));
+		if (reduced || !a || !b) return;
+		const dy = b.getBoundingClientRect().top - a.getBoundingClientRect().top;
+		const cross = [
+			animate([a], { transform: [`translateY(${dy}px)`, "none"] }, CROSS),
+			animate([b], { transform: [`translateY(${-dy}px)`, "none"] }, CROSS),
+		];
+		return () => {
+			for (const animation of cross) animation.complete();
+		};
+	}, [swap, reduced]);
+	return (role: Role) => (element: HTMLElement | null) => {
+		if (element) portraits.current.set(role, element);
+		else portraits.current.delete(role);
+	};
+}
 
 function TeamLineup(props: {
 	side: Side;
@@ -25,6 +46,7 @@ function TeamLineup(props: {
 	champions: readonly string[];
 	pending?: Role | null;
 	onSwap?: (role: Role) => void;
+	portrait?: (role: Role) => (element: HTMLElement | null) => void;
 	disabled?: boolean;
 }) {
 	const { t } = useTranslation();
@@ -75,13 +97,12 @@ function TeamLineup(props: {
 						}
 						className={`flex items-center gap-3 border-line border-t py-1.5 px-1 transition-colors ${selected ? `bg-action/10 ring-2 ring-inset ring-action ${reduced ? "" : "swap-pulse"}` : ""} ${target ? "cursor-pointer hover:bg-action/5 hover:ring-1 hover:ring-inset hover:ring-action/60" : ""}`}
 					>
-						<motion.div
-							layoutId={`${props.side}-${champion}`}
-							transition={reduced ? INSTANT : CROSS}
+						<div
+							ref={props.portrait?.(role)}
 							className="relative z-10 size-[clamp(48px,7.5vh,84px)] shrink-0"
 						>
 							<ChampionPortrait id={champion} size="tile" label={name} />
-						</motion.div>
+						</div>
 						<div className="min-w-0 flex-1">
 							<div className="flex items-center gap-1.5 text-xs text-muted">
 								<GameRoleIcon role={role} size={16} />
@@ -125,7 +146,8 @@ function LineupEditor({ view, side }: { view: DraftView; side: Side }) {
 	const [picks, setPicks] = useState(view[side].picks);
 	const { options } = useDraftSession();
 	const [pending, setPending] = useState<Role | null>(null);
-	const [swapped, setSwapped] = useState<[string, string] | null>(null);
+	const [swapped, setSwapped] = useState<readonly [Role, Role] | null>(null);
+	const portrait = useCrossSwap(swapped);
 	const [sending, setSending] = useState(false);
 	const rival = side === "blue" ? "red" : "blue";
 	const assigned = view[rival].roles;
@@ -148,7 +170,7 @@ function LineupEditor({ view, side }: { view: DraftView; side: Side }) {
 		if (pending === role) return;
 		const a = ROLES.indexOf(pending);
 		const b = ROLES.indexOf(role);
-		setSwapped([nameAt(pending), nameAt(role)]);
+		setSwapped([pending, role]);
 		setPicks((current) => {
 			const next = [...current];
 			[next[a], next[b]] = [current[b] as string, current[a] as string];
@@ -158,7 +180,10 @@ function LineupEditor({ view, side }: { view: DraftView; side: Side }) {
 	const status = pending
 		? t("draft.roles.swapWith", { champion: nameAt(pending) })
 		: swapped
-			? t("draft.roles.swapped", { a: swapped[0], b: swapped[1] })
+			? t("draft.roles.swapped", {
+					a: nameAt(swapped[1]),
+					b: nameAt(swapped[0]),
+				})
 			: t("draft.roles.ready");
 
 	const confirm = async () => {
@@ -177,6 +202,7 @@ function LineupEditor({ view, side }: { view: DraftView; side: Side }) {
 					champions={picks}
 					pending={pending}
 					onSwap={swap}
+					portrait={portrait}
 					disabled={sending}
 				/>
 				{assigned && (
