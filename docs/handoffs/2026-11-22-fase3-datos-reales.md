@@ -1,6 +1,6 @@
 # Handoff · Fase 3, datos reales
 
-Estado: en curso (actualizado el 24-11 de madrugada)
+Estado: en curso (actualizado el 24-11, sesión larga de la madrugada)
 
 Para retomar en una sesión nueva. Decisiones en el [registro](../decisions/README.md); detalle en el [plan 11](../plans/11-datos-reales.md) y el [plan general](../plans/00-plan-general.md).
 
@@ -49,26 +49,32 @@ Para retomar en una sesión nueva. Decisiones en el [registro](../decisions/READ
 
 ## Fusionado el 24-11
 
-#389 fotos y ficha de jugador (#360), #392 logos de ligas (#387), #393 filas del draft y Roles (#379, `SIM_VERSION` 4), #395 pantalla de carga y solo contenido real (#386), #397 reintento al arrancar Electron en el CI (#391), #405 pool y ficha de jugador (#398, #396), #406 pantalla Campeones con lista completa (#400, #402), #404 cursor de mano, botones sin subrayado y filas alternas (#399), #409 bajas y asistencias por rol (#346, Fase 3.5, `SIM_VERSION` 5).
+#389, #392, #393, #395, #397, #404, #405, #406, #409 (`SIM_VERSION` 5), #403 (rasgos de campeón desde CommunityDragon; calibración con contenido real), #413 y #414 (plan 12 aprobado; Fase 4 troceada en #418–#429 y #431).
 
 ## En curso
 
-| Issue | PR | Estado | Cómo seguir |
+**Cola de fusión** (`~/.cache/rift-ship/ship.sh PR RAMA WORKTREE`; rebasa, regenera capturas, espera el CI, fusiona y limpia): #415 → #416 → #412, todos aprobados por el usuario.
+
+| PR | Issue | Estado | Falta |
 | --- | --- | --- | --- |
-| #340 rasgos desde los datos del juego | #403 | Aprobado por el usuario; cola de fusión | Rebasar, capturas, fusionar |
-| #361 larvas del vacío | #411 | Subagente: disputa de grupo (decisión del usuario) y `SIM_VERSION` 6 | Revisar, capturas, fusionar |
-| #407 lectura de la IA | — | Subagente | Capturas al usuario |
-| #253 créditos (parte) | #412 | Listo | Capturas al usuario, fusionar |
-| #347 oro por jugador | — | Subagente | Revisar calibración |
-| Plan 12 competición | — | Subagente redacta el plan | Aprobación del usuario y troceado |
+| #415 | #407 lectura de la IA | Aprobado; en la cola | — |
+| #416 | #347 oro por jugador (`SIM_VERSION` 6, K7) | En la cola | — |
+| #412 | #253 créditos (tarjetas) | Aprobado; en la cola. Tests del caché lentos en el CI: si fallan por tiempo, subir el límite de ese fichero | — |
+| #411 | #361 larvas (disputa de grupo) | Subagente: efecto solo en tomar torres (opción C); si K6 falla, ampliar topes de K6 (B). Va tras #416 con `SIM_VERSION` 7 | Revisar |
+| #442 | #417 marco de retratos | Subagente cambiando al marco **E · Brillo** (elegido por el usuario) | Capturas al usuario |
+| #440 | #384, #385 mercado | Subagente rediseñando: panel lateral, atajos, deslizadores, filtrar desde la tabla | Capturas al usuario |
+| #439 | #418 contratos de competición | Listo y comprobado rompiendo reglas | Visto bueno del usuario |
+| #441 | #297 parte 1 (módulos de la app) | Listo | Visto bueno del usuario |
+| — | #432 intercambio en Roles (+ sin aviso del pick, fotos de jugador) | Subagente | Capturas al usuario |
 
 ## Siguiente (por orden)
 
-1. Tras #403: #401 tiers relativos por rol (aprobado), #297 partir módulos de más de 300 líneas y #349 identidades.
-2. Tras #347: #348 nota por rol, #353 oro relativo; #366 multikills; #410 víctimas en la línea inferior.
-3. Tras #411: #363 lado del mapa y objetivos, #362 efectos de objetivos.
-4. Cerrar la Fase 3 con #253: calibración con contenido real (tras #401) y E2E de la Bo5 en modo real; Stryker.
-5. Fase 6: #408 seguir en directo el draft delegado, #384 y #385 mercado.
+1. **Desbloqueado por #403:** #401 tiers relativos por rol, #349 identidades, #297 parte 2 (pipeline; contratos tras #411; `data-table.tsx` tras #440).
+2. **Tras #416:** #353 oro relativo **con banda K8** calibrada con el oro por partida de Leaguepedia (el usuario lo pidió: ventajas pro de 6–9k), #348 nota por rol, #366 multikills, #410 víctimas de la línea inferior.
+3. **Lote del tablero** (tras #442): #419 temporizador que se acorta por los dos lados, #430 barras de ficha arriba que se abren hacia abajo, #435 pulso de la vista previa, #436 huecos de veto fijos, #438 encuadre de la imagen fundida.
+4. **Lote de resultados:** #433 cara a cara alineado con fotos, #434 game de cada campeón bloqueado, #437 resultado de la serie con logo, MVP del ganador, rediseño del resumen y jugadores en las diferencias por rol.
+5. #443 Base de datos (tras #440). Fase 4: #420 en adelante tras #439.
+6. Cerrar la Fase 3 con #253 (calibración real tras #401, E2E real) y Stryker.
 
 ## Avisos
 
@@ -76,9 +82,11 @@ Para retomar en una sesión nueva. Decisiones en el [registro](../decisions/READ
 - Con varios agentes a la vez, los tests de UI pasan de 5 s y fallan por tiempo. Repetir aislado; el CI decide.
 - Las capturas del CI no tienen caché: salen los iconos de respaldo y el contenido ficticio. Abrirlas al usuario con `xdg-open` antes de fusionar.
 - Títulos de PR siempre en inglés (el squash los convierte en el commit).
-- **Fusiones en cadena:** `~/.cache/rift-tmp/ship.sh PR RAMA WORKTREE` rebasa, regenera capturas, espera el CI, fusiona y limpia; se para ante conflictos que no sean de capturas.
+- **Fusiones en cadena:** `~/.cache/rift-ship/ship.sh` (fuera de `rift-tmp`, que los agentes limpian; PR RAMA WORKTREE` rebasa, regenera capturas, espera el CI, fusiona y limpia; se para ante conflictos que no sean de capturas.
 - **Disco:** al fusionar, borrar worktree, rama local y `~/.cache/rift-tmp/vis-NN`; limpiar `rift-tmp` de lo que tenga más de una hora.
 - **Fable:** solo con permiso del usuario en cada uso.
+- **Carga:** con más de 5 agentes la carga pasa de 25 y los tests pesados fallan por tiempo; máximo 4–5 a la vez.
+- **Fusionar:** el usuario da el visto bueno a cada PR (el clasificador bloquea fusionar sin él). Capturas: abrirlas desde el worktree del PR con `setsid xdg-open`.
 
 ## Cómo trabajar
 
