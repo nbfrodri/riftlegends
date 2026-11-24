@@ -182,6 +182,39 @@ describe("B3: double elimination drops", () => {
 	});
 });
 
+describe("B4: grand final reset", () => {
+	const teams = teamsOf(4);
+	const bracket = (reset: boolean) => double(4, 2, [0, 1], 2, { reset });
+	// The better seed wins in the upper bracket; t3 loses there, then wins
+	// every lower series and the finals.
+	const lowerWins = (a: string, b: string, id: string) =>
+		id.startsWith("U") ? a < b : a === "t3";
+
+	it("ends at the final by default, even when the lower bracket wins", () => {
+		const state = play(bracket(false), teams, lowerWins);
+		expect(state.champion).toBe("t3");
+		expect(state.matches.map((m) => m.id)).not.toContain("RS");
+	});
+
+	it("plays one more final with reset when the lower bracket team wins", () => {
+		const state = play(bracket(true), teams, lowerWins);
+		const reset = state.matches.find((m) => m.id === "RS");
+		expect(reset?.status).toBe("done");
+		expect(state.champion).toBe(reset?.winner);
+	});
+
+	it("skips the reset when the upper bracket team wins the final", () => {
+		const state = play(bracket(true), teams, (a, b) => a < b);
+		expect(state.matches.find((m) => m.id === "RS")?.status).toBe("skipped");
+		expect(state.champion).toBe("t1");
+	});
+
+	it("does not offer the reset before the final is played", () => {
+		const state = resolveBracket(bracket(true), teams, {});
+		expect(state.matches.find((m) => m.id === "RS")?.status).toBe("waiting");
+	});
+});
+
 describe("B6: fixed bracket and game 1 priority", () => {
 	it("gives the better seed the priority with its seeds as the reason", () => {
 		const state = resolveBracket(single(8, bo(3)), teamsOf(8), {});
@@ -217,3 +250,4 @@ describe("B6: fixed bracket and game 1 priority", () => {
 		);
 	});
 });
+
