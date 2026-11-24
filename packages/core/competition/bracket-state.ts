@@ -90,6 +90,11 @@ export const resolveBracket = (
 	}
 	const matches = bracket.matches.map((m) => byId.get(m.id) as ResolvedMatch);
 	const last = matches[matches.length - 1] as ResolvedMatch;
+	if (bracket.upperChampion) {
+		// No grand final: the upper winner is first once the lower final is played.
+		const done = last.status === "done";
+		return { matches, champion: done ? teamOf(bracket.upperChampion) : null, losses };
+	}
 	const decider =
 		last.status === "skipped"
 			? (matches[matches.length - 2] as ResolvedMatch)

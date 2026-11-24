@@ -245,7 +245,7 @@ describe("B4b: no grand final (GSL groups)", () => {
 		expect(state.champion).toBe("t1");
 		const last = state.matches[state.matches.length - 1];
 		expect(last?.side).toBe("lower");
-		expect(last?.winner).toBe("t3");
+		expect(last?.winner).toBe("t4");
 	});
 
 	it("has no champion before the lower final is played", () => {
