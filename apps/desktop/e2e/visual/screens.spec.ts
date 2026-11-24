@@ -1,6 +1,6 @@
 import type { Page } from "@playwright/test";
 import { expect, test } from "../fixtures";
-import { playQuickDraftBo5 } from "../quick-draft-flow";
+import { playQuickDraftBo5, seedNextSeries } from "../quick-draft-flow";
 import { captureScreen } from "./capture";
 
 test.skip(
@@ -151,6 +151,31 @@ test("Créditos", async ({ appWindow }) => {
 
 test.describe("Quick draft", () => {
 	test.use({ appEnv: { RIFT_E2E_CORE: "1" } });
+
+	test("#419: the turn timer as a bar on the draft board", async ({
+		electronApp,
+		appWindow,
+	}) => {
+		await appWindow.emulateMedia({ reducedMotion: "reduce" });
+		await seedNextSeries(electronApp, 198);
+		await appWindow.getByRole("radio", { name: "Activado" }).check({
+			force: true,
+		});
+		await appWindow.getByRole("button", { name: "Empezar serie" }).click();
+		await appWindow.getByRole("radiogroup").getByRole("radio").last().check({
+			force: true,
+		});
+		await appWindow.getByRole("button", { name: "Confirmar decisión" }).click();
+		// Freeze the clock the countdown reads so the bar stays full (30 s left).
+		await appWindow.evaluate(() => {
+			const now = performance.now();
+			performance.now = () => now;
+		});
+		await appWindow.getByRole("button", { name: "Ir al draft" }).click();
+		await expect(appWindow.getByRole("timer")).toContainText("00:30");
+		await appWindow.mouse.move(0, 0);
+		await captureScreen(appWindow, "quick-draft-timer.png");
+	});
 
 	test("E2: captures the screens of a seeded Bo5", async ({
 		electronApp,
