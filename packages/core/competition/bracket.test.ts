@@ -110,6 +110,78 @@ describe("B2: byes for the top seeds", () => {
 	});
 });
 
+describe("B3: double elimination drops", () => {
+	it("sends the upper round 1 losers of 4 to lower round 1 and the final loser to lower round 2", () => {
+		const bracket = double(4, 2, [0, 1], 2);
+		const lower = bracket.matches.filter((m) => m.side === "lower");
+		expect(lower).toHaveLength(2);
+		expect(lower[0]).toMatchObject({
+			a: { kind: "loser", match: "U1-1" },
+			b: { kind: "loser", match: "U1-2" },
+		});
+		expect(lower[1]).toMatchObject({
+			a: { kind: "winner", match: "L1-1" },
+			b: { kind: "loser", match: "U2-1" },
+		});
+	});
+
+	it("crosses survivors with the dropped teams with 8", () => {
+		const bracket = double(8, 3, [0, 1, 3], 4);
+		const ids = (round: number) =>
+			bracket.matches.filter((m) => m.side === "lower" && m.round === round);
+		expect(ids(1)).toHaveLength(2);
+		expect(ids(2).map((m) => [m.a, m.b])).toEqual([
+			[
+				{ kind: "winner", match: "L1-1" },
+				{ kind: "loser", match: "U2-2" },
+			],
+			[
+				{ kind: "winner", match: "L1-2" },
+				{ kind: "loser", match: "U2-1" },
+			],
+		]);
+		expect(ids(3)).toHaveLength(1);
+		expect(ids(4)[0]?.b).toEqual({ kind: "loser", match: "U3-1" });
+	});
+
+	it("enters the losers of rounds 1 and 2 together with 6 and avoids rematches", () => {
+		const bracket = double(6, 3, [0, 0, 2], 3);
+		const lower1 = bracket.matches.filter(
+			(m) => m.side === "lower" && m.round === 1,
+		);
+		expect(lower1.map((m) => [m.a, m.b])).toEqual([
+			[
+				{ kind: "loser", match: "U1-1" },
+				{ kind: "loser", match: "U2-2" },
+			],
+			[
+				{ kind: "loser", match: "U1-2" },
+				{ kind: "loser", match: "U2-1" },
+			],
+		]);
+	});
+
+	it("lets the first team of an odd pool through", () => {
+		// 6 teams: round 2 losers enter alone beside one survivor (3 teams).
+		const bracket = double(6, 3, [0, 1, 3], 4);
+		const lower2 = bracket.matches.filter(
+			(m) => m.side === "lower" && m.round === 2,
+		);
+		expect(lower2).toHaveLength(1);
+		expect(lower2[0]).toMatchObject({
+			a: { kind: "loser", match: "U2-1" },
+			b: { kind: "loser", match: "U2-2" },
+		});
+	});
+
+	it("rejects drops the format cannot place", () => {
+		expect(() => double(4, 2, [0, 5], 2)).toThrow(RangeError);
+		expect(() => double(4, 2, [0], 2)).toThrow(RangeError);
+		expect(() => double(8, 3, [0, 1, 3], 3)).toThrow(RangeError);
+		expect(() => double(8, 3, [0, 0, 0], 4)).toThrow(RangeError);
+	});
+});
+
 describe("B6: fixed bracket and game 1 priority", () => {
 	it("gives the better seed the priority with its seeds as the reason", () => {
 		const state = resolveBracket(single(8, bo(3)), teamsOf(8), {});
