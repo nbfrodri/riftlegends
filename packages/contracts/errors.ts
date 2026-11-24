@@ -20,6 +20,13 @@ export const ERROR_CODES = [
 	"series-over",
 	"timer-off",
 	"game-not-played",
+	// Competition formats (plan 12)
+	"invalid-format",
+	"not-enough-teams",
+	"invalid-stage-ref",
+	"slots-mismatch",
+	"format-locked",
+	"format-too-long",
 ] as const;
 
 export type ErrorCode = (typeof ERROR_CODES)[number];

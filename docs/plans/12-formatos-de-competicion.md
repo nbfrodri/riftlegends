@@ -143,6 +143,11 @@ Slot       = { to: CompetitionId, rule: "stageWinner" | "standing" | "points", c
 ```
 
 - **Validación:** Zod en `packages/contracts/competition/`; las reglas que cruzan fases (V3–V5) se comprueban en el núcleo con errores nuevos.
+- **Esquema implementado (#418)** en `format.ts`; difiere de la forma orientativa en:
+  - Cada `play` lleva `size` (equipos que juega), para validar Swiss, grupos y cuadros sin conocer la temporada. Se omite `byes`: se deduce de `size`.
+  - `Criterion` son cadenas (`tiebreakerSeries` incluido); el Bo del desempate es `tiebreakerBestOf` de la competición (Bo3 por defecto).
+  - `Source` y `play` se distinguen por `kind` y `type`. La ventana añade `maxSeriesPerDay` (1–4, por defecto 4) y `DoubleElim` añade `grandFinal`.
+  - `validateFormat` comprueba un formato por sí solo (V2) y responde `invalid-format` con la ruta. `format-too-long` lo emite el calendario (entregable 7).
 - **Personalización al crear la carrera:** el usuario edita estos mismos campos (splits, vueltas, Bo por fase, grupos o Swiss, simple o doble eliminación, plazas por región). La pantalla es del plan 14; este plan valida el resultado.
 - **Bloqueo:** el formato se copia en el hecho `season.created`. Solo se puede cambiar el de la temporada siguiente (V6, P4).
 
