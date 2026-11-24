@@ -1,5 +1,6 @@
 import fc from "fast-check";
 import { describe, expect, test } from "vitest";
+import { drawGame1Priority } from "./round-robin";
 import {
 	pairSwissRound,
 	type SwissResult,
@@ -234,5 +235,25 @@ describe("pairSwissRound best of", () => {
 		const { rounds } = play(teamsOf(8), () => 0, 1, rules);
 		expect(rounds[0]?.pairings.every((p) => p.bestOf === 3)).toBe(true);
 		expect(rounds[1]?.pairings.every((p) => p.bestOf === 5)).toBe(true);
+	});
+});
+
+describe("pairSwissRound game 1 priority", () => {
+	test("S8: priority is drawn with the competition stream, one coin per series", () => {
+		const teams = teamsOf(16);
+		const priorities = new Set<string>();
+		for (let seed = 0; seed < 20; seed++) {
+			const round = pairSwissRound(teams, [], RULES, seed, SCOPE);
+			const expected = drawGame1Priority(
+				seed,
+				{ ...SCOPE, round: 1 },
+				round?.pairings.map(({ a, b }) => ({ a, b })) ?? [],
+			);
+			expect(round?.pairings.map((p) => p.priority)).toEqual(expected);
+			for (const { a, priority } of round?.pairings ?? []) {
+				priorities.add(priority === a ? "a" : "b");
+			}
+		}
+		expect(priorities.size).toBe(2);
 	});
 });
