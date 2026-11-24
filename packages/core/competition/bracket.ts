@@ -141,40 +141,61 @@ const pairs = (slots: readonly Slot[], fold: boolean) => {
 };
 
 /**
- * Double elimination. `drop[r]` is the (0-based) lower round that receives
- * the losers of upper round r. Each lower round plays the survivors of the
- * previous one plus the teams dropped into it. Survivors against drops (or
- * drops from several upper rounds) are paired first-with-last, so teams that
- * just met do not meet again; one group alone is paired side by side. An odd
- * pool lets its first team through without playing.
+ * Double elimination. `drop[r][m]` is the (0-based) lower round that receives
+ * the loser of series m of upper round r (`null`: the loser is out).
+ * `lowerSeeds[k]` seeds enter the lower bracket directly in lower round k, the
+ * worst seeds in the earliest rounds; they are not in the upper bracket.
+ * Each lower round plays the survivors of the previous one, the teams dropped
+ * into it and its entrants. Mixed pools (or drops from several upper rounds)
+ * are paired first-with-last, so teams that just met do not meet again; one
+ * group alone is paired side by side. An odd pool lets its first team through
+ * without playing.
  */
 export const buildDoubleElim = (format: DoubleElim): Bracket => {
-	const upper = buildUpper(format.size, format.upper);
 	const { drop, lower } = format;
-	if (drop.length !== upper.byRound.length) {
-		throw new RangeError("Expected one drop per upper round");
+	const seeds = lower.map((_, k) => format.lowerSeeds[k] ?? 0);
+	if (format.lowerSeeds.length > lower.length) {
+		throw new RangeError("More lowerSeeds entries than lower rounds");
 	}
-	if (drop.some((k) => k >= lower.length)) {
+	const entering = seeds.reduce((a, b) => a + b, 0);
+	const upper = buildUpper(format.size - entering, format.upper);
+	if (
+		drop.length !== upper.byRound.length ||
+		drop.some((d, r) => d.length !== upper.byRound[r]?.length)
+	) {
+		throw new RangeError("Expected one drop per upper series");
+	}
+	if (drop.some((d) => d.some((k) => k !== null && k >= lower.length))) {
 		throw new RangeError("A drop points past the last lower round");
 	}
+	let nextWorst = format.size;
 	const matches = [...upper.matches];
 	let survivors: Slot[] = [];
 	lower.forEach((bestOf, k) => {
 		const sources = upper.byRound.flatMap((ids, r) =>
-			drop[r] === k && ids.length > 0 ? [ids] : [],
+			ids.filter((_, m) => drop[r]?.[m] === k),
 		);
-		const dropped: Slot[] = sources.flat().map((match) => ({
-			kind: "loser",
-			match,
-		}));
-		const pool = [...survivors, ...dropped];
+		const groups = upper.byRound.filter((_, r) =>
+			drop[r]?.some((d) => d === k),
+		).length;
+		const dropped: Slot[] = sources.map((match) => ({ kind: "loser", match }));
+		const entrants: Slot[] = Array.from(
+			{ length: seeds[k] as number },
+			(_, i) => ({
+				kind: "seed",
+				rank: nextWorst - (seeds[k] as number) + 1 + i,
+			}),
+		);
+		nextWorst -= seeds[k] as number;
+		const pool = [...survivors, ...dropped, ...entrants];
 		const bye = pool.length % 2 === 1 ? pool.slice(0, 1) : [];
 		const playing = pool.slice(bye.length);
 		if (playing.length === 0) {
 			throw new RangeError(`Lower round ${k + 1} has no match`);
 		}
 		const fold =
-			(survivors.length > 0 && dropped.length > 0) || sources.length > 1;
+			[survivors, dropped, entrants].filter((g) => g.length > 0).length > 1 ||
+			groups > 1;
 		survivors = [
 			...bye,
 			...pairs(playing, fold).map(([a, b], i) => {
