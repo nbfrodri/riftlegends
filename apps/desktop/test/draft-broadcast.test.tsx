@@ -131,6 +131,20 @@ describe("#419: the turn timer is a bar shrinking from both sides", () => {
 		expect(screen.getByRole("timer").textContent).toBe("Turn time00:30");
 	});
 
+	test("sits above the board, across both team columns and the pool", async () => {
+		await start(true);
+		const timer = screen.getByRole("timer");
+		const blue = screen.getByRole("region", { name: /^Blue side / });
+		const red = screen.getByRole("region", { name: /^Red side / });
+		const board = blue.parentElement;
+		expect(board).toBe(red.parentElement);
+		// One line over the whole board, not a widget in the page header.
+		expect(board?.contains(timer)).toBe(true);
+		expect(timer.className).toMatch(/\binset-x-0\b/);
+		expect(timer.className).toMatch(/\bbottom-full\b/);
+		expect(document.querySelector("header")?.contains(timer)).toBe(false);
+	});
+
 	test("with reduced motion it steps every second, proportional to the time left", async () => {
 		const media = window.matchMedia("(prefers-reduced-motion: reduce)");
 		vi.spyOn(media, "matches", "get").mockReturnValue(true);
