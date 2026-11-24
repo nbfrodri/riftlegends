@@ -157,6 +157,20 @@ test.describe("Quick draft", () => {
 				// The whole window: the open card rises over the board (#396).
 				await captureScreen(appWindow, "quick-draft-player-card.png");
 				if (!wasOpen) await playerCard.locator("summary").click();
+				// #407: the AI read, latest decision first, rising over the board.
+				const aiRead = appWindow.getByRole("group", {
+					name: "Lectura de la IA",
+				});
+				const aiWasOpen = await aiRead.evaluate(
+					(element) => (element as HTMLDetailsElement).open,
+				);
+				if (!aiWasOpen) await aiRead.locator("summary").first().click();
+				await expect(
+					aiRead.getByRole("list", { name: "Motivos" }).first(),
+				).toBeVisible();
+				await appWindow.mouse.move(0, 0);
+				await captureScreen(appWindow, "quick-draft-ai-read.png");
+				if (!aiWasOpen) await aiRead.locator("summary").first().click();
 			}
 			if (screen === "match") {
 				const panel = appWindow.getByRole("radiogroup", { name: "Panel" });
