@@ -131,7 +131,18 @@ function potOf(rank: number, size: number): number {
 	return (rank * 4 - ((rank * 4) % size)) / size;
 }
 
-/** Pairs the next Swiss round, or returns null when the stage is over. */
+/**
+ * Pairs the next Swiss round, or returns null when every team has qualified or
+ * been eliminated. `teams` are in seed order, best first; `played` holds the
+ * results of each finished round.
+ *
+ * Round 1 draws pots (1 v 4, 2 v 3) avoiding the same region. Later rounds
+ * draw at random inside each record pool, avoiding rematches. The draw is a
+ * shuffle from the `competition` RNG stream followed by a backtracking search.
+ * If no pairing keeps every constraint they are dropped in a fixed order:
+ * region, then rematch, and crossing records only as a last resort. `relaxed`
+ * lists what the final pairing really breaks.
+ */
 export function pairSwissRound(
 	teams: readonly SwissTeam[],
 	played: readonly (readonly SwissResult[])[],
