@@ -108,6 +108,20 @@ test("Ajustes", async ({ appWindow }) => {
 	await captureScreen(appWindow, "ajustes-contenido.png", content);
 });
 
+test("Créditos", async ({ appWindow }) => {
+	await expandSidebar(appWindow);
+	await goTo(appWindow, "Ajustes");
+	await appWindow.getByRole("link", { name: "Ver créditos" }).click();
+	await expect(appWindow.getByRole("heading", { level: 1 })).toHaveText(
+		"Créditos",
+	);
+	await expect(
+		appWindow.getByRole("region", { name: "Aviso legal" }),
+	).toContainText("isn't endorsed by Riot Games");
+	await appWindow.mouse.move(0, 0);
+	await captureScreen(appWindow, "creditos.png");
+});
+
 test.describe("Quick draft", () => {
 	test.use({ appEnv: { RIFT_E2E_CORE: "1" } });
 

@@ -16,7 +16,7 @@ import { cn } from "@rift-legends/ui-kit/lib/utils";
 
 | Componente | Exporta | Notas |
 | --- | --- | --- |
-| `button` | `Button` (`variant`: `default` o `ghost`) | `default` es la acción principal de la vista (fondo de acción, texto `on-action`); `ghost` sirve para acciones secundarias y botones de solo icono, que necesitan `aria-label` |
+| `button` | `Button` (`variant`: `default`, `secondary` o `ghost`) y `buttonStyle(variant)` | `default` es la acción principal de la vista (fondo de acción, texto `on-action`); `secondary`, una acción con borde junto a ella o sobre el lienzo; `ghost`, acciones secundarias en paneles y botones de solo icono, que necesitan `aria-label`. `buttonStyle` da el mismo aspecto a un enlace que debe seguir siendo enlace |
 | `tooltip` | `TooltipProvider`, `Tooltip` | El tooltip Caja (Base UI): `<Tooltip content heading? shortcut? side?>` envuelve al disparador. Es **solo visual**: el disparador conserva su nombre accesible. Un único `TooltipProvider` en la raíz de la ventana escucha en el documento y monta el popup que comparten todos los disparadores; cada `Tooltip` solo añade atributos `data-tooltip*` al hijo (que debe pasarlos a su elemento), sin hooks por disparador. Se abre al pasar el ratón (400 ms) o con el foco de teclado, no al hacer clic; arriba por defecto. Sustituye al `title` nativo, prohibido por un test |
 | `kbd` | `Kbd` | Atajos (`Alt+B`), en Archivo con cifras tabulares |
 | `select` | `Select`, `SelectTrigger`, `SelectValue`, `SelectContent`, `SelectItem` | Pasa `items` a `Select` para que `SelectValue` muestre la etiqueta y no el valor. Las opciones deshabilitadas se pueden enfocar, pero no elegir |

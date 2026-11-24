@@ -1,5 +1,6 @@
 import { join } from "node:path";
 import type { BrowserWindowConstructorOptions, WebContents } from "electron";
+import { CREDIT_LINK_HOSTS } from "../shared/external-links";
 
 export function createMainWindowOptions(): BrowserWindowConstructorOptions {
 	return {
@@ -27,12 +28,12 @@ export function secureNavigation(
 		const target = URL.parse(url);
 		if (
 			target?.protocol === "https:" &&
-			target.host === "lol.fandom.com" &&
+			CREDIT_LINK_HOSTS.includes(target.host) &&
 			!target.username &&
 			!target.password
 		) {
 			void openExternal(target.href).catch((error: unknown) => {
-				console.error("Could not open the attribution link", error);
+				console.error("Could not open the credits link", error);
 			});
 		}
 		return { action: "deny" };

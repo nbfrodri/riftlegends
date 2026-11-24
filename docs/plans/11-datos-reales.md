@@ -171,7 +171,7 @@ Cada regla tiene un **id** que viaja en `reasons` para que la ficha explique el 
 | A3 | Retratos en draft, roles y resultados; logos de equipo con caída al escudo propio | Imagen que no carga: placeholder sin saltos |
 | A4 | La calibración K1–K5 sigue en verde con el contenido real | Bandas revisadas solo si el contenido real lo justifica, con nota |
 | A5 | E2E de una Bo5 con fearless hard en modo real con una caché de prueba | Sin red |
-| A6 | Créditos visibles en Ajustes: Leaguepedia (CC BY-SA) y CommunityDragon | — |
+| A6 | Créditos visibles en Ajustes: Leaguepedia (CC BY-SA), CommunityDragon, lolesports.com, aviso de Riot (de `NOTICE.md`) y librerías, con un test que las compara con los `package.json` (#253) | — |
 
 ## Diseño
 
