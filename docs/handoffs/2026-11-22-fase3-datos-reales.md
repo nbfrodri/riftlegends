@@ -51,32 +51,36 @@ Para retomar en una sesión nueva. Decisiones en el [registro](../decisions/READ
 
 #389, #392, #393, #395, #397, #404, #405, #406, #409 (`SIM_VERSION` 5), #403 (rasgos de campeón desde CommunityDragon; calibración con contenido real), #413 y #414 (plan 12 aprobado; Fase 4 troceada en #418–#429 y #431).
 
+Y después (24-11, tarde y noche): #415, #416, #412, #439, #441, #444, #446, #449, #411 (`SIM_VERSION` 7), #451, #445, #447 (`SIM_VERSION` 8), #453, #452, #454, #450, #440, #442, #461 (Swiss), #455 (oro relativo, K16, `SIM_VERSION` 9), #462 (paneles arriba), #459 (cuadros simple y doble; cerró #423 a mano), #463 (test intermitente del oro: `-0` frente a `0`), #460 (temporizador a lo ancho del tablero).
+
 ## En curso
 
-**Cola de fusión** (`~/.cache/rift-ship/ship.sh PR RAMA WORKTREE`; rebasa, regenera capturas, espera el CI, fusiona y limpia): #415 → #416 → #412, todos aprobados por el usuario.
+**Cola de fusión** (`~/.cache/rift-ship/queue.sh PID_A_ESPERAR "PR RAMA WORKTREE" ...`; una sola cola encadenada por PID; ship.sh comprueba el CI de `main` tras cada fusión): #464 → #458 → #465 → #466, todos aprobados.
 
 | PR | Issue | Estado | Falta |
 | --- | --- | --- | --- |
-| #415 | #407 lectura de la IA | Aprobado; en la cola | — |
-| #416 | #347 oro por jugador (`SIM_VERSION` 6, K7) | En la cola | — |
-| #412 | #253 créditos (tarjetas) | Aprobado; en la cola. Tests del caché lentos en el CI: si fallan por tiempo, subir el límite de ese fichero | — |
-| #411 | #361 larvas (disputa de grupo) | Subagente: efecto solo en tomar torres (opción C); si K6 falla, ampliar topes de K6 (B). Va tras #416 con `SIM_VERSION` 7 | Revisar |
-| #442 | #417 marco de retratos | Subagente cambiando al marco **E · Brillo** (elegido por el usuario) | Capturas al usuario |
-| #440 | #384, #385 mercado | Subagente rediseñando: panel lateral, atajos, deslizadores, filtrar desde la tabla | Capturas al usuario |
-| #439 | #418 contratos de competición | Listo y comprobado rompiendo reglas | Visto bueno del usuario |
-| #441 | #297 parte 1 (módulos de la app) | Listo | Visto bueno del usuario |
-| — | #432 intercambio en Roles (+ sin aviso del pick, fotos de jugador) | Subagente | Capturas al usuario |
+| #464 | #421 clasificación y desempates | Aprobado; en la cola | — |
+| #458 | #438 encuadre común con menos zoom (1,6× el alto de la fila) | Aprobado; en la cola | — |
+| #465 | #448 rasgos de kit y CC en el contenido | Aprobado; en la cola | — |
+| #466 | #345 anti-AP/AD solo en línea (2 puntos) | Aprobado; en la cola | — |
+| #456 | #436 huecos de veto fijos | Aprobado; subagente añadiendo **animación de veto** y vídeo | Vídeo al usuario |
+| #457 | #435 pulso de la vista previa (solo el retrato, sin borde) | Arreglado | **Vídeo** al usuario (script de grabación del agente de #456) |
+| #467 | #427 internacionales 2026 (`Refs`), gran final opcional | CI en curso; mirar `risk.test.ts` y `snapshot.test.ts` | Visto bueno |
+| — | #443 Base de datos (con fotos de jugadores) | Subagente | Capturas con contenido real |
 
 ## Siguiente (por orden)
 
-1. **Desbloqueado por #403:** #401 tiers relativos por rol, #349 identidades, #297 parte 2 (pipeline; contratos tras #411; `data-table.tsx` tras #440).
-2. **Tras #416:** #353 oro relativo **con banda K8** calibrada con el oro por partida de Leaguepedia (el usuario lo pidió: ventajas pro de 6–9k), #348 nota por rol, #366 multikills, #410 víctimas de la línea inferior.
-3. **Lote del tablero** (tras #442): #419 temporizador que se acorta por los dos lados, #430 barras de ficha arriba que se abren hacia abajo, #435 pulso de la vista previa, #436 huecos de veto fijos, #438 encuadre de la imagen fundida.
-4. **Lote de resultados:** #433 cara a cara alineado con fotos, #434 game de cada campeón bloqueado, #437 resultado de la serie con logo, MVP del ganador, rediseño del resumen y jugadores en las diferencias por rol.
-5. #443 Base de datos (tras #440). Fase 4: #420 en adelante tras #439.
-6. Cerrar la Fase 3 con #253 (calibración real tras #401, E2E real) y Stryker.
+1. #424 encadenado de fases, bombos y plazas (tras #464), #425 calendario, #426 formatos reales de ligas (valorar con el usuario), #428, #429, #431.
+2. Fase 3.5: #352 la IA lee cruces de composición, #364 IA según orden y lado, #348, #366, #410.
+3. Propuesta pendiente: issue para calibrar los pesos de la IA de draft con drafts pro reales (el usuario preguntó por la IA; ofrecido, sin respuesta).
+4. Cerrar la Fase 3 con #253 (calibración real, E2E real) y Stryker.
+5. Revisar capturas inestables: `campeones-lista`, `mercado-filters-1280` y `draft-collapsed` cambian en casi cada fusión.
 
 ## Avisos
+
+- **Animaciones:** enseñarlas en vídeo o GIF grabado con Playwright `_electron` (`recordVideo`) y contenido real, nunca con capturas fijas.
+- **TDD estricto:** el usuario solo aprueba PR con test visto en rojo antes del código.
+- **CI:** revisar siempre el CI de los PR y el de `main` tras cada fusión (`verify-windows` solo corre en `main`).
 
 - **No usar `git stash`:** se comparte entre worktrees y ya mezcló trabajo de dos agentes. Usar commits WIP.
 - Con varios agentes a la vez, los tests de UI pasan de 5 s y fallan por tiempo. Repetir aislado; el CI decide.
