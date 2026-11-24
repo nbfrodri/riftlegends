@@ -101,7 +101,7 @@ export function InspectionPanel(props: {
 			</summary>
 			<div
 				data-slot="panel-body"
-				className={`absolute inset-x-0 top-full z-30 max-h-[min(62vh,440px)] overflow-y-auto overscroll-contain border-b-2 bg-panel px-[15px] pb-3 shadow-[0_12px_32px_rgb(0_0_0/0.45)] ${props.accent}`}
+				className={`absolute inset-x-0 top-full z-30 max-h-[min(62vh,440px)] overflow-y-auto overscroll-contain border-t-2 bg-panel px-[15px] pb-3 shadow-[0_12px_32px_rgb(0_0_0/0.45)] ${props.accent}`}
 				// biome-ignore lint/a11y/noNoninteractiveTabindex: the panel's body scrolls by keyboard.
 				tabIndex={0}
 			>
