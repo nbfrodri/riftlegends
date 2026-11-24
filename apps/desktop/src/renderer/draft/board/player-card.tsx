@@ -9,6 +9,7 @@ import { ChevronRight } from "lucide-react";
 import { type ReactNode, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { usePlayerPhotoSrc } from "../../assets";
+import { levelColor, levelOf } from "../../level-scale";
 import { ChampionPortrait } from "../champion-portrait";
 import { useDraftContent } from "../session";
 
@@ -59,12 +60,6 @@ const AREAS = [
 	["mental", ["composure", "resilience", "experience", "consistency", "focus"]],
 	["team", ["shotcalling", "communication", "versatility"]],
 ] as const satisfies readonly (readonly [string, readonly PlayerAttribute[]])[];
-
-/** High is green, low is red; the level is also read out, not only colored. */
-function levelOf(value: number) {
-	return value >= 75 ? "high" : value <= 45 ? "low" : "mid";
-}
-const levelColor = { high: "text-good", mid: "", low: "text-bad" } as const;
 
 /**
  * A collapsible panel under the board, as in the mockup. Open, its content
