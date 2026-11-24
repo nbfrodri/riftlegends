@@ -1,4 +1,6 @@
 import type { Personality } from "@rift-legends/contracts";
+import type { Weights } from "../ai/choose";
+import { composeWeights } from "../ai/profiles";
 import { type Fixed, max, min, mul, SCALE } from "../math";
 import { shuffle } from "../rng/helpers";
 import { deriveSeed } from "../rng/seeds";
@@ -28,14 +30,11 @@ const scaled = (value: number, by: number) => mul(value as Fixed, by as Fixed);
 /** What a personality weighs: its multipliers applied on the base (x1 where the base is silent). */
 export const resolver =
 	(setup: Setup) =>
-	(personality: Personality): WeightMap => {
-		const own = setup.own[personality] ?? {};
-		const weights: Record<string, number | undefined> = { ...setup.base };
-		for (const [key, value] of Object.entries(own)) {
-			weights[key] = scaled(setup.base[key] ?? SCALE, value as number);
-		}
-		return weights;
-	};
+	(personality: Personality): WeightMap =>
+		composeWeights(
+			setup.base as Weights,
+			(setup.own[personality] ?? {}) as Weights,
+		);
 
 /**
  * Ranking does not change when every weight is scaled, but the temperatures
@@ -43,14 +42,12 @@ export const resolver =
  */
 function normalised(base: WeightMap): WeightMap {
 	const total = COMPONENT_KEYS.reduce((sum, k) => sum + (base[k] ?? SCALE), 0);
-	const out: Record<string, number> = {};
-	for (const key of COMPONENT_KEYS) {
-		const value = base[key];
-		if (value !== undefined)
-			out[key] = (value * COMPONENT_KEYS.length * SCALE) / total;
-	}
 	return Object.fromEntries(
-		Object.entries(out).map(([k, v]) => [k, v - (v % 1)]),
+		COMPONENT_KEYS.map((key) => {
+			const scaled =
+				((base[key] ?? SCALE) * COMPONENT_KEYS.length * SCALE) / total;
+			return [key, scaled - (scaled % 1)];
+		}),
 	);
 }
 

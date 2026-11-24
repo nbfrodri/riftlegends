@@ -1,5 +1,5 @@
 import type { Personality } from "@rift-legends/contracts";
-import { type Fixed, SCALE } from "../math";
+import { type Fixed, mul, SCALE } from "../math";
 import type { Weights } from "./choose";
 
 export interface Profile {
@@ -25,7 +25,7 @@ const balanced: Profile = {
  */
 export const BASE_WEIGHTS: Weights = {};
 
-/** What each personality changes on top of `BASE_WEIGHTS`. */
+/** Multipliers each personality applies on `BASE_WEIGHTS`. */
 export const PROFILE_DEFINITIONS: Record<Personality, Profile> = {
 	balanced,
 	// One draw policy covers picks and bans. Use DraftSim's pick settings where they differ.
@@ -113,9 +113,18 @@ export const PROFILE_DEFINITIONS: Record<Personality, Profile> = {
 	},
 };
 
+/** A personality's multipliers applied on the base; keys the base does not name weigh x1. */
+export const composeWeights = (base: Weights, own: Weights): Weights => {
+	const weights: Partial<Record<string, Fixed>> = { ...base };
+	for (const [key, value] of Object.entries(own)) {
+		weights[key] = mul(base[key] ?? (SCALE as Fixed), value as Fixed);
+	}
+	return weights;
+};
+
 export const PROFILES = Object.fromEntries(
 	Object.entries(PROFILE_DEFINITIONS).map(([personality, profile]) => [
 		personality,
-		{ ...profile, weights: { ...BASE_WEIGHTS, ...profile.weights } },
+		{ ...profile, weights: composeWeights(BASE_WEIGHTS, profile.weights) },
 	]),
 ) as Record<Personality, Profile>;

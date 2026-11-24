@@ -64,8 +64,9 @@ describe("calibrate", { timeout: 120_000 }, () => {
 
 	it("scales the base so the average component weighs x1, keeping the AI's temperature meaning", () => {
 		const weights = COMPONENT_KEYS.map((k) => result.setup.base[k] ?? SCALE);
-		const mean = weights.reduce((a, b) => a + b, 0) / weights.length;
-		expect(abs(mean - SCALE)).toBeLessThan(COMPONENT_KEYS.length);
+		const total = weights.reduce((a, b) => a + b, 0);
+		// Each weight loses less than one unit to truncation.
+		expect(abs(total - weights.length * SCALE)).toBeLessThan(weights.length);
 	});
 
 	it("is deterministic for a seed", () => {
