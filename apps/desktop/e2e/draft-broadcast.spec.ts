@@ -59,6 +59,7 @@ async function measure(confirm: Locator, champion: string) {
 										"[data-draft-lock] canvas",
 									);
 									const gl = canvas?.getContext("webgl2");
+									let renderer = "unavailable";
 									if (gl) {
 										// A transparent clear alone is not the Pixi sweep. Sample its bright centre.
 										const pixel = new Uint8Array(4);
