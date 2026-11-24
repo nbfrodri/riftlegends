@@ -4,7 +4,8 @@ import { MousePointer2, Trophy } from "lucide-react";
 import { useId } from "react";
 import { useTranslation } from "react-i18next";
 import type { GameResult } from "./result-data";
-import { type SeriesRules, teamName, useDraftSession } from "./session";
+import { teamName, useDraftSession } from "./session";
+import type { SeriesRules } from "./session-facts";
 
 const WINS_NEEDED: Record<SeriesRules["format"], number> = {
 	bo1: 1,

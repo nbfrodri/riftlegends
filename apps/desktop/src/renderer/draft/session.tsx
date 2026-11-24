@@ -27,6 +27,11 @@ import {
 	useOpenSession,
 } from "../core";
 import { localizeChampions } from "./real-content";
+import {
+	type DraftLock,
+	type SeriesRules,
+	useSeriesFacts,
+} from "./session-facts";
 
 /**
  * Presentation-only stages that the core does not know about (plan 09, "Flujo").
@@ -36,25 +41,13 @@ import { localizeChampions } from "./real-content";
  */
 export type Presentation = "side" | "match" | "result";
 
-/** Format and fearless mode of the series, from its `series.started` fact. */
-export interface SeriesRules {
-	format: "bo1" | "bo3" | "bo5";
-	fearless: "hard" | "soft" | "off";
-}
-
 interface DraftSession {
 	timer: boolean;
 	/** `null` until a series starts. */
 	rules: SeriesRules | null;
 	/** The team that actively chose a side, keyed by game. */
 	sideChoosers: Readonly<Record<number, string>>;
-	lock: {
-		game: number;
-		position: number;
-		team: string;
-		champion: string | null;
-		action: "ban" | "pick";
-	} | null;
+	lock: DraftLock | null;
 	sessionId: number;
 	/** The content set the setup offers and the series is played with. */
 	content: ContentSet;
@@ -122,10 +115,7 @@ function LoadedSession(props: {
 	const catalog = useOptionalAssets()?.champions;
 	const { mutateAsync } = useCoreCommand();
 	const position = useRef(0);
-	const [timer, setTimer] = useState(false);
-	const [rules, setRules] = useState<SeriesRules | null>(null);
-	const [sideChoosers, setSideChoosers] = useState<Record<number, string>>({});
-	const [lock, setLock] = useState<DraftSession["lock"]>(null);
+	const { timer, rules, sideChoosers, lock, applyFacts } = useSeriesFacts();
 	const claimedTurn = useRef<DraftView | null>(null);
 	const [error, setError] = useState<CoreRequestError | null>(null);
 	const [mine, setMine] = useState<string | null>(null);
@@ -168,38 +158,7 @@ function LoadedSession(props: {
 					payload,
 				});
 				position.current = result.position;
-				for (const fact of result.facts) {
-					if (
-						fact.type === "side.chosen" &&
-						fact.kind === "side" &&
-						typeof fact.game === "number" &&
-						typeof fact.team === "string"
-					) {
-						const { game, team } = fact;
-						setSideChoosers((previous) => ({ ...previous, [game]: team }));
-					}
-					if (fact.type === "series.started") {
-						setTimer(fact.timer === true);
-						setRules({
-							format: fact.format as SeriesRules["format"],
-							fearless: fact.fearless as SeriesRules["fearless"],
-						});
-					}
-					if (
-						(fact.type === "draft.banned" || fact.type === "draft.picked") &&
-						typeof fact.game === "number" &&
-						typeof fact.team === "string" &&
-						(typeof fact.champion === "string" || fact.champion === null)
-					) {
-						setLock({
-							game: fact.game,
-							position: fact.position,
-							team: fact.team,
-							champion: fact.champion,
-							action: fact.type === "draft.banned" ? "ban" : "pick",
-						});
-					}
-				}
+				applyFacts(result.facts);
 				setError(null);
 				return true;
 			} catch (caught) {
@@ -210,7 +169,7 @@ function LoadedSession(props: {
 				return false;
 			}
 		},
-		[mutateAsync, sessionId, onLost, view.data],
+		[mutateAsync, sessionId, onLost, view.data, applyFacts],
 	);
 
 	const value = useMemo(
