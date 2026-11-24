@@ -4,10 +4,10 @@ import type { ChampionKit } from "./champion-kit-source.ts";
 import {
 	countsFor,
 	rankTiers,
-	scorePositions,
 	recordPick,
 	roles,
 	type SeasonPresence,
+	scorePositions,
 	tierSeasons,
 } from "./champion-presence.ts";
 import {

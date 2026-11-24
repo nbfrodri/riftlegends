@@ -30,7 +30,9 @@ it("assigns each role by quota, in score order, ties broken by id", () => {
 			const sorted = [...input].sort(
 				(a, b) => b.score - a.score || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0),
 			);
-			const indexes = sorted.map(({ id }) => order.indexOf(tiers.get(id)!));
+			const indexes = sorted.map(({ id }) =>
+				order.indexOf(tiers.get(id) ?? "D"),
+			);
 			// Better score never gets a worse tier.
 			expect(indexes).toEqual([...indexes].sort((a, b) => a - b));
 			// Counts follow the cumulative quotas within one champion.
@@ -56,7 +58,9 @@ it("gives the documented counts for 280 champions", () => {
 	const counts = new Map<Tier, number>();
 	for (const tier of rankTiers(input).values())
 		counts.set(tier, (counts.get(tier) ?? 0) + 1);
-	expect(order.map((tier) => counts.get(tier))).toEqual([8, 23, 47, 76, 84, 42]);
+	expect(order.map((tier) => counts.get(tier))).toEqual([
+		8, 23, 47, 76, 84, 42,
+	]);
 });
 
 it("breaks ties by id", () => {
@@ -78,7 +82,7 @@ it("never puts a small sample above B", () => {
 			}));
 			const tiers = rankTiers(small);
 			for (const row of small.filter(({ samples }) => samples < SMALL_SAMPLE))
-				expect(order.indexOf(tiers.get(row.id)!)).toBeGreaterThanOrEqual(
+				expect(order.indexOf(tiers.get(row.id) ?? "D")).toBeGreaterThanOrEqual(
 					order.indexOf("B"),
 				);
 		}),
