@@ -231,7 +231,15 @@ No se implementan aquí (plan 24), pero el esquema ya los cubre: la serie de pro
 
 1. **Formatos curados a mano** en `packages/core/content/real/formats/<liga>.json`, escritos a partir de las páginas de Leaguepedia y los reglamentos oficiales, con su procedencia.
 2. **Comprobación automática (R1):** un test del pipeline compara cada formato curado con el snapshot (equipos, series por fase, Bo por ronda deducido de las victorias máximas). Si Riot cambia el formato, el workflow semanal lo detecta.
-3. **Internacionales:** el snapshot actual no los incluye. El pipeline se amplía para traer sus páginas de Leaguepedia (misma fuente y licencia) y se comprueban igual que las ligas (R1).
+3. **Internacionales (#427):** `pnpm data:internationals` trae de Leaguepedia los torneos y las series de First Stand, MSI y Worlds 2026 (`internationals.json`) y genera sus formatos en `content/real/formats/`. Se comprueban como las ligas (R1) reproduciendo cada serie real contra el formato. Estructura (todo Bo5 salvo el Swiss):
+
+   | Evento | Fases |
+   | --- | --- |
+   | First Stand | 2 grupos de 4 en doble eliminación GSL (sin final: se juegan 5 series, no 6) → semifinales y final |
+   | MSI | Play-in de 4 en doble eliminación con final → cuadro de 8 en doble eliminación (7 directos + el ganador del play-in), `drop [[0,0,0,0],[1,1],[3]]`, sin reset |
+   | Worlds | Play-in de 4 en doble eliminación (pasa 1) → Swiss de 16 a 3 victorias o 3 derrotas (Bo1; Bo3 si la serie clasifica o elimina) → cuartos, semis y final de 8 |
+
+   Pendiente: la plaza de cada liga y las fases con equipos de dos fases previas necesitan el encadenado (#424); los bombos de Worlds (Q4) se comprueban allí.
 
 Inferido del snapshot (22-11-2026). Lo marcado con **(?)** hay que verificarlo en el reglamento.
 

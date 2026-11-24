@@ -14,7 +14,7 @@ import {
 
 const num = (id: string) => Number(id.split("_").at(-1));
 
-const rows = (fixture: typeof matchesFixture): CargoRow[] =>
+const rows = (fixture: { cargoquery: { title: CargoRow }[] }): CargoRow[] =>
 	fixture.cargoquery.map(({ title }) => title);
 
 let root: string;
