@@ -108,6 +108,7 @@ Resumen de las decisiones **vigentes**, para empezar cualquier sesión sin volve
 | 2026-11-24 | Los formatos internacionales se traen de Leaguepedia con el pipeline y se comprueban como los de las ligas | [plan 12](../plans/12-formatos-de-competicion.md#5-decisiones-del-usuario-24-11-2026) |
 | 2026-11-24 | Los formatos reales se adaptan a los equipos de cada liga en el juego; los invitados de segunda división, en la Fase 6 | [plan 12](../plans/12-formatos-de-competicion.md#5-decisiones-del-usuario-24-11-2026) |
 | 2026-11-24 | Prioridad del game 1: el mejor sembrado en eliminatorias y sorteo en liga y Swiss | [plan 12](../plans/12-formatos-de-competicion.md#5-decisiones-del-usuario-24-11-2026) |
+| 2026-11-24 | Doble eliminación: **`drop` por serie** (`null` = eliminado) y **`lowerSeeds`** para los sembrados que entran directos al cuadro inferior; cubre los cuadros reales de 2026 (LCK, LCP, LEC, LCS, CBLOL, LPL Grand Finals, King of the Hill). Los play-in en escalera de LPL y LCK Cup van aparte (#424) | [plan 12](../plans/12-formatos-de-competicion.md), #423 |
 
 ## Estilo visual
 

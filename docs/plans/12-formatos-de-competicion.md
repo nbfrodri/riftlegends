@@ -137,7 +137,7 @@ RoundRobin = { rounds: 1 | 2, bestOf }
 Groups     = { count, seeding: "snake" | "cross", inner: RoundRobin }
 Swiss      = { wins, losses, bestOf, decisiveBestOf, round1: "pots", avoid: ["region", "rematch"] }
 SingleElim = { size, byes, bestOf: BestOf[] }
-DoubleElim = { size, upper: BestOf[], lower: BestOf[], drop: number[], reset: boolean }
+DoubleElim = { size, upper: BestOf[], lower: BestOf[], drop: (number | null)[][], lowerSeeds: number[], reset: boolean }
 Criterion  = "seriesWins" | "gameDiff" | "headToHead" | "gameWins" | { tiebreakerSeries: BestOf } | "draw"
 Slot       = { to: CompetitionId, rule: "stageWinner" | "standing" | "points", cascade: ... }
 ```
@@ -191,15 +191,15 @@ Reglas del núcleo: sin reloj ni `Math.random`, solo enteros, módulos de unas 3
 
 - `buildSingleElim` y `buildDoubleElim` devuelven la estructura (partidos que apuntan a un sembrado, al ganador o al perdedor de otro); `resolveBracket` pone los equipos según los resultados y calcula la prioridad del game 1 (mejor sembrado, con sus dos sembrados como explicación). `seedEntrants` ordena por sembrado y, a igualdad, por la clasificación de origen.
 - **Byes:** el cuadro se completa hasta la potencia de dos; los sembrados que faltan dan el paso directo a sus rivales (con 6, pasan el 1 y el 2; con 10, del 1 al 6).
-- **Caídas:** `drop[r]` es la ronda inferior (desde 0) a la que caen los perdedores de la ronda superior `r`. Cada ronda inferior junta a los supervivientes de la anterior con los que caen en ella. Si hay supervivientes y caídos, o caídos de varias rondas, se cruzan el primero con el último (sin revanchas inmediatas); un solo grupo se empareja por orden. Con un número impar, el primero pasa sin jugar. Si una ronda inferior se queda sin partidos o el cuadro inferior no termina con un solo equipo, es un formato inválido (`RangeError`).
-- Ejemplos: 4 → `drop [0,1]`, 2 rondas inferiores; 6 → `[0,0,2]`, 3 rondas (los perdedores de las rondas 1 y 2 entran juntos); 8 → `[0,1,3]`, 4 rondas; 16 → `[0,1,3,5]`, 6 rondas.
+- **Caídas (decisión 24-11-2026):** `drop[r][m]` es la ronda inferior (desde 0) a la que cae el perdedor de la serie `m` de la ronda superior `r`; `null` = eliminado. `lowerSeeds[k]` es cuántos sembrados entran directos en la ronda inferior `k` (los peores en las primeras rondas); `size` cuenta todos los equipos y el cuadro superior usa los demás. Cada ronda inferior junta supervivientes, caídos y entrantes. Si hay grupos mezclados (o caídos de varias rondas), se cruzan el primero con el último (sin revanchas inmediatas); un solo grupo se empareja por orden. Con un número impar, el primero pasa sin jugar. Una ronda inferior sin partidos, un `drop` a una ronda que no existe o un cuadro inferior que no termina con un solo equipo es un formato inválido.
+- Ejemplos de `drop`: 4 → `[[0,0],[1]]`; 8 → `[[0,0,0,0],[1,1],[3]]`; LCK, LCS Summer y CBLOL (6, los perdedores de la ronda 2 caen a rondas distintas) → `[[0,0],[1,2],[3]]`; LCP (6, la ronda 1 queda eliminada) → `[[null,null],[0,0],[1]]`; LEC Spring/Summer y LCS Spring (4 arriba, sembrados 5-6 abajo) → `[[0,0],[2]]` con `lowerSeeds [2,0,0]`; LPL Grand Finals (6 + 2 de Knight's Road) → `[[0,0],[1,1],[3]]` con `[2,0,0,0]`; LCK Road to MSI → `[[3]]` con `[2,1,1,0]`. Un test por cada uno comprueba que construye y termina con un campeón.
 - **Final:** sin reset, el ganador de la final es el campeón; con `reset`, si gana el del cuadro inferior se juega una segunda final (`RS`), y si no, se omite.
 
-#### Estudio de los cuadros reales (24-11-2026) · Propuesta, pendiente de decisión
+#### Estudio de los cuadros reales (24-11-2026)
 
 Fuente: partidas de Leaguepedia (Cargo `MatchSchedule`) de 2026, reconstruyendo quién jugó contra quién y adónde fue cada perdedor. **No se han leído los reglamentos**: los emparejamientos exactos y el sembrado siguen `(?)`.
 
-| Cuadro (2026) | Forma real | ¿Lo expresa `drop: number[]`? |
+| Cuadro (2026) | Forma real | ¿Lo expresaba el modelo anterior (`drop` por ronda)? |
 | --- | --- | --- |
 | LPL split 1 y 2 (tras play-in), LEC Versus, MSI (cuadro) | Doble eliminación estándar de 8, sin reset (gana el inferior en la final de MSI y LPL GF) | Sí: `[0,1,3]` |
 | Play-in de MSI y Worlds | Doble eliminación de 4; la final solo ordena a los dos que pasan | Sí: `[0,1]` |
@@ -213,18 +213,9 @@ Fuente: partidas de Leaguepedia (Cargo `MatchSchedule`) de 2026, reconstruyendo 
 
 Ningún cuadro de 2026 usa reset. Las 4 versiones de 6 equipos (LCK, LCP, LEC, LCS) son distintas entre sí.
 
-**Propuesta (la más pequeña que cubre todo):** cambiar `drop: number[]` por dos campos de `DoubleElim`:
+**Resultado:** el modelo adoptado (`drop` por serie y `lowerSeeds`) cubre todas las filas salvo los play-in en escalera de LPL y LCK Cup, que no son cuadros: pasan a #424 como un tipo de fase aparte (los ganadores de la ronda 1 pasan directos al cuadro principal y los perdedores se cruzan con los ganadores de la 2).
 
-- `drop: (number | null)[][]`: ronda inferior (desde 0) de cada perdedor, por ronda superior y por serie; `null` = eliminado. LCK: `[[0,0],[1,2],[3]]`; LCP: `[[null,null],[0,0],[1]]`.
-- `lowerSeeds: number[]`: cuántos sembrados entran directos en cada ronda inferior (los peores sembrados primero). LEC: `[2,0,0]`; LPL GF: `[2,0,0,0]`; LCK Road to MSI: `[2,1,1,0]`. `size` pasa a contar todos los equipos y el cuadro superior usa los que no entran por abajo.
-
-| A favor | En contra |
-| --- | --- |
-| Cubre todos los cuadros de la tabla; el de 8 y el de 4 siguen casi igual (`[[0,0,0,0],[1,1],[3]]`) | Cambia el contrato de #418 (aún sin consumidores) y la validación cruzada de V2/V3 |
-| El JSON se lee como el reglamento | Más verboso; el orden de las series dentro de la ronda decide quién cae adónde |
-| Los emparejamientos siguen siendo deducibles (sin ids de partido en el formato) | El cruce exacto en cada ronda inferior (primero con último o por orden) puede necesitar un indicador al verificar reglamentos |
-
-Alternativa descartada: mapa por id de partido (`"U2-1": 2`): explícito, pero ata el formato al esquema de ids del núcleo. Los play-in en escalera quedan para otro tipo de fase.
+Pendiente al verificar reglamentos: el cruce exacto en cada ronda inferior (primero con último o por orden) y quién cae adónde dentro de una ronda.
 
 ### Desempates
 
