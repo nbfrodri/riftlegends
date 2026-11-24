@@ -80,8 +80,12 @@ export async function playQuickDraftBo5(
 		await expect(swaps).toHaveCount(5);
 		const first = await swaps.first().getAttribute("aria-label");
 		await swaps.first().click();
-		await swaps.nth(1).click();
+		await expect(own.locator('[data-swap="pending"]')).toHaveCount(1);
+		await own.getByRole("article").nth(1).click();
 		await expect(swaps.nth(1)).toHaveAttribute("aria-label", first ?? "");
+		await expect(
+			page.getByRole("status").filter({ hasText: "Intercambiados" }),
+		).toBeVisible();
 		if (game === 1) await capture?.("roles");
 		await button("Confirmar reparto").click();
 

@@ -15,14 +15,22 @@ import { useDraftContent } from "../session";
 type Attributes =
 	SeriesOptions["teams"][number]["players"][number]["attributes"];
 
-export function PlayerPortrait({ id, handle }: { id: string; handle: string }) {
+export function PlayerPortrait({
+	id,
+	handle,
+	size = "h-20 w-16 short:h-16 short:w-12",
+}: {
+	id: string;
+	handle: string;
+	/** Tailwind size classes of the frame; the card's by default. */
+	size?: string;
+}) {
 	const { t } = useTranslation();
 	const photo = usePlayerPhotoSrc(id);
 	const content = useDraftContent();
 	const [failed, setFailed] = useState<string>();
 	const label = t("draft.board.playerPortrait", { handle });
-	const frame =
-		"h-20 w-16 shrink-0 border border-line bg-surface short:h-16 short:w-12";
+	const frame = `${size} shrink-0 border border-line bg-surface`;
 	return content === "real" && photo && photo !== failed ? (
 		<img
 			src={photo}
