@@ -23,8 +23,6 @@ interface StageDef {
 	tabs: readonly string[];
 	/** Stage played side by side with others in the same tabs: nth group of teams. */
 	group?: number;
-	/** Series of the model that the real event does not play. */
-	unplayed?: readonly string[];
 	entrants: Stage["entrants"];
 	play: Stage["play"];
 }
@@ -41,17 +39,17 @@ const pool = (competition: EventId): Stage["entrants"] => ({
 	competition,
 });
 
-/** Four teams, double elimination with a grand final, all Bo5. */
-const fourTeams = {
+/** Four teams, double elimination, all Bo5; GSL groups have no grand final. */
+const fourTeams = (grandFinal: 5 | null): Stage["play"] => ({
 	type: "doubleElim",
 	size: 4,
 	upper: bo5(2),
 	lower: bo5(2),
 	drop: [[0, 0], [1]],
 	lowerSeeds: [],
-	grandFinal: 5,
+	grandFinal,
 	reset: false,
-} satisfies Stage["play"];
+});
 
 const standing = {
 	reason:
@@ -63,27 +61,21 @@ const standing = {
 export const internationalDefinitions: Record<EventId, Definition> = {
 	"first-stand": {
 		tiebreak: [],
-		unverified: [
-			standing.reason,
-			standing.chaining,
-			"Each group is a GSL double elimination whose grand final is not played; the schema always plays it, so the check skips it.",
-		],
+		unverified: [standing.reason, standing.chaining],
 		stages: [
 			{
 				id: "groupA",
 				tabs: [1, 2, 3, 4, 5].map((day) => `Groups Day ${day}`),
 				group: 0,
-				unplayed: ["GF"],
 				entrants: pool("first-stand"),
-				play: fourTeams,
+				play: fourTeams(null),
 			},
 			{
 				id: "groupB",
 				tabs: [1, 2, 3, 4, 5].map((day) => `Groups Day ${day}`),
 				group: 1,
-				unplayed: ["GF"],
 				entrants: pool("first-stand"),
-				play: fourTeams,
+				play: fourTeams(null),
 			},
 			{
 				id: "knockout",
@@ -101,7 +93,7 @@ export const internationalDefinitions: Record<EventId, Definition> = {
 				id: "playin",
 				tabs: [1, 2, 3, 4].map((day) => `Play-In Day ${day}`),
 				entrants: pool("msi"),
-				play: fourTeams,
+				play: fourTeams(5),
 			},
 			{
 				id: "bracket",
@@ -141,7 +133,7 @@ export const internationalDefinitions: Record<EventId, Definition> = {
 				tournament: "Play-In",
 				tabs: ["Round 1", "Round 2", "Round 3"],
 				entrants: pool("worlds"),
-				play: fourTeams,
+				play: fourTeams(5),
 			},
 			{
 				id: "swiss",

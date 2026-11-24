@@ -26,7 +26,6 @@ const winnerOf = (m: InternationalMatch) =>
 function replayBracket(
 	play: Extract<Play, { type: "singleElim" | "doubleElim" }>,
 	matches: readonly InternationalMatch[],
-	unplayed: readonly string[],
 ): string[] {
 	const bracket =
 		play.type === "singleElim" ? buildSingleElim(play) : buildDoubleElim(play);
@@ -77,9 +76,9 @@ function replayBracket(
 	const rest = resolveBracket(bracket, teams, results)
 		.matches.filter((x) => x.status !== "done" && x.status !== "skipped")
 		.map((x) => x.id);
-	return rest.join() === unplayed.join()
-		? []
-		: [`bracket series left unplayed: ${rest.join(", ") || "none"}`];
+	return rest.length
+		? [`bracket series left unplayed: ${rest.join(", ")}`]
+		: [];
 }
 
 function replaySwiss(
@@ -156,7 +155,7 @@ export function checkInternational(
 			play.type === "swiss"
 				? replaySwiss(play, matches)
 				: play.type === "singleElim" || play.type === "doubleElim"
-					? replayBracket(play, matches, def.unplayed ?? [])
+					? replayBracket(play, matches)
 					: [`${play.type} stages are not checked yet`];
 		problems.push(...found.map((message) => `${stage.id}: ${message}`));
 	}
