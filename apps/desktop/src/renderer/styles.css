@@ -27,3 +27,20 @@
 		}
 	}
 }
+
+/* The champion waiting for a swap partner in Roles (#432): a soft pulse of
+   the action-colour ring. Reduced motion keeps the static ring instead. */
+@media (prefers-reduced-motion: no-preference) {
+	.swap-pulse {
+		animation: swap-pulse 1.1s ease-in-out infinite alternate;
+	}
+	@keyframes swap-pulse {
+		from {
+			box-shadow: inset 0 0 0 2px
+				color-mix(in oklab, var(--color-action) 35%, transparent);
+		}
+		to {
+			box-shadow: inset 0 0 0 2px var(--color-action);
+		}
+	}
+}

@@ -6,7 +6,7 @@ import {
 import { cleanup, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useEffect, useRef } from "react";
-import { afterEach, expect, test } from "vitest";
+import { afterEach, expect, test, vi } from "vitest";
 import { RolesScreen } from "../src/renderer/draft/roles-screen";
 import {
 	DraftSessionProvider,
@@ -14,7 +14,10 @@ import {
 } from "../src/renderer/draft/session";
 import { namedDraft, renderWithDraftCore } from "./draft-core";
 
-afterEach(cleanup);
+afterEach(() => {
+	cleanup();
+	vi.restoreAllMocks();
+});
 
 /** Starts a series with the AI on both sides and drafts until the roles phase. */
 function Driver({ mine }: { mine: string }) {
@@ -115,4 +118,96 @@ test("exchanges champions between fixed players and submits the displayed lineup
 			roles: Object.fromEntries(ROLES.map((role, i) => [role, order[i]])),
 		},
 	});
+});
+
+const own = () =>
+	within(screen.getByRole("region", { name: "Shoal lineup" })).getAllByRole(
+		"article",
+	);
+const championsOf = (rows: HTMLElement[]) =>
+	rows.map((row) =>
+		within(row)
+			.getByRole("img", { name: /^The Unforgotten/ })
+			.getAttribute("aria-label"),
+	);
+const swapButton = (row: HTMLElement) =>
+	within(row).getByRole("button", { name: /^Swap/ });
+
+async function pendingOnFirst() {
+	const user = userEvent.setup();
+	await renderRoles();
+	await screen.findByRole("button", { name: "Confirm lineup" });
+	const before = championsOf(own());
+	await user.click(swapButton(own()[0] as HTMLElement));
+	return { user, before };
+}
+
+test("after Swap on A, a click anywhere on B swaps them and announces the result", async () => {
+	const { user, before } = await pendingOnFirst();
+	expect(screen.getByRole("status").textContent).toBe(
+		`Choose who swaps with ${before[0]}.`,
+	);
+	await user.click(within(own()[2] as HTMLElement).getByText(before[2] ?? ""));
+	expect(championsOf(own())).toEqual([
+		before[2],
+		before[1],
+		before[0],
+		before[3],
+		before[4],
+	]);
+	expect(screen.getByRole("status").textContent).toBe(
+		`Swapped ${before[0]} and ${before[2]}.`,
+	);
+	expect(own().some((row) => row.dataset.swap === "pending")).toBe(false);
+});
+
+test("Escape or a second click on A cancels the pending swap", async () => {
+	const { user, before } = await pendingOnFirst();
+	await user.keyboard("{Escape}");
+	expect(own().every((row) => row.dataset.swap === undefined)).toBe(true);
+	expect(screen.getByRole("status").textContent).toBe(
+		"The lineup is ready to play.",
+	);
+	await user.click(swapButton(own()[0] as HTMLElement));
+	await user.click(own()[0] as HTMLElement);
+	expect(own().every((row) => row.dataset.swap === undefined)).toBe(true);
+	await user.click(own()[1] as HTMLElement);
+	expect(championsOf(own())).toEqual(before);
+});
+
+test("with the keyboard, Enter or Space on the other champion completes the swap", async () => {
+	const { user, before } = await pendingOnFirst();
+	const target = swapButton(own()[3] as HTMLElement);
+	expect(target.getAttribute("aria-label")).toBe(`Swap with ${before[3]}`);
+	target.focus();
+	await user.keyboard(" ");
+	expect(championsOf(own())).toEqual([
+		before[3],
+		before[1],
+		before[2],
+		before[0],
+		before[4],
+	]);
+});
+
+test("the pending champion pulses and the others are marked as targets", async () => {
+	await pendingOnFirst();
+	const [first, ...rest] = own();
+	expect(first?.dataset.swap).toBe("pending");
+	expect(first?.classList.contains("swap-pulse")).toBe(true);
+	expect(rest.every((row) => row.dataset.swap === "target")).toBe(true);
+	expect(rest.every((row) => row.classList.contains("cursor-pointer"))).toBe(
+		true,
+	);
+});
+
+test("with reduced motion the pending champion keeps a static border", async () => {
+	const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+	vi.spyOn(media, "matches", "get").mockReturnValue(true);
+	vi.spyOn(window, "matchMedia").mockReturnValue(media);
+	await pendingOnFirst();
+	const first = own()[0];
+	expect(first?.dataset.swap).toBe("pending");
+	expect(first?.classList.contains("swap-pulse")).toBe(false);
+	expect(first?.classList.contains("ring-action")).toBe(true);
 });
