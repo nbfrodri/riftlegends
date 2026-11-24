@@ -1,3 +1,8 @@
+import { shuffle } from "../rng/helpers";
+import { SCOPES } from "../rng/scopes";
+import { deriveSeed } from "../rng/seeds";
+import { createRng } from "../rng/streams";
+
 export interface SwissTeam {
 	readonly id: string;
 	/** Used to keep teams of one region apart in round 1. */
@@ -116,6 +121,8 @@ function findMatching<T>(
 	return solve() ? pairs : null;
 }
 
+const UINT32_MAX = 0xffffffff;
+
 /** Round-1 pots by seed: four equal pots meet 1 v 4 and 2 v 3; other sizes split top and bottom half. */
 function potOf(rank: number, size: number): number {
 	if (size % 4 !== 0) return rank < size / 2 ? 0 : 3;
@@ -127,13 +134,27 @@ export function pairSwissRound(
 	teams: readonly SwissTeam[],
 	played: readonly (readonly SwissResult[])[],
 	rules: SwissRules,
-	_rootSeed: number,
-	_scope: SwissScope,
+	rootSeed: number,
+	scope: SwissScope,
 ): SwissRound | null {
 	if (played.length > 0) return null;
 	const seedOf = new Map(teams.map((team, seed) => [team.id, seed]));
-	const matching = findMatching(
+	const order = shuffle(
+		createRng(
+			deriveSeed(
+				rootSeed,
+				SCOPES.competition,
+				scope.competition,
+				scope.season,
+				scope.stage,
+				1,
+				UINT32_MAX,
+			),
+		),
 		teams,
+	);
+	const matching = findMatching(
+		order,
 		(x, y) =>
 			potOf(seedOf.get(x.id) as number, teams.length) +
 				potOf(seedOf.get(y.id) as number, teams.length) ===
@@ -148,12 +169,22 @@ export function pairSwissRound(
 	return {
 		round: 1,
 		relaxed: [],
-		pairings: matching.map(([a, b]) => ({
-			a: a.id,
-			b: b.id,
-			bestOf: rules.bestOf,
-			priority: a.id,
-			reason: "pots",
-		})),
+		pairings: matching
+			.map(([x, y]) =>
+				(seedOf.get(x.id) as number) < (seedOf.get(y.id) as number)
+					? { a: x, b: y }
+					: { a: y, b: x },
+			)
+			.sort(
+				(p, q) =>
+					(seedOf.get(p.a.id) as number) - (seedOf.get(q.a.id) as number),
+			)
+			.map(({ a, b }) => ({
+				a: a.id,
+				b: b.id,
+				bestOf: rules.bestOf,
+				priority: a.id,
+				reason: "pots",
+			})),
 	};
 }
