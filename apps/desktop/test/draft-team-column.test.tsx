@@ -98,7 +98,8 @@ describe("#435: the pick preview pulses until it is locked in", () => {
 		);
 		expect(row().dataset.pending).toBe("true");
 		expect(portrait("Toppy")?.className).toContain("draft-pending");
-		expect(mark()?.className).toContain("draft-pending");
+		// Only the portrait pulses: no border around the row (user, 24-11).
+		expect(mark()).toBeNull();
 		expect(row().textContent).toContain("Choosing");
 	});
 
@@ -135,8 +136,7 @@ describe("#435: the pick preview pulses until it is locked in", () => {
 		);
 		expect(row().dataset.pending).toBe("true");
 		expect(portrait("Toppy")?.className).not.toContain("draft-pending");
-		expect(mark()?.className).not.toContain("draft-pending");
-		expect(mark()?.className).toContain("border-dashed");
+		expect(mark()).toBeNull();
 		expect(row().textContent).toContain("Choosing");
 	});
 });
