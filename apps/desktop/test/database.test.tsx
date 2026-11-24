@@ -20,12 +20,13 @@ const players = real.draft.players;
 const teams = real.match.teams;
 
 /** Opens the database with the real content, as the app does. */
-async function open(locale = "en-US") {
+async function open(locale = "en-US", photos: Record<string, string> = {}) {
 	const ids = real.draft.champions.map((c) => c.id);
 	const assets = fakeAssets(
 		{ state: "ready", version: "16.23" },
 		testCatalog(ids),
 	);
+	assets.api.playerPhotos.mockResolvedValue(photos);
 	await renderWithDraftCore(
 		<RouterProvider router={createAppRouter("/base-de-datos")} />,
 		locale,
@@ -161,4 +162,30 @@ it("shows every coach with team, league, draft style and level", async () => {
 		.find((r) => within(r).queryByText("Gen.G")) as HTMLElement;
 	expect(within(row).getByText(geng?.coach.name ?? "")).toBeTruthy();
 	expect(within(row).getByText("Balanced")).toBeTruthy();
+});
+
+it("shows the official photos in the rows and the card, a silhouette without one", async () => {
+	const photo = "rift-asset://photos/faker.png";
+	const user = await open("en-US", { Faker: photo });
+	const row = screen
+		.getAllByRole("row")
+		.find((r) => within(r).queryByText("Faker")) as HTMLElement;
+	expect(
+		within(row)
+			.getByRole("img", { name: "Portrait of Faker" })
+			.getAttribute("src"),
+	).toBe(photo);
+	const other = screen
+		.getAllByRole("row")
+		.find((r) => within(r).queryByText("Chovy")) as HTMLElement;
+	expect(
+		within(other).getByRole("img", { name: "Portrait of Chovy" }).tagName,
+	).toBe("svg");
+	await user.click(row);
+	const card = within(
+		screen.getByRole("dialog", { name: "Player card: Faker" }),
+	);
+	expect(
+		card.getByRole("img", { name: "Portrait of Faker" }).getAttribute("src"),
+	).toBe(photo);
 });
