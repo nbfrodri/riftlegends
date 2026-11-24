@@ -67,7 +67,7 @@ function ChoiceCard({
 				</b>
 				<Mark
 					aria-hidden="true"
-					className={`ml-auto size-5 ${checked ? "text-action" : "text-muted"}`}
+					className={`ml-auto size-5 ${checked ? "text-good" : "text-muted"}`}
 				/>
 			</span>
 			<span id={`${id}-about`} className="text-sm text-muted">

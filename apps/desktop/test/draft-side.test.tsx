@@ -77,6 +77,23 @@ describe("side choice (U2)", () => {
 		expect(screen.getByText(`First pick · ${side}`)).toBeTruthy();
 	});
 
+	test("#398: the chosen option's tick uses the success colour", async () => {
+		const user = userEvent.setup();
+		await renderWithDraftCore(<DraftScreen />);
+		await startAs(user, "Forge");
+		const mark = (name: string) =>
+			screen
+				.getByRole("radio", { name })
+				.closest("label")
+				?.querySelector("svg.ml-auto");
+		await user.click(screen.getByRole("radio", { name: "First pick" }));
+		expect(mark("First pick")?.classList.contains("lucide-circle-check")).toBe(
+			true,
+		);
+		expect(mark("First pick")?.classList.contains("text-good")).toBe(true);
+		expect(mark("Last pick")?.classList.contains("text-good")).toBe(false);
+	});
+
 	test("shows the series format and its fearless rule", async () => {
 		const user = userEvent.setup();
 		await renderWithDraftCore(<DraftScreen />);

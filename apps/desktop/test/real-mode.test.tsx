@@ -214,11 +214,15 @@ describe("real champions on the board (R4, A3)", () => {
 		const marks = card.querySelectorAll("dd.italic");
 		expect(marks).toHaveLength(mid?.estimated?.length ?? 0);
 		expect(marks.length).toBeGreaterThan(0);
-		expect(
-			within(card).getByText(
-				"Estimated value: it cannot be measured with stats",
-			),
-		).toBeTruthy();
+		// #398: no fixed legend; the number's tooltip explains it.
+		expect(within(card).queryByText(/cannot be measured/)).toBeNull();
+		const first = marks[0] as HTMLElement;
+		expect(first.textContent).toMatch(/Estimated$/);
+		await user.hover(first.firstElementChild as HTMLElement);
+		const tooltip = await screen.findByRole("tooltip");
+		expect(tooltip.textContent).toBe(
+			"EstimatedIt cannot be measured with stats",
+		);
 	});
 
 	const mid = real.draft.players.find(

@@ -154,6 +154,25 @@ describe("draft board (U3)", () => {
 		expect(tile(`${name}. Already picked in this game`)).toBeTruthy();
 	});
 
+	test("#398: before lock-in the selection previews in the picking player's row and follows a new selection", async () => {
+		const user = userEvent.setup();
+		await renderWithDraftCore(<DraftScreen />);
+		await toFirstPick(user);
+		const [one, two] = within(screen.getByRole("group", { name: "Champions" }))
+			.getAllByRole("button")
+			.filter((button) => !button.hasAttribute("aria-disabled"));
+		if (!one || !two) throw new Error("two free champions are needed");
+		const blue = screen.getByRole("region", { name: "Blue side Forge" });
+		const row = () => within(blue).getAllByRole("button")[0] as HTMLElement;
+		const first = one.getAttribute("aria-label") ?? "";
+		const second = two.getAttribute("aria-label") ?? "";
+		await user.click(one);
+		expect(within(row()).getByRole("img", { name: first })).toBeTruthy();
+		await user.click(two);
+		expect(within(row()).getByRole("img", { name: second })).toBeTruthy();
+		expect(within(row()).queryByRole("img", { name: first })).toBeNull();
+	});
+
 	test("confirming a pick renders the pool and picking column only when the pick arrives", async () => {
 		const user = userEvent.setup();
 		const { api, i18n } = await renderWithDraftCore(<DraftScreen />);
@@ -367,12 +386,12 @@ describe("draft board (U3)", () => {
 		expect(tierOf("Gravelspan")).toBe("B");
 	});
 
-	test("#376: the card hint shows a card icon on the tile and right click plus card in the pool header", async () => {
+	test("#398: the card hint shows the right-click icon on the tile and right click plus card in the pool header", async () => {
 		const user = userEvent.setup();
 		await renderWithDraftCore(<DraftScreen />);
 		await toBoard(user);
 		const hint = tile("Cragbell").querySelector('[data-slot="card-hint"]');
-		expect(hint?.classList.contains("lucide-id-card")).toBe(true);
+		expect(hint?.classList.contains("lucide-mouse-right")).toBe(true);
 		const header = screen.getByRole("button", { name: "Right click: card" });
 		expect(
 			[...header.querySelectorAll("svg")].map((icon) =>

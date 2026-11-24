@@ -139,12 +139,8 @@ test.describe("Quick draft", () => {
 				if (!wasOpen) await playerCard.locator("summary").click();
 				await expect(playerCard.getByText("Mecánicas")).toBeVisible();
 				await appWindow.mouse.move(0, 0);
-				await playerCard.scrollIntoViewIfNeeded();
-				await captureScreen(
-					appWindow,
-					"quick-draft-player-card.png",
-					playerCard,
-				);
+				// The whole window: the open card rises over the board (#396).
+				await captureScreen(appWindow, "quick-draft-player-card.png");
 				if (!wasOpen) await playerCard.locator("summary").click();
 			}
 			if (screen === "match") {
