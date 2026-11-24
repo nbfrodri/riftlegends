@@ -1,11 +1,11 @@
 import type { Personality } from "@rift-legends/contracts";
 import { describe, expect, it } from "vitest";
 import { fictionalContent } from "../ai/fixtures/content";
-import { SCALE } from "../math";
+import { abs, SCALE } from "../math";
 import { splitOf } from "./bank";
 import { evaluate } from "./metric";
-import { replay, type Turn } from "./replay";
-import { calibrate, type Setup } from "./search";
+import { COMPONENT_KEYS, replay, type Turn } from "./replay";
+import { calibrate, resolver, type Setup } from "./search";
 import { syntheticDrafts } from "./synthetic";
 
 const teams = [...new Set(fictionalContent.players.map((p) => p.team))].slice(
@@ -26,6 +26,21 @@ const validation: Turn[] = split("validation");
 
 const start: Setup = { base: {}, own: {} };
 
+describe("resolver", () => {
+	it("multiplies the base by what a personality changes", () => {
+		const resolve = resolver({
+			base: { meta: 20_000, comfort: 5_000 },
+			own: { comfort: { comfort: 30_000, matchup: 20_000 } },
+		});
+		expect(resolve("balanced")).toEqual({ meta: 20_000, comfort: 5_000 });
+		expect(resolve("comfort")).toEqual({
+			meta: 20_000,
+			comfort: 15_000,
+			matchup: 20_000,
+		});
+	});
+});
+
 // The search is a real optimisation, so these tests are slow on a loaded machine.
 describe("calibrate", { timeout: 120_000 }, () => {
 	const result = calibrate({ train, validation, start, seed: 11 });
@@ -45,6 +60,12 @@ describe("calibrate", { timeout: 120_000 }, () => {
 		expect(result.accepted).toBe(true);
 		expect(result.validation.after.overall.top3).toBe(after);
 		expect(result.validation.before.overall.top3).toBe(before);
+	});
+
+	it("scales the base so the average component weighs x1, keeping the AI's temperature meaning", () => {
+		const weights = COMPONENT_KEYS.map((k) => result.setup.base[k] ?? SCALE);
+		const mean = weights.reduce((a, b) => a + b, 0) / weights.length;
+		expect(abs(mean - SCALE)).toBeLessThan(COMPONENT_KEYS.length);
 	});
 
 	it("is deterministic for a seed", () => {

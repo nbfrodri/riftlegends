@@ -1,11 +1,16 @@
 import { PERSONALITIES, type Personality } from "@rift-legends/contracts";
 import { describe, expect, it } from "vitest";
-import { SCALE } from "../math";
+import { type Fixed, mul, SCALE } from "../math";
 import { SCOPES } from "../rng/scopes";
 import { deriveSeed } from "../rng/seeds";
 import { createRng } from "../rng/streams";
 import { choose, type Scored } from "./choose";
-import { PROFILES, type Profile } from "./profiles";
+import {
+	BASE_WEIGHTS,
+	PROFILE_DEFINITIONS,
+	PROFILES,
+	type Profile,
+} from "./profiles";
 
 function candidate(champion: string, scores: Record<string, number>): Scored {
 	return {
@@ -94,15 +99,20 @@ describe("draft preferences (D1)", () => {
 });
 
 describe("balanced (D2)", () => {
-	it("leaves all component scores and difficulty settings unchanged", () => {
+	it("is the calibrated base alone, with the difficulty settings unchanged", () => {
 		const profile = PROFILES.balanced;
 		expect(profile).toMatchObject({
 			temperature: SCALE,
 			pool: 0,
 			wildcard: SCALE,
 		});
-		expect(
-			Object.values(profile.weights).every((weight) => weight === SCALE),
-		).toBe(true);
+		expect(profile.weights).toEqual(BASE_WEIGHTS);
+	});
+
+	it("scales a personality's weights from the base, not from x1", () => {
+		const { meta } = PROFILES.meta.weights;
+		const { meta: baseMeta = SCALE } = BASE_WEIGHTS;
+		const own = PROFILE_DEFINITIONS.meta.weights.meta ?? SCALE;
+		expect(meta).toBe(mul(baseMeta as Fixed, own as Fixed));
 	});
 });
