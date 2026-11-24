@@ -208,6 +208,14 @@ export function deriveChampionContent(
 			cc,
 			mobility,
 			frontline,
+			kit: [...profile.kit],
+			ccKinds: [...profile.ccKinds],
+			split: [...profile.split],
+			traitSources: {
+				ccKinds: profile.sources.cc,
+				split: profile.sources.split,
+				kit: profile.sources.kit,
+			},
 		};
 		return {
 			champion,
