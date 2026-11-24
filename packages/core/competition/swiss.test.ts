@@ -257,3 +257,50 @@ describe("pairSwissRound game 1 priority", () => {
 		expect(priorities.size).toBe(2);
 	});
 });
+
+describe("pairSwissRound relaxation", () => {
+	test("S6: with no pairing that keeps the regions apart, region is dropped first and recorded", () => {
+		const round = pairSwissRound(
+			teamsOf(8, () => "LCK"),
+			[],
+			RULES,
+			1,
+			SCOPE,
+		);
+		expect(round?.relaxed).toEqual(["region"]);
+		expect(round?.pairings).toHaveLength(4);
+	});
+
+	test("S6: with every equal-record pair already met, rematch is dropped next and recorded", () => {
+		const teams = teamsOf(4, () => undefined);
+		const played = [
+			[
+				{ winner: "t1", loser: "t2" },
+				{ winner: "t3", loser: "t4" },
+			],
+			[
+				{ winner: "t1", loser: "t3" },
+				{ winner: "t2", loser: "t4" },
+			],
+			[
+				{ winner: "t4", loser: "t1" },
+				{ winner: "t2", loser: "t3" },
+			],
+		];
+		const rules = { ...RULES, wins: 4, losses: 4 };
+		const round = pairSwissRound(teams, played, rules, 1, SCOPE);
+		expect(round?.relaxed).toEqual(["rematch"]);
+		expect(round?.pairings.map((p) => `${p.a}-${p.b}`)).toEqual([
+			"t1-t2",
+			"t3-t4",
+		]);
+		const noRules = pairSwissRound(
+			teams,
+			played,
+			{ ...rules, avoid: [] },
+			1,
+			SCOPE,
+		);
+		expect(noRules?.relaxed).toEqual([]);
+	});
+});
