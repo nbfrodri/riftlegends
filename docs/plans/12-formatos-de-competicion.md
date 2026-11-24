@@ -177,7 +177,7 @@ Reglas del núcleo: sin reloj ni `Math.random`, solo enteros, módulos de unas 3
 - **Consultas:** `competition.standings`, `competition.bracket`, `competition.schedule` y `competition.qualified`. Son proyecciones de los hechos; el plan 13 las guardará.
 - **Idempotencia:** por `expectedPosition`, como el resto de comandos.
 - **Partidas de otros equipos:** draft de la IA de cada coach y `match.play`, sin animación (decisión del 22-11-2026). La serie del usuario sigue el flujo del draft rápido.
-- **RNG:** dos ámbitos nuevos, `competition` (sorteos de Swiss, grupos y desempate final) y `schedule` (reparto en días), con id por competición, temporada, fase y ronda. Los ids de texto se convierten en el índice de la competición dentro de la temporada, no en un hash.
+- **RNG:** dos ámbitos nuevos, `competition` (sorteos de Swiss, grupos y desempate final) y `schedule` (reparto en días), con id por competición, temporada, fase y ronda. Los ids de texto se convierten en el índice de la competición dentro de la temporada, no en un hash. `competition = 6` ya está en el registro (#420). La prioridad del game 1 en liga usa una semilla por serie (competición, temporada, fase, jornada y posición de la serie), sin depender de las demás series del día. El reparto en grupos no sortea nada: serpiente y, después, permutas entre grupos solo para separar regiones.
 
 ### Calendario
 
