@@ -161,8 +161,9 @@ describe("summarizeSeries (Q5)", () => {
 				const sumOf = (side: "blue" | "red", role: number) =>
 					games.reduce((total, g) => total + (g[side][role] ?? 0), 0);
 				const side = winner === "a" ? "blue" : "red";
-				const best = Math.max(...ROLES.map((_, i) => sumOf(side, i)));
-				const role = ROLES.findIndex((_, i) => sumOf(side, i) === best);
+				const sums = ROLES.map((_, i) => sumOf(side, i));
+				const best = sums.reduce((a, b) => (b > a ? b : a));
+				const role = sums.indexOf(best);
 				expect(summary.mvp?.player).toBe(`${winner}-${ROLES[role]}`);
 			}),
 		);
