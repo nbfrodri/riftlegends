@@ -23,12 +23,36 @@ export interface Calibration {
 	readonly validation: { before: Report; after: Report };
 }
 
+const scaled = (value: number, by: number) => mul(value as Fixed, by as Fixed);
+
+/** What a personality weighs: its multipliers applied on the base (x1 where the base is silent). */
 export const resolver =
 	(setup: Setup) =>
-	(personality: Personality): WeightMap => ({
-		...setup.base,
-		...setup.own[personality],
-	});
+	(personality: Personality): WeightMap => {
+		const own = setup.own[personality] ?? {};
+		const weights: Record<string, number | undefined> = { ...setup.base };
+		for (const [key, value] of Object.entries(own)) {
+			weights[key] = scaled(setup.base[key] ?? SCALE, value as number);
+		}
+		return weights;
+	};
+
+/**
+ * Ranking does not change when every weight is scaled, but the temperatures
+ * of the difficulties are in points: keep the average component at x1.
+ */
+function normalised(base: WeightMap): WeightMap {
+	const total = COMPONENT_KEYS.reduce((sum, k) => sum + (base[k] ?? SCALE), 0);
+	const out: Record<string, number> = {};
+	for (const key of COMPONENT_KEYS) {
+		const value = base[key];
+		if (value !== undefined)
+			out[key] = (value * COMPONENT_KEYS.length * SCALE) / total;
+	}
+	return Object.fromEntries(
+		Object.entries(out).map(([k, v]) => [k, v - (v % 1)]),
+	);
+}
 
 /** Steps tried on a weight, as fixed-point multipliers. */
 const BASE_STEPS = [5_000, 7_500, 9_000, 11_000, 13_000, 20_000];
@@ -40,8 +64,6 @@ const MIN_PERSONALITY_TURNS = 400;
 const SWEEPS = 3;
 /** The descent looks at an even sample of the training turns; the reports use all of them. */
 const SEARCH_TURNS = 6_000;
-
-const scaled = (value: number, by: number) => mul(value as Fixed, by as Fixed);
 
 const score = (report: Report) =>
 	report.overall.top3 * (report.overall.turns + 1) + report.overall.top1;
@@ -156,6 +178,7 @@ export function calibrate(input: {
 		if (evaluate(theirs, resolver(own)).overall.top3 >= was) tuned = own;
 	}
 
+	tuned = { ...tuned, base: normalised(tuned.base) };
 	const before = report(validation, start).overall.top3;
 	const after = report(validation, tuned).overall.top3;
 	return after > before ? outcome(tuned, true) : outcome(start, false);
