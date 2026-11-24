@@ -21,6 +21,15 @@
 	.startup-progress {
 		animation: startup-scan 1.2s ease-in-out infinite alternate;
 	}
+	/* What is still being chosen on the draft board (#435, #436). */
+	.draft-pending {
+		animation: draft-pending 1.2s ease-in-out infinite;
+	}
+	@keyframes draft-pending {
+		50% {
+			opacity: 0.45;
+		}
+	}
 	@keyframes startup-scan {
 		to {
 			transform: translateX(300%);

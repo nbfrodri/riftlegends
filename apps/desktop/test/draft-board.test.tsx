@@ -55,6 +55,14 @@ describe("draft board (U3)", () => {
 
 		expect(screen.getByText("Ban 1 · Forge")).toBeTruthy();
 		expect(confirm().hasAttribute("disabled")).toBe(true);
+		// #436: the slot of the ban being chosen is marked from the start.
+		const blueSlots = within(
+			within(screen.getByRole("region", { name: "Blue side Forge" })).getByRole(
+				"list",
+				{ name: "Bans" },
+			),
+		).getAllByRole("listitem");
+		expect(blueSlots[0]?.getAttribute("aria-current")).toBe("step");
 		const name = "The Unforgotten Guardian of Cragbell";
 		await user.type(screen.getByRole("searchbox"), "guARDian of Crag");
 		expect(
