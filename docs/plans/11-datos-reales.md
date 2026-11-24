@@ -102,7 +102,7 @@ Cada regla tiene un **id** que viaja en `reasons` para que la ficha explique el 
 | `shieldVsPoke` | 1 | A da escudos y B hace poke |
 | `shieldVsSustain` | 1 | A tiene escudo y B es un duelista con sustain alto |
 | `tankShred` | 2 | A hace daño porcentual o verdadero y B tiene primera línea ≥ 8 |
-| `resistVsDamage` | 3 | A es anti-AP y B hace ≥ 70 % mágico, o anti-AD y B ≥ 70 % físico |
+| `resistVsDamage` | 2 | A es anti-AP y B hace ≥ 70 % mágico, o anti-AD y B ≥ 70 % físico |
 | `splitDuel` | 2 | A es splitpusher duelista y B no es ni lo uno ni lo otro |
 | `tankVsBurst` | 1 | A tiene primera línea ≥ 8 y B es asesino frágil (pick o dive, primera línea ≤ 3) |
 | `invadeVsFarm` | 3 | Jungla: A invade en early y B farmea |
@@ -125,7 +125,7 @@ Cada regla tiene un **id** que viaja en `reasons` para que la ficha explique el 
 | `lockdownVsCarry` | 1 | A tiene CC ≥ 8 de punto y click y B es hypercarry con movilidad ≤ 3 |
 | `hookVsImmobile` | 3 | A tiene gancho y B juega a distancia, tiene movilidad ≤ 3 y primera línea ≤ 4 |
 | `projectileBlock` | 2 | Como en línea |
-| `resistVsDamage`, `tankShred`, `antiHeal`, `lockdownVsDash`, `visionVsPick` | 2, 1, 1, 1, 1 | Como en línea |
+| `tankShred`, `antiHeal`, `lockdownVsDash`, `visionVsPick` | 1, 1, 1, 1 | Como en línea |
 
 **Sinergias** (aliados en roles distintos):
 
