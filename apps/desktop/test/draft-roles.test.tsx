@@ -230,3 +230,19 @@ test("entering Roles shows no notification of the last draft pick", async () => 
 		screen.getByRole("status", { name: "Draft confirmation" }).textContent,
 	).toBe("");
 });
+
+test("every row of both lineups shows the player's photo or its silhouette", async () => {
+	await renderRoles();
+	await screen.findByRole("button", { name: "Confirm lineup" });
+	for (const name of ["Shoal lineup", "Forge lineup"]) {
+		const rows = within(screen.getByRole("region", { name })).getAllByRole(
+			"article",
+		);
+		expect(rows).toHaveLength(5);
+		for (const row of rows) {
+			const handle = row.getAttribute("aria-label")?.split(" · ")[1];
+			expect(handle).toBeTruthy();
+			within(row).getByRole("img", { name: `Portrait of ${handle}` });
+		}
+	}
+});

@@ -11,6 +11,7 @@ import { animate } from "motion/mini";
 import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { GameRoleIcon } from "../assets/game-role-icon";
+import { PlayerPortrait } from "./board/player-card";
 import { ChampionPortrait } from "./champion-portrait";
 import { CountryFlag } from "./country-flag";
 import { championLabel, teamName, useDraftSession } from "./session";
@@ -103,6 +104,13 @@ function TeamLineup(props: {
 						>
 							<ChampionPortrait id={champion} size="tile" label={name} />
 						</div>
+						{player && (
+							<PlayerPortrait
+								id={player.id}
+								handle={player.handle}
+								size="h-[clamp(48px,7.5vh,84px)] aspect-[4/5]"
+							/>
+						)}
 						<div className="min-w-0 flex-1">
 							<div className="flex items-center gap-1.5 text-xs text-muted">
 								<GameRoleIcon role={role} size={16} />
