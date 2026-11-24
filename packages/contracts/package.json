@@ -5,6 +5,7 @@
 	"exports": {
 		".": "./index.ts",
 		"./country-codes": "./country-codes.ts",
+		"./competition-format": "./competition/format.ts",
 		"./real-snapshot": "./draft/snapshot-content.ts",
 		"./real-logos": "./draft/real-logos.ts",
 		"./real-internationals": "./draft/real-internationals.ts",

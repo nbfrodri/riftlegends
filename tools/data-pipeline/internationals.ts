@@ -1,11 +1,15 @@
 import { mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import {
 	type InternationalMatch,
 	type RealInternationals,
 	realInternationalsSchema,
 } from "@rift-legends/contracts/real-internationals";
 import { type CargoRow, Client, type ClientOptions } from "./client.ts";
+import {
+	buildInternationalFormats,
+	internationalFormatFiles,
+} from "./international-formats.ts";
 import { field, required } from "./normalization.ts";
 import { compare, inList } from "./queries.ts";
 
@@ -179,6 +183,14 @@ export async function internationals(
 		}),
 	});
 	await writeIfChanged(join(options.outputDir, "internationals.json"), data);
+	await mkdir(join(options.outputDir, "formats"), { recursive: true });
+	for (const [name, format] of Object.entries(
+		internationalFormatFiles(buildInternationalFormats(data)),
+	))
+		await writeFile(
+			join(options.outputDir, "formats", name),
+			`${JSON.stringify(format, null, "\t")}\n`,
+		);
 	return { matches: matches.length, events: data.events.map(({ id }) => id) };
 }
 
@@ -209,7 +221,7 @@ async function writeIfChanged(file: string, data: RealInternationals) {
 		);
 		if (previous.success && strip(previous.data) === strip(data)) return;
 	}
-	await mkdir(join(file, ".."), { recursive: true });
+	await mkdir(dirname(file), { recursive: true });
 	const temp = `${file}.tmp`;
 	try {
 		await writeFile(temp, body);

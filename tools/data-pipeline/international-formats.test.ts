@@ -109,9 +109,9 @@ describe("R1 each format reproduces the 2026 series", () => {
 		extra.tab = "Wildcard";
 		extra.id = "extra";
 		changed.matches.push(extra);
-		expect(checkInternational(changed, formats["first-stand"]).join("\n")).toMatch(
-			/no stage/i,
-		);
+		expect(
+			checkInternational(changed, formats["first-stand"]).join("\n"),
+		).toMatch(/no stage/i);
 	});
 
 	it("detects a team count that differs from the stage size", () => {
