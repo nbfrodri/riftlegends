@@ -137,7 +137,12 @@ export function pairSwissRound(
 		(x, y) =>
 			potOf(seedOf.get(x.id) as number, teams.length) +
 				potOf(seedOf.get(y.id) as number, teams.length) ===
-			3,
+				3 &&
+			!(
+				rules.avoid.includes("region") &&
+				x.region !== undefined &&
+				x.region === y.region
+			),
 	);
 	if (matching === null) throw new RangeError("Swiss round cannot be paired");
 	return {
