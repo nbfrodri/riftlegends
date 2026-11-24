@@ -85,13 +85,70 @@ export function swissStandings(
 	});
 }
 
+/**
+ * Depth-first search for a perfect matching: the first unpaired team of
+ * `order` tries the later teams in order, and backtracks when the rest cannot
+ * be paired.
+ */
+function findMatching<T>(
+	order: readonly T[],
+	allowed: (a: T, b: T) => boolean,
+): [T, T][] | null {
+	const used = new Array<boolean>(order.length).fill(false);
+	const pairs: [T, T][] = [];
+	const solve = (): boolean => {
+		const first = used.indexOf(false);
+		if (first === -1) return true;
+		used[first] = true;
+		for (let other = first + 1; other < order.length; other++) {
+			if (used[other] || !allowed(order[first] as T, order[other] as T)) {
+				continue;
+			}
+			used[other] = true;
+			pairs.push([order[first] as T, order[other] as T]);
+			if (solve()) return true;
+			pairs.pop();
+			used[other] = false;
+		}
+		used[first] = false;
+		return false;
+	};
+	return solve() ? pairs : null;
+}
+
+/** Round-1 pots by seed: four equal pots meet 1 v 4 and 2 v 3; other sizes split top and bottom half. */
+function potOf(rank: number, size: number): number {
+	if (size % 4 !== 0) return rank < size / 2 ? 0 : 3;
+	return (rank * 4 - ((rank * 4) % size)) / size;
+}
+
 /** Pairs the next Swiss round, or returns null when the stage is over. */
 export function pairSwissRound(
-	_teams: readonly SwissTeam[],
-	_played: readonly (readonly SwissResult[])[],
-	_rules: SwissRules,
+	teams: readonly SwissTeam[],
+	played: readonly (readonly SwissResult[])[],
+	rules: SwissRules,
 	_rootSeed: number,
 	_scope: SwissScope,
 ): SwissRound | null {
-	return null;
+	if (played.length > 0) return null;
+	const seedOf = new Map(teams.map((team, seed) => [team.id, seed]));
+	const matching = findMatching(
+		teams,
+		(x, y) =>
+			potOf(seedOf.get(x.id) as number, teams.length) +
+				potOf(seedOf.get(y.id) as number, teams.length) ===
+			3,
+	);
+	if (matching === null) throw new RangeError("Swiss round cannot be paired");
+	return {
+		round: 1,
+		relaxed: [],
+		pairings: matching.map(([a, b]) => ({
+			a: a.id,
+			b: b.id,
+			bestOf: rules.bestOf,
+			priority: a.id,
+			reason: "pots",
+		})),
+	};
 }
