@@ -167,6 +167,7 @@ export function sample(games: number, edge: number, pool: Pool) {
 			minutes: state.minute,
 			kills: state.blue.kills + state.red.kills,
 			goldAt20: at20,
+			finalGold: { blue: state.blue.gold, red: state.red.gold },
 		};
 	});
 }
