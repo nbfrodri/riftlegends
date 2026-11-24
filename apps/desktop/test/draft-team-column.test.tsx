@@ -148,22 +148,23 @@ describe("#436: fixed ban slots", () => {
 	});
 });
 
+let setBans: (bans: (string | null)[]) => void = () => {};
+function Harness(props: { bans: (string | null)[] }) {
+	const [bans, set] = useState(props.bans);
+	setBans = set;
+	return (
+		<TeamColumn
+			side="blue"
+			first
+			team={{ team: "forge", bans, picks: [] }}
+			options={options}
+			current={null}
+			onPlayer={() => {}}
+		/>
+	);
+}
+
 describe("#436: ban stamp animation", () => {
-	let setBans: (bans: (string | null)[]) => void = () => {};
-	function Harness(props: { bans: (string | null)[] }) {
-		const [bans, set] = useState(props.bans);
-		setBans = set;
-		return (
-			<TeamColumn
-				side="blue"
-				first
-				team={{ team: "forge", bans, picks: [] }}
-				options={options}
-				current={null}
-				onPlayer={() => {}}
-			/>
-		);
-	}
 	const slots = () =>
 		within(screen.getByRole("list", { name: "Bans" })).getAllByRole("listitem");
 	const stamped = () =>
