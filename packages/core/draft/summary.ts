@@ -32,7 +32,23 @@ const linesOf = (facts: readonly Emitted[]): Line[] =>
 		| Line[]
 		| undefined) ?? [];
 
-function mvpOf(games: readonly Line[][]): SeriesSummary["mvp"] {
+const winnerOf = (facts: readonly Emitted[]) =>
+	facts.find((f) => f.type === "match.ended")?.winner as string | undefined;
+
+/** The team with more game wins; null while they are level. */
+function seriesWinner(winners: readonly (string | undefined)[]) {
+	const wins = new Map<string, number>();
+	for (const team of winners)
+		if (team) wins.set(team, (wins.get(team) ?? 0) + 1);
+	const [first, second] = [...wins].sort((a, b) => b[1] - a[1]);
+	return first && first[1] !== second?.[1] ? first[0] : null;
+}
+
+/** The series MVP, only among the series winner's players (#437). */
+function mvpOf(
+	games: readonly Line[][],
+	winner: string | null,
+): SeriesSummary["mvp"] {
 	const totals = new Map<
 		string,
 		{ line: Line; role: number; order: number; ratings: number } & {
@@ -68,16 +84,19 @@ function mvpOf(games: readonly Line[][]): SeriesSummary["mvp"] {
 			totals.set(line.player, total);
 		});
 	}
+	// Only the series winner's players, or everyone while wins are level.
 	// Best mean rating (every player plays every game, so sums compare the
 	// same); then more participation; then the earlier role; then the team
 	// that was blue in game 1 (first seen).
-	const [best] = [...totals.values()].sort(
-		(a, b) =>
-			b.ratings - a.ratings ||
-			b.participation - a.participation ||
-			a.role - b.role ||
-			a.order - b.order,
-	);
+	const [best] = [...totals.values()]
+		.filter((total) => winner === null || total.line.team === winner)
+		.sort(
+			(a, b) =>
+				b.ratings - a.ratings ||
+				b.participation - a.participation ||
+				a.role - b.role ||
+				a.order - b.order,
+		);
 	if (!best) return null;
 	return {
 		player: best.line.player,
@@ -114,7 +133,7 @@ function lanesOf(
 }
 
 /**
- * MVP of the series and the lane gaps of each game, read from the stored
+ * MVP of the series (from its winner) and the lane gaps of each game, read from the stored
  * `match.ended` facts; nothing is simulated again (plan 09, Q5).
  */
 export function summarizeSeries(
@@ -122,7 +141,7 @@ export function summarizeSeries(
 ): SeriesSummary {
 	const games = matches.map(linesOf);
 	return {
-		mvp: mvpOf(games),
+		mvp: mvpOf(games, seriesWinner(matches.map(winnerOf))),
 		lanes: games.map((lines, i) => ({ game: i + 1, lines: lanesOf(lines) })),
 	};
 }
