@@ -176,10 +176,13 @@ export function pairSwissRound(
 			record(x.id).losses - record(y.id).losses,
 	);
 	// Constraints in the order they are dropped: region, then rematch.
-	const relaxed: ("region" | "rematch")[] = [];
-	let kept = (["region", "rematch"] as const).filter((rule) =>
-		rules.avoid.includes(rule),
-	);
+	const relaxed: ("region" | "rematch" | "record")[] = [];
+	let kept: ("region" | "rematch" | "record")[] = [
+		...(["region", "rematch"] as const).filter((rule) =>
+			rules.avoid.includes(rule),
+		),
+		"record",
+	];
 	let matching: [SwissTeam, SwissTeam][] | null = null;
 	for (;;) {
 		matching = findMatching(order, (x, y) => {
@@ -196,17 +199,28 @@ export function pairSwissRound(
 				);
 			}
 			return (
-				sameRecord(x.id, y.id) &&
+				(!kept.includes("record") || sameRecord(x.id, y.id)) &&
 				!(kept.includes("rematch") && met.has(pairKey(x.id, y.id)))
 			);
 		});
 		if (matching !== null || kept.length === 0) break;
-		const dropped = kept[0] as "region" | "rematch";
 		kept = kept.slice(1);
-		// Region only constrains round 1; dropping it elsewhere changes nothing.
-		if (dropped === "rematch" || round === 1) relaxed.push(dropped);
 	}
 	if (matching === null) throw new RangeError("Swiss round cannot be paired");
+	// Report only the constraints the final pairing really breaks, in drop order.
+	const breaks = {
+		region: ([x, y]: [SwissTeam, SwissTeam]) =>
+			round === 1 &&
+			rules.avoid.includes("region") &&
+			x.region !== undefined &&
+			x.region === y.region,
+		rematch: ([x, y]: [SwissTeam, SwissTeam]) =>
+			rules.avoid.includes("rematch") && met.has(pairKey(x.id, y.id)),
+		record: ([x, y]: [SwissTeam, SwissTeam]) => !sameRecord(x.id, y.id),
+	};
+	for (const rule of ["region", "rematch", "record"] as const) {
+		if (matching.some(breaks[rule])) relaxed.push(rule);
+	}
 	const sorted = matching
 		.map(([x, y]) =>
 			(seedOf.get(x.id) as number) < (seedOf.get(y.id) as number)
@@ -223,7 +237,12 @@ export function pairSwissRound(
 			b,
 			bestOf: decisive(a) || decisive(b) ? rules.decisiveBestOf : rules.bestOf,
 			priority: priorities[index] as string,
-			reason: round === 1 ? "pots" : "same-record",
+			reason:
+				round === 1
+					? "pots"
+					: sameRecord(a, b)
+						? "same-record"
+						: "cross-record",
 		})),
 	};
 }
