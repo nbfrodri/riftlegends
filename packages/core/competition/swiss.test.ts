@@ -127,3 +127,21 @@ describe("pairSwissRound round 1", () => {
 		expect(draw(9, 4)).not.toEqual(draw(9));
 	});
 });
+
+describe("pairSwissRound later rounds", () => {
+	test("S1: each round pairs teams with the same record", () => {
+		const teams = teamsOf(16);
+		const { rounds, played } = play(teams, (r, i) => (r + i) % 2);
+		expect(rounds.length).toBeGreaterThanOrEqual(4);
+		for (const [index, round] of rounds.slice(1).entries()) {
+			const rows = swissStandings(teams, played.slice(0, index + 1), RULES);
+			const row = (id: string) => rows.find((r) => r.id === id);
+			expect(round.pairings.length).toBeGreaterThan(0);
+			for (const { a, b, reason } of round.pairings) {
+				expect(reason).toBe("same-record");
+				expect(row(a)?.wins).toBe(row(b)?.wins);
+				expect(row(a)?.losses).toBe(row(b)?.losses);
+			}
+		}
+	});
+});
