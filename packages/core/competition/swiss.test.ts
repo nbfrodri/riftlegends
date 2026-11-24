@@ -203,3 +203,36 @@ describe("pairSwissRound later rounds", () => {
 		);
 	});
 });
+
+describe("pairSwissRound best of", () => {
+	test("S4: Bo1 in general, Bo3 when a win qualifies or a loss eliminates", () => {
+		const teams = teamsOf(16);
+		const { rounds, played } = play(teams, () => 0);
+		expect(rounds.length).toBeGreaterThanOrEqual(5);
+		for (const [index, round] of rounds.entries()) {
+			const before = swissStandings(teams, played.slice(0, index), RULES);
+			for (const { a, b, bestOf } of round.pairings) {
+				const decisive = [a, b].some((id) => {
+					const row = before.find((r) => r.id === id);
+					return row?.wins === 2 || row?.losses === 2;
+				});
+				expect(bestOf).toBe(decisive ? 3 : 1);
+			}
+		}
+		expect(rounds[0]?.pairings.every((p) => p.bestOf === 1)).toBe(true);
+		expect(rounds[2]?.pairings.some((p) => p.bestOf === 3)).toBe(true);
+	});
+
+	test("S4: the Bo values come from the format", () => {
+		const rules = {
+			...RULES,
+			wins: 2,
+			losses: 2,
+			bestOf: 3,
+			decisiveBestOf: 5,
+		};
+		const { rounds } = play(teamsOf(8), () => 0, 1, rules);
+		expect(rounds[0]?.pairings.every((p) => p.bestOf === 3)).toBe(true);
+		expect(rounds[1]?.pairings.every((p) => p.bestOf === 5)).toBe(true);
+	});
+});
