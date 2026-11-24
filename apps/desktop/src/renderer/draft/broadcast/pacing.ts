@@ -6,6 +6,8 @@ export const pacing = {
 	sweepMs: 320,
 	// One cycle of the pulse on what is still being chosen (#435, #436).
 	pendingPulseMs: 1200,
+	// A new ban enters its slot, greys out and is stamped (#436).
+	banStampMs: 520,
 	captionDelayMs: 480,
 	captionEnterMs: 120,
 	ease: [0.23, 1, 0.32, 1] as [number, number, number, number],

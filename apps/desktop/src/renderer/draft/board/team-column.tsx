@@ -6,8 +6,9 @@ import {
 	type Side,
 } from "@rift-legends/contracts";
 import { Tooltip } from "@rift-legends/ui-kit/components/tooltip";
+import { useReducedMotion } from "@rift-legends/ui-kit/lib/use-reduced-motion";
 import { Ban } from "lucide-react";
-import { memo, useId } from "react";
+import { type CSSProperties, memo, useId, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { GameRoleIcon } from "../../assets/game-role-icon";
 import { pacing } from "../broadcast/pacing";
@@ -29,6 +30,28 @@ const PULSE = {
 	animationDuration: `${pacing.pendingPulseMs}ms`,
 } as const;
 
+const STAMP = {
+	animationDuration: `${pacing.banStampMs}ms`,
+	"--ban-ms": `${pacing.banStampMs}ms`,
+} as CSSProperties;
+
+/**
+ * Index of the ban this side has just made, while it is its latest one. Bans
+ * already there on mount, skipped bans and reduced motion give `null`, so
+ * only a new ban plays its stamp and nothing replays on a remount.
+ */
+function useFreshBan(bans: readonly (string | null)[]): number | null {
+	const reduced = useReducedMotion();
+	const seen = useRef(bans.length);
+	const fresh = useRef<number | null>(null);
+	if (bans.length !== seen.current) {
+		fresh.current =
+			bans.length > seen.current && bans.at(-1) ? bans.length - 1 : null;
+		seen.current = bans.length;
+	}
+	return reduced ? null : fresh.current;
+}
+
 /** Three bans in the first phase and two in the second, as on broadcasts. */
 const BAN_PHASES = [1, 1, 1, 2, 2] as const;
 
@@ -47,6 +70,8 @@ function BanSlot(props: {
 	options: SeriesOptions;
 	/** The side's border and text colour, for the active slot. */
 	sideClass: string;
+	/** A ban just made: it enters, greys out and is stamped once. */
+	fresh: boolean;
 }) {
 	const { t } = useTranslation();
 	const { ban } = props;
@@ -68,9 +93,25 @@ function BanSlot(props: {
 						data-card-champion={ban}
 						aria-keyshortcuts="I"
 						aria-label={label}
-						className="flex size-full cursor-pointer rounded-control focus-visible:outline-action"
+						className={`relative flex size-full cursor-pointer overflow-hidden rounded-control focus-visible:outline-action ${props.fresh ? "draft-ban-enter" : ""}`}
+						style={props.fresh ? STAMP : undefined}
 					>
 						<ChampionPortrait id={ban} label={label} size="tile" unavailable />
+						{props.fresh && (
+							<span
+								data-ban-stamp
+								style={STAMP}
+								className="pointer-events-none absolute inset-0 grid place-items-center"
+							>
+								<span className="draft-ban-colour absolute inset-0 flex">
+									<ChampionPortrait id={ban} size="tile" />
+								</span>
+								<Ban
+									aria-hidden="true"
+									className="draft-ban-mark relative size-5 text-text drop-shadow"
+								/>
+							</span>
+						)}
 					</button>
 				</Tooltip>
 			) : (
@@ -122,6 +163,7 @@ export const TeamColumn = memo(function TeamColumn(props: {
 	const players = options.teams.find(({ id }) => id === team.team)?.players;
 	const id = useId();
 	const style = SIDE[props.side];
+	const freshBan = useFreshBan(team.bans);
 	return (
 		<section
 			data-card-side={props.side}
@@ -232,6 +274,7 @@ export const TeamColumn = memo(function TeamColumn(props: {
 						active={props.banning === true && index === team.bans.length}
 						options={options}
 						sideClass={`${style.border} ${style.text}`}
+						fresh={index === freshBan}
 					/>
 				))}
 			</ul>
