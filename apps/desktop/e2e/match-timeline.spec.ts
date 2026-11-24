@@ -145,6 +145,37 @@ test("replays a drafted game and continues to its result", async ({
 		const faceToFace = page.getByRole("table", { name: "Cara a cara" });
 		await expect(faceToFace).toBeInViewport({ ratio: 1 });
 		await expect(faceToFace.getByRole("row")).toHaveCount(7);
+		// #433: a long handle is cut, and the pictures and the name block keep
+		// their place in every row.
+		await faceToFace
+			.locator("[data-lane-player] [data-part=name] > span")
+			.first()
+			.evaluate((handle) => {
+				handle.textContent = "Averyveryveryverylonghandlethatneverends";
+			});
+		const layout = await faceToFace.evaluate((table) =>
+			["blue", "red"].flatMap((side) =>
+				["photo", "champion", "name"].map((part) => {
+					const boxes = [
+						...table.querySelectorAll(
+							`[data-side=${side}] [data-part=${part}]`,
+						),
+					].map((element) => element.getBoundingClientRect());
+					return boxes.map((box) =>
+						Math.round(part === "name" ? box.left + box.width / 2 : box.left),
+					);
+				}),
+			),
+		);
+		for (const xs of layout) {
+			expect(xs).toHaveLength(5);
+			expect(Math.max(...xs) - Math.min(...xs)).toBeLessThanOrEqual(1);
+		}
+		const cut = await faceToFace
+			.locator("[data-lane-player] [data-part=name] > span")
+			.first()
+			.evaluate((handle) => handle.scrollWidth > handle.clientWidth);
+		expect(cut).toBe(true);
 		expect(await height()).toBe(before);
 		await expect(page.getByRole("figure")).toBeInViewport({ ratio: 1 });
 		await page.setViewportSize({ width: 1366, height: 768 });

@@ -1,7 +1,9 @@
 import type { MapSnapshot, Side } from "@rift-legends/contracts";
+import { Tooltip } from "@rift-legends/ui-kit/components/tooltip";
 import { useTranslation } from "react-i18next";
 import { GameRoleIcon } from "../assets/game-role-icon";
 import { StatIcon } from "../assets/stat-icon";
+import { PlayerPortrait } from "../draft/board/player-card";
 import { ChampionPortrait } from "../draft/champion-portrait";
 import { panel, panelTable, panelTitle } from "./classes";
 import { type TeamNames, useGoldDiff, useGoldFormat } from "./scoreboard";
@@ -107,36 +109,52 @@ export interface LanePlayer {
 	championName: string;
 }
 
-/** Portrait, handle and champion, with the portrait on the outer edge of the side. */
+/**
+ * Photo, champion portrait and the name block, in fixed tracks with the
+ * pictures on the outer edge: a long name is cut, it never moves them (#433).
+ */
 function Player({
+	id,
 	player,
 	side,
 }: {
+	id: string;
 	player: LanePlayer | undefined;
 	side: Side;
 }) {
+	const parts = player && [
+		<span key="photo" data-part="photo" className="flex">
+			<PlayerPortrait id={id} handle={player.handle} size="h-8 w-[26px]" />
+		</span>,
+		<span key="champion" data-part="champion" className="flex">
+			<ChampionPortrait
+				id={player.champion}
+				label={player.championName}
+				size="compact"
+			/>
+		</span>,
+		<Tooltip key="name" heading={player.handle} content={player.championName}>
+			<span data-part="name" className="min-w-0 text-center">
+				<span className="block truncate font-bold text-(--side)">
+					{player.handle}
+				</span>
+				<span
+					aria-hidden="true"
+					className="block truncate text-[11px] text-muted"
+				>
+					{player.championName}
+				</span>
+			</span>
+		</Tooltip>,
+	];
 	return (
 		<td data-side={side}>
-			{player && (
+			{parts && (
 				<span
-					className={`flex min-w-0 items-center justify-center gap-2 ${side === "blue" ? "text-left" : "flex-row-reverse text-right"}`}
+					data-lane-player
+					className={`grid items-center gap-1 ${side === "blue" ? "grid-cols-[auto_auto_minmax(0,1fr)]" : "grid-cols-[minmax(0,1fr)_auto_auto]"}`}
 				>
-					<ChampionPortrait
-						id={player.champion}
-						label={player.championName}
-						size="compact"
-					/>
-					<span className="min-w-0">
-						<span className="block truncate font-bold text-(--side)">
-							{player.handle}
-						</span>
-						<span
-							aria-hidden="true"
-							className="block truncate text-[11px] text-muted"
-						>
-							{player.championName}
-						</span>
-					</span>
+					{side === "blue" ? parts : parts.reverse()}
 				</span>
 			)}
 		</td>
@@ -227,15 +245,15 @@ export function FaceToFace({
 			<h2 className={panelTitle}>{t("draft.match.faceToFace")}</h2>
 			<table aria-label={t("draft.match.faceToFace")} className={panelTable}>
 				<colgroup>
-					<col className="w-[18.5%]" />
-					<col className="w-[9%]" />
+					<col className="w-[21%]" />
+					<col className="w-[8.5%]" />
 					<col className="w-[6.5%]" />
-					<col className="w-[9%]" />
+					<col className="w-[8.5%]" />
 					<col />
-					<col className="w-[9%]" />
+					<col className="w-[8.5%]" />
 					<col className="w-[6.5%]" />
-					<col className="w-[9%]" />
-					<col className="w-[18.5%]" />
+					<col className="w-[8.5%]" />
+					<col className="w-[21%]" />
 				</colgroup>
 				<thead>
 					<tr>
@@ -262,7 +280,11 @@ export function FaceToFace({
 				<tbody>
 					{lines.map(({ role, blue, red }) => (
 						<tr key={role}>
-							<Player player={lineup.get(blue.player)} side="blue" />
+							<Player
+								id={blue.player}
+								player={lineup.get(blue.player)}
+								side="blue"
+							/>
 							<Kda line={blue} side="blue" />
 							<td>{blue.cs}</td>
 							<td>{format.format(blue.gold)}</td>
@@ -279,7 +301,11 @@ export function FaceToFace({
 							<td>{format.format(red.gold)}</td>
 							<td>{red.cs}</td>
 							<Kda line={red} side="red" />
-							<Player player={lineup.get(red.player)} side="red" />
+							<Player
+								id={red.player}
+								player={lineup.get(red.player)}
+								side="red"
+							/>
 						</tr>
 					))}
 				</tbody>

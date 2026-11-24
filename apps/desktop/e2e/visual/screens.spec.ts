@@ -192,6 +192,13 @@ test.describe("Quick draft", () => {
 			if (screen === "match") {
 				const panel = appWindow.getByRole("radiogroup", { name: "Panel" });
 				await panel.getByRole("radio", { name: "Cara a cara" }).check();
+				// #433: one long handle, cut without moving the pictures.
+				await appWindow
+					.locator("[data-lane-player] [data-part=name] > span")
+					.first()
+					.evaluate((handle) => {
+						handle.textContent = "Averyveryveryverylonghandlethatneverends";
+					});
 				await appWindow.mouse.move(0, 0);
 				await captureScreen(appWindow, "quick-draft-face-to-face.png");
 				await panel.getByRole("radio", { name: "Mapa" }).check();
