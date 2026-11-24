@@ -69,11 +69,20 @@ const singleElim = z.strictObject({
 
 const doubleElim = z.strictObject({
 	type: z.literal("doubleElim"),
+	/** Every team, including the ones that enter the lower bracket directly. */
 	size: teamCount,
 	upper: z.array(bestOf).min(1).max(5),
 	lower: z.array(bestOf).min(1).max(8),
-	/** Lower-bracket slot each upper round's losers drop to. */
-	drop: z.array(z.int().min(0).max(7)).min(1).max(5),
+	/**
+	 * Lower round (0-based) each series' loser drops to, per upper round and
+	 * per series; `null` means the loser is out.
+	 */
+	drop: z
+		.array(z.array(z.int().min(0).max(7).nullable()).min(1).max(16))
+		.min(1)
+		.max(5),
+	/** Seeds that enter the lower bracket directly in each lower round (worst seeds first). */
+	lowerSeeds: z.array(z.int().min(0).max(8)).max(8).default([]),
 	grandFinal: bestOf,
 	/** Extra final when the lower bracket wins (off in LoL). */
 	reset: z.boolean(),
@@ -133,6 +142,15 @@ const slot = z.strictObject({
 
 const rounds = (size: number) => Math.ceil(Math.log2(size));
 
+/** Series played in each upper round of `size` teams (byes play none). */
+const upperSeries = (size: number): number[] => {
+	const count = rounds(size);
+	const full = 2 ** count;
+	return Array.from({ length: count }, (_, r) =>
+		r === 0 ? size - full / 2 : full / 2 ** (r + 1),
+	);
+};
+
 const issue = (
 	ctx: z.RefinementCtx,
 	path: (string | number)[],
@@ -174,10 +192,23 @@ export const competitionSchema = z
 				issue(ctx, [...p, "bestOf"], "one Bo per round");
 			}
 			if (play.type === "doubleElim") {
-				if (play.upper.length !== rounds(play.size))
-					issue(ctx, [...p, "upper"], "one Bo per upper round");
-				if (play.drop.length !== play.upper.length)
-					issue(ctx, [...p, "drop"], "one drop per upper round");
+				const seeds = play.lowerSeeds;
+				const entering = seeds.reduce((a, b) => a + b, 0);
+				const upperSize = play.size - entering;
+				if (seeds.length > play.lower.length || upperSize < 2) {
+					issue(ctx, [...p, "lowerSeeds"], "lower entrants do not fit");
+				} else {
+					const series = upperSeries(upperSize);
+					if (play.upper.length !== series.length)
+						issue(ctx, [...p, "upper"], "one Bo per upper round");
+					const fits =
+						play.drop.length === series.length &&
+						play.drop.every((d, r) => d.length === series[r]) &&
+						play.drop.every((d) =>
+							d.every((k) => k === null || k < play.lower.length),
+						);
+					if (!fits) issue(ctx, [...p, "drop"], "one drop per upper series");
+				}
 			}
 			if (s.entrants.kind === "standing" && s.entrants.to < s.entrants.from) {
 				issue(ctx, ["stages", i, "entrants", "to"], "empty range");
