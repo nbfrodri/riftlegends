@@ -56,8 +56,14 @@ export const resolveBracket = (
 		const teamA = teamOf(m.a);
 		const teamB = teamOf(m.b);
 		const played = results[m.id] ?? null;
-		const skipped = false;
-		const ready = teamA !== null && teamB !== null;
+		const grand = m.side === "reset" ? byId.get("GF") : undefined;
+		// The reset final is only played if the lower-bracket team won the final.
+		const skipped = grand?.winner != null && grand.winner === teamA;
+		const ready =
+			teamA !== null &&
+			teamB !== null &&
+			!skipped &&
+			(grand === undefined || grand.winner != null);
 		if (played !== null && (!ready || (played !== teamA && played !== teamB))) {
 			throw new RangeError(`Invalid result for match ${m.id}`);
 		}
@@ -84,5 +90,9 @@ export const resolveBracket = (
 	}
 	const matches = bracket.matches.map((m) => byId.get(m.id) as ResolvedMatch);
 	const last = matches[matches.length - 1] as ResolvedMatch;
-	return { matches, champion: last.winner, losses };
+	const decider =
+		last.status === "skipped"
+			? (matches[matches.length - 2] as ResolvedMatch)
+			: last;
+	return { matches, champion: decider.winner, losses };
 };

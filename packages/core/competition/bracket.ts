@@ -196,5 +196,6 @@ export const buildDoubleElim = (format: DoubleElim): Bracket => {
 		b: survivors[0] as Slot,
 	});
 	matches.push(final("GF", "final"));
+	if (format.reset) matches.push(final("RS", "reset"));
 	return { size: format.size, matches, reset: format.reset };
 };
