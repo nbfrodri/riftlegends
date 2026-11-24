@@ -356,6 +356,8 @@ Ampliar el catálogo compartido `AiContent.identities` de `packages/core/content
 
 Ordenar planes activos por cuánto superan su umbral, después por número de campeones que aportan y, en empate, por ID ascendente. El primero es principal y el segundo, si existe, secundario. Con cero planes activos, el equipo queda sin identidad. En draft parcial, contar solo picks confirmados y usar una asignación legal estable para flex (orden `ROLES` e ID para desempatar). Las identidades detectadas son provisionales hasta completar la alineación. Un hueco o un rasgo de kit desconocido aporta cero.
 
+**Implementado (#349).** [`detectIdentities`](../../../packages/core/match/composition/identities.ts) lee `archetypes` y `power` del contenido y, si existen, `kit` y `ccKinds` (la señal `cc:targeted` es CC dirigido). Hoy el contrato no publica los rasgos de kit en `champions.json`: sin ellos, los planes que los exigen (`siege`, `collapse`, `ambush`, `sidelanes`) no se activan. Las reglas viven en el código, no en `identities.json`: ampliar el catálogo cambiaría las elecciones de la IA y sus goldens. Sin conectar aún a la IA ni a la partida. El desglose devuelve cada plan con su cuenta, aportantes, requisitos y `active`; los empates se resuelven por exceso, número de aportantes e ID.
+
 #### Cruces de identidades
 
 Cada fila indica qué identidad recibe ventaja y por qué. Las demás parejas y las filas fuera de su fase, disputa o condición valen cero. Pelea, objetivo y asedio usan las disputas del plan 08. Temprana es antes del minuto 14, media va del 14 al 25 y tardía empieza en el 26.
