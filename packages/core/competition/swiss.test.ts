@@ -174,4 +174,32 @@ describe("pairSwissRound later rounds", () => {
 		expect(draws.size).toBeGreaterThan(10);
 		expect(t1Rivals.size).toBeGreaterThan(2);
 	});
+
+	test("S2: never a rematch when a pairing without one exists", () => {
+		fc.assert(
+			fc.property(
+				fc.array(fc.integer({ min: 0, max: 1 }), {
+					minLength: 80,
+					maxLength: 80,
+				}),
+				(bits) => {
+					const { played, rounds } = play(
+						teamsOf(16),
+						(r, i) => bits[r * 8 + i] as number,
+					);
+					const met = new Set<string>();
+					for (const [index, round] of rounds.entries()) {
+						if (!round.relaxed.includes("rematch")) {
+							for (const { a, b } of round.pairings) {
+								expect(met.has(key(a, b))).toBe(false);
+							}
+						}
+						for (const { winner, loser } of played[index] ?? []) {
+							met.add(key(winner, loser));
+						}
+					}
+				},
+			),
+		);
+	});
 });
