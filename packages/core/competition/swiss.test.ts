@@ -384,7 +384,7 @@ describe("whole Swiss stage", () => {
 
 	test("rejects an odd number of teams", () => {
 		expect(() => pairSwissRound(teamsOf(5), [], RULES, 1, SCOPE)).toThrow(
-			RangeError,
+			/even number of teams/,
 		);
 	});
 });
