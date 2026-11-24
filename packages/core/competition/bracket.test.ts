@@ -16,30 +16,38 @@ const teamsOf = (n: number) => Array.from({ length: n }, (_, i) => `t${i + 1}`);
 const single = (size: number, bestOf: BestOf[]) =>
 	buildSingleElim({ type: "singleElim", size, bestOf });
 
+const fmt = (
+	size: number,
+	upper: number,
+	drop: (number | null)[][],
+	lower: number,
+	extra: Partial<DoubleElim> = {},
+): DoubleElim => ({
+	type: "doubleElim",
+	size,
+	upper: bo(upper),
+	lower: bo(lower),
+	drop,
+	lowerSeeds: [],
+	grandFinal: 5,
+	reset: false,
+	...extra,
+});
+
 const double = (
 	size: number,
 	upper: number,
-	drop: number[],
+	drop: (number | null)[][],
 	lower: number,
 	extra: Partial<DoubleElim> = {},
-) =>
-	buildDoubleElim({
-		type: "doubleElim",
-		size,
-		upper: bo(upper),
-		lower: bo(lower),
-		drop,
-		grandFinal: 5,
-		reset: false,
-		...extra,
-	});
+) => buildDoubleElim(fmt(size, upper, drop, lower, extra));
 
 /** Standard brackets: [size, upper rounds, drop, lower rounds]. */
-const DOUBLE_CASES: [number, number, number[], number][] = [
-	[4, 2, [0, 1], 2],
-	[6, 3, [0, 0, 2], 3],
-	[8, 3, [0, 1, 3], 4],
-	[16, 4, [0, 1, 3, 5], 6],
+const DOUBLE_CASES: [number, number, (number | null)[][], number][] = [
+	[4, 2, [[0, 0], [1]], 2],
+	[6, 3, [[0, 0], [0, 0], [2]], 3],
+	[8, 3, [[0, 0, 0, 0], [1, 1], [3]], 4],
+	[16, 4, [Array(8).fill(0), Array(4).fill(1), [3, 3], [5]], 6],
 ];
 
 /** Plays every ready match; `pick(a, b, id)` returns true when a wins. */
@@ -112,7 +120,7 @@ describe("B2: byes for the top seeds", () => {
 
 describe("B3: double elimination drops", () => {
 	it("sends the upper round 1 losers of 4 to lower round 1 and the final loser to lower round 2", () => {
-		const bracket = double(4, 2, [0, 1], 2);
+		const bracket = double(4, 2, [[0, 0], [1]], 2);
 		const lower = bracket.matches.filter((m) => m.side === "lower");
 		expect(lower).toHaveLength(2);
 		expect(lower[0]).toMatchObject({
@@ -126,7 +134,7 @@ describe("B3: double elimination drops", () => {
 	});
 
 	it("crosses survivors with the dropped teams with 8", () => {
-		const bracket = double(8, 3, [0, 1, 3], 4);
+		const bracket = double(8, 3, [[0, 0, 0, 0], [1, 1], [3]], 4);
 		const ids = (round: number) =>
 			bracket.matches.filter((m) => m.side === "lower" && m.round === round);
 		expect(ids(1)).toHaveLength(2);
@@ -145,7 +153,7 @@ describe("B3: double elimination drops", () => {
 	});
 
 	it("enters the losers of rounds 1 and 2 together with 6 and avoids rematches", () => {
-		const bracket = double(6, 3, [0, 0, 2], 3);
+		const bracket = double(6, 3, [[0, 0], [0, 0], [2]], 3);
 		const lower1 = bracket.matches.filter(
 			(m) => m.side === "lower" && m.round === 1,
 		);
@@ -163,7 +171,7 @@ describe("B3: double elimination drops", () => {
 
 	it("lets the first team of an odd pool through", () => {
 		// 6 teams: round 2 losers enter alone beside one survivor (3 teams).
-		const bracket = double(6, 3, [0, 1, 3], 4);
+		const bracket = double(6, 3, [[0, 0], [1, 1], [3]], 4);
 		const lower2 = bracket.matches.filter(
 			(m) => m.side === "lower" && m.round === 2,
 		);
@@ -175,16 +183,21 @@ describe("B3: double elimination drops", () => {
 	});
 
 	it("rejects drops the format cannot place", () => {
-		expect(() => double(4, 2, [0, 5], 2)).toThrow(RangeError);
-		expect(() => double(4, 2, [0], 2)).toThrow(RangeError);
-		expect(() => double(8, 3, [0, 1, 3], 3)).toThrow(RangeError);
-		expect(() => double(8, 3, [0, 0, 0], 4)).toThrow(RangeError);
+		expect(() => double(4, 2, [[0, 0], [5]], 2)).toThrow(RangeError);
+		expect(() => double(4, 2, [[0, 0]], 2)).toThrow(RangeError);
+		expect(() => double(4, 2, [[0], [1]], 2)).toThrow(RangeError);
+		expect(() => double(8, 3, [[0, 0, 0, 0], [1, 1], [3]], 3)).toThrow(
+			RangeError,
+		);
+		expect(() => double(8, 3, [[0, 0, 0, 0], [0, 0], [0]], 4)).toThrow(
+			RangeError,
+		);
 	});
 });
 
 describe("B4: grand final reset", () => {
 	const teams = teamsOf(4);
-	const bracket = (reset: boolean) => double(4, 2, [0, 1], 2, { reset });
+	const bracket = (reset: boolean) => double(4, 2, [[0, 0], [1]], 2, { reset });
 	// The better seed wins in the upper bracket; t3 loses there, then wins
 	// every lower series and the finals.
 	const lowerWins = (a: string, b: string, id: string) =>
@@ -222,7 +235,8 @@ describe("B5: Bo per round from the format", () => {
 			size: 8,
 			upper: [3, 3, 5],
 			lower: [3, 3, 5, 5],
-			drop: [0, 1, 3],
+			drop: [[0, 0, 0, 0], [1, 1], [3]],
+			lowerSeeds: [],
 			grandFinal: 5,
 			reset: false,
 		};
@@ -373,5 +387,113 @@ describe("properties", () => {
 				}),
 			);
 		}
+	});
+});
+
+describe("B3b: drops per series, eliminations and lower entrants", () => {
+	it("sends the two round 2 losers to different lower rounds (LCK 6)", () => {
+		const bracket = double(6, 3, [[0, 0], [1, 2], [3]], 4);
+		const lower = (round: number) =>
+			bracket.matches.filter((m) => m.side === "lower" && m.round === round);
+		expect(lower(2)).toHaveLength(1);
+		expect(lower(2)[0]).toMatchObject({
+			a: { kind: "winner", match: "L1-1" },
+			b: { kind: "loser", match: "U2-1" },
+		});
+		expect(lower(3)[0]).toMatchObject({
+			a: { kind: "winner", match: "L2-1" },
+			b: { kind: "loser", match: "U2-2" },
+		});
+		expect(lower(4)[0]?.b).toEqual({ kind: "loser", match: "U3-1" });
+	});
+
+	it("eliminates the losers whose drop is null and never plays them again (LCP 6)", () => {
+		const bracket = double(6, 3, [[null, null], [0, 0], [1]], 2);
+		const state = play(bracket, teamsOf(6), (a, b) => a < b);
+		const out = ["t5", "t6"];
+		for (const t of out) expect(state.losses[t]).toBe(1);
+		const lowerTeams = state.matches
+			.filter((m) => m.side === "lower")
+			.flatMap((m) => [m.teamA, m.teamB]);
+		for (const t of out) expect(lowerTeams).not.toContain(t);
+	});
+
+	it("brings the worst seeds into the lower bracket in the rounds the format sets (King of the Hill)", () => {
+		const bracket = double(6, 1, [[3]], 4, { lowerSeeds: [2, 1, 1, 0] });
+		const state = resolveBracket(bracket, teamsOf(6), {});
+		const lower = (round: number) =>
+			state.matches.find((m) => m.side === "lower" && m.round === round);
+		expect([lower(1)?.teamA, lower(1)?.teamB].sort()).toEqual(["t5", "t6"]);
+		expect(lower(2)?.teamB).toBe("t4");
+		expect(lower(3)?.teamB).toBe("t3");
+		expect(state.matches.find((m) => m.id === "U1-1")).toMatchObject({
+			teamA: "t1",
+			teamB: "t2",
+		});
+	});
+
+	it("rejects a size that does not match its lower entrants", () => {
+		expect(() =>
+			double(6, 2, [[0, 0], [2]], 3, { lowerSeeds: [3, 0, 0] }),
+		).toThrow(RangeError);
+		expect(() => double(6, 1, [[3]], 4, { lowerSeeds: [2, 1, 1, 1] })).toThrow(
+			RangeError,
+		);
+	});
+});
+
+/** The real 2026 double eliminations (plan 12, formats study). */
+const REAL_2026: [string, DoubleElim][] = [
+	[
+		"LCK playoffs and Cup, LCS Summer, CBLOL: 6 teams, round 2 losers split",
+		fmt(6, 3, [[0, 0], [1, 2], [3]], 4),
+	],
+	[
+		"LCP splits: 6 teams, round 1 losers out",
+		fmt(6, 3, [[null, null], [0, 0], [1]], 2),
+	],
+	[
+		"LEC Spring and Summer, LCS Spring: 4 upper + seeds 5 and 6 below",
+		fmt(6, 2, [[0, 0], [2]], 3, { lowerSeeds: [2, 0, 0] }),
+	],
+	[
+		"standard 8 (LPL splits, LEC Versus, MSI)",
+		fmt(8, 3, [[0, 0, 0, 0], [1, 1], [3]], 4),
+	],
+	["MSI and Worlds play-in: 4 teams", fmt(4, 2, [[0, 0], [1]], 2)],
+	[
+		"LPL Grand Finals: 6 upper + 2 Knight's Road winners below",
+		fmt(8, 3, [[0, 0], [1, 1], [3]], 4, { lowerSeeds: [2, 0, 0, 0] }),
+	],
+	[
+		"LCK Road to MSI: King of the Hill",
+		fmt(6, 1, [[3]], 4, { lowerSeeds: [2, 1, 1, 0] }),
+	],
+];
+
+describe("real 2026 brackets", () => {
+	it.each(REAL_2026)("%s builds and always ends with one champion", (_n, f) => {
+		const bracket = buildDoubleElim(f);
+		const teams = teamsOf(f.size);
+		fc.assert(
+			fc.property(
+				fc.array(fc.boolean(), { minLength: 40, maxLength: 40 }),
+				(flags) => {
+					let i = 0;
+					const state = play(bracket, teams, () => flags[i++ % 40] as boolean);
+					expect(state.champion).not.toBeNull();
+					expect(
+						state.matches.every(
+							(m) => m.status === "done" || m.status === "skipped",
+						),
+					).toBe(true);
+					for (const t of teams) {
+						if (t !== state.champion) {
+							expect(state.losses[t] ?? 0).toBeGreaterThanOrEqual(1);
+						}
+					}
+				},
+			),
+		);
 	});
 });
