@@ -57,11 +57,32 @@ export interface SwissScope {
 
 /** Records and status after the rounds played so far. */
 export function swissStandings(
-	_teams: readonly SwissTeam[],
-	_played: readonly (readonly SwissResult[])[],
-	_rules: Pick<SwissRules, "wins" | "losses">,
+	teams: readonly SwissTeam[],
+	played: readonly (readonly SwissResult[])[],
+	rules: Pick<SwissRules, "wins" | "losses">,
 ): SwissRow[] {
-	return [];
+	const record = new Map(
+		teams.map((team) => [team.id, [0, 0] as [number, number]]),
+	);
+	for (const { winner, loser } of played.flat()) {
+		const won = record.get(winner);
+		const lost = record.get(loser);
+		if (won === undefined || lost === undefined) {
+			throw new RangeError(`Unknown team in result ${winner} vs ${loser}`);
+		}
+		won[0] += 1;
+		lost[1] += 1;
+	}
+	return teams.map(({ id }) => {
+		const [wins, losses] = record.get(id) as [number, number];
+		const status =
+			wins >= rules.wins
+				? "qualified"
+				: losses >= rules.losses
+					? "eliminated"
+					: "active";
+		return { id, wins, losses, status };
+	});
 }
 
 /** Pairs the next Swiss round, or returns null when the stage is over. */
