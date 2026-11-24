@@ -150,6 +150,9 @@ export function pairSwissRound(
 		played.flat().map(({ winner, loser }) => pairKey(winner, loser)),
 	);
 	const record = (id: string) => rows.get(id) as SwissRow;
+	const decisive = (id: string) =>
+		record(id).wins === rules.wins - 1 ||
+		record(id).losses === rules.losses - 1;
 	const sameRecord = (a: string, b: string) =>
 		record(a).wins === record(b).wins && record(a).losses === record(b).losses;
 	const shuffled = shuffle(
@@ -206,7 +209,10 @@ export function pairSwissRound(
 			.map(({ a, b }) => ({
 				a: a.id,
 				b: b.id,
-				bestOf: rules.bestOf,
+				bestOf:
+					decisive(a.id) || decisive(b.id)
+						? rules.decisiveBestOf
+						: rules.bestOf,
 				priority: a.id,
 				reason: round === 1 ? "pots" : "same-record",
 			})),
