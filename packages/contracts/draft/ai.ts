@@ -40,6 +40,71 @@ export const ARCHETYPES = [
 	"utility",
 ] as const;
 
+/** Kit traits the composition tables read (#340, #448). */
+export const KIT_TRAITS = [
+	"wombo",
+	"aoe",
+	"disengage",
+	"enchanter",
+	"siege",
+	"invade",
+	"farm",
+	"antiheal",
+	"shield",
+	"shred",
+	"vision",
+	"duel",
+	"skillshots",
+	"antiDash",
+	"antiAp",
+	"antiAd",
+	"knockupUlt",
+	"projectileBlock",
+	"projectiles",
+	"hook",
+	"competitive",
+] as const;
+
+/** Hard crowd control kinds of a kit; `targeted` is point and click. */
+export const CC_KINDS = ["targeted", "skillshot", "area", "knockup"] as const;
+
+/** Where a published trait comes from: game data, a named rule or an estimate. */
+const traitSource = z.enum(["source", "rule", "estimated"]);
+
+/**
+ * Optional kit facts of a champion. A missing `kit` or `ccKinds` means the kit
+ * is unknown; an empty array means it is known and has no such trait.
+ */
+const kitFacts = {
+	kit: z
+		.array(z.enum(KIT_TRAITS))
+		.refine((kit) => new Set(kit).size === kit.length, "Duplicated kit trait")
+		.optional(),
+	ccKinds: z
+		.array(z.enum(CC_KINDS))
+		.refine(
+			(kinds) => new Set(kinds).size === kinds.length,
+			"Duplicated CC kind",
+		)
+		.optional(),
+	/** Physical, magic and true damage in %; adds up to 100. */
+	split: z
+		.tuple([
+			z.int().min(0).max(100),
+			z.int().min(0).max(100),
+			z.int().min(0).max(100),
+		])
+		.refine(([a, b, c]) => a + b + c === 100, "The split must add up to 100")
+		.optional(),
+	traitSources: z
+		.strictObject({
+			ccKinds: traitSource.optional(),
+			split: traitSource.optional(),
+			kit: traitSource.optional(),
+		})
+		.optional(),
+};
+
 /**
  * Named rules that explain a matchup, team counter or synergy of the real
  * content (#321, plan 11). For an advantage, the reasons describe the
@@ -168,6 +233,7 @@ export const aiContent = z
 				damage: z.enum(["physical", "magic", "mixed", "utility"]),
 				archetypes: z.array(z.enum(ARCHETYPES)),
 				power: z.enum(["early", "mid", "late"]),
+				...kitFacts,
 			}),
 		),
 		/** How well `champion` does against `against` in `role`, −10 to 10. */
