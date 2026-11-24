@@ -175,24 +175,37 @@ export function pairSwissRound(
 			record(y.id).wins - record(x.id).wins ||
 			record(x.id).losses - record(y.id).losses,
 	);
-	const matching = findMatching(order, (x, y) => {
-		if (round === 1) {
+	// Constraints in the order they are dropped: region, then rematch.
+	const relaxed: ("region" | "rematch")[] = [];
+	let kept = (["region", "rematch"] as const).filter((rule) =>
+		rules.avoid.includes(rule),
+	);
+	let matching: [SwissTeam, SwissTeam][] | null = null;
+	for (;;) {
+		matching = findMatching(order, (x, y) => {
+			if (round === 1) {
+				return (
+					potOf(seedOf.get(x.id) as number, teams.length) +
+						potOf(seedOf.get(y.id) as number, teams.length) ===
+						3 &&
+					!(
+						kept.includes("region") &&
+						x.region !== undefined &&
+						x.region === y.region
+					)
+				);
+			}
 			return (
-				potOf(seedOf.get(x.id) as number, teams.length) +
-					potOf(seedOf.get(y.id) as number, teams.length) ===
-					3 &&
-				!(
-					rules.avoid.includes("region") &&
-					x.region !== undefined &&
-					x.region === y.region
-				)
+				sameRecord(x.id, y.id) &&
+				!(kept.includes("rematch") && met.has(pairKey(x.id, y.id)))
 			);
-		}
-		return (
-			sameRecord(x.id, y.id) &&
-			!(rules.avoid.includes("rematch") && met.has(pairKey(x.id, y.id)))
-		);
-	});
+		});
+		if (matching !== null || kept.length === 0) break;
+		const dropped = kept[0] as "region" | "rematch";
+		kept = kept.slice(1);
+		// Region only constrains round 1; dropping it elsewhere changes nothing.
+		if (dropped === "rematch" || round === 1) relaxed.push(dropped);
+	}
 	if (matching === null) throw new RangeError("Swiss round cannot be paired");
 	const sorted = matching
 		.map(([x, y]) =>
@@ -204,7 +217,7 @@ export function pairSwissRound(
 	const priorities = drawGame1Priority(rootSeed, { ...scope, round }, sorted);
 	return {
 		round,
-		relaxed: [],
+		relaxed,
 		pairings: sorted.map(({ a, b }, index) => ({
 			a,
 			b,
