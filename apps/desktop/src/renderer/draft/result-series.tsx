@@ -112,10 +112,10 @@ function Mvp(props: {
 			aria-label={t("draft.result.mvp.name")}
 			className={`grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-5 border-t-[3px] bg-panel px-5 py-3 ${props.sideOf(mvp.team) === "blue" ? "border-side-blue" : "border-side-red"}`}
 		>
-			<div className="flex items-end">
+			<div className="flex items-end gap-1.5">
 				<PlayerPortrait id={mvp.player} handle={player?.handle ?? mvp.player} />
 				{champion && (
-					<span className="-ml-3 size-12 shrink-0 border border-line bg-panel">
+					<span className="size-12 shrink-0 border border-line bg-panel">
 						<ChampionPortrait
 							id={champion}
 							label={championLabel(options, champion)}

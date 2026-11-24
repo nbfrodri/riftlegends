@@ -23,7 +23,8 @@ function Player(props: {
 	const handle = handleOf(props.options, props.lane.player);
 	const champion = championLabel(props.options, props.lane.champion);
 	return (
-		<span className="flex min-w-0 items-center gap-1.5">
+		// A 20 px portrait keeps the row as tall as its text, so the results fit (#259).
+		<span className="flex min-w-0 items-center gap-1.5 [&_[role=img]]:size-5">
 			<ChampionPortrait
 				id={props.lane.champion}
 				label={champion}
