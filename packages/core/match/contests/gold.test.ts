@@ -25,9 +25,13 @@ describe("G2 · relative gold lead", () => {
 		fc.assert(
 			fc.property(golds, golds, (a, b) => {
 				const lead = goldLead(a, b, rules);
-				expect(goldLead(b, a, rules)).toBe(-lead);
+				// Sum, not toBe(-lead): Object.is tells -0 from 0.
+				expect(goldLead(b, a, rules) + lead).toBe(0);
 				expect(abs(lead)).toBeLessThanOrEqual(rules.goldMaxPoints);
 			}),
+			// Equal gold gives no lead either way; it failed on Windows CI
+			// because the random runs rarely draw it.
+			{ examples: [[five(9000), five(9000)]] },
 		);
 	});
 

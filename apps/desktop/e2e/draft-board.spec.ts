@@ -218,3 +218,48 @@ test("each open panel drops below its bar without scrolling the page", async ({
 		}
 	}
 });
+
+// #419: the turn timer is one line above the board, from the blue column's
+// left edge to the red column's right edge, and the page still does not scroll.
+test("the turn timer spans the whole board right above it", async ({
+	appWindow,
+	electronApp,
+}) => {
+	await seedNextSeries(electronApp, 7);
+	await appWindow
+		.getByRole("radio", { name: "On", exact: true })
+		.check({ force: true });
+	await appWindow.getByRole("button", { name: "Start series" }).click();
+	await appWindow.getByRole("button", { name: "Confirm choice" }).click();
+	await appWindow.getByRole("button", { name: "Go to draft" }).click();
+	const timer = appWindow.getByRole("timer");
+	await expect(timer).toBeVisible();
+	const blue = appWindow.getByRole("region", { name: /^Blue side / });
+	const red = appWindow.getByRole("region", { name: /^Red side / });
+	for (const viewport of [
+		{ width: 1280, height: 720 },
+		{ width: 1366, height: 768 },
+	]) {
+		await appWindow.setViewportSize(viewport);
+		const bar = await timer.boundingBox();
+		const left = await blue.boundingBox();
+		const right = await red.boundingBox();
+		if (!bar || !left || !right) throw new Error("The board must show");
+		expect(Math.abs(bar.x - left.x)).toBeLessThanOrEqual(1);
+		expect(
+			Math.abs(bar.x + bar.width - (right.x + right.width)),
+		).toBeLessThanOrEqual(1);
+		const above = left.y - (bar.y + bar.height);
+		expect(above).toBeGreaterThanOrEqual(0);
+		expect(above).toBeLessThanOrEqual(12);
+		expect(
+			await appWindow.evaluate(() => {
+				const main = document.querySelector("main");
+				return {
+					page: document.documentElement.scrollHeight - innerHeight,
+					main: main ? main.scrollHeight - main.clientHeight : 0,
+				};
+			}),
+		).toEqual({ page: 0, main: 0 });
+	}
+});
