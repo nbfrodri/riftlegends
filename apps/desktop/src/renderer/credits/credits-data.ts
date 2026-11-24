@@ -10,6 +10,8 @@ export const riotNotice =
 
 export interface Source {
 	id: "leaguepedia" | "communityDragon" | "lolesports";
+	/** Shown in the source's card when it has no licence link. */
+	badge?: "cache" | "api";
 	name: string;
 	url: string;
 	licence?: string;
@@ -28,19 +30,35 @@ export const SOURCES: readonly Source[] = [
 		id: "communityDragon",
 		name: "CommunityDragon",
 		url: "https://www.communitydragon.org/",
+		badge: "cache",
 	},
-	{ id: "lolesports", name: "lolesports.com", url: "https://lolesports.com/" },
+	{
+		id: "lolesports",
+		name: "lolesports.com",
+		url: "https://lolesports.com/",
+		badge: "api",
+	},
 ];
+
+/** Areas the libraries are shown under, in this order. */
+export const LIBRARY_GROUPS = ["interface", "data", "engine", "fonts"] as const;
+type LibraryGroup = (typeof LIBRARY_GROUPS)[number];
 
 export interface Library {
 	name: string;
 	licence: string;
 	url: string;
+	group: LibraryGroup;
 }
 
-const library = (name: string, licence: string): Library => ({
+const library = (
+	name: string,
+	licence: string,
+	group: LibraryGroup,
+): Library => ({
 	name,
 	licence,
+	group,
 	url: `https://www.npmjs.com/package/${name}`,
 });
 
@@ -48,25 +66,25 @@ const library = (name: string, licence: string): Library => ({
 // bundles. A test compares this list with the package.json files, so adding
 // a dependency without crediting it fails the build.
 export const LIBRARIES: readonly Library[] = [
-	library("@base-ui/react", "MIT"),
-	library("@fontsource-variable/archivo", "OFL-1.1"),
-	library("@fontsource-variable/unbounded", "OFL-1.1"),
-	library("@tanstack/react-query", "MIT"),
-	library("@tanstack/react-router", "MIT"),
-	library("@tanstack/react-table", "MIT"),
-	library("@tanstack/react-virtual", "MIT"),
-	library("clsx", "MIT"),
-	library("country-flag-icons", "MIT"),
-	library("electron", "MIT"),
-	library("i18next", "MIT"),
-	library("lucide-react", "ISC"),
-	library("motion", "MIT"),
-	library("pixi.js", "MIT"),
-	library("pure-rand", "MIT"),
-	library("react", "MIT"),
-	library("react-dom", "MIT"),
-	library("react-i18next", "MIT"),
-	library("tailwind-merge", "MIT"),
-	library("tailwindcss", "MIT"),
-	library("zod", "MIT"),
+	library("@base-ui/react", "MIT", "interface"),
+	library("@fontsource-variable/archivo", "OFL-1.1", "fonts"),
+	library("@fontsource-variable/unbounded", "OFL-1.1", "fonts"),
+	library("@tanstack/react-query", "MIT", "data"),
+	library("@tanstack/react-router", "MIT", "data"),
+	library("@tanstack/react-table", "MIT", "data"),
+	library("@tanstack/react-virtual", "MIT", "data"),
+	library("clsx", "MIT", "interface"),
+	library("country-flag-icons", "MIT", "interface"),
+	library("electron", "MIT", "engine"),
+	library("i18next", "MIT", "data"),
+	library("lucide-react", "ISC", "interface"),
+	library("motion", "MIT", "interface"),
+	library("pixi.js", "MIT", "interface"),
+	library("pure-rand", "MIT", "engine"),
+	library("react", "MIT", "interface"),
+	library("react-dom", "MIT", "interface"),
+	library("react-i18next", "MIT", "data"),
+	library("tailwind-merge", "MIT", "interface"),
+	library("tailwindcss", "MIT", "interface"),
+	library("zod", "MIT", "engine"),
 ];

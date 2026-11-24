@@ -692,11 +692,19 @@
 	"credits.title": "Credits",
 	"credits.back": "Back to Settings",
 	"credits.sources.title": "Data sources",
-	"credits.sources.leaguepedia": "Esports teams, rosters and results, from Leaguepedia contributors. Licensed under CC BY-SA 3.0; the normalised data are shared under the same licence.",
-	"credits.sources.communityDragon": "Champion portraits, icons and game data, downloaded to a local cache.",
-	"credits.sources.lolesports": "Public API for team and league logos and player photos, downloaded to a local cache.",
+	"credits.sources.leaguepedia": "Esports teams, rosters and results. Derived data are shared under the same licence.",
+	"credits.sources.communityDragon": "Champion portraits, icons and game data.",
+	"credits.sources.lolesports": "Team and league logos and player photos.",
 	"credits.legal.title": "Legal notice",
 	"credits.legal.assets": "The names, art and icons of League of Legends belong to Riot Games. The game downloads them at run time; this repository and its binaries do not include them.",
 	"credits.libraries.title": "Open-source libraries",
-	"credits.libraries.description": "Rift Legends is built on these libraries, each under its own licence."
+	"credits.libraries.description": "Rift Legends is built on these libraries, each under its own licence.",
+	"credits.sources.badge.cache": "Local cache",
+	"credits.sources.badge.api": "Public API",
+	"credits.sources.visit": "Open site",
+	"credits.sources.visitLabel": "Open the {{name}} site",
+	"credits.libraries.group.interface": "Interface",
+	"credits.libraries.group.data": "Data and state",
+	"credits.libraries.group.engine": "Engine and desktop",
+	"credits.libraries.group.fonts": "Fonts"
 }

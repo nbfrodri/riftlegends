@@ -8,6 +8,7 @@ import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import { AssetsProvider } from "../src/renderer/assets";
 import {
 	LIBRARIES,
+	LIBRARY_GROUPS,
 	riotNotice,
 	SOURCES,
 } from "../src/renderer/credits/credits-data";
@@ -44,28 +45,65 @@ describe("credits view", () => {
 		expect(
 			await screen.findByRole("heading", { level: 1, name: "Credits" }),
 		).toBeTruthy();
-		await user.click(screen.getByRole("link", { name: "Back to Settings" }));
+		const back = screen.getByRole("link", { name: "Back to Settings" });
+		expect(back.className).toContain("border-line");
+		await user.click(back);
 		expect(
 			await screen.findByRole("heading", { level: 1, name: "Settings" }),
 		).toBeTruthy();
 	});
 
-	test("shows the data sources with their licence and links", async () => {
+	test("shows one card per data source with its use, badge and link", async () => {
 		await renderAt("/ajustes/creditos");
 		const sources = screen.getByRole("region", { name: "Data sources" });
-		const leaguepedia = within(sources).getByRole("link", {
-			name: "Leaguepedia",
-		});
-		expect(leaguepedia.getAttribute("href")).toBe(
-			"https://lol.fandom.com/wiki/Leaguepedia",
-		);
+		const cards = within(sources).getAllByRole("article");
+		expect(cards.map((card) => card.getAttribute("aria-label"))).toEqual([
+			"Leaguepedia",
+			"CommunityDragon",
+			"lolesports.com",
+		]);
+		const [leaguepedia, communityDragon, lolesports] = cards as [
+			HTMLElement,
+			HTMLElement,
+			HTMLElement,
+		];
 		expect(
-			within(sources)
+			within(leaguepedia)
+				.getByRole("link", { name: "Open the Leaguepedia site" })
+				.getAttribute("href"),
+		).toBe("https://lol.fandom.com/wiki/Leaguepedia");
+		expect(
+			within(leaguepedia)
 				.getByRole("link", { name: "CC BY-SA 3.0" })
 				.getAttribute("href"),
 		).toBe("https://creativecommons.org/licenses/by-sa/3.0/");
-		for (const name of ["CommunityDragon", "lolesports.com"]) {
-			expect(within(sources).getByRole("link", { name })).toBeTruthy();
+		expect(within(communityDragon).getByText("Local cache")).toBeTruthy();
+		expect(within(lolesports).getByText("Public API")).toBeTruthy();
+		for (const card of cards) {
+			expect(card.querySelector("svg")).toBeTruthy();
+		}
+	});
+
+	test("shows the game icon next to the title", async () => {
+		await renderAt("/ajustes/creditos");
+		const title = screen.getByRole("heading", { level: 1, name: "Credits" });
+		expect(
+			title.parentElement?.querySelector('img[src="./icon-small.svg"]'),
+		).toBeTruthy();
+	});
+
+	test("underlines nothing", async () => {
+		await renderAt("/ajustes/creditos");
+		const view = screen.getByRole("heading", { level: 1 }).closest("main");
+		const elements = [...(view ?? document.body).querySelectorAll("*")];
+		expect(elements.length).toBeGreaterThan(20);
+		for (const element of elements) {
+			expect(element.getAttribute("class") ?? "").not.toMatch(
+				/(^|\s|:)underline(\s|$)/,
+			);
+			expect(getComputedStyle(element).textDecorationLine).not.toContain(
+				"underline",
+			);
 		}
 	});
 
@@ -87,14 +125,27 @@ describe("credits view", () => {
 		}
 	});
 
-	test("lists every open-source library with its licence", async () => {
+	test("lists every open-source library once, grouped by area", async () => {
 		await renderAt("/ajustes/creditos");
-		const list = screen.getByRole("list", { name: "Open-source libraries" });
-		expect(within(list).getAllByRole("listitem")).toHaveLength(
-			LIBRARIES.length,
+		const region = screen.getByRole("region", {
+			name: "Open-source libraries",
+		});
+		const groups = within(region).getAllByRole("list");
+		expect(groups.map((list) => list.getAttribute("aria-label"))).toEqual([
+			"Interface",
+			"Data and state",
+			"Engine and desktop",
+			"Fonts",
+		]);
+		const names = groups.flatMap((list) =>
+			within(list)
+				.getAllByRole("link")
+				.map((link) => link.textContent?.split("·")[0]?.trim()),
 		);
-		const react = within(list).getByRole("link", { name: "react" });
-		expect(react.closest("li")?.textContent).toContain("MIT");
+		expect(names.sort()).toEqual(LIBRARIES.map((l) => l.name).sort());
+		expect(
+			within(region).getByRole("link", { name: "react · MIT" }),
+		).toBeTruthy();
 	});
 
 	test("is available in Spanish", async () => {
@@ -140,6 +191,18 @@ describe("credits data", () => {
 			);
 			const installed = json(`${dir}/node_modules/${name}/package.json`);
 			expect([installed.license, name]).toEqual([licence, name]);
+		}
+	});
+
+	test("the groups cover every library exactly once", () => {
+		const grouped = LIBRARY_GROUPS.flatMap((group) =>
+			LIBRARIES.filter((library) => library.group === group).map(
+				(library) => library.name,
+			),
+		);
+		expect(grouped.sort()).toEqual(LIBRARIES.map((l) => l.name).sort());
+		for (const group of LIBRARY_GROUPS) {
+			expect(LIBRARIES.some((library) => library.group === group)).toBe(true);
 		}
 	});
 
