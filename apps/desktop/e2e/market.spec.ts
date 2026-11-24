@@ -67,3 +67,27 @@ test("Market moves between rows with the arrow keys", async ({ appWindow }) => {
 	await expect(rows.last()).toHaveAttribute("aria-rowindex", "37");
 	await expect(rows.last()).toHaveCSS("outline-style", "solid");
 });
+
+test("Market combines filters, shows them as chips and clears them", async ({
+	appWindow,
+}) => {
+	await openMarket(appWindow);
+	const status = appWindow.getByRole("status");
+	await expect(status).toHaveText("36 of 36 players");
+	await appWindow.getByRole("button", { name: "Mid" }).click();
+	await appWindow.getByRole("combobox", { name: "Team" }).click();
+	await appWindow.getByRole("option", { name: "Bruma" }).click();
+	await expect(status).toHaveText("2 of 36 players");
+	await expect(dataRows(appWindow)).toHaveCount(2);
+	const chips = appWindow.getByRole("list", { name: "Active filters" });
+	await expect(chips.getByRole("listitem")).toHaveText([
+		"Role: Mid",
+		"Team: Bruma",
+	]);
+	await chips
+		.getByRole("button", { name: "Remove filter Team: Bruma" })
+		.click();
+	await expect(status).toHaveText("8 of 36 players");
+	await appWindow.getByRole("button", { name: "Clear filters" }).click();
+	await expect(status).toHaveText("36 of 36 players");
+});

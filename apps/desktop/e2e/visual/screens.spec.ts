@@ -54,6 +54,19 @@ test("Mercado with the sidebar expanded", async ({ appWindow }) => {
 	await captureScreen(appWindow, "mercado-expanded.png");
 });
 
+test("Mercado with active filters and the color scale", async ({
+	appWindow,
+}) => {
+	await goTo(appWindow, "Mercado");
+	await appWindow.getByRole("button", { name: "Mid" }).click();
+	await appWindow.getByRole("spinbutton", { name: "Edad máxima" }).fill("25");
+	await expect(
+		appWindow.getByRole("list", { name: "Filtros activos" }),
+	).toBeVisible();
+	await appWindow.mouse.move(0, 0);
+	await captureScreen(appWindow, "mercado-filters.png");
+});
+
 test.describe("Campeones", () => {
 	test.use({ appEnv: { RIFT_E2E_CONTENT: "fictional" } });
 
