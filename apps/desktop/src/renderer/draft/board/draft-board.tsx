@@ -182,6 +182,7 @@ export function DraftBoard() {
 				red={view.red.team}
 				rivalSide={mine ? (mine === view.blue.team ? "red" : "blue") : null}
 				rival={mine === view.blue.team ? view.red.team : view.blue.team}
+				rivalPicks={mine === view.blue.team ? view.red.picks : view.blue.picks}
 				game={view.game}
 				options={options}
 				cardOpen={cardOpen}
@@ -197,6 +198,7 @@ const Inspection = memo(function Inspection(props: {
 	red: string;
 	rivalSide: Side | null;
 	rival: string;
+	rivalPicks: readonly string[];
 	game: number;
 	options: SeriesOptions;
 	cardOpen: boolean;
@@ -261,6 +263,7 @@ const Inspection = memo(function Inspection(props: {
 				game={props.game}
 				options={options}
 				rival={props.rivalSide ? props.rival : null}
+				picks={props.rivalPicks}
 				side={props.rivalSide}
 			/>
 		</div>

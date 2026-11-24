@@ -38,12 +38,6 @@ const panel = () => screen.getByRole("group", { name: "AI decisions" });
 const displayChampion = (id: string) =>
 	namedDraft.champions.find((c) => c.id === id)?.name;
 
-function decisionLabel(decision: Decision) {
-	if (!decision.champion) return "Skipped ban";
-	const verb = decision.action === "pick" ? "Picked" : "Banned";
-	return `${verb} ${displayChampion(decision.champion)}`;
-}
-
 // Exercise the board with the real core while the test controls turn timing.
 function ManualDraft() {
 	const { mine, view } = useDraftSession();
@@ -53,7 +47,27 @@ function ManualDraft() {
 	return <DraftBoard />;
 }
 
-test("explains the latest rival decision and keeps earlier decisions newest first", async () => {
+const reasonLabels: Record<string, string> = {
+	meta: "Strength in this patch",
+	comfort: "Player familiarity",
+	matchup: "Lane matchup",
+	synergy: "Fit with other champions",
+	composition: "Team balance",
+	flex: "Fits multiple roles",
+	identity: "Fit with team strategy",
+	fearlessReserve: "Value in later games",
+	side: "Impact of draft side",
+	blueSide: "Blue map advantage",
+	targetBan: "Rival player’s best champions",
+	threatBan: "Threat to the team",
+	lookahead: "Impact of the expected reply",
+};
+
+const byWeight = (components: Decision["components"]) =>
+	[...components].sort((a, b) => Math.abs(b.points) - Math.abs(a.points));
+
+// #407: one entry per decision, newest first, readable at a glance.
+test("shows each rival decision with portrait, role, player and reasons by weight", async () => {
 	vi.spyOn(crypto, "getRandomValues").mockReturnValue(new Uint32Array([7]));
 	const user = userEvent.setup();
 	const core = await renderWithDraftCore(
@@ -94,42 +108,67 @@ test("explains the latest rival decision and keeps earlier decisions newest firs
 
 	await user.click(within(panel()).getByText("AI decisions"));
 	const [decision, ...earlier] = decisions;
-	if (!decision?.reply || !earlier[0])
+	if (!decision?.champion || decision.action !== "pick" || !decision.reply)
 		throw new Error("Expected a pick with a reply after the bans");
-	const latest = within(panel()).getByRole("region", {
-		name: decisionLabel(decision),
-	});
-	expect(within(latest).getByText(/Total score/)).toBeTruthy();
-	const factors = within(latest).getByRole("table", {
-		name: "Scoring factors",
-	});
-	expect(
-		within(factors).getAllByText(/points in favor/).length,
-	).toBeGreaterThan(0);
-	const alternatives = within(latest).getByRole("table", {
-		name: "Other options",
-	});
-	expect(
-		within(alternatives)
-			.getAllByRole("cell")
-			.map((cell) => cell.textContent),
-	).toEqual(decision.alternatives.map(({ chance }) => `${chance / 100}%`));
-	expect(
-		within(latest).getByText(
-			`Expected reply · ${displayChampion(decision.reply.champion)}`,
+
+	const entries = within(panel())
+		.getByRole("list", { name: "Rival decisions, latest first" })
+		.querySelectorAll(":scope > li");
+	expect([...entries].map((entry) => entry.textContent)).toEqual(
+		decisions.map((d) =>
+			expect.stringContaining(
+				d.champion ? (displayChampion(d.champion) as string) : "Skipped ban",
+			),
 		),
+	);
+	const latest = entries[0] as HTMLElement;
+	expect(within(latest).getByText("Pick")).toBeTruthy();
+	expect(
+		within(latest).getByRole("img", {
+			name: displayChampion(decision.champion),
+		}),
+	).toBeTruthy();
+	// Forge's first pick goes to its top laner.
+	expect(within(latest).getByRole("img", { name: "Top" })).toBeTruthy();
+	expect(within(latest).getByText("Emberjaw")).toBeTruthy();
+
+	const ordered = byWeight(decision.components);
+	const reasons = within(latest).getByRole("list", { name: "Reasons" });
+	expect(
+		within(reasons)
+			.getAllByRole("listitem")
+			.map((item) => item.firstChild?.textContent),
+	).toEqual(
+		ordered.filter((c) => c.points > 0).map((c) => reasonLabels[c.key]),
+	);
+	expect(
+		within(reasons).getAllByText(/^(High|Medium|Low) weight$/),
+	).toHaveLength(ordered.filter((c) => c.points > 0).length);
+
+	const others = within(latest).getByRole("list", { name: "Other options" });
+	const items = within(others).getAllByRole("listitem");
+	expect(items).toHaveLength(decision.alternatives.length);
+	decision.alternatives.forEach(({ champion }, index) => {
+		const item = items[index] as HTMLElement;
+		expect(
+			within(item).getByRole("img", { name: displayChampion(champion) }),
+		).toBeTruthy();
+		expect(item.textContent).toMatch(
+			/Close call|A little behind|Not on its shortlist|Scored as high/,
+		);
+	});
+	expect(
+		within(latest).getByText(displayChampion(decision.reply.champion) ?? ""),
 	).toBeTruthy();
 
-	const history = within(panel()).getByRole("list", {
-		name: "Earlier decisions",
-	});
-	expect(
-		within(history)
-			.getAllByRole("listitem")
-			.map((item) => item.textContent),
-	).toEqual(
-		earlier.map((decision) => expect.stringContaining(decisionLabel(decision))),
-	);
+	const earlierBan = entries[1] as HTMLElement;
+	expect(within(earlierBan).getByText("Ban")).toBeTruthy();
+	expect(within(earlierBan).queryByRole("img", { name: "Top" })).toBeNull();
+	expect(earlier.length).toBe(entries.length - 1);
+
+	// Words and bars only: no fixed-point numbers, percentages or signs.
+	const body = panel().querySelector("[data-slot=panel-body]");
+	expect(body?.textContent).not.toMatch(/[0-9%+−]/);
 });
 
 test("remembers opening and closing the panel across draft sessions", async () => {
