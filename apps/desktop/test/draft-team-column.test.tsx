@@ -208,3 +208,98 @@ describe("#436: ban stamp animation", () => {
 		expect(slots()[1]?.dataset.banSlot).toBe("banned");
 	});
 });
+
+interface BanTurn {
+	bans: (string | null)[];
+	banning: boolean;
+	preview: string | null;
+}
+let setTurn: (turn: BanTurn) => void = () => {};
+function TurnHarness(props: BanTurn) {
+	const [turn, set] = useState(props);
+	setTurn = set;
+	return (
+		<TeamColumn
+			side="blue"
+			first
+			team={{ team: "forge", bans: turn.bans, picks: [] }}
+			options={options}
+			current={null}
+			banning={turn.banning}
+			preview={turn.preview}
+			onPlayer={() => {}}
+		/>
+	);
+}
+
+describe("#436: the ban preview pulses in the active slot", () => {
+	const slots = () =>
+		within(screen.getByRole("list", { name: "Bans" })).getAllByRole("listitem");
+	const preview = () =>
+		(slots()[1] as HTMLElement).querySelector<HTMLElement>(
+			"[data-ban-preview]",
+		);
+
+	test("the selected champion previews in the active slot, pulsing only the portrait", async () => {
+		await renderInLocale(
+			<TurnHarness bans={["toppy"]} banning preview="middy" />,
+		);
+		expect(slots().map((slot) => slot.dataset.banSlot)).toEqual([
+			"banned",
+			"preview",
+			"empty",
+			"empty",
+			"empty",
+		]);
+		expect(
+			within(slots()[1] as HTMLElement).getByRole("img", { name: "Middy" }),
+		).toBeTruthy();
+		expect(preview()?.className).toContain("draft-pending");
+		expect(preview()?.style.animationDuration).toBe(
+			`${pacing.pendingPulseMs}ms`,
+		);
+		// No border or dashed outline around the preview (user, 24-11).
+		expect(slots()[1]?.querySelector("[class*='border']")).toBeNull();
+	});
+
+	test("deselecting clears the preview", async () => {
+		await renderInLocale(
+			<TurnHarness bans={["toppy"]} banning preview="middy" />,
+		);
+		act(() => setTurn({ bans: ["toppy"], banning: true, preview: null }));
+		expect(slots()[1]?.dataset.banSlot).toBe("empty");
+		expect(preview()).toBeNull();
+	});
+
+	test("without a ban turn there is no preview", async () => {
+		await renderInLocale(
+			<TurnHarness bans={["toppy"]} banning={false} preview="middy" />,
+		);
+		expect(slots().some((slot) => slot.dataset.banSlot === "preview")).toBe(
+			false,
+		);
+	});
+
+	test("with reduced motion the preview is dimmed and does not pulse", async () => {
+		const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+		vi.spyOn(media, "matches", "get").mockReturnValue(true);
+		vi.spyOn(window, "matchMedia").mockReturnValue(media);
+		await renderInLocale(
+			<TurnHarness bans={["toppy"]} banning preview="middy" />,
+		);
+		expect(preview()?.className).not.toContain("draft-pending");
+		expect(preview()?.className).toContain("opacity-50");
+	});
+
+	test("confirming the previewed ban plays the stamp in that slot", async () => {
+		await renderInLocale(
+			<TurnHarness bans={["toppy"]} banning preview="middy" />,
+		);
+		act(() =>
+			setTurn({ bans: ["toppy", "middy"], banning: false, preview: null }),
+		);
+		expect(slots()[1]?.dataset.banSlot).toBe("banned");
+		expect(slots()[1]?.querySelector("[data-ban-stamp]")).not.toBeNull();
+		expect(preview()).toBeNull();
+	});
+});
