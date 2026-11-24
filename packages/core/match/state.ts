@@ -13,6 +13,7 @@ import { SCOPES } from "../rng/scopes";
 import { deriveSeed } from "../rng/seeds";
 import { createRng } from "../rng/streams";
 import { roleWeights } from "./attribution/weights";
+import { paidByRole, type Slot } from "./economy";
 import type { MentalEdge } from "./mental";
 import { type Lineup, type Profile, profiles } from "./profile";
 
@@ -59,6 +60,8 @@ interface MatchContext {
 	readonly rules: MatchContent["rules"];
 	readonly blue: SideContext;
 	readonly red: SideContext;
+	/** Side and role of each player, to pay the gold of an event. */
+	readonly slots: ReadonlyMap<string, Slot>;
 }
 
 export type Lane = "top" | "mid" | "bot";
@@ -73,6 +76,8 @@ export const GRUBS = 3;
 
 interface SideState {
 	readonly gold: number;
+	/** Gold each player earned from events, by role; the passive income is not here. */
+	readonly paid: readonly number[];
 	readonly kills: number;
 	readonly dragons: number;
 	/** Void grubs this side has taken; the stacks never wear off. */
@@ -185,6 +190,7 @@ export function createMatch(setup: MatchSetup): MatchState {
 	};
 	const start: SideState = {
 		gold: 0,
+		paid: ROLES.map(() => 0),
 		kills: 0,
 		dragons: 0,
 		grubs: 0,
@@ -198,13 +204,25 @@ export function createMatch(setup: MatchSetup): MatchState {
 		buffs: { herald: 0, baron: 0, elder: 0 },
 	};
 	const { objectives } = setup.match.rules;
+	const blue = side(setup.blue, us, "blue");
+	const red = side(setup.red, them, "red");
+	const slots = new Map<string, Slot>();
+	for (const [which, team] of [
+		["blue", blue],
+		["red", red],
+	] as const) {
+		ROLES.forEach((role, index) =>
+			slots.set(team.players[role], { side: which, index }),
+		);
+	}
 	return {
 		context: {
 			seed: setup.seed,
 			game: setup.game,
 			rules: setup.match.rules,
-			blue: side(setup.blue, us, "blue"),
-			red: side(setup.red, them, "red"),
+			blue,
+			red,
+			slots,
 		},
 		minute: 0,
 		blue: start,
@@ -235,14 +253,19 @@ function mark(state: MatchState, e: MatchEvent): MatchState {
 			loserPlayers.includes(kill.killer),
 		).length;
 	}
+	const paid = paidByRole(e, state.context.slots, rules.economy);
+	const earned = (own: SideState, side: Side) =>
+		own.paid.map((gold, i) => gold + (paid[side][i] as number));
 	let won: SideState = {
 		...winner,
 		gold: winner.gold + e.gold[e.side],
+		paid: earned(winner, e.side),
 		kills: winner.kills + e.kills.length - loserKills,
 	};
 	let lost: SideState = {
 		...loser,
 		gold: loser.gold + e.gold[loserSide],
+		paid: earned(loser, loserSide),
 		kills: loser.kills + loserKills,
 	};
 	let objectives = state.objectives;

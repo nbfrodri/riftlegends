@@ -1,13 +1,13 @@
 import type { Side } from "@rift-legends/contracts";
 import { type Fixed, mul } from "../../math";
+import { farmed } from "../economy";
 import type { CONTESTS, Scored } from "../profile";
 import { type MatchState, SOUL } from "../state";
 import { chance } from "./chance";
+import { goldLead } from "./gold";
 
 type Contest = (typeof CONTESTS)[number];
 
-/** Points of edge per gold of difference, before the weight of the minute. */
-const GOLD_POINTS = 40;
 /** Points of each buff in the contests it helps. Balance constants. */
 const DRAGON_POINTS = 20_000;
 const SOUL_POINTS = 60_000;
@@ -30,13 +30,11 @@ const LATE_GAME = 26;
 const phaseOf = (minute: number) =>
 	minute < MID_GAME ? "early" : minute < LATE_GAME ? "mid" : "late";
 
-function goldWeight(state: MatchState): number {
-	let weight = 0;
-	for (const step of state.context.rules.goldWeight) {
-		if (step.minute <= state.minute) weight = step.weight;
-	}
-	return weight;
-}
+/** Gold of each player of a side: what its events paid plus the passive income. */
+const goldOf = (state: MatchState, side: Side) => {
+	const farm = farmed(state.context.rules.economy.passive, state.minute);
+	return state[side].paid.map((gold, i) => gold + (farm[i] as number));
+};
 
 function strength(state: MatchState, side: Side, contest: Contest) {
 	const { profile } = state.context[side];
@@ -101,9 +99,10 @@ export function edge(
 		const points = (blue.get(key) ?? 0) - (red.get(key) ?? 0);
 		if (points !== 0) causes.push({ key, points });
 	}
-	const gold = mul(
-		((state.blue.gold - state.red.gold) * GOLD_POINTS) as Fixed,
-		goldWeight(state) as Fixed,
+	const gold = goldLead(
+		goldOf(state, "blue"),
+		goldOf(state, "red"),
+		state.context.rules,
 	);
 	if (gold !== 0) causes.push({ key: "gold", points: gold });
 	const total = causes.reduce((sum, c) => sum + c.points, 0);

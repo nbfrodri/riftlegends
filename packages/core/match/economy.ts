@@ -1,4 +1,10 @@
-import { type MatchEvent, ROLES, type Role } from "@rift-legends/contracts";
+import {
+	type MatchContent,
+	type MatchEvent,
+	ROLES,
+	type Role,
+	type Side,
+} from "@rift-legends/contracts";
 import { SCALE } from "../math";
 
 /** Integer division of non-negative numbers, rounding down. */
@@ -36,11 +42,11 @@ const EQUAL = weightsOf({ top: 1, jungle: 1, mid: 1, bot: 1, support: 1 });
  * support farms little; the ADC the most. Calibrated by K7.
  */
 export const FARM_SHARE: Record<Role, number> = {
-	top: 1950,
-	jungle: 2100,
-	mid: 2050,
-	bot: 2550,
-	support: 1350,
+	top: 1660,
+	jungle: 2560,
+	mid: 1800,
+	bot: 2720,
+	support: 1260,
 };
 
 /** Who farms a lane: the bottom lane is the ADC's, with a taste for the support. */
@@ -65,6 +71,55 @@ export function restOfEvent(
 		return byLane.map((n, i) => n + (shared[i] as number));
 	}
 	return split(amount, EQUAL);
+}
+
+/** Where a player plays: its side and its index in `ROLES`. */
+export interface Slot {
+	readonly side: Side;
+	readonly index: number;
+}
+
+/**
+ * Gold each player earned in one event, by side and role (the passive income
+ * is not here): kills and assists pay who made them, each side from what it
+ * earned in the event and never more; the rest goes by `restOfEvent`.
+ */
+export function paidByRole(
+	event: MatchEvent,
+	slots: ReadonlyMap<string, Slot>,
+	economy: MatchContent["rules"]["economy"],
+): Record<Side, number[]> {
+	const paid = { blue: ROLES.map(() => 0), red: ROLES.map(() => 0) };
+	const left = { blue: event.gold.blue, red: event.gold.red };
+	const pay = (side: Side, slot: Slot, amount: number) => {
+		const given = amount < left[side] ? amount : left[side];
+		paid[slot.side][slot.index] =
+			(paid[slot.side][slot.index] as number) + given;
+		left[side] -= given;
+	};
+	for (const k of event.kills) {
+		const killer = slots.get(k.killer);
+		// In a fight both sides can score: a kill is its killer's side's.
+		const side = killer?.side ?? event.side;
+		if (killer) pay(side, killer, economy.kill);
+		// One bag per kill, split among the assistants; the first takes the rest.
+		const share = div(economy.assist, k.assists.length || 1);
+		for (const [index, id] of k.assists.entries()) {
+			const helper = slots.get(id);
+			if (helper)
+				pay(
+					side,
+					helper,
+					index === 0 ? economy.assist - share * (k.assists.length - 1) : share,
+				);
+		}
+	}
+	for (const side of ["blue", "red"] as const) {
+		restOfEvent(event, left[side]).forEach((gold, i) => {
+			paid[side][i] = (paid[side][i] as number) + gold;
+		});
+	}
+	return paid;
 }
 
 /** Passive income of `minutes`, by role. */

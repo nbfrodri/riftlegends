@@ -7,7 +7,7 @@ import {
 } from "@rift-legends/contracts";
 import { SCALE } from "../math";
 import { clamp } from "../math/int";
-import { farmed, restOfEvent, splitDamage } from "./economy";
+import { farmed, paidByRole, type Slot, splitDamage } from "./economy";
 import { minuteOf } from "./state";
 
 export type { EventFact } from "./explain";
@@ -57,8 +57,6 @@ interface Line {
 	kills: number;
 	deaths: number;
 	assists: number;
-	/** Kill and assist gold only; the rest of the gold is added at the end. */
-	gold: number;
 	damage: number;
 }
 
@@ -75,10 +73,12 @@ export function trackPlayerStats(
 		ROLES.map((role) => ({ side, role, player: teams[side].players[role] })),
 	);
 	const lines = new Map<string, Line>();
+	const slotOf = new Map<string, Slot>();
 	const sideOf = new Map<string, Side>();
-	for (const { player, side } of slots) {
-		lines.set(player, { kills: 0, deaths: 0, assists: 0, gold: 0, damage: 0 });
+	for (const { player, side, role } of slots) {
+		lines.set(player, { kills: 0, deaths: 0, assists: 0, damage: 0 });
 		sideOf.set(player, side);
+		slotOf.set(player, { side, index: ROLES.indexOf(role) });
 	}
 	const rest = {
 		blue: ROLES.map(() => 0),
@@ -88,49 +88,32 @@ export function trackPlayerStats(
 
 	const record = (event: MatchEvent) => {
 		const winner = event.side;
-		// Each side pays its own killers from what it earned in the event, and
-		// never more, so the shared rest stays >= 0.
-		const left = { blue: event.gold.blue, red: event.gold.red };
-		const pay = (side: Side, line: Line, amount: number) => {
-			const given = amount < left[side] ? amount : left[side];
-			line.gold += given;
-			left[side] -= given;
-		};
+		const paid = paidByRole(event, slotOf, rules.economy);
+		for (const side of SIDES) {
+			paid[side].forEach((gold, i) => {
+				rest[side][i] = (rest[side][i] as number) + gold;
+			});
+		}
 		for (const k of event.kills) {
 			// In a fight both sides can score: a kill is its killer's side's.
-			const side = sideOf.get(k.killer) ?? winner;
-			teamKills[side] += 1;
+			teamKills[sideOf.get(k.killer) ?? winner] += 1;
 			const killer = lines.get(k.killer);
 			if (killer) {
 				killer.kills += 1;
 				killer.damage += DAMAGE.kill;
-				pay(side, killer, rules.economy.kill);
 			}
 			const victim = lines.get(k.victim);
 			if (victim) {
 				victim.deaths += 1;
 				victim.damage += DAMAGE.death;
 			}
-			// One bag per kill, split among the assistants; the first takes the rest.
-			const bag = rules.economy.assist;
-			const share = div(bag, k.assists.length || 1);
-			for (const [index, id] of k.assists.entries()) {
+			for (const id of k.assists) {
 				const helper = lines.get(id);
 				if (helper) {
 					helper.assists += 1;
 					helper.damage += DAMAGE.assist;
-					pay(
-						side,
-						helper,
-						index === 0 ? bag - share * (k.assists.length - 1) : share,
-					);
 				}
 			}
-		}
-		for (const side of SIDES) {
-			restOfEvent(event, left[side]).forEach((gold, i) => {
-				rest[side][i] = (rest[side][i] as number) + gold;
-			});
 		}
 		if (FIGHTS.has(event.kind)) {
 			for (const { player, side } of slots) {
@@ -165,8 +148,7 @@ export function trackPlayerStats(
 		return slots.map((slot) => {
 			const i = ROLES.indexOf(slot.role);
 			const line = lines.get(slot.player) as Line;
-			const gold =
-				line.gold + (rest[slot.side][i] as number) + (farm[i] as number);
+			const gold = (rest[slot.side][i] as number) + (farm[i] as number);
 			return project(slot, line, gold, bySide[slot.side][i] as number);
 		});
 	};
