@@ -240,6 +240,18 @@ describe("validateFormat, more rules", () => {
 		);
 	});
 
+	it("accepts a double elimination without grand final (GSL) and keeps it required", () => {
+		expect(
+			validateFormat(withStage({ play: { ...double, grandFinal: null } })).ok,
+		).toBe(true);
+		const { grandFinal: _, ...missing } = double;
+		invalidAt(withStage({ play: missing }), "stages.1.play.grandFinal");
+		invalidAt(
+			withStage({ play: { ...double, grandFinal: 2 } }),
+			"stages.1.play.grandFinal",
+		);
+	});
+
 	it("needs one drop per series of each upper round (null = eliminated)", () => {
 		invalidAt(
 			withStage({ play: { ...double, drop: [[0, 0, 0], [1, 1], [3]] } }),
