@@ -61,7 +61,7 @@ const laneRules: readonly Rule[] = [
 		(a, b) => kit(a, "shield") && kit(b, "duel") && b.sustain === 3,
 	],
 	["tankShred", 2, tankShred],
-	["resistVsDamage", 3, resistVsDamage],
+	["resistVsDamage", 2, resistVsDamage],
 	[
 		"splitDuel",
 		2,
@@ -152,7 +152,6 @@ const teamRules: readonly Rule[] = [
 		(a, b) => kit(a, "hook") && !melee(b) && immobile(b) && b.frontline <= 4,
 	],
 	["projectileBlock", 2, projectileBlock],
-	["resistVsDamage", 2, resistVsDamage],
 	["tankShred", 1, tankShred],
 	["antiHeal", 1, antiHeal],
 	["lockdownVsDash", 1, lockdownVsDash],

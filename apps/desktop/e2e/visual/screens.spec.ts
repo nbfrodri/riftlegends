@@ -244,6 +244,18 @@ test.describe("Quick draft", () => {
 				await appWindow.mouse.move(0, 0);
 				await captureScreen(appWindow, "quick-draft-ai-read.png");
 				if (!aiWasOpen) await aiRead.locator("summary").first().click();
+				// #435: a selected champion previews in the picking row until it is
+				// confirmed; with reduced motion it is marked instead of pulsing.
+				await appWindow
+					.getByRole("group", { name: "Campeones", exact: true })
+					.getByRole("button", { disabled: false })
+					.first()
+					.click();
+				await expect(appWindow.locator("[data-pending]")).toContainText(
+					"Eligiendo",
+				);
+				await appWindow.mouse.move(0, 0);
+				await captureScreen(appWindow, "quick-draft-pick-preview.png");
 			}
 			if (screen === "match") {
 				const panel = appWindow.getByRole("radiogroup", { name: "Panel" });

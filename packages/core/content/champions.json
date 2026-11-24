@@ -13,7 +13,10 @@
 		"archetypes": ["tank", "engage"],
 		"cc": 8,
 		"mobility": 5,
-		"frontline": 9
+		"frontline": 9,
+		"kit": ["wombo"],
+		"ccKinds": ["targeted", "area", "knockup"],
+		"split": [100, 0, 0]
 	},
 	{
 		"id": "rimefoil",
@@ -33,7 +36,10 @@
 		"archetypes": ["poke"],
 		"cc": 2,
 		"mobility": 3,
-		"frontline": 1
+		"frontline": 1,
+		"kit": ["aoe", "siege"],
+		"ccKinds": [],
+		"split": [0, 100, 0]
 	},
 	{
 		"id": "saltspire",
@@ -49,7 +55,10 @@
 		"archetypes": ["splitpush"],
 		"cc": 2,
 		"mobility": 6,
-		"frontline": 4
+		"frontline": 4,
+		"kit": ["duel"],
+		"ccKinds": [],
+		"split": [100, 0, 0]
 	},
 	{
 		"id": "mosshelm",
@@ -65,7 +74,10 @@
 		"archetypes": ["tank", "peel"],
 		"cc": 6,
 		"mobility": 3,
-		"frontline": 9
+		"frontline": 9,
+		"kit": ["disengage"],
+		"ccKinds": ["targeted"],
+		"split": [50, 50, 0]
 	},
 	{
 		"id": "siltwing",
@@ -81,7 +93,10 @@
 		"archetypes": ["dive"],
 		"cc": 4,
 		"mobility": 8,
-		"frontline": 4
+		"frontline": 4,
+		"kit": [],
+		"ccKinds": ["skillshot"],
+		"split": [100, 0, 0]
 	},
 	{
 		"id": "quillforge",
@@ -97,7 +112,10 @@
 		"archetypes": ["poke"],
 		"cc": 2,
 		"mobility": 3,
-		"frontline": 1
+		"frontline": 1,
+		"kit": ["aoe", "siege"],
+		"ccKinds": [],
+		"split": [0, 100, 0]
 	},
 	{
 		"id": "urnward",
@@ -117,7 +135,10 @@
 		"archetypes": ["peel"],
 		"cc": 6,
 		"mobility": 3,
-		"frontline": 3
+		"frontline": 3,
+		"kit": ["disengage"],
+		"ccKinds": ["targeted"],
+		"split": [0, 100, 0]
 	},
 	{
 		"id": "fallowhorn",
@@ -133,7 +154,10 @@
 		"archetypes": ["skirmish"],
 		"cc": 3,
 		"mobility": 7,
-		"frontline": 3
+		"frontline": 3,
+		"kit": ["duel"],
+		"ccKinds": ["skillshot"],
+		"split": [50, 50, 0]
 	},
 	{
 		"id": "coalstride",
@@ -149,7 +173,10 @@
 		"archetypes": ["dive"],
 		"cc": 4,
 		"mobility": 8,
-		"frontline": 4
+		"frontline": 4,
+		"kit": [],
+		"ccKinds": ["skillshot"],
+		"split": [100, 0, 0]
 	},
 	{
 		"id": "duskroot",
@@ -165,7 +192,10 @@
 		"archetypes": ["pick"],
 		"cc": 7,
 		"mobility": 5,
-		"frontline": 1
+		"frontline": 1,
+		"kit": ["hook"],
+		"ccKinds": ["targeted", "area"],
+		"split": [0, 100, 0]
 	},
 	{
 		"id": "reedclaw",
@@ -181,7 +211,10 @@
 		"archetypes": ["skirmish"],
 		"cc": 3,
 		"mobility": 7,
-		"frontline": 3
+		"frontline": 3,
+		"kit": ["duel"],
+		"ccKinds": ["skillshot"],
+		"split": [100, 0, 0]
 	},
 	{
 		"id": "bellwisp",
@@ -197,7 +230,10 @@
 		"archetypes": ["poke"],
 		"cc": 2,
 		"mobility": 3,
-		"frontline": 1
+		"frontline": 1,
+		"kit": ["aoe", "siege"],
+		"ccKinds": [],
+		"split": [0, 100, 0]
 	},
 	{
 		"id": "nettleguard",
@@ -213,7 +249,10 @@
 		"archetypes": ["peel"],
 		"cc": 6,
 		"mobility": 3,
-		"frontline": 3
+		"frontline": 3,
+		"kit": ["disengage"],
+		"ccKinds": ["targeted"],
+		"split": [0, 100, 0]
 	},
 	{
 		"id": "chalkmaw",
@@ -229,7 +268,10 @@
 		"archetypes": ["tank"],
 		"cc": 6,
 		"mobility": 2,
-		"frontline": 9
+		"frontline": 9,
+		"kit": [],
+		"ccKinds": ["targeted"],
+		"split": [100, 0, 0]
 	},
 	{
 		"id": "frostdrum",
@@ -249,7 +291,10 @@
 		"archetypes": ["engage"],
 		"cc": 8,
 		"mobility": 5,
-		"frontline": 6
+		"frontline": 6,
+		"kit": [],
+		"ccKinds": ["targeted", "area", "knockup"],
+		"split": [50, 50, 0]
 	},
 	{
 		"id": "ashmoth",
@@ -265,7 +310,10 @@
 		"archetypes": ["carry"],
 		"cc": 1,
 		"mobility": 4,
-		"frontline": 1
+		"frontline": 1,
+		"kit": [],
+		"ccKinds": [],
+		"split": [0, 100, 0]
 	},
 	{
 		"id": "prismoth",
@@ -281,7 +329,10 @@
 		"archetypes": ["poke"],
 		"cc": 2,
 		"mobility": 3,
-		"frontline": 1
+		"frontline": 1,
+		"kit": ["aoe", "siege"],
+		"ccKinds": [],
+		"split": [0, 100, 0]
 	},
 	{
 		"id": "glasswake",
@@ -297,7 +348,10 @@
 		"archetypes": ["poke"],
 		"cc": 2,
 		"mobility": 3,
-		"frontline": 1
+		"frontline": 1,
+		"kit": ["aoe", "siege"],
+		"ccKinds": [],
+		"split": [0, 100, 0]
 	},
 	{
 		"id": "waxblade",
@@ -313,7 +367,10 @@
 		"archetypes": ["dive"],
 		"cc": 4,
 		"mobility": 8,
-		"frontline": 4
+		"frontline": 4,
+		"kit": [],
+		"ccKinds": ["skillshot"],
+		"split": [100, 0, 0]
 	},
 	{
 		"id": "tideglass",
@@ -333,7 +390,10 @@
 		"archetypes": ["carry"],
 		"cc": 1,
 		"mobility": 4,
-		"frontline": 1
+		"frontline": 1,
+		"kit": [],
+		"ccKinds": [],
+		"split": [0, 100, 0]
 	},
 	{
 		"id": "cinderlens",
@@ -349,7 +409,10 @@
 		"archetypes": ["pick"],
 		"cc": 7,
 		"mobility": 5,
-		"frontline": 1
+		"frontline": 1,
+		"kit": ["hook"],
+		"ccKinds": ["targeted", "area"],
+		"split": [50, 50, 0]
 	},
 	{
 		"id": "rushquill",
@@ -365,7 +428,10 @@
 		"archetypes": ["splitpush"],
 		"cc": 2,
 		"mobility": 6,
-		"frontline": 4
+		"frontline": 4,
+		"kit": ["duel"],
+		"ccKinds": [],
+		"split": [100, 0, 0]
 	},
 	{
 		"id": "mistloom",
@@ -381,7 +447,10 @@
 		"archetypes": ["peel"],
 		"cc": 6,
 		"mobility": 3,
-		"frontline": 3
+		"frontline": 3,
+		"kit": ["disengage"],
+		"ccKinds": ["targeted"],
+		"split": [0, 100, 0]
 	},
 	{
 		"id": "silkflare",
@@ -397,7 +466,10 @@
 		"archetypes": ["hypercarry"],
 		"cc": 1,
 		"mobility": 3,
-		"frontline": 0
+		"frontline": 0,
+		"kit": [],
+		"ccKinds": [],
+		"split": [0, 100, 0]
 	},
 	{
 		"id": "suncord",
@@ -413,7 +485,10 @@
 		"archetypes": ["hypercarry"],
 		"cc": 1,
 		"mobility": 3,
-		"frontline": 0
+		"frontline": 0,
+		"kit": [],
+		"ccKinds": [],
+		"split": [100, 0, 0]
 	},
 	{
 		"id": "copperfin",
@@ -429,7 +504,10 @@
 		"archetypes": ["carry"],
 		"cc": 1,
 		"mobility": 4,
-		"frontline": 1
+		"frontline": 1,
+		"kit": [],
+		"ccKinds": [],
+		"split": [100, 0, 0]
 	},
 	{
 		"id": "briarshot",
@@ -445,7 +523,10 @@
 		"archetypes": ["poke"],
 		"cc": 2,
 		"mobility": 3,
-		"frontline": 1
+		"frontline": 1,
+		"kit": ["siege"],
+		"ccKinds": [],
+		"split": [100, 0, 0]
 	},
 	{
 		"id": "spraylark",
@@ -461,7 +542,10 @@
 		"archetypes": ["carry"],
 		"cc": 1,
 		"mobility": 4,
-		"frontline": 1
+		"frontline": 1,
+		"kit": [],
+		"ccKinds": [],
+		"split": [50, 50, 0]
 	},
 	{
 		"id": "rillbow",
@@ -477,7 +561,10 @@
 		"archetypes": ["carry"],
 		"cc": 1,
 		"mobility": 4,
-		"frontline": 1
+		"frontline": 1,
+		"kit": [],
+		"ccKinds": [],
+		"split": [100, 0, 0]
 	},
 	{
 		"id": "starloom",
@@ -493,7 +580,10 @@
 		"archetypes": ["poke"],
 		"cc": 2,
 		"mobility": 3,
-		"frontline": 1
+		"frontline": 1,
+		"kit": ["aoe", "siege"],
+		"ccKinds": [],
+		"split": [0, 100, 0]
 	},
 	{
 		"id": "whetstone",
@@ -509,7 +599,10 @@
 		"archetypes": ["skirmish"],
 		"cc": 3,
 		"mobility": 7,
-		"frontline": 3
+		"frontline": 3,
+		"kit": ["duel"],
+		"ccKinds": ["skillshot"],
+		"split": [100, 0, 0]
 	},
 	{
 		"id": "hushwire",
@@ -525,7 +618,10 @@
 		"archetypes": ["pick"],
 		"cc": 7,
 		"mobility": 5,
-		"frontline": 1
+		"frontline": 1,
+		"kit": ["hook"],
+		"ccKinds": ["targeted", "area"],
+		"split": [50, 50, 0]
 	},
 	{
 		"id": "shellward",
@@ -541,7 +637,10 @@
 		"archetypes": ["peel"],
 		"cc": 6,
 		"mobility": 3,
-		"frontline": 3
+		"frontline": 3,
+		"kit": ["disengage"],
+		"ccKinds": ["targeted"],
+		"split": [0, 100, 0]
 	},
 	{
 		"id": "bronzehook",
@@ -557,7 +656,10 @@
 		"archetypes": ["engage"],
 		"cc": 8,
 		"mobility": 5,
-		"frontline": 6
+		"frontline": 6,
+		"kit": [],
+		"ccKinds": ["targeted", "area", "knockup"],
+		"split": [100, 0, 0]
 	},
 	{
 		"id": "riftchime",
@@ -573,7 +675,10 @@
 		"archetypes": ["poke"],
 		"cc": 2,
 		"mobility": 3,
-		"frontline": 1
+		"frontline": 1,
+		"kit": ["aoe", "siege"],
+		"ccKinds": [],
+		"split": [0, 100, 0]
 	},
 	{
 		"id": "fenveil",
@@ -589,7 +694,10 @@
 		"archetypes": ["utility"],
 		"cc": 5,
 		"mobility": 3,
-		"frontline": 2
+		"frontline": 2,
+		"kit": ["vision"],
+		"ccKinds": ["targeted"],
+		"split": [0, 100, 0]
 	},
 	{
 		"id": "amberwall",
@@ -605,7 +713,10 @@
 		"archetypes": ["tank"],
 		"cc": 6,
 		"mobility": 2,
-		"frontline": 9
+		"frontline": 9,
+		"kit": [],
+		"ccKinds": ["targeted"],
+		"split": [0, 100, 0]
 	},
 	{
 		"id": "mirethorn",
@@ -621,7 +732,10 @@
 		"archetypes": ["pick"],
 		"cc": 7,
 		"mobility": 5,
-		"frontline": 1
+		"frontline": 1,
+		"kit": ["hook"],
+		"ccKinds": ["targeted", "area"],
+		"split": [50, 50, 0]
 	},
 	{
 		"id": "dewshroud",
@@ -637,7 +751,10 @@
 		"archetypes": ["peel"],
 		"cc": 6,
 		"mobility": 3,
-		"frontline": 3
+		"frontline": 3,
+		"kit": ["disengage"],
+		"ccKinds": ["targeted"],
+		"split": [0, 100, 0]
 	},
 	{
 		"id": "rushbell",
@@ -653,7 +770,10 @@
 		"archetypes": ["dive"],
 		"cc": 4,
 		"mobility": 8,
-		"frontline": 4
+		"frontline": 4,
+		"kit": [],
+		"ccKinds": ["skillshot"],
+		"split": [100, 0, 0]
 	},
 	{
 		"id": "gravelspan",
@@ -673,7 +793,10 @@
 		"archetypes": ["tank", "engage"],
 		"cc": 8,
 		"mobility": 4,
-		"frontline": 9
+		"frontline": 9,
+		"kit": ["wombo"],
+		"ccKinds": ["targeted", "area", "knockup"],
+		"split": [50, 50, 0]
 	},
 	{
 		"id": "knuckleridge",
@@ -689,7 +812,10 @@
 		"archetypes": ["splitpush", "skirmish"],
 		"cc": 3,
 		"mobility": 6,
-		"frontline": 6
+		"frontline": 6,
+		"kit": ["duel"],
+		"ccKinds": ["skillshot"],
+		"split": [100, 0, 0]
 	},
 	{
 		"id": "varnishgraft",
@@ -709,7 +835,10 @@
 		"archetypes": ["poke", "skirmish"],
 		"cc": 4,
 		"mobility": 5,
-		"frontline": 3
+		"frontline": 3,
+		"kit": ["aoe", "siege", "duel"],
+		"ccKinds": ["skillshot"],
+		"split": [0, 100, 0]
 	},
 	{
 		"id": "spindlehusk",
@@ -725,7 +854,10 @@
 		"archetypes": ["tank", "peel"],
 		"cc": 7,
 		"mobility": 2,
-		"frontline": 9
+		"frontline": 9,
+		"kit": ["disengage"],
+		"ccKinds": ["targeted", "area"],
+		"split": [0, 100, 0]
 	},
 	{
 		"id": "brassburrow",
@@ -745,7 +877,10 @@
 		"archetypes": ["dive"],
 		"cc": 4,
 		"mobility": 8,
-		"frontline": 5
+		"frontline": 5,
+		"kit": [],
+		"ccKinds": ["skillshot"],
+		"split": [100, 0, 0]
 	},
 	{
 		"id": "shalefurrow",
@@ -761,7 +896,10 @@
 		"archetypes": ["splitpush"],
 		"cc": 2,
 		"mobility": 5,
-		"frontline": 5
+		"frontline": 5,
+		"kit": ["duel"],
+		"ccKinds": [],
+		"split": [50, 50, 0]
 	},
 	{
 		"id": "rootthimble",
@@ -781,7 +919,10 @@
 		"archetypes": ["engage", "tank"],
 		"cc": 8,
 		"mobility": 6,
-		"frontline": 7
+		"frontline": 7,
+		"kit": ["wombo"],
+		"ccKinds": ["targeted", "area", "knockup"],
+		"split": [0, 100, 0]
 	},
 	{
 		"id": "sootplume",
@@ -797,7 +938,10 @@
 		"archetypes": ["carry", "skirmish"],
 		"cc": 3,
 		"mobility": 7,
-		"frontline": 2
+		"frontline": 2,
+		"kit": ["duel"],
+		"ccKinds": ["skillshot"],
+		"split": [0, 100, 0]
 	},
 	{
 		"id": "cleftmantle",
@@ -817,7 +961,10 @@
 		"archetypes": ["dive", "engage"],
 		"cc": 6,
 		"mobility": 8,
-		"frontline": 5
+		"frontline": 5,
+		"kit": [],
+		"ccKinds": ["targeted"],
+		"split": [50, 50, 0]
 	},
 	{
 		"id": "gutterglen",
@@ -833,7 +980,10 @@
 		"archetypes": ["pick", "skirmish"],
 		"cc": 5,
 		"mobility": 7,
-		"frontline": 3
+		"frontline": 3,
+		"kit": ["hook", "duel"],
+		"ccKinds": ["targeted"],
+		"split": [100, 0, 0]
 	},
 	{
 		"id": "tallowstalk",
@@ -849,7 +999,10 @@
 		"archetypes": ["pick"],
 		"cc": 6,
 		"mobility": 5,
-		"frontline": 2
+		"frontline": 2,
+		"kit": ["hook"],
+		"ccKinds": ["targeted"],
+		"split": [0, 100, 0]
 	},
 	{
 		"id": "kettlesheaf",
@@ -865,7 +1018,10 @@
 		"archetypes": ["tank", "peel"],
 		"cc": 6,
 		"mobility": 3,
-		"frontline": 8
+		"frontline": 8,
+		"kit": ["disengage"],
+		"ccKinds": ["targeted"],
+		"split": [100, 0, 0]
 	},
 	{
 		"id": "mercurypane",
@@ -885,7 +1041,10 @@
 		"archetypes": ["carry", "hypercarry"],
 		"cc": 2,
 		"mobility": 4,
-		"frontline": 1
+		"frontline": 1,
+		"kit": [],
+		"ccKinds": [],
+		"split": [0, 100, 0]
 	},
 	{
 		"id": "oxbloodink",
@@ -901,7 +1060,10 @@
 		"archetypes": ["dive", "pick"],
 		"cc": 4,
 		"mobility": 9,
-		"frontline": 2
+		"frontline": 2,
+		"kit": ["hook"],
+		"ccKinds": ["skillshot"],
+		"split": [100, 0, 0]
 	},
 	{
 		"id": "seamseer",
@@ -921,7 +1083,10 @@
 		"archetypes": ["peel", "utility"],
 		"cc": 7,
 		"mobility": 4,
-		"frontline": 2
+		"frontline": 2,
+		"kit": ["disengage", "vision"],
+		"ccKinds": ["targeted", "area"],
+		"split": [0, 100, 0]
 	},
 	{
 		"id": "fumeledger",
@@ -937,7 +1102,10 @@
 		"archetypes": ["poke"],
 		"cc": 3,
 		"mobility": 3,
-		"frontline": 1
+		"frontline": 1,
+		"kit": ["aoe", "siege"],
+		"ccKinds": ["skillshot"],
+		"split": [0, 100, 0]
 	},
 	{
 		"id": "thistledial",
@@ -957,7 +1125,10 @@
 		"archetypes": ["splitpush", "skirmish"],
 		"cc": 3,
 		"mobility": 6,
-		"frontline": 4
+		"frontline": 4,
+		"kit": ["duel"],
+		"ccKinds": ["skillshot"],
+		"split": [50, 50, 0]
 	},
 	{
 		"id": "vellumkiln",
@@ -973,7 +1144,10 @@
 		"archetypes": ["pick"],
 		"cc": 6,
 		"mobility": 4,
-		"frontline": 2
+		"frontline": 2,
+		"kit": ["hook"],
+		"ccKinds": ["targeted"],
+		"split": [0, 100, 0]
 	},
 	{
 		"id": "needlecurrent",
@@ -989,7 +1163,10 @@
 		"archetypes": ["carry", "skirmish"],
 		"cc": 2,
 		"mobility": 7,
-		"frontline": 1
+		"frontline": 1,
+		"kit": ["duel"],
+		"ccKinds": [],
+		"split": [100, 0, 0]
 	},
 	{
 		"id": "lanternspool",
@@ -1009,7 +1186,10 @@
 		"archetypes": ["poke", "carry"],
 		"cc": 3,
 		"mobility": 3,
-		"frontline": 1
+		"frontline": 1,
+		"kit": ["aoe", "siege"],
+		"ccKinds": ["skillshot"],
+		"split": [0, 100, 0]
 	},
 	{
 		"id": "marrowshuttle",
@@ -1025,7 +1205,10 @@
 		"archetypes": ["hypercarry"],
 		"cc": 1,
 		"mobility": 4,
-		"frontline": 1
+		"frontline": 1,
+		"kit": [],
+		"ccKinds": [],
+		"split": [50, 50, 0]
 	},
 	{
 		"id": "starlingflint",
@@ -1041,7 +1224,10 @@
 		"archetypes": ["pick", "carry"],
 		"cc": 5,
 		"mobility": 5,
-		"frontline": 2
+		"frontline": 2,
+		"kit": ["hook"],
+		"ccKinds": ["targeted"],
+		"split": [100, 0, 0]
 	},
 	{
 		"id": "pumicesong",
@@ -1061,7 +1247,10 @@
 		"archetypes": ["poke", "utility"],
 		"cc": 5,
 		"mobility": 3,
-		"frontline": 2
+		"frontline": 2,
+		"kit": ["siege", "vision"],
+		"ccKinds": ["targeted"],
+		"split": [0, 100, 0]
 	},
 	{
 		"id": "anvilskate",
@@ -1077,7 +1266,10 @@
 		"archetypes": ["carry"],
 		"cc": 1,
 		"mobility": 6,
-		"frontline": 1
+		"frontline": 1,
+		"kit": [],
+		"ccKinds": [],
+		"split": [100, 0, 0]
 	},
 	{
 		"id": "sporebastion",
@@ -1097,7 +1289,10 @@
 		"archetypes": ["tank", "peel"],
 		"cc": 8,
 		"mobility": 3,
-		"frontline": 9
+		"frontline": 9,
+		"kit": ["disengage"],
+		"ccKinds": ["targeted", "area"],
+		"split": [0, 100, 0]
 	},
 	{
 		"id": "hingebloom",
@@ -1113,7 +1308,10 @@
 		"archetypes": ["engage", "pick"],
 		"cc": 9,
 		"mobility": 5,
-		"frontline": 6
+		"frontline": 6,
+		"kit": ["hook"],
+		"ccKinds": ["targeted", "area", "knockup"],
+		"split": [100, 0, 0]
 	},
 	{
 		"id": "cirrusspindle",
@@ -1129,7 +1327,10 @@
 		"archetypes": ["peel", "utility"],
 		"cc": 6,
 		"mobility": 5,
-		"frontline": 2
+		"frontline": 2,
+		"kit": ["disengage", "vision"],
+		"ccKinds": ["targeted"],
+		"split": [0, 100, 0]
 	},
 	{
 		"id": "gildedbrine",
@@ -1145,7 +1346,10 @@
 		"archetypes": ["poke", "pick"],
 		"cc": 6,
 		"mobility": 3,
-		"frontline": 2
+		"frontline": 2,
+		"kit": ["aoe", "siege", "hook"],
+		"ccKinds": ["targeted"],
+		"split": [0, 100, 0]
 	},
 	{
 		"id": "wickerhollow",
@@ -1161,7 +1365,10 @@
 		"archetypes": ["engage", "dive"],
 		"cc": 7,
 		"mobility": 8,
-		"frontline": 5
+		"frontline": 5,
+		"kit": [],
+		"ccKinds": ["targeted", "area", "knockup"],
+		"split": [50, 50, 0]
 	},
 	{
 		"id": "dovetailmote",
@@ -1177,6 +1384,9 @@
 		"archetypes": ["utility", "peel"],
 		"cc": 4,
 		"mobility": 4,
-		"frontline": 2
+		"frontline": 2,
+		"kit": ["disengage", "vision"],
+		"ccKinds": ["skillshot"],
+		"split": [0, 100, 0]
 	}
 ]
