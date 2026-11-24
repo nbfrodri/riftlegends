@@ -122,6 +122,7 @@ function findMatching<T>(
 }
 
 const UINT32_MAX = 0xffffffff;
+const pairKey = (a: string, b: string) => (a < b ? `${a}|${b}` : `${b}|${a}`);
 
 /** Round-1 pots by seed: four equal pots meet 1 v 4 and 2 v 3; other sizes split top and bottom half. */
 function potOf(rank: number, size: number): number {
@@ -145,6 +146,9 @@ export function pairSwissRound(
 	if (active.length === 0) return null;
 
 	const round = played.length + 1;
+	const met = new Set(
+		played.flat().map(({ winner, loser }) => pairKey(winner, loser)),
+	);
 	const record = (id: string) => rows.get(id) as SwissRow;
 	const sameRecord = (a: string, b: string) =>
 		record(a).wins === record(b).wins && record(a).losses === record(b).losses;
@@ -180,7 +184,10 @@ export function pairSwissRound(
 				)
 			);
 		}
-		return sameRecord(x.id, y.id);
+		return (
+			sameRecord(x.id, y.id) &&
+			!(rules.avoid.includes("rematch") && met.has(pairKey(x.id, y.id)))
+		);
 	});
 	if (matching === null) throw new RangeError("Swiss round cannot be paired");
 	return {
