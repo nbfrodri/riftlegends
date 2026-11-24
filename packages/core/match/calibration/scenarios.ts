@@ -37,7 +37,7 @@ const primaryPools = (draft: typeof packagedDraftContent) =>
 	);
 
 /** Two average teams; `edge` adds to every attribute of team "a". */
-export function scenario(edge: number, seed: number, pool: Pool): MatchSetup {
+function scenario(edge: number, seed: number, pool: Pool): MatchSetup {
 	const { draft: control, match } = syntheticContent(POOL, ["a", "b"]);
 	const packaged = pool !== "control";
 	const source =

@@ -1,8 +1,7 @@
 import type { Side } from "@rift-legends/contracts";
 import { type Fixed, mul } from "../../math";
-import { farmed } from "../economy";
 import type { CONTESTS, Scored } from "../profile";
-import { type MatchState, SOUL } from "../state";
+import { LANES, type MatchState, SOUL } from "../state";
 import { chance } from "./chance";
 import { goldLead } from "./gold";
 
@@ -10,6 +9,12 @@ type Contest = (typeof CONTESTS)[number];
 
 /** Points of each buff in the contests it helps. Balance constants. */
 const DRAGON_POINTS = 20_000;
+/**
+ * Points per rival nexus tower or inhibitor down: once a base is open the
+ * side that opened it decides the game, so equal tower trades end with the
+ * leader ahead in gold too (K9).
+ */
+const STRUCTURE_POINTS = 1_300_000;
 const SOUL_POINTS = 60_000;
 const BUFF_POINTS: Record<
 	"herald" | "baron" | "elder",
@@ -54,6 +59,11 @@ function strength(state: MatchState, side: Side, contest: Contest) {
 		own.fightPushAt === state.minute
 	)
 		add("fight", FIGHT_PUSH_POINTS);
+	const rival = state[side === "blue" ? "red" : "blue"];
+	const base =
+		rival.nexusTowers +
+		LANES.filter((lane) => rival.inhibitors[lane] > state.minute).length;
+	if (contest === "siege") add("structures", base * STRUCTURE_POINTS);
 	add("dragons", own.dragons * DRAGON_POINTS);
 	if (own.dragons >= SOUL) add("soul", SOUL_POINTS);
 	for (const buff of ["herald", "baron", "elder"] as const) {
@@ -93,12 +103,7 @@ export function edge(
 		const points = (blue.get(key) ?? 0) - (red.get(key) ?? 0);
 		if (points !== 0) causes.push({ key, points });
 	}
-	const { rules } = state.context;
-	// The passive income is the same for both sides; each player farms a share.
-	const farm = farmed(rules.economy.passive, state.minute);
-	const goldOf = (side: Side) =>
-		state[side].paid.map((gold, i) => gold + (farm[i] as number));
-	const gold = goldLead(goldOf("blue"), goldOf("red"), rules);
+	const gold = goldLead(state.blue.paid, state.red.paid, state.context.rules);
 	if (gold !== 0) causes.push({ key: "gold", points: gold });
 	const total = causes.reduce((sum, c) => sum + c.points, 0);
 	// Both teams affect how decisive the contest is, independently of who leads.

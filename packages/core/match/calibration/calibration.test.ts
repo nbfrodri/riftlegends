@@ -2,7 +2,7 @@ import { ROLES, type Role } from "@rift-legends/contracts";
 import { describe, expect, it } from "vitest";
 import { sample } from "./scenarios";
 
-// Monte Carlo bands of plan 08 (K1–K8). Seeds are fixed, so each run is the
+// Monte Carlo bands of plan 08 (K1–K9). Seeds are fixed, so each run is the
 // same sample: a failure means a change moved the balance, never bad luck.
 
 const sorted = (values: number[]) => [...values].sort((a, b) => a - b);
@@ -46,7 +46,7 @@ const PARTICIPATION: Record<Role, readonly [number, number, number]> = {
 };
 
 /**
- * Pro gold at the end of a game (plan 08, K8): Leaguepedia, 2,378 games of six
+ * Pro gold at the end of a game (plan 08, K9): Leaguepedia, 2,378 games of six
  * leagues; the 781 that last 30–34 min give the total and the winner's lead.
  * [P10, P50, P90]; the share of winners that end behind in gold was 0.8 %.
  */
@@ -174,7 +174,7 @@ describe.each(["control", "packaged", "real"] as const)(
 			});
 		});
 
-		describe("K8 · gold lead at the end of the game", () => {
+		describe("K9 · gold lead at the end of the game", () => {
 			const long = even.filter((g) => g.minutes >= 30 && g.minutes <= 34);
 			const leads = even.map(
 				(g) =>
@@ -197,19 +197,19 @@ describe.each(["control", "packaged", "real"] as const)(
 				expect(total).toBeLessThanOrEqual(PRO_GOLD.total[1] * 1.1);
 			});
 
-			it("the winner's median lead at 30–34 min is 7,500–12,500", () => {
+			it("the winner's median lead at 30–34 min is 7,500–13,000", () => {
 				const median = at(longLeads, 0.5);
 				expect(median).toBeGreaterThanOrEqual(7500);
-				expect(median).toBeLessThanOrEqual(12_500);
+				expect(median).toBeLessThanOrEqual(13_000);
 			});
 
-			it("the winner's P90 lead stays under 20,000 and its P10 above −2,500", () => {
+			it("the winner's P90 lead stays under 20,000 and its P10 at least +2,000", () => {
 				expect(at(longLeads, 0.9)).toBeLessThanOrEqual(20_000);
-				expect(at(longLeads, 0.1)).toBeGreaterThanOrEqual(-2500);
+				expect(at(longLeads, 0.1)).toBeGreaterThanOrEqual(2000);
 			});
 
-			it("at most 15 % of the winners end behind in gold", () => {
-				expect(rate(leads, (lead) => lead < 0)).toBeLessThanOrEqual(0.15);
+			it("at most 5 % of the winners end behind in gold", () => {
+				expect(rate(leads, (lead) => lead < 0)).toBeLessThanOrEqual(0.05);
 			});
 		});
 

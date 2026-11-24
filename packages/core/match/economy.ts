@@ -42,11 +42,11 @@ const EQUAL = weightsOf({ top: 1, jungle: 1, mid: 1, bot: 1, support: 1 });
  * support farms little; the ADC the most. Calibrated by K7.
  */
 export const FARM_SHARE: Record<Role, number> = {
-	top: 1660,
-	jungle: 2560,
-	mid: 1800,
-	bot: 2720,
-	support: 1260,
+	top: 1738,
+	jungle: 2456,
+	mid: 1874,
+	bot: 2662,
+	support: 1270,
 };
 
 /** Who farms a lane: the bottom lane is the ADC's, with a taste for the support. */
@@ -122,9 +122,9 @@ export function paidByRole(
 	return paid;
 }
 
-/** Passive income of `minutes`, by role. */
-export const farmed = (passive: number, minutes: number): number[] =>
-	split(passive * minutes, weightsOf(FARM_SHARE));
+/** Passive income of one minute, by role. */
+export const farmed = (income: number): number[] =>
+	split(income, weightsOf(FARM_SHARE));
 
 /**
  * Damage dealt to champions by role, per 10,000 (plan 08 table, Leaguepedia):

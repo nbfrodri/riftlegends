@@ -85,7 +85,6 @@ export function trackPlayerStats(
 		red: ROLES.map(() => 0),
 	};
 	const teamKills = { blue: 0, red: 0 };
-
 	const record = (event: MatchEvent) => {
 		const winner = event.side;
 		const paid = paidByRole(event, slotOf, rules.economy);
@@ -132,7 +131,9 @@ export function trackPlayerStats(
 			damage: number,
 		) => T,
 	): T[] => {
-		const farm = farmed(rules.economy.passive, minutes);
+		// The same passive income every minute, as the loop pays it.
+		const income = farmed(rules.economy.passive).map((gold) => gold * minutes);
+		const farm = { blue: income, red: income };
 		const bySide = Object.fromEntries(
 			SIDES.map((side) => [
 				side,
@@ -148,7 +149,8 @@ export function trackPlayerStats(
 		return slots.map((slot) => {
 			const i = ROLES.indexOf(slot.role);
 			const line = lines.get(slot.player) as Line;
-			const gold = (rest[slot.side][i] as number) + (farm[i] as number);
+			const gold =
+				(rest[slot.side][i] as number) + (farm[slot.side][i] as number);
 			return project(slot, line, gold, bySide[slot.side][i] as number);
 		});
 	};

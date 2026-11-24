@@ -44,8 +44,8 @@ describe("G1 · every gold has an owner (#347)", () => {
 	});
 
 	it("the passive income goes by role and the support farms the least", () => {
-		const farm = by(farmed(2000, 20));
-		expect(sum(Object.values(farm))).toBe(40_000);
+		const farm = by(farmed(2000));
+		expect(sum(Object.values(farm))).toBe(2000);
 		expect(farm.support).toBeLessThan(farm.top);
 		expect(farm.support).toBeLessThan(farm.jungle);
 		expect(farm.bot).toBeGreaterThan(farm.mid);
