@@ -148,30 +148,24 @@ export function pairSwissRound(
 	const record = (id: string) => rows.get(id) as SwissRow;
 	const sameRecord = (a: string, b: string) =>
 		record(a).wins === record(b).wins && record(a).losses === record(b).losses;
-	const shuffled =
-		round > 1
-			? active
-			: shuffle(
-					createRng(
-						deriveSeed(
-							rootSeed,
-							SCOPES.competition,
-							scope.competition,
-							scope.season,
-							scope.stage,
-							round,
-							UINT32_MAX,
-						),
-					),
-					active,
-				);
+	const shuffled = shuffle(
+		createRng(
+			deriveSeed(
+				rootSeed,
+				SCOPES.competition,
+				scope.competition,
+				scope.season,
+				scope.stage,
+				round,
+				UINT32_MAX,
+			),
+		),
+		active,
+	);
 	const order = [...shuffled].sort(
 		(x, y) =>
 			record(y.id).wins - record(x.id).wins ||
-			record(x.id).losses - record(y.id).losses ||
-			(round === 1
-				? 0
-				: (seedOf.get(x.id) as number) - (seedOf.get(y.id) as number)),
+			record(x.id).losses - record(y.id).losses,
 	);
 	const matching = findMatching(order, (x, y) => {
 		if (round === 1) {
