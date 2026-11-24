@@ -241,7 +241,9 @@ it("frames every portrait in the tier list and in the full list", async () => {
 	expect(tiles.length).toBeGreaterThan(0);
 	for (const tile of tiles)
 		expect(tile.querySelector("[data-portrait-frame]")).not.toBeNull();
-	await user.click(within(viewSwitch()).getByRole("radio", { name: "Full list" }));
+	await user.click(
+		within(viewSwitch()).getByRole("radio", { name: "Full list" }),
+	);
 	const rows = fullList().getAllByRole("button");
 	expect(rows.length).toBeGreaterThan(0);
 	for (const row of rows)
