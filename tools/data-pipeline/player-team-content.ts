@@ -1,6 +1,7 @@
 import type { RealSnapshot } from "@rift-legends/contracts/real-snapshot";
 import { attributeProfiles, playerLevel, type Role } from "./attributes.ts";
 import { careerStrength, type Season } from "./career.ts";
+import { byGames, pool, rolePools } from "./champion-pool.ts";
 import { coachStyles } from "./coach-style.ts";
 import {
 	type LeagueMemberExceptions,
@@ -9,88 +10,16 @@ import {
 } from "./league-members.ts";
 import { eloOf, leagueRating } from "./league-strength.ts";
 import { groupBy } from "./normalization.ts";
+import { nick, uniqueHandles } from "./player-handles.ts";
 import { compare } from "./queries.ts";
 import { seasonOf } from "./season.ts";
 
 type Game = RealSnapshot["games"][number];
 type Team = RealSnapshot["teams"][number];
 
-/** Keeps what the handle schema allows; at most 24 characters. */
-const nick = (text: string) =>
-	text
-		.replace(/[^\p{L}\p{N} ._-]/gu, "")
-		.trim()
-		.slice(0, 24)
-		.trim() || "Player";
-
 const roles: readonly Role[] = ["top", "jungle", "mid", "bot", "support"];
 // On a tie the shotcaller is the player who usually calls the plays.
 const leaderOrder: readonly Role[] = ["mid", "jungle", "support", "top", "bot"];
-const poolSize = 3;
-const maxMains = 3;
-const maxSecondary = 5;
-
-/** Mastery from games played: 40 with none, rising towards 90. Fillers get 30. */
-const masteryFrom = (games: number) =>
-	Math.round(40 + (50 * games) / (games + 6));
-const fillerMastery = 30;
-
-const byGames = (a: [string, number], b: [string, number]) =>
-	b[1] - a[1] || compare(a[0], b[0]);
-
-function rolePools(games: readonly Game[]) {
-	const counts = new Map<Role, Map<string, number>>();
-	for (const line of games.flatMap((game) => game.lines)) {
-		if (!line.role || !line.champion) continue;
-		const roleCounts = counts.get(line.role) ?? new Map<string, number>();
-		roleCounts.set(line.champion, (roleCounts.get(line.champion) ?? 0) + 1);
-		counts.set(line.role, roleCounts);
-	}
-	return (role: Role) =>
-		[...(counts.get(role) ?? [])].sort(byGames).map(([id]) => id);
-}
-
-function pool(played: [string, number][], fillers: readonly string[]) {
-	const known = new Set(played.map(([id]) => id));
-	const extra = fillers.filter((id) => !known.has(id));
-	const total = played.reduce((sum, [, games]) => sum + games, 0);
-	const value = new Map(
-		played.map(([champion, games]) => [champion, masteryFrom(games)]),
-	);
-	if (played.length === 0) {
-		const [a, b, c, d, e] = extra;
-		return {
-			mains: [a, b].flatMap((id) => id ?? []),
-			secondary: [c, d].flatMap((id) => id ?? []),
-			weak: e ? [e] : [],
-			mastery: extra
-				.slice(0, 5)
-				.map((champion) => ({ champion, value: fillerMastery })),
-		};
-	}
-	const mains = played
-		.filter(
-			([, games], index) => index === 0 || (games >= 3 && games / total >= 0.2),
-		)
-		.slice(0, maxMains);
-	const weak = extra.slice(0, Math.max(1, poolSize - played.length));
-	const secondary = played
-		.slice(mains.length, mains.length + maxSecondary)
-		.map(([id]) => id);
-	const named = [...mains.map(([id]) => id), ...secondary];
-	return {
-		mains: mains.map(([id]) => id),
-		secondary,
-		weak,
-		mastery: [
-			...named.map((champion) => ({
-				champion,
-				value: value.get(champion) ?? fillerMastery,
-			})),
-			...weak.map((champion) => ({ champion, value: fillerMastery })),
-		],
-	};
-}
 
 function coachOf(snapshot: RealSnapshot, team: string) {
 	const starts = new Map(
@@ -303,47 +232,6 @@ function build(
 			};
 		});
 	return teams;
-}
-
-/**
- * Handles are unique without regard to case. Players who share one get their
- * team (and, if still equal, their role) appended, so the result does not
- * depend on input order.
- */
-function uniqueHandles<
-	T extends { handle: string; team: string; role: string; id: string },
->(rows: T[], teamNames: ReadonlyMap<string, string>): T[] {
-	const groups = groupBy(rows, (row) => row.handle.toLowerCase());
-	const taken = new Set(
-		[...groups].filter(([, group]) => group.length === 1).map(([name]) => name),
-	);
-	const renamed = new Map<string, string>();
-	for (const group of groups.values()) {
-		if (group.length === 1) continue;
-		for (const row of group) {
-			const team = nick(teamNames.get(row.team) ?? row.team);
-			let handle = `${nick(row.handle).slice(0, 24 - team.length - 1)}.${team}`;
-			const same = group
-				.filter((other) => other.team === row.team)
-				.sort((a, b) => compare(a.id, b.id));
-			if (same.length > 1)
-				handle = `${handle.slice(0, 24 - row.role.length - 1)}.${row.role}`;
-			const twins = same.filter((other) => other.role === row.role);
-			if (twins.length > 1)
-				handle = `${handle.slice(0, 20)}.${twins.indexOf(row) + 1}`;
-			renamed.set(row.id, handle);
-		}
-	}
-	const seen = new Set(taken);
-	for (const handle of renamed.values()) {
-		if (seen.has(handle.toLowerCase()))
-			throw new Error(`Cannot make the handle unique: ${handle}`);
-		seen.add(handle.toLowerCase());
-	}
-	return rows.map((row) => ({
-		...row,
-		handle: renamed.get(row.id) ?? row.handle,
-	}));
 }
 
 export function buildPlayerTeamContent(
