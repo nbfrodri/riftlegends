@@ -483,7 +483,7 @@
 	"draft.board.confirm.pick": "Confirmar elección",
 	"draft.board.playerCard": "Ficha de jugador",
 	"draft.board.playerPortrait": "Retrato de {{handle}}",
-	"draft.board.playerHint": "Pasa el ratón por un jugador para ver sus atributos.",
+	"draft.board.playerHint": "Haz clic en un jugador para ver sus atributos.",
 	"draft.board.lowRelevance": "Importa poco para este rol",
 	"draft.board.pool.title": "Pool de campeones",
 	"draft.board.pool.main": "Principales",
