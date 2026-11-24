@@ -1,10 +1,15 @@
 import type { DraftView, SeriesOptions } from "@rift-legends/contracts";
-import { cleanup, screen, within } from "@testing-library/react";
-import { afterEach, describe, expect, test } from "vitest";
+import { act, cleanup, screen, within } from "@testing-library/react";
+import { useState } from "react";
+import { afterEach, describe, expect, test, vi } from "vitest";
 import { TeamColumn } from "../src/renderer/draft/board/team-column";
+import { pacing } from "../src/renderer/draft/broadcast/pacing";
 import { renderInLocale } from "./render-in-locale";
 
-afterEach(cleanup);
+afterEach(() => {
+	cleanup();
+	vi.restoreAllMocks();
+});
 
 const handles = {
 	top: "Topa",
@@ -140,5 +145,65 @@ describe("#436: fixed ban slots", () => {
 		const [skipped] = slots();
 		expect(skipped?.dataset.banSlot).toBe("skipped");
 		expect(skipped?.textContent).toBe("No ban");
+	});
+});
+
+describe("#436: ban stamp animation", () => {
+	let setBans: (bans: (string | null)[]) => void = () => {};
+	function Harness(props: { bans: (string | null)[] }) {
+		const [bans, set] = useState(props.bans);
+		setBans = set;
+		return (
+			<TeamColumn
+				side="blue"
+				first
+				team={{ team: "forge", bans, picks: [] }}
+				options={options}
+				current={null}
+				onPlayer={() => {}}
+			/>
+		);
+	}
+	const slots = () =>
+		within(screen.getByRole("list", { name: "Bans" })).getAllByRole("listitem");
+	const stamped = () =>
+		slots().map((slot) => slot.querySelector("[data-ban-stamp]"));
+
+	test("only the newly banned slot plays the stamp, timed by the pacing", async () => {
+		await renderInLocale(<Harness bans={["toppy"]} />);
+		expect(stamped().every((stamp) => stamp === null)).toBe(true);
+		act(() => setBans(["toppy", "middy"]));
+		const [first, second] = stamped();
+		expect(first).toBeNull();
+		expect(second).not.toBeNull();
+		expect((second as HTMLElement).style.animationDuration).toBe(
+			`${pacing.banStampMs}ms`,
+		);
+		expect(
+			within(slots()[1] as HTMLElement).getByRole("img", { name: "Middy" }),
+		).toBeTruthy();
+	});
+
+	test("bans already on the board render static, also after a remount", async () => {
+		await renderInLocale(<Harness bans={["toppy", "middy", null]} />);
+		expect(stamped().every((stamp) => stamp === null)).toBe(true);
+		act(() => setBans(["toppy", "middy", null]));
+		expect(stamped().every((stamp) => stamp === null)).toBe(true);
+	});
+
+	test("a skipped ban does not stamp", async () => {
+		await renderInLocale(<Harness bans={["toppy"]} />);
+		act(() => setBans(["toppy", null]));
+		expect(stamped().every((stamp) => stamp === null)).toBe(true);
+	});
+
+	test("with reduced motion a new ban appears in its final state", async () => {
+		const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+		vi.spyOn(media, "matches", "get").mockReturnValue(true);
+		vi.spyOn(window, "matchMedia").mockReturnValue(media);
+		await renderInLocale(<Harness bans={["toppy"]} />);
+		act(() => setBans(["toppy", "middy"]));
+		expect(stamped().every((stamp) => stamp === null)).toBe(true);
+		expect(slots()[1]?.dataset.banSlot).toBe("banned");
 	});
 });
