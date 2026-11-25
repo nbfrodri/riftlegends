@@ -96,9 +96,9 @@ Las letras agrupan por módulo. Cada fila es un test (o varios) que se escribe a
 | # | Comportamiento | Caso límite |
 | --- | --- | --- |
 | C1 | Cada serie tiene un día; ningún equipo juega dos series el mismo día | |
-| C2 | Las fases van en orden y ninguna fase de una liga se solapa con un internacional en el que juegan sus equipos | |
+| C2 | Las fases respetan sus dependencias. Los equipos clasificados no juegan series de liga durante la ventana del internacional | Los grupos independientes de un internacional pueden jugar en paralelo |
 | C3 | Con los formatos reales, cada fase empieza en la semana real de 2026 (fechas del snapshot) | Margen de ±1 semana |
-| C4 | Un formato personalizado más largo se ajusta con más series por día (como máximo 4 por día de partido) dentro de su ventana; la temporada nunca se alarga (decisión 4) | Si aún no cabe, `format-too-long` al crear la carrera, con un mensaje claro y una sugerencia (bajar el Bo, quitar una vuelta) |
+| C4 | Un formato personalizado más largo se ajusta con más series por día (4 en total) dentro de su ventana. La temporada nunca se alarga (decisión 4) | Si aún no cabe, `format-too-long`, con una sugerencia para quitar una vuelta o reducir el número de equipos |
 
 ### Formatos reales (`tools/data-pipeline` y `content/real/formats`)
 
@@ -189,10 +189,11 @@ Reglas del núcleo: sin reloj ni `Math.random`, solo enteros, módulos de unas 3
 
 ### Calendario
 
-- El núcleo cuenta **días enteros desde el inicio de la temporada** (sin fechas reales). La UI pone el año y el mes.
-- Cada fase tiene una **ventana** (semana de inicio, semanas y días de partido por semana). Con los formatos reales, las ventanas salen de `startsOn` y `endsOn` de cada torneo del snapshot.
-- `calendar.ts` reparte las jornadas en los días de partido de la ventana, con 4 series por día como máximo. Si no caben, el formato se rechaza al crear la carrera; la temporada nunca se alarga (C4). Las series de eliminatoria quedan con equipos pendientes hasta que termina la serie que los alimenta (Q5).
-- Los internacionales tienen su ventana; las ligas no programan series de un equipo clasificado durante ella (C2).
+- El **día 0 es el 1 de enero** del año de la temporada. `startWeek × 7` da el primer día de la ventana y el final es exclusivo. El último día disponible es el 31 de diciembre, también en años bisiestos. Las semanas de los internacionales del snapshot ya usan el 1 de enero como origen.
+- `matchDays` limita cuántos días usa una fase en cada semana. El calendario elige esos días dentro de la ventana. Cada día admite hasta **4 series entre todas las competiciones** y cada fase puede fijar un tope menor. Ningún equipo juega dos series el mismo día.
+- `buildCalendar` usa el grafo de fases para comprobar el formato completo antes de crear la temporada. Espera a las fases que aportan resultados y respeta el orden de las fases de liga. En eliminatorias reserva las series pendientes después de las que las alimentan. En Swiss reserva cada ronda hasta conocer sus emparejamientos.
+- Las ligas reservan para los equipos clasificados todo el intervalo entre el comienzo de la primera ventana y el final de la última del internacional, incluidos los descansos. Mientras queden plazas por resolver, la comprobación previa contempla a los posibles clasificados.
+- Cada serie indica su primer día permitido por la ventana y sus dependencias, y el primer día descartado por cada motivo. El calendario prueba otros días si una asignación deja sin sitio a otra serie. Si el formato sigue sin caber, devuelve `format-too-long` (C4). La conexión con `season.create` corresponde al entregable de comandos.
 
 ### Cuadros (`bracket.ts`, #423)
 
@@ -304,7 +305,7 @@ Volumen de un año real: unas **2.400 partidas** de liga en el snapshot, más un
 | 1 | Sección «Competición» y modo Torneo | Plan aparte dentro de la Fase 4, no en este |
 | 2 | Empate en un corte (clasificar o quedar fuera) | Serie de desempate con Bo configurable por formato (Bo1, Bo3 o Bo5); **Bo3 por defecto** en los personalizados y el del reglamento en los reales. Fuera de los cortes, criterios y después sorteo |
 | 3 | Elección de rival en playoffs (LCK, LPL) | **No.** Cuadro fijo por sembrado |
-| 4 | Formato personalizado que no cabe en el calendario | Más series por día, hasta 4. Si aún no cabe, se rechaza al crear la carrera con un mensaje claro y una sugerencia (bajar el Bo, quitar una vuelta). La temporada nunca se alarga |
+| 4 | Formato personalizado que no cabe en el calendario | Más series por día, hasta 4 en total. Si aún no cabe, se rechaza al crear la carrera con una sugerencia para quitar una vuelta o reducir el número de equipos. La temporada nunca se alarga |
 | 5 | Presupuesto de un año IA contra IA | ≤ 60 s en el Arch del usuario; en el CI, un split con un límite proporcional |
 | 6 | Formatos internacionales | El pipeline trae sus páginas de Leaguepedia y se comprueban como las ligas |
 | 7 | Invitados de un solo split | Cada formato se adapta ahora a los equipos de su liga; los invitados de segunda división llegan en la Fase 6 |

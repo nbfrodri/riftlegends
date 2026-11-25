@@ -5,6 +5,7 @@ import type {
 } from "@rift-legends/contracts";
 import { vi } from "vitest";
 import type { AssetsApi } from "../src/shared/bridge";
+import type { CachedSounds } from "../src/shared/sounds";
 
 /** An in-memory asset bridge: no network, every answer under the test's control. */
 export function fakeAssets(
@@ -23,6 +24,7 @@ export function fakeAssets(
 		teamLogos: vi.fn(async (): Promise<Record<string, string>> => ({})),
 		playerPhotos: vi.fn(async (): Promise<Record<string, string>> => ({})),
 		leagueLogos: vi.fn(async (): Promise<Record<string, string>> => ({})),
+		sounds: vi.fn(async (): Promise<CachedSounds> => ({})),
 		sync: vi.fn(() => {
 			current = { state: "syncing", progress: { completed: 0, total: 0 } };
 			return new Promise<AssetStatus>((resolve) => {

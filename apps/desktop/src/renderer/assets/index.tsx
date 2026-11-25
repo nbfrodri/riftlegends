@@ -24,6 +24,8 @@ interface AssetsState {
 	/** The verified champion catalog (names in ES and EN), or null without one. */
 	champions: ChampionCatalog | null;
 	catalogPending: boolean;
+	/** The verified official draft sounds (#472). */
+	sounds: AssetsApi["sounds"];
 }
 
 const AssetsContext = createContext<AssetsState | null>(null);
@@ -149,8 +151,10 @@ export function AssetsProvider(props: { api: AssetsApi; children: ReactNode }) {
 			champions,
 			playerPhotos,
 			catalogPending,
+			sounds: api.sounds,
 		}),
 		[
+			api,
 			status,
 			ready,
 			sync,

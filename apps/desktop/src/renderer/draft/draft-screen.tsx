@@ -1,11 +1,30 @@
+import type { DraftView } from "@rift-legends/contracts";
+import { useEffect, useRef } from "react";
+import { useOptionalAssets } from "../assets";
+import { playSound, preloadSounds } from "../sound";
+import { draftSounds } from "../sound/draft-sounds";
 import { BroadcastScene } from "./broadcast/scene";
 import { PageHeader } from "./page-header";
 import { DraftSessionProvider, useDraftSession } from "./session";
 import { draftStages, stageOf } from "./stages";
 import { TurnControls } from "./turn-controls";
 
+/**
+ * Plays the sound of each ban and pick as it lands (#472). It lives above the
+ * stages so the last pick sounds even though Roles replaces the board.
+ */
+function useDraftSounds(view: DraftView | null, mine: string | null) {
+	const previous = useRef<DraftView | null>(null);
+	useEffect(() => {
+		if (view)
+			for (const id of draftSounds(previous.current, view, mine)) playSound(id);
+		previous.current = view;
+	}, [view, mine]);
+}
+
 function DraftFlow() {
-	const { view, presentation } = useDraftSession();
+	const { view, presentation, mine } = useDraftSession();
+	useDraftSounds(view, mine);
 	const stage = stageOf(view, presentation);
 	const Stage = draftStages[stage];
 	return (
@@ -27,6 +46,9 @@ function DraftFlow() {
 
 /** The `/draft` route: one session, and the sub-screen of the current stage. */
 export function DraftScreen() {
+	const sounds = useOptionalAssets()?.sounds;
+	// Decoded before the board needs them: playing then never waits.
+	useEffect(() => preloadSounds(sounds), [sounds]);
 	return (
 		<DraftSessionProvider>
 			<DraftFlow />

@@ -54,7 +54,7 @@ Rift Legends es una **app de escritorio instalable** (Electron), no una web: tie
 | Transiciones de UI | CSS primero; `motion` | 14.14 | MIT | Entradas, salidas, layout, springs. **Sin GSAP**, porque su licencia no es OSI |
 | Efectos broadcast y minimapa | `pixi.js` | 8.23 | MIT | Capa WebGL2 sobre el DOM, suscrita a los mismos hechos |
 | Pixi dentro de React | `@pixi/react` | 8.0 | MIT | Opcional; se decide en el plan 09 frente a montar Pixi de forma imperativa |
-| Sonido | `howler` | 2.2.4 | MIT | Sin releases desde 2023-09; si da problemas, Web Audio directo |
+| Sonido | `howler` | 2.2.4 | MIT | Sin releases desde 2023-09; si da problemas, Web Audio directo. Los efectos del draft (#472) usan Web Audio directo: howler no trae tipos y cargaría por XHR, que la CSP no permite |
 
 Todas las animaciones respetan `prefers-reduced-motion` y se pueden saltar sin alterar el estado.
 
