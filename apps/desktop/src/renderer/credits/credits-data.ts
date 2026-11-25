@@ -9,7 +9,7 @@ export const riotNotice =
 	"";
 
 export interface Source {
-	id: "leaguepedia" | "communityDragon" | "lolesports";
+	id: "leaguepedia" | "communityDragon" | "lolesports" | "kenney";
 	/** Shown in the source's card when it has no licence link. */
 	badge?: "cache" | "api";
 	name: string;
@@ -37,6 +37,13 @@ export const SOURCES: readonly Source[] = [
 		name: "lolesports.com",
 		url: "https://lolesports.com/",
 		badge: "api",
+	},
+	{
+		id: "kenney",
+		name: "Kenney",
+		url: "https://kenney.nl/assets/cursor-pack",
+		licence: "CC0 1.0",
+		licenceUrl: "https://creativecommons.org/publicdomain/zero/1.0/",
 	},
 ];
 

@@ -7,6 +7,7 @@ import { I18nextProvider } from "react-i18next";
 import { AssetsProvider } from "./assets";
 import { CoreProvider } from "./core";
 import { CoreProbe } from "./core/probe";
+import { initGameCursor } from "./cursor/settings";
 import { initialLocale } from "./language";
 import { createAppRouter } from "./router";
 import { ButtonClickSound } from "./sound/button-click";
@@ -17,6 +18,7 @@ const probe =
 	new URLSearchParams(window.location.search).get("probe") === "core";
 
 async function start(root: HTMLElement) {
+	initGameCursor();
 	const locale = await initialLocale(() => window.riftlegends.systemLocale());
 	const i18n = await createI18n(locale);
 	document.documentElement.lang = i18n.language;

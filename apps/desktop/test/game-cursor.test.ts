@@ -17,14 +17,14 @@ test("the cursors are bundled files, with 1x and 2x images", () => {
 
 test("the arrow is the default cursor with a hotspot and a system fallback", () => {
 	expect(css).toMatch(
-		/--cursor-arrow:\s*image-set\([^)]*arrow\.png[^)]*1x[^)]*arrow@2x\.png[^)]*2x\)\s+\d+\s+\d+,\s*default;/,
+		/--cursor-arrow:\s*image-set\(\s*url\("[^"]*arrow\.png"\)\s*1x,\s*url\("[^"]*arrow@2x\.png"\)\s*2x\s*\)\s+\d+\s+\d+,\s*default;/,
 	);
 	expect(css).toMatch(/cursor:\s*var\(--cursor-arrow\)/);
 });
 
 test("the hand replaces pointer with a pointer fallback", () => {
 	expect(css).toMatch(
-		/--cursor-pointer:\s*image-set\([^)]*pointer\.png[^)]*1x[^)]*pointer@2x\.png[^)]*2x\)\s+\d+\s+\d+,\s*pointer;/,
+		/--cursor-pointer:\s*image-set\(\s*url\("[^"]*pointer\.png"\)\s*1x,\s*url\("[^"]*pointer@2x\.png"\)\s*2x\s*\)\s+\d+\s+\d+,\s*pointer;/,
 	);
 	expect(css).toMatch(
 		/@utility cursor-pointer\s*\{\s*cursor:\s*var\(--cursor-pointer,\s*pointer\);/,
