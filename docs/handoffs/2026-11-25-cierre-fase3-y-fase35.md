@@ -23,7 +23,7 @@ Decisiones en el [registro](../decisions/README.md). Reglas del usuario: respues
 | #562 relleno y nacionalidades | PR #566, aprobado y en la cola | — |
 | #557 cuelgues de caché en Windows | PR #569, aprobado y en la cola | — |
 | #536 momento clave cortado | PR #571, aprobado y en la cola; #572 (partida desborda 36 px con nombres largos) abierto | — |
-| #568 plantillas de lolesports | rama feat/568-lolesports-starters en `../riftlegends-568`, terminada y con `verify` en verde; criterio y 9 titulares nuevos (LCP y CBLOL) **aprobados por el usuario** | tras fusionar #566: `git merge origin/main`, regenerar snapshot si choca, verify, PR con `Closes #568` y encolar |
+| #568 plantillas de lolesports | PR #575 aprobado, en la cola tras #574 | — |
 | #546 cerrar «Lectura de la IA» con clic fuera | PR #564, aprobado y en la cola | — |
 | #550 causas sin traducir | PR #565, aprobado y en la cola | — |
 
@@ -56,5 +56,13 @@ Para Codex: leer `r<N>.json`, comprobar con `tack codex-used <thread_id>` (prime
 | test Q4 lento | test/snapshot-q4-speed | fusionado (#541) |
 | #535 reglas LEC y LCK Cup | feat/535-lec-lck-cup-rules | fusionado (#543) |
 | #546, #550 | ver arriba | en curso |
-| #525 refactor (gpt-6.2-sol medium, verificado con `tack codex-used`) | refactor/525-split-modules en `../riftlegends-525` | PR #573 abierto (verify en verde); falta ver capturas del CI y visto bueno |
-| #428 temporada en el dispatcher (gpt-6.2-sol medium, verificado) | feat/428-season-dispatcher en `../riftlegends-428` | PR #574 abierto (verify en verde). **Pedir visto bueno al usuario** de 3 decisiones de Codex: cambios de formato solo al año siguiente; Swiss impar: descansa el último por balance y sembrado; desempate que no cabe en la ventana rechaza el día entero. Nota: la clasificación por puntos no cabe en el contrato actual |
+| #525 refactor (gpt-6.2-sol medium, verificado con `tack codex-used`) | refactor/525-split-modules en `../riftlegends-525` | PR #573 abierto, verify en verde; capturas del CI en `~/.cache/rift-tmp/vis-573` pendientes de enseñar al usuario |
+| #428 temporada en el dispatcher | PR #574; 3 decisiones **aprobadas por el usuario** (fila en el registro, 26-11); en la cola (`queue-574.log`) | — |
+
+## Subagentes en marcha (26-11, madrugada)
+
+| Issue | Modelo | Worktree y rama | Base |
+| --- | --- | --- | --- |
+| #572 partida desborda con nombres largos | Opus medium | `../riftlegends-572`, fix/572-match-fit | main |
+| #481 consultas de vista de competición | Sonnet medium | `../riftlegends-481`, feat/481-competition-views | rama de #574; PR solo tras fusionar #574 |
+| #528 tiempos de muerte (Fase 3.5) | Sonnet medium | `../riftlegends-528`, feat/528-death-timers | rama de #573; PR solo tras fusionar #573 |
