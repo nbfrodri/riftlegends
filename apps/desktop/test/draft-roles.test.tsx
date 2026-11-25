@@ -8,12 +8,12 @@ import userEvent from "@testing-library/user-event";
 import { useEffect, useRef } from "react";
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { BroadcastScene } from "../src/renderer/draft/broadcast/scene";
-import { ButtonClickSound } from "../src/renderer/sound/button-click";
 import { RolesScreen } from "../src/renderer/draft/roles-screen";
 import {
 	DraftSessionProvider,
 	useDraftSession,
 } from "../src/renderer/draft/session";
+import { ButtonClickSound } from "../src/renderer/sound/button-click";
 import { namedDraft, renderWithDraftCore } from "./draft-core";
 
 const sound = vi.hoisted(() => ({ play: vi.fn(), preload: vi.fn() }));
