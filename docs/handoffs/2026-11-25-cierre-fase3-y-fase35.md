@@ -56,7 +56,7 @@ Para Codex: leer `r<N>.json`, comprobar con `tack codex-used <thread_id>` (prime
 | test Q4 lento | test/snapshot-q4-speed | fusionado (#541) |
 | #535 reglas LEC y LCK Cup | feat/535-lec-lck-cup-rules | fusionado (#543) |
 | #546, #550 | ver arriba | en curso |
-| #525 refactor (gpt-6.2-sol medium, verificado con `tack codex-used`) | refactor/525-split-modules en `../riftlegends-525` | PR #573 abierto, verify en verde; capturas del CI en `~/.cache/rift-tmp/vis-573` pendientes de enseñar al usuario |
+| #525 refactor (gpt-6.2-sol medium, verificado con `tack codex-used`) | refactor/525-split-modules en `../riftlegends-525` | PR #573 abierto, verify en verde; capturas idénticas a main; **aprobado** y en la cola tras #575 (`queue-573.log`) |
 | #428 temporada en el dispatcher | PR #574; 3 decisiones **aprobadas por el usuario** (fila en el registro, 26-11); en la cola (`queue-574.log`) | — |
 
 ## Subagentes en marcha (26-11, madrugada)
