@@ -21,7 +21,8 @@ const champSelect = `${origin}/16.23/plugins/rcp-fe-lol-champ-select/global/defa
 
 /**
  * The client's champ-select sounds (#472), its small UI click (#493) and the
- * countdown tick it plays in the last 10 s of the player's own ban or pick (#505). Riot's files are downloaded at
+ * countdown tick it plays in the last 10 s of the player's own ban or pick (#505)
+ * and the trade-accepted sound for Roles swaps (#512). Riot's files are downloaded at
  * runtime and never shipped; only their names and digests live here.
  */
 export const championSelectSounds: readonly SoundSource[] = [
@@ -54,6 +55,12 @@ export const championSelectSounds: readonly SoundSource[] = [
 		url: `${champSelect}/sfx-uikit-generic-click-small.ogg`,
 		size: 10_415,
 		sha256: "a8fe953c1944e0ca0b81f19a714c23502d76fd0c6e60e38fa8fa209a85af2c82",
+	},
+	{
+		id: "swap",
+		url: `${champSelect}/sfx-cs-notif-traderequest-accepted.ogg`,
+		size: 52_815,
+		sha256: "1bc989a2f8a1bfc9f109f6015cdd46aca04907543ff3fee7e61871fbc832a052",
 	},
 	{
 		id: "tick",
