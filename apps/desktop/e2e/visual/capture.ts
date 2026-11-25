@@ -92,13 +92,25 @@ async function withoutPointer<T>(
 	page: Page,
 	run: () => Promise<T>,
 ): Promise<T> {
-	const style = await page.addStyleTag({
-		content: "*, *::before, *::after { pointer-events: none !important; }",
+	// A constructed stylesheet: the app's CSP refuses inline <style>.
+	await page.evaluate(() => {
+		const sheet = new CSSStyleSheet();
+		sheet.replaceSync(
+			"*, *::before, *::after { pointer-events: none !important; }",
+		);
+		Object.assign(window, { __noPointer: sheet });
+		document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
 	});
 	try {
 		return await run();
 	} finally {
-		await style.evaluate((element) => (element as Element).remove());
+		await page.evaluate(() => {
+			const sheet = (window as unknown as { __noPointer: CSSStyleSheet })
+				.__noPointer;
+			document.adoptedStyleSheets = document.adoptedStyleSheets.filter(
+				(each) => each !== sheet,
+			);
+		});
 	}
 }
 
