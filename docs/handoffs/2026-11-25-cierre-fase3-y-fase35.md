@@ -22,6 +22,8 @@ Decisiones en el [registro](../decisions/README.md). Reglas del usuario: respues
 | #559 edad del jugador | PR #563, aprobado y en la cola | — |
 | #562 relleno y nacionalidades | PR #566, aprobado y en la cola | — |
 | #557 cuelgues de caché en Windows | subagente Sonnet, `../riftlegends-557` (fix/557-windows-cache-hang) | en curso |
+| #536 momento clave cortado | subagente Opus, `../riftlegends-536` (fix/536-key-moment-clip, desde #534) | en curso |
+| #568 plantillas de lolesports | subagente Sonnet, `../riftlegends-568` (feat/568-lolesports-starters, desde #566) | en curso |
 | #546 cerrar «Lectura de la IA» con clic fuera | PR #564, aprobado y en la cola | — |
 | #550 causas sin traducir | PR #565, aprobado y en la cola | — |
 
