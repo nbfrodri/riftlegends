@@ -571,3 +571,70 @@ describe("competition errors (V7)", () => {
 		expect(en["errors.format-too-long"]).toMatch(/Bo|round/);
 	});
 });
+
+describe("#535 competition rules", () => {
+	const cup = {
+		type: "groups",
+		size: 8,
+		count: 2,
+		seeding: "cross",
+		inner: { rounds: 1, bestOf: 3 },
+		finalRound: { bestOf: 5, groupPoints: 2, week: 2 },
+	};
+
+	it("accepts the LEC criteria and keeps the default Bo3", () => {
+		const { tiebreakerBestOf: _, ...c } = league();
+		const tiebreak = [
+			"seriesWins",
+			"headToHead",
+			"priorSplitRank",
+			"strengthOfVictory",
+			"victoryTime",
+			"tiebreakerSeries",
+			"draw",
+		];
+		expect(validateFormat({ ...c, tiebreak })).toMatchObject({
+			ok: true,
+			competition: { tiebreak, tiebreakerBestOf: 3 },
+		});
+	});
+
+	it("accepts a last cross-group round and winner/loser group standings sources", () => {
+		const c = league();
+		expect(
+			validateFormat({
+				...c,
+				stages: [
+					{ ...c.stages[0], play: cup },
+					{
+						...c.stages[1],
+						entrants: [
+							{
+								kind: "standing",
+								stage: "regular",
+								from: 1,
+								to: 2,
+								group: "winner",
+							},
+							{
+								kind: "standing",
+								stage: "regular",
+								from: 1,
+								to: 1,
+								group: "loser",
+							},
+						],
+					},
+				],
+			}),
+		).toMatchObject({ ok: true });
+	});
+
+	it("rejects a special final round outside two equal cross-groups", () => {
+		invalidAt(withPlay({ ...cup, size: 7 }), "stages.0.play.finalRound");
+		invalidAt(
+			withPlay({ ...cup, seeding: "snake" }),
+			"stages.0.play.finalRound",
+		);
+	});
+});

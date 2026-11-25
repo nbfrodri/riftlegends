@@ -23,6 +23,8 @@ export type CargoRow = Readonly<Record<string, string | null>>;
 const cargoLimit = 500;
 const cargoInterval = 11_000;
 const lolesportsInterval = 1_000;
+/** Riot timeline pages are about 700 KB each: one every two seconds. */
+const timelineInterval = 2_000;
 const userAgent = "RiftLegendsDataPipeline/0.1";
 
 /**
@@ -48,6 +50,8 @@ function requestHeaders(url: string): Record<string, string> {
 function interval(url: string) {
 	const parsed = new URL(url);
 	if (parsed.searchParams.get("action") === "cargoquery") return cargoInterval;
+	if (parsed.searchParams.get("titles")?.startsWith("V5 data:"))
+		return timelineInterval;
 	return lolesportsHosts.has(parsed.hostname) ? lolesportsInterval : 0;
 }
 

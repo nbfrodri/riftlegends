@@ -133,11 +133,12 @@ export function PickArt(props: { id: string; label: string }) {
 
 /**
  * The tile fallback in its own box, 3/5 of the row (70.6 % of the splash
- * box): the square tile is framed for that width (#438).
+ * box): the square tile is framed for that width (#438). The box starts inside
+ * the row's fade, so it fades in from its own left edge too (#549).
  */
 function TileArt(props: { id: string; label: string }) {
 	return (
-		<span className="absolute inset-y-0 right-0 flex w-[70.6%] overflow-hidden [container-type:size]">
+		<span className="absolute inset-y-0 right-0 flex w-[70.6%] overflow-hidden [container-type:size] [mask-image:linear-gradient(to_right,transparent,#000_45%)]">
 			<TileFraming {...props} />
 		</span>
 	);

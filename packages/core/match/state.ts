@@ -14,6 +14,7 @@ import { deriveSeed } from "../rng/seeds";
 import { createRng } from "../rng/streams";
 import { roleWeights } from "./attribution/weights";
 import { farmed, paidByRole, type Slot } from "./economy";
+import { type MatchPlays, startPlays } from "./events";
 import type { MentalEdge } from "./mental";
 import { type Lineup, type Profile, profiles } from "./profile";
 
@@ -49,6 +50,8 @@ interface SideContext {
 	readonly players: Readonly<Record<Role, string>>;
 	/** The `vision` attribute of each role's player (issue #499). */
 	readonly vision: Readonly<Record<Role, number>>;
+	/** Mechanics and objective control of the jungler, combined for Smite. */
+	readonly smite: number;
 	/** Weight of each role to score and to assist a kill (issue #346). */
 	readonly attribution: Readonly<
 		Record<Role, { kill: number; assist: number }>
@@ -108,6 +111,7 @@ export interface MatchState {
 	/** Minute from which each objective can be taken. */
 	readonly objectives: Readonly<Record<Objective | "grub", number>>;
 	readonly winner: Side | null;
+	readonly plays: MatchPlays;
 }
 
 /** The minute in which `seconds` falls: an objective at 5:00 is up in minute 5. */
@@ -171,11 +175,14 @@ export function createMatch(setup: MatchSetup): MatchState {
 		);
 		const ids = players(setup.draft, lineup.team);
 		const { champions } = indexContent(setup.draft);
-		const roster = Object.values(ids).map((id) => {
+		const roster = ROLES.map((role) => {
+			const id = ids[role];
 			const player = setup.match.players.find((p) => p.id === id);
 			if (!player) throw new Error(`No match data for player ${id}`);
 			return player.attributes;
 		});
+		const jungler = roster[ROLES.indexOf("jungle")];
+		if (!jungler) throw new Error(`No jungler for ${lineup.team}`);
 		const average = (key: "aggression" | "positioning") =>
 			toInt(
 				((roster.reduce((sum, p) => sum + p[key], 0) * SCALE) /
@@ -188,6 +195,7 @@ export function createMatch(setup: MatchSetup): MatchState {
 			strategy: strategy(setup.match, lineup.team),
 			profile,
 			players: ids,
+			smite: jungler.mechanics + jungler.objectiveControl,
 			vision: Object.fromEntries(
 				ROLES.map((role, i) => [
 					role,
@@ -255,6 +263,7 @@ export function createMatch(setup: MatchSetup): MatchState {
 			elder: minuteOf(objectives.elder.first),
 		},
 		winner: null,
+		plays: startPlays(),
 	};
 }
 

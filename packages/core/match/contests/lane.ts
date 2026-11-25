@@ -51,7 +51,7 @@ const laneContest = (lane: Lane, id: number): Contest => ({
 	id,
 	due: (state) => LANE_MINUTES.has(state.minute),
 	resolve(state, rng) {
-		const result = edge(state, "lane");
+		const result = edge(state, "lane", {}, lane);
 		const winner: Side = roll(rng, result.blue) ? "blue" : "red";
 		const second = int(rng, 0, 59);
 		const scored = roll(rng, SOLO_KILL);

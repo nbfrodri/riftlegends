@@ -14,4 +14,6 @@ export const SCOPES = {
 	competition: 6,
 	/** Seconds between casualties inside a fight (issue #366). */
 	matchFightTiming: 7,
+	/** Pit attendance and opposing Smite for objective steals (issue #508). */
+	matchSteal: 8,
 } as const;
