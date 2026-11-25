@@ -152,7 +152,7 @@ function Stats({
 							<th
 								key={key}
 								scope="col"
-								className={`whitespace-nowrap px-1 py-1 font-normal ${i < 2 ? "text-left" : "text-right"}`}
+								className={`px-1.5 py-1 font-normal ${i < 2 ? "w-px text-left" : "text-center"}`}
 							>
 								{key === "vision" ? (
 									// The icon alone, so the champion keeps its room at 1280×720 (#510).
@@ -189,7 +189,7 @@ function Stats({
 								)}
 							</th>
 						))}
-						<th scope="col" className="px-1 py-1 text-right font-normal">
+						<th scope="col" className="px-1.5 py-1 text-center font-normal">
 							{t("draft.result.stats.rating")}
 						</th>
 					</tr>
@@ -202,7 +202,7 @@ function Stats({
 								key={line.player}
 								className={`border-line border-b ${i === 5 ? "border-t-2 border-t-muted" : ""}`}
 							>
-								<th scope="row" className="px-1 py-1 text-left font-semibold">
+								<th scope="row" className="px-1.5 py-1 text-left font-semibold">
 									<span
 										className={`flex items-center gap-1 whitespace-nowrap ${line.side === "blue" ? "text-side-blue" : "text-side-red"}`}
 									>
@@ -219,32 +219,30 @@ function Stats({
 										/>
 									</span>
 								</th>
-								<td className="w-1/4 max-w-0 px-1 py-1 text-left">
+								<td className="px-1.5 py-1 text-left">
 									<span className="flex items-center gap-1">
 										<ChampionPortrait id={line.champion} size="compact" />
-										<span className="truncate">
-											{championLabel(options, line.champion)}
-										</span>
+										<span>{championLabel(options, line.champion)}</span>
 									</span>
 								</td>
-								<td className="px-1 py-1 text-right">
+								<td className="px-1.5 py-1 text-center">
 									{line.kills}/{line.deaths}/{line.assists}
 								</td>
-								<td className="px-1 py-1 text-right">
+								<td className="px-1.5 py-1 text-center">
 									{grouped.format(line.gold)}
 								</td>
-								<td className="px-1 py-1 text-right">
+								<td className="px-1.5 py-1 text-center">
 									{grouped.format(line.damage)}
 								</td>
-								<td className="px-1 py-1 text-right">
+								<td className="px-1.5 py-1 text-center">
 									{grouped.format(line.vision)}
 								</td>
-								<td className="px-1 py-1 text-right">
+								<td className="px-1.5 py-1 text-center">
 									{t("draft.result.percent", {
 										value: percent(line.participation),
 									})}
 								</td>
-								<td className="px-1 py-1 text-right font-bold">
+								<td className="px-1.5 py-1 text-center font-bold">
 									{line.rating}
 								</td>
 							</tr>
