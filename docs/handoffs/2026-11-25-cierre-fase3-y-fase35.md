@@ -1,6 +1,6 @@
 # Handoff · Cierre de la Fase 3 y Fase 3.5
 
-Estado: en curso (25-11, 23:30). Fusionados hoy en esta sesión: #561, #534, #563, #564, #565, #567, #569 (arregla #557; #570 abierto hasta ver varias ejecuciones de `verify-windows` en verde), #571 (arregla #536). Abiertos: #570, #572 (partida desborda 36 px con nombres largos). Stryker sigue programado a las 05:00 del 26-11. Sustituye a [2026-11-22-fase3-datos-reales.md](2026-11-22-fase3-datos-reales.md).
+Estado: en curso (25-11, 23:30). Fusionados hoy en esta sesión: #561, #534, #563, #564, #565, #567, #569 (arregla #557; #570 abierto hasta ver varias ejecuciones de `verify-windows` en verde), #571 (arregla #536). En la cola solo queda #566. Abiertos: #570, #572 (partida desborda 36 px con nombres largos). Stryker sigue programado a las 05:00 del 26-11. Sustituye a [2026-11-22-fase3-datos-reales.md](2026-11-22-fase3-datos-reales.md).
 
 Decisiones en el [registro](../decisions/README.md). Reglas del usuario: respuestas en español, claras y breves; **TDD estricto** (commit de test en rojo y después el de implementación); **nada de `git stash`** ni force-push; **títulos de PR en inglés** (Conventional; el squash los usa como commit) y cuerpo en español; visto bueno del usuario antes de fusionar, con capturas (vídeo si hay animación); vigilar el CI de cada PR y de `main` tras cada fusión; máximo 4–5 subagentes (Sonnet medium lógica, Opus medium visual); Codex `gpt-6.2-sol` medium para tareas sin red.
 
@@ -12,7 +12,7 @@ Decisiones en el [registro](../decisions/README.md). Reglas del usuario: respues
 
 ## Cola de fusión (aprobados por el usuario), en orden
 
-#542 (timelines, K19–K22) → #556 (pantalla de carga espera a toda la caché) → #561 (logo CBLOL) → #534 (nombres largos y tabla centrada) → #563 (edad del jugador) → #564 (cerrar lectura de la IA) → #565 (causas traducidas) → #566 (jugadores de relleno y nacionalidades; puede chocar con #563 en las consultas de nacionalidad y `players.json`: si sale CONFLICTS, resolver a mano, regenerar el snapshot con el pipeline y volver a encolar) → #567 (ficha con barras) → #569 (candado de la caché en Windows, #557; #570 pendiente de ver `verify-windows` en `main`) → #571 (momento clave entero, #536) → #566 (reencolado tras resolver el choque con #563: consulta con `Page` y `Birthdate`, fechas por redirección, snapshot regenerado) → después abrir el PR de #568. Comprobar el CI de `main` tras cada uno.
+#542 (timelines, K19–K22) → #556 (pantalla de carga espera a toda la caché) → #561 (logo CBLOL) → #534 (nombres largos y tabla centrada) → #563 (edad del jugador) → #564 (cerrar lectura de la IA) → #565 (causas traducidas) → #566 (jugadores de relleno y nacionalidades; puede chocar con #563 en las consultas de nacionalidad y `players.json`: si sale CONFLICTS, resolver a mano, regenerar el snapshot con el pipeline y volver a encolar) → #567 (ficha con barras) → #569 (candado de la caché en Windows, #557; #570 pendiente de ver `verify-windows` en `main`) → #571 (momento clave entero, #536) → #566 (reencolado como `queue-566c.log` tras un fallo de formato; resuelto el choque con #563: consulta con `Page` y `Birthdate`, fechas por redirección, snapshot regenerado) → después abrir el PR de #568. Comprobar el CI de `main` tras cada uno.
 
 ## Trabajo en marcha
 
