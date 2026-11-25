@@ -126,6 +126,10 @@ async function expectBigFaceToFace(page: Page) {
 				const handle = c.querySelector("[data-part=name] > span");
 				return handle ? getComputedStyle(handle).color === text : false;
 			}),
+			// #510: the final vision score, only in the jungle and support rows.
+			vision: [...table.querySelectorAll("tbody tr")].map(
+				(row) => row.querySelectorAll("[data-vision]").length,
+			),
 			kda: [...table.querySelectorAll("tbody td")]
 				.filter((td) => /^\d+\/\d+\/\d+$/.test(td.textContent ?? ""))
 				.map((td) => getComputedStyle(td).color === text),
@@ -148,6 +152,7 @@ async function expectBigFaceToFace(page: Page) {
 	for (const badge of measure.badges) expect(badge).toBeGreaterThanOrEqual(28);
 	expect(measure.names).toEqual(Array(10).fill(true));
 	expect(measure.kda).toEqual(Array(10).fill(true));
+	expect(measure.vision).toEqual([0, 2, 0, 0, 2]);
 	// Name blocks are centred, so a long handle may shift its left edge; the
 	// pictures may not move at all.
 	for (const [i, spread] of measure.columns.entries())
@@ -277,6 +282,24 @@ test("replays a drafted game and continues to its result", async ({
 		await expect(
 			page.getByRole("heading", { level: 1, name: "Resultado" }),
 		).toBeVisible();
+		// #510: the stats table gains the vision column and still fits whole.
+		const stats = page.getByRole("table", { name: "Estadísticas del mapa 1" });
+		await expect(
+			stats.getByRole("columnheader", { name: "Visión" }),
+		).toBeVisible();
+		for (const size of [
+			{ width: 1280, height: 720 },
+			{ width: 1366, height: 768 },
+		]) {
+			await page.setViewportSize(size);
+			await expect(stats).toBeInViewport({ ratio: 1 });
+			expect(
+				await stats.evaluate((table) => {
+					const box = table.parentElement;
+					return box ? box.scrollWidth - box.clientWidth : 0;
+				}),
+			).toBeLessThanOrEqual(0);
+		}
 	} finally {
 		await app.close();
 	}

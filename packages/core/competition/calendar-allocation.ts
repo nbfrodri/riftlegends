@@ -85,8 +85,12 @@ export function allocate(
 	): Delay | undefined {
 		if (today.some((other) => conflict(job, other))) return "team-busy";
 		const stageCount = today.filter(({ stage }) => stage === job.stage).length;
+		const competition = job.stage.node.ref.competition;
+		const competitionCount = today.filter(
+			({ stage }) => stage.node.ref.competition === competition,
+		).length;
 		if (
-			today.length >= DAILY_CAPACITY ||
+			competitionCount >= DAILY_CAPACITY ||
 			stageCount >= job.stage.maxSeriesPerDay
 		)
 			return "day-full";

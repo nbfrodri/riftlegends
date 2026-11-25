@@ -1,3 +1,4 @@
+import { min } from "../math/int";
 import type { Slot } from "./bracket";
 import { crossGroupSchedule, groupSchedule } from "./groups";
 import type { StageOutcomes } from "./qualification";
@@ -59,13 +60,14 @@ type Swiss = Extract<Stage["play"], { type: "swiss" }>;
 
 /** Same-record pairings have fixed counts until a record has an odd field.
  * From that point reserve for all remaining teams, regardless of results. */
-function swissSlots({ size, wins, losses }: Swiss): FixtureSlot[] {
+function swissSlots({ size, wins, losses, maxRounds }: Swiss): FixtureSlot[] {
 	let records = new Map<number, number>([[0, size]]);
 	let active = size;
 	let splitRecords = false;
 	let previous: string[] = [];
 	const slots: FixtureSlot[] = [];
-	for (let round = 1; round < wins + losses && active > 0; round++) {
+	const limit = min(maxRounds ?? wins + losses - 1, wins + losses - 1);
+	for (let round = 1; round <= limit && active > 0; round++) {
 		const current: string[] = [];
 		for (let series = 0; series + 1 < active; series += 2) {
 			const id = `swiss-${round}-${current.length + 1}`;

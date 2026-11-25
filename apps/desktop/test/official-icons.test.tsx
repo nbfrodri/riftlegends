@@ -95,8 +95,15 @@ describe("official stat icons", () => {
 			);
 			expect(image.getAttribute("alt")).toBe("");
 			expect(image.getAttribute("aria-hidden")).toBe("true");
-			// The client's grey icons are brightened to read on the dark panels.
-			expect(image.classList.contains("brightness-200")).toBe(true);
+			// The client's grey icons are brightened to read on the dark panels;
+			// its eye is drawn dark (#1E2328), so it is inverted instead (#510).
+			expect(
+				image.classList.contains(
+					stat === "vision" ? "invert" : "brightness-200",
+				),
+			).toBe(true);
+			if (stat === "vision")
+				expect(image.classList.contains("brightness-200")).toBe(false);
 			expect(image.getAttribute("width")).toBe("14");
 			expect(image.getAttribute("height")).toBe("14");
 			fireEvent.error(image);
