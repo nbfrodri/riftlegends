@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { defineCommands, defineQueries } from "../envelope";
+import { defineCommands, defineQueries, position } from "../envelope";
 import type { CoreError } from "../errors";
 import { defineFacts } from "../facts";
 import {
@@ -9,6 +9,7 @@ import {
 } from "./format";
 
 export * from "./format";
+export * from "./views";
 
 // Catalog of plan 12: formats, seasons and competition facts.
 
@@ -62,10 +63,22 @@ export const competitionQueries = defineQueries({
 	"competition.bracket": z.strictObject({ competition: id, stage: id }),
 	"competition.schedule": z.strictObject({
 		competition: id.optional(),
+		team: teamId.optional(),
 		fromDay: z.int().min(0).optional(),
 		toDay: z.int().min(0).optional(),
 	}),
 	"competition.qualified": competitionRef,
+	/** Every competition with its stages and state, and the day to play next. */
+	"season.overview": z.strictObject({}),
+	/** The season of one team: roster, series, form, streak and statistics. */
+	"team.profile": z.strictObject({ team: teamId }),
+	/**
+	 * `series.summary` and `match.view` of a series of the season, by the id
+	 * that `competition.schedule` gives it. With `series` they are answered
+	 * from the season, not from a draft series.
+	 */
+	"series.summary": z.strictObject({ series: id }),
+	"match.view": z.strictObject({ series: id, game: position }),
 });
 
 const count = z.int().min(0);

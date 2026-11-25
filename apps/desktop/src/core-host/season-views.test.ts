@@ -293,8 +293,10 @@ test("Q6: series.summary and match.view open a played series by its id", () => {
 		};
 		expect(game.game).toBe(1);
 		// Replaying the series gives back the very facts that were recorded.
+		// The recorded facts also carry the position they took in the log.
+		const { position: _, ...recorded } = ended[0] as Fact;
 		expect(game.facts.find(({ type }) => type === "match.ended")).toEqual(
-			ended[0],
+			recorded,
 		);
 		expect(game.snapshots.length).toBeGreaterThan(0);
 	}

@@ -33,6 +33,11 @@ export function projectSchedule(
 				const played = completed.get(id);
 				const ready = upcoming.get(id);
 				const fixture = played?.fixture ?? ready;
+				if (
+					params.team !== undefined &&
+					!(fixture?.teams ?? slot.teams).includes(params.team)
+				)
+					return [];
 				return [
 					{
 						...slot,
@@ -103,6 +108,18 @@ export function stageView(
 		});
 	const stage = state.season.stages.get(key);
 	if (!stage) return null;
-	if (kind === "bracket") return stage.bracket ?? null;
+	if (kind === "bracket") {
+		const source = state.season.graph.nodes.get(key)?.bracket;
+		return stage.bracket && source
+			? {
+					...stage.bracket,
+					matches: stage.bracket.matches.map((match, index) => ({
+						...match,
+						// Where each team comes from: a seed, or the winner or loser of a match.
+						from: [source.matches[index]?.a, source.matches[index]?.b],
+					})),
+				}
+			: null;
+	}
 	return { ...stage.standings, ...(stage.groups && { groups: stage.groups }) };
 }

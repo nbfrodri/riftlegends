@@ -58,6 +58,7 @@ export function playSeasonSeries(
 	return {
 		ok: true as const,
 		facts,
+		state,
 		winner,
 		score: state.wins,
 		result: {

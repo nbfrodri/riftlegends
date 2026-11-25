@@ -14,6 +14,13 @@ import {
 import { buildCalendar, type CalendarStage } from "./calendar";
 import type { StageOutcome } from "./qualification";
 import { buildStageGraph } from "./season";
+import { seasonOverview } from "./season-overview";
+import {
+	gamesOf,
+	type SeriesRecord,
+	seriesMatch,
+	seriesSummary,
+} from "./season-records";
 import { playSeasonSeries } from "./season-series";
 import {
 	advanceStage,
@@ -29,6 +36,7 @@ import {
 	stageView,
 } from "./season-views";
 import { type StageGraph, type StageRef, stageKey } from "./stage-model";
+import { teamProfile } from "./team-profile";
 
 type Command<K> = Extract<
 	ReturnType<typeof competitionCommands.schema.parse>,
@@ -53,6 +61,8 @@ export interface RunningSeason {
 	readonly outcomes: ReadonlyMap<string, StageOutcome>;
 	readonly qualifications: ReadonlyMap<string, Emitted>;
 	readonly playedDays: ReadonlyMap<string, number>;
+	/** Every series played, by the id of its slot. */
+	readonly records: ReadonlyMap<string, SeriesRecord>;
 	readonly formats: Command<"season.create">["competitions"];
 }
 
@@ -184,6 +194,7 @@ function createSeason(
 			outcomes: new Map(),
 			qualifications: new Map(),
 			playedDays: new Map(),
+			records: new Map(),
 		},
 		new Map(),
 		facts,
@@ -207,6 +218,7 @@ function playDay(
 		return reject("wrong-action", { expected: nextDay ?? "season.create" });
 	const fixtures = schedule.filter((slot) => slot.day === day);
 	const playedDays = new Map(season.playedDays);
+	const records = new Map(season.records);
 	const today = new Map<string, Played[]>();
 	const facts: Emitted[] = [];
 	for (const slot of fixtures) {
@@ -245,12 +257,28 @@ function playDay(
 			winner: played.winner,
 			tiebreaker: fixture.tiebreaker ?? false,
 		});
+		records.set(slot.id, {
+			id: slot.id,
+			competition,
+			stage,
+			day,
+			teams: fixture.teams,
+			score: played.score,
+			winner: played.winner,
+			fixture,
+			seed: seriesSeed,
+			games: gamesOf(played.facts),
+		});
 		const results = today.get(key) ?? [];
 		results.push({ fixture, winner: played.winner, result: played.result });
 		today.set(key, results);
 		playedDays.set(slot.id, day);
 	}
-	const updated = updateStages({ ...season, playedDays }, today, facts);
+	const updated = updateStages(
+		{ ...season, playedDays, records },
+		today,
+		facts,
+	);
 	if (!updated.ok) return updated;
 	let next = updated.season;
 	const extraFixtures = new Map(
@@ -289,6 +317,10 @@ export const seasonDispatcher = createDispatcher<SeasonSession>({
 			stageView(state, ref, "bracket"),
 		"competition.schedule": (state, params: ScheduleQuery) =>
 			state.season ? projectSchedule(state.season, params) : [],
+		"season.overview": (state) => seasonOverview(state.season),
+		"team.profile": teamProfile,
+		"series.summary": seriesSummary,
+		"match.view": seriesMatch,
 		"competition.qualified": (
 			state,
 			{ competition }: { competition: string },
