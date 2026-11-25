@@ -228,6 +228,32 @@ describe("B4: grand final reset", () => {
 	});
 });
 
+describe("B4b: no grand final (GSL groups)", () => {
+	const teams = teamsOf(4);
+	const gsl = double(4, 2, [[0, 0], [1]], 2, { grandFinal: null });
+
+	it("ends with the lower final and has no GF match", () => {
+		const state = play(gsl, teams, (a, b) => a < b);
+		expect(state.matches.map((m) => m.id)).not.toContain("GF");
+		expect(state.matches.every((m) => m.status === "done")).toBe(true);
+	});
+
+	it("ranks the upper final winner first and keeps the lower final winner second", () => {
+		const state = play(gsl, teams, (a, b, id) =>
+			id.startsWith("U") ? a < b : b < a,
+		);
+		expect(state.champion).toBe("t1");
+		const last = state.matches[state.matches.length - 1];
+		expect(last?.side).toBe("lower");
+		expect(last?.winner).toBe("t4");
+	});
+
+	it("has no champion before the lower final is played", () => {
+		const state = resolveBracket(gsl, teams, {});
+		expect(state.champion).toBeNull();
+	});
+});
+
 describe("B5: Bo per round from the format", () => {
 	it("uses Bo3 early and Bo5 later (LEC Versus)", () => {
 		const format: DoubleElim = {

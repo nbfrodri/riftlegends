@@ -484,7 +484,7 @@
 	"draft.board.confirm.pick": "Confirm pick",
 	"draft.board.playerCard": "Player card",
 	"draft.board.playerPortrait": "Portrait of {{handle}}",
-	"draft.board.playerHint": "Hover over a player to see their attributes.",
+	"draft.board.playerHint": "Click a player to see their attributes.",
 	"draft.board.lowRelevance": "Matters little for this role",
 	"draft.board.pool.title": "Champion pool",
 	"draft.board.pool.main": "Mains",

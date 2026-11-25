@@ -36,7 +36,7 @@ function Driver({ mine }: { mine: string }) {
 					fearless: "soft",
 					timer: false,
 					pool: options.pool,
-					seed: 7,
+					seed: 8,
 					ai: ["coach", "coach"],
 				});
 				if (ok) setMine(mine);
