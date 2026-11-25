@@ -12,7 +12,7 @@ La tipografía se rasteriza distinto en cada distribución, así que las captura
 
 `maxDiffPixelRatio: 0.002` (0,2 % de los píxeles, unos 2.100 a 1366x768): absorbe el ruido de suavizado de bordes, pero no un elemento movido ni un color distinto. Las animaciones están desactivadas y el cursor de texto oculto. Se configura en `playwright.visual.config.ts`.
 
-Playwright fija el tamaño del área visible del renderer. Antes de cada captura, `captureScreen` comprueba que las fuentes Caja estén cargadas y espera a que se decodifiquen las imágenes de la pantalla.
+Playwright fija el tamaño del área visible del renderer. Antes de cada captura, `captureScreen` oculta y muestra el `body` para repintar desde cero (Chromium conserva trazas del pintado anterior y los bordes redondeados salían 1 nivel distintos entre ejecuciones, #501), espera a dos fotogramas idénticos byte a byte, quita el puntero a todos los elementos (Xvfb deja el puntero real a mitad de pantalla y a veces dejaba un botón en hover; solo el tooltip usa `captureHovered`) y comprueba que las fuentes Caja estén cargadas y espera a que se decodifiquen las imágenes de la pantalla.
 
 ## Puesta en marcha (referencias iniciales)
 
