@@ -7,7 +7,10 @@ import {
 	within,
 } from "@testing-library/react";
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
+import { readGame } from "../src/renderer/draft/result-data";
+import { GameReport } from "../src/renderer/draft/result-game";
 import { draftStages } from "../src/renderer/draft/stages";
+import { EventFeed } from "../src/renderer/match/event-feed";
 import { teamMap } from "../src/renderer/match/team-map";
 import { TeamPanel } from "../src/renderer/match/team-panel";
 import { renderInLocale } from "./render-in-locale";
@@ -217,6 +220,76 @@ const click = (name: string) =>
 	fireEvent.click(screen.getByRole("button", { name }));
 const clock = () => screen.getByRole("timer").textContent;
 const Match = draftStages.match;
+
+const multikillView = () => {
+	const finishingKill = {
+		killer: "b-top",
+		victim: "r-top",
+		assists: [],
+		fightSecond: 7,
+		multikill: 2 as const,
+	};
+	const fight = {
+		...event,
+		kind: "fight" as const,
+		causes: [...event.causes],
+		kills: [
+			{ killer: "b-top", victim: "r-mid", assists: [], fightSecond: 0 },
+			finishingKill,
+		],
+	};
+	const ended = match.facts.find((fact) => fact.type === "match.ended");
+	if (!ended) throw new Error("missing result fixture");
+	const result = {
+		...ended,
+		multikills: [{ event: 0, killer: "b-top", count: 2 as const }],
+	};
+	return {
+		...match,
+		facts: [match.facts[0] as (typeof match.facts)[number], fight, result],
+	};
+};
+
+test.each([
+	["en-US", "Double kill"],
+	["es-ES", "Asesinato doble"],
+])(
+	"the %s event log labels the kill that completes the streak",
+	async (locale, label) => {
+		const teams = { blue: "Forge", red: "Shoal" };
+		await renderInLocale(
+			<EventFeed
+				facts={multikillView().facts}
+				second={12}
+				names={teams}
+				ids={teams}
+				players={new Map()}
+				ended
+			/>,
+			locale,
+		);
+		const finishingKill = screen.getByText(label).closest("[data-kill]");
+		expect(finishingKill?.textContent).toContain("r-top");
+	},
+);
+
+test.each([
+	["en-US", "Multikills", "Double kill"],
+	["es-ES", "Asesinatos múltiples", "Asesinato doble"],
+])(
+	"the %s result names the multikill author even outside decisive disputes",
+	async (locale, title, label) => {
+		const game = readGame(multikillView());
+		if (!game) throw new Error("missing game result");
+		await renderInLocale(
+			<GameReport game={game} summary={undefined} showWinner />,
+			locale,
+		);
+		const list = screen.getByRole("list", { name: title });
+		expect(list.textContent).toContain("Bluetop");
+		expect(list.textContent).toContain(label);
+	},
+);
 
 test("one minute takes five seconds at normal speed, with pause and both faster speeds", async () => {
 	await renderInLocale(<Match />);
