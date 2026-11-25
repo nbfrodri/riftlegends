@@ -10,7 +10,7 @@ const KINDS = [
 ] as const;
 
 /** Mains, secondary and weak champions that have a mastery rating. */
-function championPool(
+export function championPool(
 	picks: Record<"mains" | "secondary" | "weak", readonly string[]>,
 	mastery: readonly { champion: string; value: number }[] = [],
 ) {
@@ -48,6 +48,22 @@ function lineups({ content, match }: Partial<LoadedContent>) {
 		);
 }
 
+/** The content set `params` names, or the session's current content. */
+export function namedContent(
+	state: SeriesState,
+	params: { content?: ContentSet },
+): Partial<LoadedContent> | QueryRejection {
+	if (!params.content)
+		return {
+			...(state.content && { content: state.content }),
+			...(state.match && { match: state.match }),
+		};
+	return (
+		state.library[params.content]?.() ??
+		new QueryRejection({ code: "invalid-command", params: { path: "content" } })
+	);
+}
+
 /**
  * The `series.options` query: the teams (with their starters' attributes) and
  * the champion pool (with each champion's roles and tiers) of the named content
@@ -57,20 +73,8 @@ export const viewOptions = (
 	state: SeriesState,
 	params: { content?: ContentSet } = {},
 ): SeriesOptions | QueryRejection => {
-	let set: Partial<LoadedContent> = {
-		...(state.content && { content: state.content }),
-		...(state.match && { match: state.match }),
-	};
-	if (params.content) {
-		const named = state.library[params.content]?.();
-		if (!named) {
-			return new QueryRejection({
-				code: "invalid-command",
-				params: { path: "content" },
-			});
-		}
-		set = named;
-	}
+	const set = namedContent(state, params);
+	if (set instanceof QueryRejection) return set;
 	const champions = set.content?.champions ?? [];
 	const players = lineups(set);
 	return {

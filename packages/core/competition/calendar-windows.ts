@@ -30,17 +30,30 @@ export interface StageWindow extends Window {
 const daysInYear = (year: number) =>
 	year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0) ? 366 : 365;
 
+interface StageBlock {
+	group: string | undefined;
+	previous: string[];
+	current: string[];
+}
+
 function stageOrder(graph: StageGraph) {
 	const order: { key: string; node: StageNode; after: ReadonlySet<string> }[] =
 		[];
-	const previousLeagueStage = new Map<string, string>();
+	const blocks = new Map<string, StageBlock>();
 	for (const [key, node] of graph.nodes) {
 		const { competition } = node.ref;
 		const after = new Set(graph.dependencies.get(key));
-		const previous = previousLeagueStage.get(competition);
-		if (previous) after.add(previous);
-		if (graph.leagues.has(competition))
-			previousLeagueStage.set(competition, key);
+		if (graph.leagues.has(competition)) {
+			const group = node.stage.parallelGroup;
+			const block = blocks.get(competition);
+			const next: StageBlock =
+				group !== undefined && block?.group === group
+					? block
+					: { group, previous: block?.current ?? [], current: [] };
+			for (const previous of next.previous) after.add(previous);
+			next.current.push(key);
+			blocks.set(competition, next);
+		}
 		order.push({ key, node, after });
 	}
 	return order;

@@ -1,0 +1,364 @@
+{
+	"id": "LCP",
+	"kind": "league",
+	"stages": [
+		{
+			"id": "split-1",
+			"window": {
+				"startWeek": 2,
+				"weeks": 4,
+				"matchDays": 7,
+				"maxSeriesPerDay": 4
+			},
+			"entrants": {
+				"kind": "fixed",
+				"teams": [
+					"Team Secret Whales",
+					"Deep Cross Gaming",
+					"GAM Esports",
+					"CTBC Flying Oyster",
+					"Fukuoka SoftBank HAWKS gaming",
+					"MVK Esports",
+					"Ground Zero Gaming",
+					"DetonatioN FocusMe"
+				]
+			},
+			"play": {
+				"type": "roundRobin",
+				"size": 8,
+				"rounds": 1,
+				"bestOf": 3
+			}
+		},
+		{
+			"id": "split-1-playoffs",
+			"window": {
+				"startWeek": 6,
+				"weeks": 3,
+				"matchDays": 7,
+				"maxSeriesPerDay": 4
+			},
+			"entrants": {
+				"kind": "standing",
+				"stage": "split-1",
+				"from": 1,
+				"to": 6
+			},
+			"play": {
+				"type": "doubleElim",
+				"size": 6,
+				"upper": [
+					5,
+					5,
+					5
+				],
+				"lower": [
+					5,
+					5
+				],
+				"drop": [
+					[
+						null,
+						null
+					],
+					[
+						0,
+						0
+					],
+					[
+						1
+					]
+				],
+				"lowerSeeds": [],
+				"grandFinal": 5,
+				"reset": false
+			}
+		},
+		{
+			"id": "split-2",
+			"window": {
+				"startWeek": 13,
+				"weeks": 7,
+				"matchDays": 7,
+				"maxSeriesPerDay": 4
+			},
+			"entrants": {
+				"kind": "fixed",
+				"teams": [
+					"Team Secret Whales",
+					"Deep Cross Gaming",
+					"GAM Esports",
+					"CTBC Flying Oyster",
+					"Fukuoka SoftBank HAWKS gaming",
+					"MVK Esports",
+					"Ground Zero Gaming",
+					"DetonatioN FocusMe"
+				]
+			},
+			"play": {
+				"type": "roundRobin",
+				"size": 8,
+				"rounds": 1,
+				"bestOf": 3
+			}
+		},
+		{
+			"id": "split-2-playoffs",
+			"window": {
+				"startWeek": 20,
+				"weeks": 3,
+				"matchDays": 7,
+				"maxSeriesPerDay": 4
+			},
+			"entrants": {
+				"kind": "standing",
+				"stage": "split-2",
+				"from": 1,
+				"to": 6
+			},
+			"play": {
+				"type": "doubleElim",
+				"size": 6,
+				"upper": [
+					5,
+					5,
+					5
+				],
+				"lower": [
+					5,
+					5
+				],
+				"drop": [
+					[
+						null,
+						null
+					],
+					[
+						0,
+						0
+					],
+					[
+						1
+					]
+				],
+				"lowerSeeds": [],
+				"grandFinal": 5,
+				"reset": false
+			}
+		},
+		{
+			"id": "split-3-swiss",
+			"window": {
+				"startWeek": 29,
+				"weeks": 4,
+				"matchDays": 7,
+				"maxSeriesPerDay": 4
+			},
+			"entrants": {
+				"kind": "fixed",
+				"teams": [
+					"Team Secret Whales",
+					"Deep Cross Gaming",
+					"GAM Esports",
+					"CTBC Flying Oyster",
+					"Fukuoka SoftBank HAWKS gaming",
+					"MVK Esports",
+					"Ground Zero Gaming",
+					"DetonatioN FocusMe"
+				]
+			},
+			"play": {
+				"type": "swiss",
+				"size": 8,
+				"wins": 3,
+				"losses": 3,
+				"bestOf": 3,
+				"decisiveBestOf": 5,
+				"round1": "pots",
+				"avoid": [
+					"rematch"
+				]
+			}
+		},
+		{
+			"id": "split-3-seed-high",
+			"window": {
+				"startWeek": 32,
+				"weeks": 1,
+				"matchDays": 7,
+				"maxSeriesPerDay": 4
+			},
+			"parallelGroup": "split-3-seeding",
+			"entrants": {
+				"kind": "standing",
+				"stage": "split-3-swiss",
+				"from": 1,
+				"to": 2
+			},
+			"play": {
+				"type": "singleElim",
+				"size": 2,
+				"bestOf": [
+					5
+				]
+			}
+		},
+		{
+			"id": "split-3-seed-low",
+			"window": {
+				"startWeek": 32,
+				"weeks": 1,
+				"matchDays": 7,
+				"maxSeriesPerDay": 4
+			},
+			"parallelGroup": "split-3-seeding",
+			"entrants": {
+				"kind": "standing",
+				"stage": "split-3-swiss",
+				"from": 5,
+				"to": 6
+			},
+			"play": {
+				"type": "singleElim",
+				"size": 2,
+				"bestOf": [
+					5
+				]
+			}
+		},
+		{
+			"id": "split-3-seed-final",
+			"window": {
+				"startWeek": 32,
+				"weeks": 1,
+				"matchDays": 7,
+				"maxSeriesPerDay": 4
+			},
+			"entrants": [
+				{
+					"kind": "bracket",
+					"stage": "split-3-seed-high",
+					"match": "U1-1",
+					"result": "winner"
+				},
+				{
+					"kind": "standing",
+					"stage": "split-3-swiss",
+					"from": 3,
+					"to": 3
+				}
+			],
+			"play": {
+				"type": "singleElim",
+				"size": 2,
+				"bestOf": [
+					5
+				]
+			}
+		},
+		{
+			"id": "split-3-playoffs",
+			"window": {
+				"startWeek": 33,
+				"weeks": 2,
+				"matchDays": 7,
+				"maxSeriesPerDay": 4
+			},
+			"entrants": [
+				{
+					"kind": "bracket",
+					"stage": "split-3-seed-final",
+					"match": "U1-1",
+					"result": "winner"
+				},
+				{
+					"kind": "bracket",
+					"stage": "split-3-seed-final",
+					"match": "U1-1",
+					"result": "loser"
+				},
+				{
+					"kind": "bracket",
+					"stage": "split-3-seed-high",
+					"match": "U1-1",
+					"result": "loser"
+				},
+				{
+					"kind": "standing",
+					"stage": "split-3-swiss",
+					"from": 4,
+					"to": 4
+				}
+			],
+			"play": {
+				"type": "doubleElim",
+				"size": 4,
+				"upper": [
+					5,
+					5
+				],
+				"lower": [
+					5,
+					5
+				],
+				"drop": [
+					[
+						0,
+						0
+					],
+					[
+						1
+					]
+				],
+				"lowerSeeds": [],
+				"grandFinal": 5,
+				"reset": false
+			}
+		}
+	],
+	"tiebreak": [
+		"seriesWins",
+		"gameDiff",
+		"headToHead",
+		"tiebreakerSeries",
+		"draw"
+	],
+	"tiebreakerBestOf": 3,
+	"slots": [
+		{
+			"to": "first-stand",
+			"rule": "standing",
+			"stage": "split-1-playoffs",
+			"count": 1,
+			"cascade": "next"
+		},
+		{
+			"to": "msi",
+			"rule": "standing",
+			"stage": "split-2-playoffs",
+			"count": 2,
+			"cascade": "next"
+		},
+		{
+			"to": "worlds",
+			"rule": "standing",
+			"stage": "split-3-playoffs",
+			"count": 3,
+			"cascade": "next"
+		}
+	],
+	"verified": false,
+	"provenance": {
+		"source": "Leaguepedia",
+		"licence": "CC BY-SA 3.0",
+		"attribution": "Datos normalizados de los colaboradores de Leaguepedia (https://lol.fandom.com/wiki/Leaguepedia), CC BY-SA 3.0 Unported.",
+		"retrievedAt": "2026-11-22T12:15:53.772Z",
+		"snapshot": "lcp.json"
+	},
+	"unverifiedReasons": [
+		"Official tiebreak criteria are unconfirmed; use the game defaults, including Bo3 at a cut.",
+		"Fixed bracket seeds and international places use stage finishes; official seeding, points and cascade rules are unconfirmed.",
+		"Split 3 Swiss rules (Bo3, Bo5 on the third win or loss, Bo5 seeding matches) match lolesports. The calendar reserves up to three series in round 5; the snapshot has one. The third Worlds place goes to the Championship Points leader (ties: Split 3 playoff placement, then Swiss result), approximated here by the playoff third place.",
+		"The split 3 seeding ladder approximates team selection from the Swiss; the bottom seeding match is for placement only."
+	]
+}

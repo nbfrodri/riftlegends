@@ -11,7 +11,7 @@ const competitionId = id;
 /** Best-of lengths a series can have: 1, 3 or 5. */
 const bestOf = z.union([z.literal(1), z.literal(3), z.literal(5)]);
 
-/** Season-wide cap on series per match day (decision 4 of plan 12). */
+/** Cap on series per match day in each competition (decision 4 of plan 12). */
 export const MAX_SERIES_PER_DAY = 4;
 
 /** Whole days from the season start are counted by the core; weeks only here. */
@@ -52,6 +52,7 @@ const swiss = z.strictObject({
 	size: teamCount,
 	wins: z.int().min(1).max(5),
 	losses: z.int().min(1).max(5),
+	maxRounds: z.int().min(1).max(9).optional(),
 	bestOf,
 	/** Bo of the series that qualify or eliminate. */
 	decisiveBestOf: bestOf,
@@ -144,6 +145,8 @@ const source = z.discriminatedUnion("kind", [
 const stage = z.strictObject({
 	id: stageId,
 	window,
+	/** Consecutive league stages in the same block may play in parallel. */
+	parallelGroup: id.optional(),
 	/** Multiple sources fill the seed list in declaration order. */
 	entrants: z.union([source, z.array(source).min(1).max(32)]),
 	play,
@@ -196,13 +199,23 @@ export const competitionSchema = z
 	.strictObject({
 		id: competitionId,
 		kind: z.enum(["league", "international"]),
-		stages: z.array(stage).min(1).max(12),
+		stages: z.array(stage).min(1).max(32),
 		tiebreak: z.array(criterion).max(CRITERIA.length),
 		/** Bo of the tiebreaker series that decides a tie at a cut. */
 		tiebreakerBestOf: bestOf.default(3),
 		slots: z.array(slot).max(16).optional(),
 		/** False while the format is not checked against the rulebook. */
 		verified: z.boolean(),
+		provenance: z
+			.strictObject({
+				source: z.string().min(1),
+				licence: z.string().min(1),
+				attribution: z.string().min(1),
+				retrievedAt: z.iso.datetime(),
+				snapshot: z.string().min(1),
+			})
+			.optional(),
+		unverifiedReasons: z.array(z.string().min(1)).min(1).optional(),
 	})
 	.superRefine((c, ctx) => {
 		const seen = new Set<string>();
@@ -216,7 +229,8 @@ export const competitionSchema = z
 			}
 			if (
 				play.type === "swiss" &&
-				play.wins + play.losses - 1 > play.size - 1
+				Math.min(play.maxRounds ?? Infinity, play.wins + play.losses - 1) >
+					play.size - 1
 			) {
 				issue(ctx, [...p, "size"], "more rounds than opponents");
 			}
