@@ -6,9 +6,12 @@ type Entry = RealSnapshot["rosters"][number]["players"][number];
 
 // MediaWiki titles are case-sensitive after the first letter, so the same
 // person can reach us as `Xyno` and `xyno`, or with two spellings of the
-// disambiguator. Those are different ids but one human: ids that share a
-// handle (ignoring case and the `~fingerprint`) on the same team are merged.
-const handleOf = (id: string) => id.split("~")[0]?.toLowerCase() ?? id;
+// disambiguator, or as a look-alike alias (`BrokenBIade` for `BrokenBlade`,
+// capital I for l, 0 for o). Those are different ids but one human: ids that
+// share a handle (ignoring case, look-alikes and the `~fingerprint`) on the
+// same team are merged.
+const handleOf = (id: string) =>
+	(id.split("~")[0] ?? id).replace(/I/g, "l").toLowerCase().replace(/0/g, "o");
 
 export function mergeSamePlayers<T extends Snapshot>(snapshots: T[]): T[] {
 	const games = new Map<string, number>();
