@@ -1,5 +1,6 @@
 import type { SeriesSummary } from "@rift-legends/contracts";
 import { Tooltip } from "@rift-legends/ui-kit/components/tooltip";
+import { Swords } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { GameRoleIcon } from "../assets/game-role-icon";
 import { isObjectiveKind, MapIcon } from "../assets/map-icon";
@@ -73,14 +74,18 @@ function MultikillBadge({
 	const language = i18n.language;
 	const mine = (streaks ?? []).filter((s) => s.killer === player);
 	if (mine.length === 0) return null;
-	const parts = TIERS.flatMap((tier) => {
+	const found = TIERS.flatMap((tier) => {
 		const count = mine.filter((s) => s.count === tier).length;
-		if (count === 0) return [];
-		const label = t(`draft.result.multikillShort.${tier}`);
-		return [
-			count > 1 ? t("draft.result.multikillTimes", { label, count }) : label,
-		];
+		return count === 0 ? [] : [{ tier, count }];
 	});
+	const parts = found.map(({ tier, count }) => {
+		const label = t(`draft.result.multikillShort.${tier}`);
+		return count > 1
+			? t("draft.result.multikillTimes", { label, count })
+			: label;
+	});
+	const best = found[0] as (typeof found)[number];
+	const chip = best.count > 1 ? `${best.tier} ×${best.count}` : `${best.tier}`;
 	const all = new Intl.ListFormat(language, {
 		style: "long",
 		type: "conjunction",
@@ -90,9 +95,11 @@ function MultikillBadge({
 			<span
 				role="img"
 				aria-label={t("draft.result.multikillsOf", { list: all })}
-				data-badge={parts[0]}
-				className="shrink-0 rounded-[3px] border border-action px-1 font-bold text-[11px] text-action leading-4 after:content-[attr(data-badge)]"
-			/>
+				data-badge={chip}
+				className="inline-flex shrink-0 items-center gap-0.5 rounded-[3px] border border-action px-1 font-bold text-[11px] text-action leading-4 after:content-[attr(data-badge)]"
+			>
+				<Swords aria-hidden size={11} />
+			</span>
 		</Tooltip>
 	);
 }
