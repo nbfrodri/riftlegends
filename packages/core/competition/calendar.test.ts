@@ -345,8 +345,7 @@ describe("calendar properties", () => {
 							}
 							for (const count of perLeague.values())
 								expect(count).toBeLessThanOrEqual(4);
-						}
-						else {
+						} else {
 							const playing = day.flatMap(({ teams }) => teams);
 							expect(new Set(playing).size).toBe(playing.length);
 						}
