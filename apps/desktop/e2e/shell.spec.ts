@@ -70,6 +70,8 @@ test("T6: arrow keys move a visible focus between sections", async ({
 	const market = nav.getByRole("button", { name: "Market" });
 	await expect(nav.getByRole("button", { name: "Champions" })).toBeFocused();
 	await appWindow.keyboard.press("ArrowDown");
+	await expect(nav.getByRole("button", { name: "Database" })).toBeFocused();
+	await appWindow.keyboard.press("ArrowDown");
 	await expect(market).toBeFocused();
 	await expect(market).toHaveCSS("outline-style", "solid");
 	// The used width snaps to device pixels (2.4px at a 0.8 scale), so only
