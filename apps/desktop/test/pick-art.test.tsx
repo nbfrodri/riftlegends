@@ -121,6 +121,22 @@ describe("#494: the landscape splash fills the pick row", () => {
 		expect(art("Ahri").dataset.framing).toBe("default");
 	});
 
+	test.each([
+		["after a failed splash", "Gwen", true],
+		["without real content", "Ahri", false],
+	])("the tile fades in from its left edge %s (#549)", (_case, id, splash) => {
+		real.on = splash;
+		const first = art(id);
+		if (splash) fireEvent.error(first.querySelector("img") as HTMLImageElement);
+		const tile = document.querySelector("[data-framing]") as HTMLElement;
+		const box = tile.closest(".w-\\[70\\.6\\%\\]") as HTMLElement;
+		// The tile's box starts inside the row's fade: without its own fade its
+		// left side would be a hard edge (#549).
+		expect(box.className).toContain(
+			"[mask-image:linear-gradient(to_right,transparent,#000_45%)]",
+		);
+	});
+
 	test("champions whose face the default cuts have their own splash focus", () => {
 		// Read off the contact sheet of every champion (user, 25-11).
 		expect(splashFocus("Ahri")).toEqual({ x: 50, y: 33 });

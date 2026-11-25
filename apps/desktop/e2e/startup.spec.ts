@@ -19,6 +19,13 @@ test("waits for the installed real catalog before opening the landing screen", a
 	}
 	await installTestCache(profile);
 	await release();
+	// The test cache has no splashes or official sounds and the network is off
+	// (#555): the screen explains it and lets the player continue.
+	await expect(page.getByText(/official images and sounds/i)).toBeVisible({
+		timeout: 15000,
+	});
+	await expect(page.getByRole("navigation")).toHaveCount(0);
+	await page.getByRole("button", { name: "Continue" }).click();
 	await expect(
 		page.getByRole("heading", { name: "Set up series" }),
 	).toBeVisible({ timeout: 15000 });

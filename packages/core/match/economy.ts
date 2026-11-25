@@ -101,16 +101,22 @@ export function paidByRole(
 		const killer = slots.get(k.killer);
 		// In a fight both sides can score: a kill is its killer's side's.
 		const side = killer?.side ?? event.side;
-		if (killer) pay(side, killer, economy.kill);
+		if (killer)
+			pay(
+				side,
+				killer,
+				economy.kill + (k.firstBlood?.killerGold ?? 0) + (k.shutdown ?? 0),
+			);
 		// One bag per kill, split among the assistants; the first takes the rest.
-		const share = div(economy.assist, k.assists.length || 1);
+		const bag = economy.assist + (k.firstBlood?.assistGold ?? 0);
+		const share = div(bag, k.assists.length || 1);
 		for (const [index, id] of k.assists.entries()) {
 			const helper = slots.get(id);
 			if (helper)
 				pay(
 					side,
 					helper,
-					index === 0 ? economy.assist - share * (k.assists.length - 1) : share,
+					index === 0 ? bag - share * (k.assists.length - 1) : share,
 				);
 		}
 	}

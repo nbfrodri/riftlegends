@@ -89,6 +89,8 @@ describe("credits view", () => {
 				.getByRole("link", { name: "CC BY-SA 3.0" })
 				.getAttribute("href"),
 		).toBe("https://creativecommons.org/licenses/by-sa/3.0/");
+		// Aggregates from Riot match timelines hosted by Leaguepedia (#527).
+		expect(within(leaguepedia).getByText(/match timelines/i)).toBeTruthy();
 		expect(within(communityDragon).getByText("Local cache")).toBeTruthy();
 		expect(within(lolesports).getByText("Public API")).toBeTruthy();
 		for (const card of cards) {
