@@ -65,7 +65,15 @@ it("lists every player of the real content with its columns", async () => {
 	await open();
 	expect(
 		screen.getAllByRole("columnheader").map((header) => header.textContent),
-	).toEqual(["Player", "Nationality", "Role", "Team", "League", "Rating"]);
+	).toEqual([
+		"Player",
+		"Nationality",
+		"Age",
+		"Role",
+		"Team",
+		"League",
+		"Rating",
+	]);
 	expect(status()).toBe(`${players.length} of ${players.length} players`);
 	expect(screen.getByText("Faker").closest("td")).toBeTruthy();
 });
@@ -90,7 +98,7 @@ it("filters with the side panel and sorts by a column", async () => {
 	await user.click(within(rating).getByRole("button"));
 	const best = Math.max(...players.map((p) => p.level));
 	expect(
-		within(bodyRows()[0] as HTMLElement).getAllByRole("cell")[5]?.textContent,
+		within(bodyRows()[0] as HTMLElement).getAllByRole("cell")[6]?.textContent,
 	).toMatch(new RegExp(`^${best}`));
 });
 
@@ -188,4 +196,47 @@ it("shows the official photos in the rows and the card, a silhouette without one
 	expect(
 		card.getByRole("img", { name: "Portrait of Faker" }).getAttribute("src"),
 	).toBe(photo);
+});
+
+const born = players.find((p) => p.birthDate);
+const unknown = players.find((p) => !p.birthDate);
+const rowOf = (handle: string) =>
+	screen
+		.getAllByRole("row")
+		.find((r) => within(r).queryByText(handle)) as HTMLElement;
+
+it("shows each age on the game date and a dash with a hint when unknown", async () => {
+	await open();
+	// The game date is 18 Jun 2027 (the date the sidebar shows).
+	expect(
+		within(rowOf("Faker")).getAllByRole("cell")[2]?.textContent,
+	).toBe("31");
+	if (!unknown) throw new Error("expected a player without a birth date");
+	const cell = within(rowOf(unknown.handle)).getAllByRole("cell")[2];
+	expect(cell?.textContent).toBe("—");
+	expect(
+		within(cell as HTMLElement).getByRole("img", { name: "Age unknown" }),
+	).toBeTruthy();
+});
+
+it("sorts the list by age, with unknown ages last when ascending", async () => {
+	const user = await open();
+	const header = screen.getByRole("columnheader", { name: "Age" });
+	await user.click(within(header).getByRole("button"));
+	const ages = bodyRows().map(
+		(row) => within(row).getAllByRole("cell")[2]?.textContent,
+	);
+	const known = ages.filter((age) => age !== "—").map(Number);
+	expect(known).toEqual([...known].sort((a, b) => a - b));
+	expect(ages.at(-1)).toBe("—");
+});
+
+it("shows the age in the player card, in Spanish too", async () => {
+	const user = await open("es-ES");
+	expect(born).toBeTruthy();
+	await user.click(rowOf("Faker"));
+	const card = within(
+		screen.getByRole("dialog", { name: "Ficha de jugador: Faker" }),
+	);
+	expect(card.getByText("31 años")).toBeTruthy();
 });
