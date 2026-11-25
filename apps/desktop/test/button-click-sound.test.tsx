@@ -35,17 +35,12 @@ describe("button click sound (#493)", () => {
 				<button type="button">
 					<span>Nested label</span>
 				</button>
-				<div role="button" tabIndex={0}>
-					Custom
-				</div>
 			</>,
 		);
 		await user.click(screen.getByRole("button", { name: "Plain" }));
 		expect(played()).toEqual(["click"]);
 		await user.click(screen.getByText("Nested label"));
 		expect(played()).toEqual(["click", "click"]);
-		await user.click(screen.getByRole("button", { name: "Custom" }));
-		expect(played()).toEqual(["click", "click", "click"]);
 	});
 
 	test("keyboard activation also clicks", async () => {

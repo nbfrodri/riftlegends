@@ -2,12 +2,12 @@ import { useEffect } from "react";
 import { useOptionalAssets } from "../assets";
 import { playSound, preloadSounds } from ".";
 
-const BUTTON = 'button, [role="button"]';
 /** Buttons that already have their own sound (pool tiles, draft Confirm). */
 const SILENT = "[data-silent-click]";
 
 const disabled = (button: Element) =>
-	button.matches(":disabled") || button.getAttribute("aria-disabled") === "true";
+	button.matches(":disabled") ||
+	button.getAttribute("aria-disabled") === "true";
 
 /**
  * One listener on the document plays the click for every button in the app
@@ -19,7 +19,7 @@ export function ButtonClickSound() {
 	useEffect(() => preloadSounds(sounds), [sounds]);
 	useEffect(() => {
 		const onClick = (event: MouseEvent) => {
-			const button = (event.target as Element | null)?.closest?.(BUTTON);
+			const button = (event.target as Element | null)?.closest?.("button");
 			if (button && !disabled(button) && !button.matches(SILENT))
 				playSound("click");
 		};
