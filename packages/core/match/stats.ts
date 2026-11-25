@@ -60,7 +60,7 @@ const isVisionZone = (zone: string) =>
  * role. The pro mean (Leaguepedia, 4,756 lines of six leagues): the support
  * wards for the team and the jungle clears; the rest barely place any.
  */
-export const VISION_PER_30: Record<Role, number> = {
+const VISION_PER_30: Record<Role, number> = {
 	top: 40,
 	jungle: 54,
 	mid: 40,
@@ -78,7 +78,7 @@ const VISION_CONTEST = 2000;
  * the `vision` attribute and by the share of the jungle and pit contests the
  * team won (5,000 without any). Integer and deterministic.
  */
-export function visionScore(
+function visionScore(
 	role: Role,
 	vision: number,
 	contested: number | null,
