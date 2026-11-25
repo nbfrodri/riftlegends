@@ -1,5 +1,6 @@
 import type { AiContent, MatchContent } from "@rift-legends/contracts";
 import { type Fixed, mul, SCALE } from "../../math";
+import type { MatchCause, MatchCauseKey } from "../cause-keys";
 import { type Factors, type Lineup, teamFactors } from "./factors";
 
 export type { Lineup } from "./factors";
@@ -19,7 +20,7 @@ export type Contest = (typeof CONTESTS)[number];
 export interface Scored {
 	readonly total: number;
 	/** Points each factor adds; they sum to `total`. */
-	readonly causes: readonly { readonly key: string; readonly points: number }[];
+	readonly causes: readonly MatchCause[];
 }
 
 export interface Profile {
@@ -27,11 +28,14 @@ export interface Profile {
 	readonly contests: Readonly<Record<Contest, Scored>>;
 }
 
+type FactorKey = MatchCauseKey | `${MatchCauseKey}.${Phase}`;
+type Weights = Partial<Record<FactorKey, number>>;
+
 /**
  * Percent of each factor in each contest and phase. A balance constant:
  * the calibration of plan 08 tunes it.
  */
-const WEIGHTS: Record<Contest | Phase, Record<string, number>> = {
+const WEIGHTS: Record<Contest | Phase, Weights> = {
 	lane: {
 		lanes: 100,
 		farming: 60,
@@ -128,10 +132,10 @@ const WEIGHTS: Record<Contest | Phase, Record<string, number>> = {
 
 const PERCENT = (SCALE / 100) as Fixed;
 
-function score(factors: Factors, weights: Record<string, number>): Scored {
+function score(factors: Factors, weights: Weights): Scored {
 	const causes = Object.entries(weights).map(([factor, weight]) => ({
 		// "power.early" reads as "power" once it sits in a phase.
-		key: factor.split(".")[0] ?? factor,
+		key: (factor.split(".")[0] ?? factor) as MatchCauseKey,
 		points: mul(factors[factor] ?? (0 as Fixed), (weight * PERCENT) as Fixed),
 	}));
 	return { total: causes.reduce((sum, c) => sum + c.points, 0), causes };

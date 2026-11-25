@@ -138,14 +138,26 @@ export function createOptionalAssets(
 			return () => photoListeners.delete(listener);
 		},
 		/** Official sounds; failures are per sound and leave the fallback. */
-		async syncSounds(): Promise<void> {
+		async syncSounds(
+			progress?: (completed: number, total: number) => void,
+		): Promise<void> {
 			const root = await soundRoot();
 			const release = await acquireSyncLock(root);
 			try {
-				await syncSounds(root, sounds, transport);
+				await syncSounds(root, sounds, transport, progress);
 			} finally {
 				await release();
 			}
+		},
+		/** How many official sounds are not (verified) on disk yet. */
+		async missingSounds(): Promise<number> {
+			if (!sounds.length) return 0;
+			// Looks only: a fresh profile keeps no empty sounds folder.
+			const root = dirname(
+				await cachePath(userData, "assets/sounds/manifest.json"),
+			);
+			const present = await readSounds(root, sounds);
+			return sounds.filter(({ id }) => !present[id]).length;
 		},
 		/** The verified sound bytes on disk, by sound id. */
 		async getSounds() {

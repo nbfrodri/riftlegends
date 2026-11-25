@@ -63,6 +63,7 @@ describe("content.database (#443)", () => {
 				sub: source?.sub ?? false,
 			});
 			expect(player.nationality).toBe(source?.nationality);
+			expect(player.birthDate).toBe(source?.birthDate);
 			expect(player.estimated ?? []).toEqual(source?.estimated ?? []);
 			expect(Object.keys(player.attributes)).toHaveLength(20);
 		}

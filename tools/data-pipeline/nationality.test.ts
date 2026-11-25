@@ -111,6 +111,7 @@ test("cargo queries join the players table by page, and answers are cached", asy
 		expect(searchParams.get("fields")).toContain(
 			"P.NationalityPrimary=NationalityPrimary",
 		);
+		expect(searchParams.get("fields")).toContain("P.Birthdate=Birthdate");
 		expect(searchParams.get("where")).toContain("'LCK/2026 Season/Cup'");
 		expect(searchParams.get("limit")).toBe("500");
 	}

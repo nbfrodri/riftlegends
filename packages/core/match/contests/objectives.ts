@@ -1,5 +1,6 @@
 import type { Side } from "@rift-legends/contracts";
 import { int } from "../../rng/helpers";
+import type { MatchCause } from "../cause-keys";
 import { GRUBS, type MatchState, minuteOf, SOUL } from "../state";
 import { type Contest, paid, roll } from "./contest";
 import { edge, outcome } from "./edge";
@@ -34,7 +35,7 @@ const objective = (kind: Objective, id: number): Contest => ({
 	due: (state) =>
 		state.minute >= state.objectives[kind] && AVAILABLE[kind](state),
 	resolve(state, rng) {
-		const priority = (side: Side) =>
+		const priority = (side: Side): MatchCause | undefined =>
 			state.context[side].strategy.objectives === FAVOURED_BY[kind]
 				? { key: "strategy", points: PRIORITY_POINTS }
 				: undefined;
@@ -79,7 +80,7 @@ const grub: Contest = {
 		state.minute < minuteOf(state.context.rules.objectives.grub.despawn) &&
 		state.blue.grubs + state.red.grubs === 0,
 	resolve(state, rng) {
-		const priority = (side: Side) =>
+		const priority = (side: Side): MatchCause | undefined =>
 			state.context[side].strategy.objectives === FAVOURED_BY.herald
 				? { key: "strategy", points: PRIORITY_POINTS }
 				: undefined;

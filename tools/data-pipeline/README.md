@@ -111,6 +111,18 @@ Lee la temporada de los snapshots de las seis ligas y trae de Leaguepedia, con e
 
 Los formatos están curados en [international-formats.ts](international-formats.ts) (estructura) y las ventanas salen de las fechas reales. [international-check.ts](international-check.ts) reproduce cada serie real contra su formato (R1): equipos por fase, series, Bo por ronda y cruces con los cuadros del núcleo, y el Swiss por balance, revanchas y Bo de las series decisivas. Un test lo ejecuta con los datos del repo, así que si Riot cambia un formato, el PR del workflow semanal falla en `verify`. Los formatos llevan `verified: false` con sus motivos (R2) hasta que se lean los reglamentos. El generador conserva las referencias a plazas y resultados de fases del #424. Dos ejecuciones dan los mismos bytes.
 
+## Timelines de partida
+
+```sh
+mise exec -- pnpm data:timelines [--offline] [--through AAAA-MM-DD]
+```
+
+Lee las timelines de Riot que Leaguepedia guarda por partida (`PostgameJsonMetadata.TimelinePage`, páginas `V5 data:<id>/Timeline`) de la temporada de los snapshots en LCK, LEC, LCS, LCP y CBLOL (LPL no tiene). Publica **solo agregados** en `packages/core/content/real/timelines.json` (validado con [real-timelines](../../packages/contracts/draft/real-timelines.ts)): las bandas K19 a K22 del [plan 08](../../docs/archive/plans/08-simulacion-de-partida.md) y la curva de nivel mediana por rol y minuto. No se guarda ninguna partida, equipo ni jugador.
+
+- **Caché:** `~/.cache/rift-legends/data-pipeline/timelines` (`RIFT_LEGENDS_TIMELINES_CACHE`), fuera del repo. Cada página (unos 700 KB) se reduce a unos kilobytes de segundos y se guarda con clave estable: una partida terminada no se vuelve a pedir. La lista de partidas lleva el día UTC (`--through`, hoy por defecto), así que cambia a diario.
+- **Cortesía:** una página cada 2 s, el mismo agente genérico y `maxlag`. La primera ejecución completa tarda cerca de una hora; las siguientes solo piden las partidas nuevas. No está en el workflow semanal.
+- **Medidas:** vivos al tomar barón, inhibidor y torre (K19); conversión de una pelea en objetivo en 60 s según el margen de bajas, con peleas de bajas separadas por 15 s como máximo (K20); peleas desde el 25:00 con 4 o más bajas que cierran la partida en 60 s y perdedor con 3 o más muertos al caer el nexo (K21); tiempos de muerte P10, P50 y P90 con la fórmula de la wiki y el nivel de cada jugador al morir (K22). La curva es la mediana de nivel en décimas mientras queden 30 partidas; en 2026 el nivel llega a 20, y la fórmula de muerte usa el valor del nivel 18 para 19 y 20 (la tabla de la wiki acaba ahí).
+
 ## Actualización semanal
 
 El [workflow](../../.github/workflows/data-snapshot.yml) se ejecuta los lunes a las 05:23 UTC y también se puede lanzar desde **Actions → Real data snapshot → Run workflow** en la rama por defecto. Las respuestas crudas viven en `actions/cache` (privada del repositorio, con clave por fecha UTC): no se suben como artefacto ni se commitean, porque los desambiguadores de `Link` pueden incluir nombres reales. Un día nuevo consulta de nuevo la fuente. Si solo cambian las fechas de consulta, se conservan los bytes y la procedencia de la última versión publicada.
@@ -128,3 +140,7 @@ mise exec -- pnpm data:champions [--offline] [--prior-games <n>] [--cache-dir <r
 Lee los snapshots de las seis ligas y el `champion-summary.json` de CommunityDragon (parche fijado en [champions.ts](champions.ts), solo ids, claves y clases). Descarga además los datos de juego de cada campeón (`characters/<id>/<id>.bin.json` y `lol.stringtable.json`, a la subcarpeta `kits` de la caché; ver [rasgos desde los datos del juego](../../docs/plans/11-datos-reales.md#rasgos-desde-los-datos-del-juego-340)). Escribe `champions.json`, `matchups.json`, `counters.json`, `synergies.json`, `kits.json`, `traits.json` y `provenance.json` en `packages/core/content/real/champions/`. Sin caché de los kits en modo offline, los rasgos pasan a estimados y la procedencia lo registra. `--prior-games` fija cuántas partidas dan el mismo peso al kit y a los resultados pro (20 por defecto).
 
 El tier es relativo a cada rol (#401): se ordena por la presencia con su prior y se reparte por cupos (S+ 3 %, S 8 %, A 17 %, B 27 %, C 30 %, D 15 %); con menos de 8 picks ponderados en el rol, como máximo B. Aprovecha dos temporadas anteriores con agregados de Cargo en la subcarpeta `history` de la caché. En modo offline el catálogo es obligatorio. Si faltan agregados históricos, el comando avisa, registra los años que faltan en la procedencia y genera con las temporadas disponibles. Las reglas, la mezcla y los mínimos de cobertura están en el [plan 11](../../docs/plans/11-datos-reales.md#base-de-reglas-y-mezcla-con-los-datos-pro-321).
+
+## Edad de los jugadores
+
+`pnpm data:snapshot` pide `Players.Birthdate` en las mismas consultas de nacionalidad y escribe `packages/core/content/real/birthdates.json` (id y fecha, con procedencia). `data:content` la publica como `birthDate` en `players.json`: `AAAA-MM-DD` o solo `AAAA`. Leaguepedia guarda el año suelto como 1 de enero, así que esa fecha se publica como año. Fechas imposibles o fuera de 1960-2020 se descartan. La edad se calcula en el juego con la fecha del juego ([`ageOn`](../../packages/contracts/age.ts)), no con el reloj.

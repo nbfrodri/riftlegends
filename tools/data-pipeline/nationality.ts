@@ -2,6 +2,11 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { COUNTRY_CODES } from "@rift-legends/contracts/country-codes";
 import { realSnapshotSchema } from "@rift-legends/contracts/real-snapshot";
+import {
+	type BirthDatesFile,
+	buildBirthDates,
+	preserveBirthDates,
+} from "./birthdate.ts";
 import { mergeSamePlayers } from "./canonical-players.ts";
 import { type CargoRow, Client, type ClientOptions } from "./client.ts";
 import { idResolver, person } from "./normalization.ts";
@@ -61,6 +66,7 @@ const cacheRow = (row: CargoRow) => ({
 	Page: row.Page ? person(row.Page).id : null,
 	Country: row.Country ?? null,
 	NationalityPrimary: row.NationalityPrimary ?? null,
+	Birthdate: row.Birthdate ?? null,
 });
 const quote = (values: readonly string[]) =>
 	values.map((value) => `'${value.replaceAll("'", "''")}'`).join(",");
@@ -78,7 +84,7 @@ export async function acquireNationalities(
 	teams: readonly string[] = [],
 ) {
 	const fields = (alias: string) =>
-		`${alias}.Link=Link,P.OverviewPage=Page,P.Country=Country,P.NationalityPrimary=NationalityPrimary`;
+		`${alias}.Link=Link,P.OverviewPage=Page,P.Country=Country,P.NationalityPrimary=NationalityPrimary,P.Birthdate=Birthdate`;
 	const where = (alias: string) => `${alias}.OverviewPage IN (${quote(pages)})`;
 	const rows: CargoRow[] = [];
 	for (const [table, alias] of [
@@ -109,7 +115,7 @@ export async function acquireNationalities(
 		rows.push(
 			...(await client.cargo(
 				"Players=P",
-				"P.OverviewPage=Link,P.OverviewPage=Page,P.Country=Country,P.NationalityPrimary=NationalityPrimary",
+				"P.OverviewPage=Link,P.OverviewPage=Page,P.Country=Country,P.NationalityPrimary=NationalityPrimary,P.Birthdate=Birthdate",
 				`P.Team IN (${quote(teams)})`,
 				"P.OverviewPage",
 				{ cacheRow },
@@ -299,5 +305,18 @@ export async function nationalities(
 	const body = await preserveNationalities(path, file);
 	await mkdir(dirname(path), { recursive: true });
 	await writeFile(path, body);
-	return { players: players.length, unmapped };
+	// The same Players rows carry the birth dates.
+	const dates = buildBirthDates(rows, ids);
+	const birthFile: BirthDatesFile = {
+		provenance: file.provenance,
+		players: dates,
+	};
+	const birthPath = join(options.outputDir, "birthdates.json");
+	await writeFile(birthPath, await preserveBirthDates(birthPath, birthFile));
+	return {
+		players: players.length,
+		unmapped,
+		birthDates: dates.length,
+		ids: new Set(ids).size,
+	};
 }
