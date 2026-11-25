@@ -1,0 +1,378 @@
+{
+	"id": "CBLOL",
+	"kind": "league",
+	"stages": [
+		{
+			"id": "cup",
+			"window": {
+				"startWeek": 2,
+				"weeks": 3,
+				"matchDays": 7,
+				"maxSeriesPerDay": 4
+			},
+			"entrants": {
+				"kind": "fixed",
+				"teams": [
+					"FURIA",
+					"LØS",
+					"LOUD",
+					"RED Canids",
+					"Fluxo W7M",
+					"Vivo Keyd Stars",
+					"PaiN Gaming",
+					"Leviatan"
+				]
+			},
+			"play": {
+				"type": "roundRobin",
+				"size": 8,
+				"rounds": 1,
+				"bestOf": 1
+			}
+		},
+		{
+			"id": "cup-playin-1",
+			"window": {
+				"startWeek": 4,
+				"weeks": 1,
+				"matchDays": 7,
+				"maxSeriesPerDay": 4
+			},
+			"parallelGroup": "cup-playin",
+			"entrants": [
+				{
+					"kind": "standing",
+					"stage": "cup",
+					"from": 5,
+					"to": 5
+				},
+				{
+					"kind": "standing",
+					"stage": "cup",
+					"from": 6,
+					"to": 6
+				}
+			],
+			"play": {
+				"type": "singleElim",
+				"size": 2,
+				"bestOf": [
+					3
+				]
+			}
+		},
+		{
+			"id": "cup-playin-2",
+			"window": {
+				"startWeek": 4,
+				"weeks": 1,
+				"matchDays": 7,
+				"maxSeriesPerDay": 4
+			},
+			"parallelGroup": "cup-playin",
+			"entrants": [
+				{
+					"kind": "standing",
+					"stage": "cup",
+					"from": 7,
+					"to": 7
+				},
+				{
+					"kind": "standing",
+					"stage": "cup",
+					"from": 8,
+					"to": 8
+				}
+			],
+			"play": {
+				"type": "singleElim",
+				"size": 2,
+				"bestOf": [
+					3
+				]
+			}
+		},
+		{
+			"id": "cup-last-chance",
+			"window": {
+				"startWeek": 4,
+				"weeks": 1,
+				"matchDays": 7,
+				"maxSeriesPerDay": 4
+			},
+			"entrants": [
+				{
+					"kind": "bracket",
+					"stage": "cup-playin-1",
+					"match": "U1-1",
+					"result": "loser"
+				},
+				{
+					"kind": "bracket",
+					"stage": "cup-playin-2",
+					"match": "U1-1",
+					"result": "winner"
+				}
+			],
+			"play": {
+				"type": "singleElim",
+				"size": 2,
+				"bestOf": [
+					5
+				]
+			}
+		},
+		{
+			"id": "cup-playoffs",
+			"window": {
+				"startWeek": 5,
+				"weeks": 4,
+				"matchDays": 7,
+				"maxSeriesPerDay": 4
+			},
+			"entrants": [
+				{
+					"kind": "standing",
+					"stage": "cup",
+					"from": 1,
+					"to": 4
+				},
+				{
+					"kind": "bracket",
+					"stage": "cup-playin-1",
+					"match": "U1-1",
+					"result": "winner"
+				},
+				{
+					"kind": "bracket",
+					"stage": "cup-last-chance",
+					"match": "U1-1",
+					"result": "winner"
+				}
+			],
+			"play": {
+				"type": "doubleElim",
+				"size": 6,
+				"upper": [
+					3,
+					3,
+					5
+				],
+				"lower": [
+					5,
+					5,
+					5,
+					5
+				],
+				"drop": [
+					[
+						0,
+						0
+					],
+					[
+						1,
+						2
+					],
+					[
+						3
+					]
+				],
+				"lowerSeeds": [],
+				"grandFinal": 5,
+				"reset": false
+			}
+		},
+		{
+			"id": "split-1",
+			"window": {
+				"startWeek": 12,
+				"weeks": 6,
+				"matchDays": 7,
+				"maxSeriesPerDay": 4
+			},
+			"entrants": {
+				"kind": "fixed",
+				"teams": [
+					"FURIA",
+					"LØS",
+					"LOUD",
+					"RED Canids",
+					"Fluxo W7M",
+					"Vivo Keyd Stars",
+					"PaiN Gaming",
+					"Leviatan"
+				]
+			},
+			"play": {
+				"type": "roundRobin",
+				"size": 8,
+				"rounds": 1,
+				"bestOf": 3
+			}
+		},
+		{
+			"id": "split-1-playoffs",
+			"window": {
+				"startWeek": 18,
+				"weeks": 5,
+				"matchDays": 7,
+				"maxSeriesPerDay": 4
+			},
+			"entrants": {
+				"kind": "standing",
+				"stage": "split-1",
+				"from": 1,
+				"to": 6
+			},
+			"play": {
+				"type": "doubleElim",
+				"size": 6,
+				"upper": [
+					5,
+					5,
+					5
+				],
+				"lower": [
+					5,
+					5,
+					5,
+					5
+				],
+				"drop": [
+					[
+						0,
+						0
+					],
+					[
+						1,
+						2
+					],
+					[
+						3
+					]
+				],
+				"lowerSeeds": [],
+				"grandFinal": 5,
+				"reset": false
+			}
+		},
+		{
+			"id": "split-2",
+			"window": {
+				"startWeek": 29,
+				"weeks": 6,
+				"matchDays": 7,
+				"maxSeriesPerDay": 4
+			},
+			"entrants": {
+				"kind": "fixed",
+				"teams": [
+					"FURIA",
+					"LØS",
+					"LOUD",
+					"RED Canids",
+					"Fluxo W7M",
+					"Vivo Keyd Stars",
+					"PaiN Gaming",
+					"Leviatan"
+				]
+			},
+			"play": {
+				"type": "roundRobin",
+				"size": 8,
+				"rounds": 1,
+				"bestOf": 3
+			}
+		},
+		{
+			"id": "split-2-playoffs",
+			"window": {
+				"startWeek": 35,
+				"weeks": 6,
+				"matchDays": 7,
+				"maxSeriesPerDay": 4
+			},
+			"entrants": {
+				"kind": "standing",
+				"stage": "split-2",
+				"from": 1,
+				"to": 6
+			},
+			"play": {
+				"type": "doubleElim",
+				"size": 6,
+				"upper": [
+					5,
+					5,
+					5
+				],
+				"lower": [
+					5,
+					5,
+					5,
+					5
+				],
+				"drop": [
+					[
+						0,
+						0
+					],
+					[
+						1,
+						2
+					],
+					[
+						3
+					]
+				],
+				"lowerSeeds": [],
+				"grandFinal": 5,
+				"reset": false
+			}
+		}
+	],
+	"tiebreak": [
+		"seriesWins",
+		"gameDiff",
+		"headToHead",
+		"tiebreakerSeries",
+		"draw"
+	],
+	"tiebreakerBestOf": 3,
+	"slots": [
+		{
+			"to": "first-stand",
+			"rule": "standing",
+			"stage": "cup-playoffs",
+			"count": 1,
+			"cascade": "next"
+		},
+		{
+			"to": "msi",
+			"rule": "standing",
+			"stage": "split-1-playoffs",
+			"count": 1,
+			"cascade": "next"
+		},
+		{
+			"to": "worlds",
+			"rule": "standing",
+			"stage": "split-2-playoffs",
+			"count": 2,
+			"cascade": "next"
+		}
+	],
+	"verified": false,
+	"provenance": {
+		"source": "Leaguepedia",
+		"licence": "CC BY-SA 3.0",
+		"attribution": "Datos normalizados de los colaboradores de Leaguepedia (https://lol.fandom.com/wiki/Leaguepedia), CC BY-SA 3.0 Unported.",
+		"retrievedAt": "2026-11-22T12:15:53.772Z",
+		"snapshot": "cblol.json"
+	},
+	"unverifiedReasons": [
+		"Official tiebreak criteria are unconfirmed; use the game defaults, including Bo3 at a cut.",
+		"Fixed bracket seeds and international places use stage finishes; official seeding, points and cascade rules are unconfirmed.",
+		"Cup play-in assigns the first direct playoff seed to the winner of fifth vs sixth."
+	]
+}

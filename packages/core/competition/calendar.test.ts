@@ -221,6 +221,30 @@ describe("season calendar", () => {
 		).toEqual([0, 0, 0, 0]);
 	});
 
+	it("C4 gives each competition its own four series per day", () => {
+		const rosters = ["north", "south"].map((id) => roster(8, id));
+		const formats = rosters.map((teams, index) =>
+			league(
+				index === 0 ? "north" : "south",
+				[0, 1, 2, 3].map((pair) => ({
+					...leagueStage(
+						teams.slice(pair * 2, pair * 2 + 2),
+						{ weeks: 1, matchDays: 1 },
+						1,
+						`pair-${pair}`,
+					),
+					parallelGroup: "pairs",
+				})),
+			),
+		);
+
+		const stages = scheduled(
+			buildCalendar(graph(formats, rosters.flat()), options),
+		);
+		const days = stages.flatMap(({ series }) => series.map(({ day }) => day));
+		expect(days).toEqual([0, 0, 0, 0, 0, 0, 0, 0]);
+	});
+
 	it("C4 rejects a double round robin that cannot fit before the fixed season end", () => {
 		const teams = roster(2);
 		const stage = leagueStage(teams, { startWeek: 52, weeks: 2 }, 2);
@@ -313,9 +337,15 @@ describe("calendar properties", () => {
 						byDay.set(match.day, day);
 					}
 					for (const day of byDay.values()) {
-						if (property === "daily capacity")
-							expect(day.length).toBeLessThanOrEqual(4);
-						else {
+						if (property === "daily capacity") {
+							const perLeague = new Map<string, number>();
+							for (const { id } of day) {
+								const league = (JSON.parse(id) as string[])[0] as string;
+								perLeague.set(league, (perLeague.get(league) ?? 0) + 1);
+							}
+							for (const count of perLeague.values())
+								expect(count).toBeLessThanOrEqual(4);
+						} else {
 							const playing = day.flatMap(({ teams }) => teams);
 							expect(new Set(playing).size).toBe(playing.length);
 						}
