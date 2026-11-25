@@ -163,7 +163,7 @@ describe("sound player (#472)", () => {
 		]);
 	});
 
-	test("a sound asked for before the preload ends is skipped, not queued", async () => {
+	test("until the official sounds arrive, the fallback plays; then the official one", async () => {
 		let release: (sounds: CachedSounds) => void = () => undefined;
 		const sounds = player(
 			() =>
@@ -173,8 +173,16 @@ describe("sound player (#472)", () => {
 		);
 		const ready = sounds.preload();
 		sounds.play("lock");
+		expect(fake.started[0]?.buffer).toMatchObject({ synthesized: true });
 		release(allCached);
 		await ready;
+		sounds.play("lock");
+		expect(fake.started[1]?.buffer).toEqual({ decoded: 3 });
+	});
+
+	test("before any preload, nothing plays and nothing throws", () => {
+		const sounds = player();
+		expect(() => sounds.play("select")).not.toThrow();
 		expect(fake.started).toHaveLength(0);
 	});
 

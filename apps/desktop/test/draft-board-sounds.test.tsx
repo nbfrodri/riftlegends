@@ -1,4 +1,4 @@
-import { cleanup, screen, waitFor } from "@testing-library/react";
+import { cleanup, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { DraftScreen } from "../src/renderer/draft/draft-screen";
@@ -52,9 +52,7 @@ describe("draft sounds on the board (#472)", () => {
 
 		await user.click(firstAvailable());
 		await confirmAndWaitForRival();
-		await waitFor(() =>
-			expect(played()).toEqual(["select", "lock", "pick", "pick"]),
-		);
-		expect(screen.getByText("B2 · Forge pick")).toBeTruthy();
+		// The rival picks next, one champion per AI pause.
+		await waitFor(() => expect(played()).toEqual(["select", "lock", "pick"]));
 	});
 });
