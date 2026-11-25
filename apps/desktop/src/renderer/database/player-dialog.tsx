@@ -76,7 +76,7 @@ export function PlayerDialog({
 				<header className="flex items-center gap-4">
 					<PlayerPortrait id={player.id} handle={player.handle} />
 					<div className="min-w-0 flex-1">
-						<h2 className="flex items-center gap-2 font-bold font-display text-[clamp(22px,2vw,30px)] leading-none tracking-heading">
+						<h2 className="flex items-baseline gap-2 font-bold font-display text-[clamp(22px,2vw,30px)] leading-none tracking-heading">
 							{player.handle}
 							<CountryFlag country={player.nationality} />
 						</h2>
