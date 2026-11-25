@@ -1,7 +1,8 @@
+import fc from "fast-check";
 import { expect, it } from "vitest";
 import type { ContestEvent } from "./contests/contest";
 import { matchSetup } from "./fixtures/setup";
-import { playMinute } from "./loop";
+import { MATCH_CONTESTS, playMatch, playMinute } from "./loop";
 import { createMatch } from "./state";
 
 const killsAt = (seconds: number[]) =>
@@ -83,4 +84,36 @@ it("does not extend a chain through its author's death", () => {
 	const [event] = resolve(fight(kills));
 	expect(event?.kills[3]).toHaveProperty("multikill", 4);
 	expect(event?.kills[5]).not.toHaveProperty("multikill");
+});
+
+it("R2: every streak in a played game obeys the windows, victims and deaths", () => {
+	let streaks = 0;
+	fc.assert(
+		fc.property(fc.integer({ min: 0, max: 0xffffffff }), (seed) => {
+			const { events } = playMatch(matchSetup({ seed }), MATCH_CONTESTS);
+			for (const event of events) {
+				event.kills.forEach((kill, index) => {
+					const count = kill.multikill;
+					if (!count) return;
+					streaks++;
+					expect(event.kind).toBe("fight");
+					const own = event.kills.slice(0, index + 1);
+					const mine = own.filter((k) => k.killer === kill.killer);
+					const chain = mine.slice(-count);
+					expect(chain.at(-1)).toBe(kill);
+					expect(new Set(chain.map((k) => k.victim)).size).toBe(count);
+					chain.slice(1).forEach((k, i) => {
+						const gap = (k.fightSecond ?? 0) - (chain[i]?.fightSecond ?? 0);
+						expect(gap).toBeGreaterThanOrEqual(0);
+						expect(gap).toBeLessThanOrEqual(i === 3 ? 30 : 10);
+					});
+					const first = own.indexOf(chain[0] as never);
+					const between = own.slice(first);
+					expect(between.some((k) => k.victim === kill.killer)).toBe(false);
+				});
+			}
+		}),
+		{ numRuns: 200 },
+	);
+	expect(streaks).toBeGreaterThan(0);
 });
