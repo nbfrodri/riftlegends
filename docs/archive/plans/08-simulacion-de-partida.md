@@ -78,7 +78,7 @@ Estadísticas (`stats.ts`) y «por qué ganó» (`explain.ts`), funciones puras 
 - **Oro:** kill y asistencia, a quien las hizo; el resto del lado (pasivo y objetivos) a partes iguales, y el resto entero al primer rol. La suma de los cinco = oro del lado.
 - **Daño** (no está en los hechos, se estima): kill 1.500, asistencia 600, muerte 300, 150 por minuto, y 500 (ganadores) o 250 (perdedores) por cada lucha o asedio.
 - **Participación:** (kills + asistencias) / kills del equipo, por 10.000; 0 sin kills.
-- **Nota:** 60 + 6 por kill + 3 por asistencia − 5 por muerte + hasta 10 por participación, acotada a 0–100.
+- **Nota:** escala común por rol, de 0 a 100 con 60 de referencia (ver [Nota por rol](#nota-por-rol-implementada-348-25-11-2026)).
 - **Decisivas:** de las disputas que ganó el ganador, las 3 con más `swing` = (10.000 − probabilidad) × peso del tipo. Pesos: lucha, barón y élder 1; asedio 0,7; dragón 0,6; inhibidor 0,5; heraldo y torre 0,4; kill y gank 0,3; línea 0,2; nexo 0. Empate: el evento más temprano.
 
 `game.finish` desaparece: tras los roles, `match.play {}` juega el game entero y emite sus hechos y `game.finished`.
@@ -244,6 +244,29 @@ Las referencias de bajas, KP y daño salen de la tabla de competición. Para asi
 | Apoyo | KP 35, asistencias 25, muertes 20, visión 20 | Estimar visión con el atributo `vision` y la proporción de disputas en jungla y fosos ganadas. |
 
 Objetivos y presión tienen anclajes de 0, 50 y 100 % de éxitos. En visión, promediar el atributo (0–100) y el porcentaje de disputas ganadas para usar los mismos anclajes. Sin disputas, la contribución de visión es neutra.
+
+#### Nota por rol implementada (#348, 25-11-2026)
+
+Código en `packages/core/match/rating.ts`; `stats.ts` le pasa las métricas. `SIM_VERSION` 11 (solo cambia `rating` de `match.ended`).
+
+| Pieza | Valor |
+| --- | --- |
+| Métricas | Cuota de daño y de bajas del equipo, KP, asistencias y muertes por 30 min (`stat × 1800 / segundos`), y tasas de éxito: presión (disputas y torres de la línea top ganadas), objetivos (dragón, heraldo, barón y elder) y visión (disputas en jungla y fosos). Sin oportunidades, la métrica vale 60 |
+| Pesos | Los aprobados el 23-11, en `WEIGHTS` (suman 100 por rol) |
+| Escala | Lineal por tramos: P10 a 0, referencia a 60, P90 a 100, acotada; en muertes el eje se invierte. Un solo redondeo (mitad a par) al final |
+| Desglose | `rate` devuelve cada parte con valor, nota (centésimas) y peso |
+| Anclajes | P10 y P90 del pro (Leaguepedia). La **referencia** (el 60) no es la media del pro: la escala es cóncava (más margen por encima que por debajo), así que con la media la nota media sale 54–56. Se fija donde la media de la simulación puntúa 60 (800 partidas, pool real y de control), y para muertes y asistencias de apoyo se parte de lo que juega la simulación |
+
+| K8 (media por rol, 1.000 partidas) | Top | Jungla | Mid | ADC | Apoyo | Distancia |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Antes, ficticio (control) | 75,0 | 88,4 | 80,6 | 82,0 | 84,8 | 13,4 |
+| Antes, real | 75,7 | 89,2 | 81,4 | 83,1 | 85,3 | 13,4 |
+| Después, ficticio (control) | 60,3 | 59,4 | 60,4 | 59,5 | 59,4 | 1,0 |
+| Después, real | 59,9 | 60,3 | 59,6 | 60,5 | 60,4 | 0,9 |
+
+K8 pasa en los cuatro pools (control, empaquetado, campeones reales y real), con distancia máxima de 1,3.
+
+Hallazgo para K6: en la simulación jungla y apoyo mueren unas 1,3 veces por 30 min, frente a 2,9 y 2,8 del pro; no hay banda de muertes por rol.
 
 ### Diseño · Oro por jugador y ventaja de oro (#326)
 
@@ -541,7 +564,7 @@ Ampliar `packages/core/match/calibration` sobre las **1.000 semillas** actuales 
 | --- | --- |
 | K6 · Bajas y participación | Media por rol a 3,5 pp o menos de la cuota de bajas observada y a 6 pp o menos de KP (ensanchado de forma provisional en #361; antes 3 y 5). Cada extremo P10/P90 a 6 y 9 pp (antes 8), respectivamente. Asistencias por baja entre 2,0 y 2,6 de media por equipo-partida (referencia observada 2,28 en 4.743 equipos). |
 | K7 · Daño y oro | El oro de cada rol sale de su propio libro (suma de fuentes). Medias por rol dentro de 2 pp (daño) y 1,5 pp (oro). Extremos P10/P90 dentro de 4 y 2 pp. Comparar apoyo mago y de utilidad con semillas emparejadas e igual actuación de base. |
-| K8 · Nota | En cada pool equilibrado, media por rol de 56 a 64 y distancia entre medias de hasta 5 puntos de nota. Mantener R3 como prueba controlada de mérito individual. |
+| K8 · Nota (en verde en los cuatro pools desde #348) | En cada pool equilibrado, media por rol de 56 a 64 y distancia entre medias de hasta 5 puntos de nota. Mantener R3 como prueba controlada de mérito individual. |
 | K9 · Cruces de identidades | 600 pares de partidas equilibradas por fila aplicable (300 por lado favorecido). Dentro de cada par, comparar la fila activa con la misma semilla y alineaciones con esa fila a cero en `edge`. Mantener su uso en el selector para aislar el efecto de puntuación. La tasa de victoria del equipo favorecido sube entre 0 y 10 pp. Medir las dos ventanas de tempo y escalado por separado. C7 exige la ventaja en la disputa al cumplirse la fase y las condiciones. |
 | K10 · Mezcla de jugadas | 600 pares por contraste (300 por lado), con semillas, atributos y rival equilibrado iguales. Comparar medianas del equipo evaluado. Atribuir asedios y peleas al iniciador y torres y objetivos a quien los toma. Poke inicia **2–5** asedios en línea y al menos **1 más** que engage. Engage inicia **3–7** peleas 5v5 y al menos **1 más** que poke. Split consigue **1–3** torres laterales más que front-to-back (niveles 1–3 en top y bot). Tempo toma **1–2** objetivos tempranos más que escalado (dragones o heraldo antes del 14). Son estimaciones para calibrar. |
 | K11 · Totales de partida | Mantener K1–K9 en sus muestras, incluida la mediana de bajas de K3 (**15–30**). En las muestras de 1.000 partidas por pool, añadir medianas de **8–15** torres (incluidas las del nexo) y **3–6** dragones (elder aparte). Las bandas nuevas son estimaciones para calibrar. |

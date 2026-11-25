@@ -119,9 +119,7 @@ describe.each(["control", "packaged", "real-champions", "real"] as const)(
 				return mean;
 			});
 			const ordered = sorted(means);
-			expect(gap(ordered.at(-1) ?? 0, ordered[0] ?? 0)).toBeLessThanOrEqual(
-				5,
-			);
+			expect(gap(ordered.at(-1) ?? 0, ordered[0] ?? 0)).toBeLessThanOrEqual(5);
 		});
 
 		if (pool === "real") {
