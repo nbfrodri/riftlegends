@@ -84,7 +84,34 @@ export async function waitForCaptureAssets(page: Page) {
 	}
 }
 
-export async function captureScreen(
+// Under Xvfb the OS pointer stays mid-screen, and after a repaint Chromium
+// re-applies :hover from it, so a button under that spot was hovered in some
+// runs only (#501). While capturing, no element receives the pointer: hover
+// stays off in every run. Playwright's own clicks need it back afterwards.
+async function withoutPointer<T>(
+	page: Page,
+	run: () => Promise<T>,
+): Promise<T> {
+	const style = await page.addStyleTag({
+		content: "*, *::before, *::after { pointer-events: none !important; }",
+	});
+	try {
+		return await run();
+	} finally {
+		await style.evaluate((element) => element.remove());
+	}
+}
+
+export function captureScreen(
+	page: Page,
+	name: string,
+	target: Page | Locator = page,
+) {
+	return withoutPointer(page, () => captureHovered(page, name, target));
+}
+
+/** Captures with the pointer as it is, for a screen that shows a hover (tooltip). */
+export async function captureHovered(
 	page: Page,
 	name: string,
 	target: Page | Locator = page,

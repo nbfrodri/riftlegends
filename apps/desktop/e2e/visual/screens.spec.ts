@@ -1,7 +1,7 @@
 import type { Page } from "@playwright/test";
 import { expect, test } from "../fixtures";
 import { playQuickDraftBo5, seedNextSeries } from "../quick-draft-flow";
-import { captureScreen } from "./capture";
+import { captureHovered, captureScreen } from "./capture";
 
 test.skip(
 	process.platform !== "linux",
@@ -15,9 +15,6 @@ test.beforeEach(async ({ appWindow }) => {
 	await expect(appWindow.getByRole("heading", { level: 1 })).toHaveText(
 		"Configurar serie",
 	);
-	// Xvfb parks the pointer mid-screen, which lands on the Bo1 button and
-	// hovers it in some runs (#501). Park it on a spot with no control.
-	await appWindow.mouse.move(0, 0);
 });
 
 const goTo = async (page: Page, section: string) => {
@@ -45,7 +42,7 @@ test("Collapsed sidebar with the Caja tooltip and its shortcut", async ({
 	await appWindow.emulateMedia({ reducedMotion: "reduce" });
 	await appWindow.getByRole("button", { name: "Expandir" }).hover();
 	await expect(appWindow.getByRole("tooltip")).toContainText("Alt+B");
-	await captureScreen(appWindow, "sidebar-tooltip.png");
+	await captureHovered(appWindow, "sidebar-tooltip.png");
 });
 
 test("Mercado with the sidebar expanded", async ({ appWindow }) => {
