@@ -45,6 +45,14 @@ const groups = z.strictObject({
 		rounds: z.union([z.literal(1), z.literal(2)]),
 		bestOf,
 	}),
+	/** A final cross-group round, with a week offset from the stage start. */
+	finalRound: z
+		.strictObject({
+			bestOf,
+			groupPoints: z.int().min(1).max(32),
+			week: z.int().min(0).max(59),
+		})
+		.optional(),
 });
 
 const swiss = z.strictObject({
@@ -110,6 +118,7 @@ const source = z.discriminatedUnion("kind", [
 		competition: competitionId.optional(),
 		from: z.int().min(1),
 		to: z.int().min(1),
+		group: z.enum(["winner", "loser"]).optional(),
 	}),
 	z.strictObject({
 		kind: z.literal("bracket"),
@@ -147,6 +156,8 @@ const stage = z.strictObject({
 	window,
 	/** Consecutive league stages in the same block may play in parallel. */
 	parallelGroup: id.optional(),
+	/** Earlier split tables in priority order, most recent first. */
+	tiebreakHistory: z.array(stageId).min(1).max(31).optional(),
 	/** Multiple sources fill the seed list in declaration order. */
 	entrants: z.union([source, z.array(source).min(1).max(32)]),
 	play,
@@ -163,10 +174,13 @@ const CRITERIA = [
 	"gameDiff",
 	"headToHead",
 	"gameWins",
+	"priorSplitRank",
+	"strengthOfVictory",
+	"victoryTime",
 	"tiebreakerSeries",
 	"draw",
 ] as const;
-const criterion = z.enum(CRITERIA);
+export const competitionCriterion = z.enum(CRITERIA);
 
 const slot = z.strictObject({
 	to: competitionId,
@@ -200,7 +214,7 @@ export const competitionSchema = z
 		id: competitionId,
 		kind: z.enum(["league", "international"]),
 		stages: z.array(stage).min(1).max(32),
-		tiebreak: z.array(criterion).max(CRITERIA.length),
+		tiebreak: z.array(competitionCriterion).max(CRITERIA.length),
 		/** Bo of the tiebreaker series that decides a tie at a cut. */
 		tiebreakerBestOf: bestOf.default(3),
 		slots: z.array(slot).max(16).optional(),
@@ -227,6 +241,31 @@ export const competitionSchema = z
 			if (play.type === "groups" && play.size < 2 * play.count) {
 				issue(ctx, [...p, "size"], "every group needs two teams");
 			}
+			if (play.type === "groups" && play.finalRound) {
+				if (
+					play.seeding !== "cross" ||
+					play.count !== 2 ||
+					play.size % 2 ||
+					play.inner.rounds !== 1
+				)
+					issue(
+						ctx,
+						[...p, "finalRound"],
+						"needs two equal cross-groups and a single lap",
+					);
+				if (play.finalRound.week >= s.window.weeks)
+					issue(ctx, [...p, "finalRound", "week"], "outside the stage window");
+			}
+			if (
+				s.tiebreakHistory &&
+				(new Set(s.tiebreakHistory).size !== s.tiebreakHistory.length ||
+					s.tiebreakHistory.some((id) => id === s.id || !seen.has(id)))
+			)
+				issue(
+					ctx,
+					["stages", i, "tiebreakHistory"],
+					"requires distinct earlier stages",
+				);
 			if (
 				play.type === "swiss" &&
 				Math.min(play.maxRounds ?? Infinity, play.wins + play.losses - 1) >
