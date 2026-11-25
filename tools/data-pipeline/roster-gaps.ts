@@ -54,7 +54,7 @@ const cacheRow = (row: CargoRow) => ({
 });
 
 /** The current roster of each team on its Leaguepedia player pages. */
-export function acquireCurrentRoster(
+function acquireCurrentRoster(
 	client: Client,
 	teamNames: readonly string[],
 ) {
