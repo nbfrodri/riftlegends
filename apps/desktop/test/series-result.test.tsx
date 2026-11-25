@@ -83,6 +83,7 @@ const game = (n: number, winner: string, mid: string): GameResult => {
 			gold: 0,
 			damage: 0,
 			participation: 0,
+			vision: 40,
 			rating: role === "mid" && team === "forge" && n === 2 ? 90 : 50,
 		})),
 	);
@@ -218,7 +219,7 @@ test("the recap gives each map's winner with its logo, the running score and the
 	).toBeTruthy();
 });
 
-test("each row of the differences by role shows the two players of that role, with their champion", async () => {
+test("each row of the differences by role mirrors the two players of that role, with photo, champion and mean rating", async () => {
 	await renderInLocale(
 		<SeriesReport games={games} summary={summary} onOpen={vi.fn()} />,
 	);
@@ -234,5 +235,20 @@ test("each row of the differences by role shows the two players of that role, wi
 	const mid = rows[2] as HTMLElement;
 	expect(within(mid).getByRole("img", { name: "Ahri" })).toBeTruthy();
 	expect(within(mid).getByRole("img", { name: "Zed" })).toBeTruthy();
-	expect(mid.textContent).toContain("20 points more");
+	// The photo, or the silhouette when there is none.
+	expect(
+		within(mid).getByRole("img", { name: "Portrait of Forgemid" }).tagName,
+	).toBe("IMG");
+	expect(
+		within(mid).getByRole("img", { name: "Portrait of Shoalmid" }).tagName,
+	).toBe("svg");
+	// Forge's mid rated 50, 90 and 50.
+	expect(within(mid).getByText("63.3")).toBeTruthy();
+	expect(within(mid).getByText("50")).toBeTruthy();
+	expect(
+		within(mid).getByText("Forgemid, 20 points above Shoalmid"),
+	).toBeTruthy();
+	expect(
+		within(mid).getByText("Forgemid, 800 gold more than Shoalmid"),
+	).toBeTruthy();
 });

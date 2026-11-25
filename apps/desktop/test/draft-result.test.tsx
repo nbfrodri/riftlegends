@@ -242,14 +242,14 @@ describe("game result (U9)", () => {
 			expect(row.textContent).toContain(
 				line.rating === 0
 					? "Even"
-					: `${points} ${points === 1 ? "point" : "points"} more`,
+					: `${points} ${points === 1 ? "point" : "points"} above`,
 			);
-			const gold = line.gold * (line.rating < 0 ? -1 : 1);
 			expect(row.textContent).toContain(
-				gold === 0
+				line.gold === 0
 					? "Even"
-					: `${gold > 0 ? "+" : "−"}${grouped(Math.abs(gold))} gold`,
+					: `${grouped(Math.abs(line.gold))} gold more than`,
 			);
+			expect(row.textContent).not.toMatch(/[+−]\d/);
 			expect(points > 15).toBe(line.gap);
 		});
 		const gaps = lines.flatMap((l, i) => (l.gap ? [ROLES[i]] : []));
