@@ -60,6 +60,7 @@ describe("official champ-select sounds (#472)", () => {
 			"lock",
 			"pick",
 			"select",
+			"tick",
 		]);
 		for (const { url, size, sha256 } of championSelectSounds) {
 			expect(url).toMatch(
