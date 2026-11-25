@@ -8,7 +8,6 @@ import {
 	matches,
 	readBytes,
 	readJson,
-	retryHeld,
 	writeJson,
 } from "./disk";
 import {
@@ -144,7 +143,7 @@ export async function downloadFile(
 		if (saved.complete && (await matches(destination, digest, file.limit)))
 			return digest;
 		if (saved.complete && (await matches(part, digest, file.limit))) {
-			await retryHeld(() => rename(part, destination));
+			await rename(part, destination);
 			return digest;
 		}
 		if (!saved.complete && saved.etag) {
@@ -226,7 +225,7 @@ export async function downloadFile(
 				(file.check?.(bytes) ?? true);
 			if (validFormat) {
 				await writeJson(metadata, { ...result, complete: true });
-				await retryHeld(() => rename(part, destination));
+				await rename(part, destination);
 				return result;
 			}
 		}

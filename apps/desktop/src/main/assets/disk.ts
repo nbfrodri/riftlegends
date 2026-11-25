@@ -1,7 +1,6 @@
 import { createHash } from "node:crypto";
 import { lstat, mkdir, open, rename, rm } from "node:fs/promises";
 import { isAbsolute, relative, resolve, sep } from "node:path";
-import { setTimeout } from "node:timers/promises";
 import { isRecord } from "./catalog";
 
 export interface Digest {
@@ -18,35 +17,6 @@ export function isDigest(value: unknown): value is Digest {
 		typeof value.sha256 === "string" &&
 		/^[a-f0-9]{64}$/.test(value.sha256)
 	);
-}
-
-const heldCodes = new Set(["EACCES", "EBUSY", "EPERM"]);
-const heldAttempts = 10;
-
-/**
- * Runs a rename or delete again while Windows reports the path as held. An
- * antivirus or the search indexer opens new files for a moment, and those
- * calls fail meanwhile (#549). Elsewhere, and for other errors, it fails at once.
- */
-export async function retryHeld<T>(operation: () => Promise<T>): Promise<T> {
-	for (let attempt = 1; ; attempt++) {
-		try {
-			return await operation();
-		} catch (error) {
-			const code =
-				error && typeof error === "object" && "code" in error
-					? error.code
-					: undefined;
-			if (
-				process.platform !== "win32" ||
-				attempt >= heldAttempts ||
-				typeof code !== "string" ||
-				!heldCodes.has(code)
-			)
-				throw error;
-			await setTimeout(attempt * 50, undefined, { ref: false });
-		}
-	}
 }
 
 export async function statIfPresent(path: string) {
@@ -170,7 +140,7 @@ export async function writeJson(path: string, value: unknown): Promise<Digest> {
 	} finally {
 		await handle.close();
 	}
-	await retryHeld(() => rename(temporary, path));
+	await rename(temporary, path);
 	return {
 		size: bytes.length,
 		sha256: createHash("sha256").update(bytes).digest("hex"),
