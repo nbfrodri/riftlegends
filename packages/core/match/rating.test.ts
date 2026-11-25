@@ -180,13 +180,13 @@ describe("R3 · common rating scale", () => {
 		expect(support).toBeGreaterThan(mid);
 	});
 
-	it("explains the rating: every part has its value, score and weight", () => {
+	it("explains the rating: every part has its value, score (in hundredths) and weight", () => {
 		const { rating, parts } = rate("support", performance("support", 80));
 		expect(parts.map((p) => p.metric).sort()).toEqual(
 			["assists", "deaths", "kp", "vision"].sort(),
 		);
 		const total = parts.reduce((sum, p) => sum + p.score * p.weight, 0);
-		expect(Math.abs(rating - total / 100)).toBeLessThanOrEqual(0.5);
+		expect(Math.abs(rating - total / 10_000)).toBeLessThanOrEqual(0.5);
 		for (const p of parts) expect(p.weight).toBe(WEIGHTS.support[p.metric]);
 	});
 });
