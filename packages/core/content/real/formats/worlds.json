@@ -12,7 +12,25 @@
 			},
 			"entrants": {
 				"kind": "qualified",
-				"competition": "worlds"
+				"competition": "worlds",
+				"places": [
+					{
+						"league": "LEC",
+						"place": 3
+					},
+					{
+						"league": "LCP",
+						"place": 3
+					},
+					{
+						"league": "CBLOL",
+						"place": 2
+					},
+					{
+						"league": "LCS",
+						"place": 3
+					}
+				]
 			},
 			"play": {
 				"type": "doubleElim",
@@ -47,18 +65,80 @@
 				"matchDays": 5,
 				"maxSeriesPerDay": 4
 			},
-			"entrants": {
-				"kind": "pots",
-				"from": [
-					"LCK",
-					"LPL",
-					"LEC",
-					"LCP",
-					"LCS",
-					"CBLOL"
-				],
-				"pots": 4
-			},
+			"entrants": [
+				{
+					"kind": "qualified",
+					"competition": "worlds",
+					"places": [
+						{
+							"league": "LCK",
+							"place": 1
+						},
+						{
+							"league": "LPL",
+							"place": 1
+						},
+						{
+							"league": "LEC",
+							"place": 1
+						},
+						{
+							"league": "LCP",
+							"place": 1
+						},
+						{
+							"league": "LCS",
+							"place": 1
+						},
+						{
+							"league": "CBLOL",
+							"place": 1
+						},
+						{
+							"league": "LCK",
+							"place": 2
+						},
+						{
+							"league": "LPL",
+							"place": 2
+						},
+						{
+							"league": "LEC",
+							"place": 2
+						},
+						{
+							"league": "LCP",
+							"place": 2
+						},
+						{
+							"league": "LCS",
+							"place": 2
+						},
+						{
+							"league": "LCK",
+							"place": 3
+						},
+						{
+							"league": "LPL",
+							"place": 3
+						},
+						{
+							"league": "LCK",
+							"place": 4
+						},
+						{
+							"league": "LPL",
+							"place": 4
+						}
+					]
+				},
+				{
+					"kind": "bracket",
+					"stage": "playin",
+					"match": "GF",
+					"result": "winner"
+				}
+			],
 			"play": {
 				"type": "swiss",
 				"size": 16,
@@ -71,6 +151,9 @@
 					"region",
 					"rematch"
 				]
+			},
+			"draw": {
+				"pots": 4
 			}
 		},
 		{

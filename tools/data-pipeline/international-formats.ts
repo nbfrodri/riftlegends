@@ -25,6 +25,7 @@ interface StageDef {
 	group?: number;
 	entrants: Stage["entrants"];
 	play: Stage["play"];
+	draw?: Stage["draw"];
 }
 
 interface Definition {
@@ -34,10 +35,58 @@ interface Definition {
 }
 
 const bo5 = (n: number) => Array<5>(n).fill(5);
-const pool = (competition: EventId): Stage["entrants"] => ({
-	kind: "qualified",
+type LeaguePlace = readonly [league: string, place: number];
+const pool = (competition: EventId, ...places: LeaguePlace[]) => ({
+	kind: "qualified" as const,
 	competition,
+	places: places.map(([league, place]) => ({ league, place })),
 });
+
+const winner = (stage: string, match: string) =>
+	({ kind: "bracket", stage, match, result: "winner" }) as const;
+
+const leagues = ["LCK", "LPL", "LEC", "LCP", "LCS", "CBLOL"];
+
+function playInRoutes(
+	event: EventId,
+	slots: readonly number[],
+	playIn: LeaguePlace[],
+): { opening: Stage["entrants"]; main: Stage["entrants"] } {
+	const direct: LeaguePlace[] = [];
+	for (let place = 1; place <= Math.max(...slots); place++) {
+		for (const [index, league] of leagues.entries()) {
+			if ((slots[index] ?? 0) < place) continue;
+			if (!playIn.some(([l, p]) => l === league && p === place))
+				direct.push([league, place]);
+		}
+	}
+	return {
+		opening: pool(event, ...playIn),
+		main: [pool(event, ...direct), winner("playin", "GF")],
+	};
+}
+
+// Places inferred from the participating leagues and openings in the snapshot.
+const msiRoutes = playInRoutes(
+	"msi",
+	[2, 2, 2, 2, 2, 1],
+	[
+		["LCK", 2],
+		["LEC", 2],
+		["LCP", 2],
+		["LCS", 2],
+	],
+);
+const worldsRoutes = playInRoutes(
+	"worlds",
+	[4, 4, 3, 3, 3, 2],
+	[
+		["LEC", 3],
+		["LCP", 3],
+		["CBLOL", 2],
+		["LCS", 3],
+	],
+);
 
 /** Four teams, double elimination, all Bo5; GSL groups have no grand final. */
 const fourTeams = (grandFinal: 5 | null): Stage["play"] => ({
@@ -51,48 +100,62 @@ const fourTeams = (grandFinal: 5 | null): Stage["play"] => ({
 	reset: false,
 });
 
-const standing = {
-	reason:
-		"Tiebreak criteria, seeding and slots are not read from the rulebook yet.",
-	chaining:
-		"Stages that mix direct teams with earlier results (or take them from two stages) use `qualified` until stage chaining (#424).",
-} as const;
+const unverified = [
+	"Tiebreak criteria, seeding and slots are not read from the rulebook yet.",
+];
 
 export const internationalDefinitions: Record<EventId, Definition> = {
 	"first-stand": {
 		tiebreak: [],
-		unverified: [standing.reason, standing.chaining],
+		unverified,
 		stages: [
 			{
 				id: "groupA",
 				tabs: [1, 2, 3, 4, 5].map((day) => `Groups Day ${day}`),
 				group: 0,
-				entrants: pool("first-stand"),
+				entrants: pool(
+					"first-stand",
+					["LPL", 1],
+					["LEC", 1],
+					["LCP", 1],
+					["LCK", 2],
+				),
 				play: fourTeams(null),
 			},
 			{
 				id: "groupB",
 				tabs: [1, 2, 3, 4, 5].map((day) => `Groups Day ${day}`),
 				group: 1,
-				entrants: pool("first-stand"),
+				entrants: pool(
+					"first-stand",
+					["LCK", 1],
+					["LCS", 1],
+					["CBLOL", 1],
+					["LPL", 2],
+				),
 				play: fourTeams(null),
 			},
 			{
 				id: "knockout",
 				tabs: ["Semifinals", "Finals"],
-				entrants: pool("first-stand"),
+				entrants: [
+					winner("groupA", "U2-1"),
+					winner("groupB", "U2-1"),
+					winner("groupA", "L2-1"),
+					winner("groupB", "L2-1"),
+				],
 				play: { type: "singleElim", size: 4, bestOf: bo5(2) },
 			},
 		],
 	},
 	msi: {
 		tiebreak: [],
-		unverified: [standing.reason, standing.chaining],
+		unverified,
 		stages: [
 			{
 				id: "playin",
 				tabs: [1, 2, 3, 4].map((day) => `Play-In Day ${day}`),
-				entrants: pool("msi"),
+				entrants: msiRoutes.opening,
 				play: fourTeams(5),
 			},
 			{
@@ -104,7 +167,7 @@ export const internationalDefinitions: Record<EventId, Definition> = {
 					"Bracket Round 4",
 					"Finals",
 				],
-				entrants: pool("msi"),
+				entrants: msiRoutes.main,
 				play: {
 					type: "doubleElim",
 					size: 8,
@@ -126,24 +189,21 @@ export const internationalDefinitions: Record<EventId, Definition> = {
 			"tiebreakerSeries",
 			"draw",
 		],
-		unverified: [standing.reason, standing.chaining],
+		unverified,
 		stages: [
 			{
 				id: "playin",
 				tournament: "Play-In",
 				tabs: ["Round 1", "Round 2", "Round 3"],
-				entrants: pool("worlds"),
+				entrants: worldsRoutes.opening,
 				play: fourTeams(5),
 			},
 			{
 				id: "swiss",
 				tournament: "Main Event",
 				tabs: ["Round 1", "Round 2", "Round 3", "Round 4", "Round 5"],
-				entrants: {
-					kind: "pots",
-					from: ["LCK", "LPL", "LEC", "LCP", "LCS", "CBLOL"],
-					pots: 4,
-				},
+				entrants: worldsRoutes.main,
+				draw: { pots: 4 },
 				play: {
 					type: "swiss",
 					size: 16,
@@ -223,6 +283,7 @@ export function buildInternationalFormats(
 				window: windowOf(stage.id, stageMatches(event, stage)),
 				entrants: stage.entrants,
 				play: stage.play,
+				draw: stage.draw,
 			})),
 			tiebreak: def.tiebreak,
 			verified: def.unverified.length === 0,
