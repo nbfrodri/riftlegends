@@ -129,14 +129,21 @@ export function buildCalendar(
 		stageJobs.set(key, indexes);
 	}
 
-	// Interval demand is a cheap necessary check before searching for placements.
-	for (const start of new Set(jobs.map(({ stage }) => stage.startDay))) {
-		const relevant = jobs.filter(({ stage }) => stage.startDay >= start);
-		for (const end of new Set(relevant.map(({ stage }) => stage.endDay))) {
-			const due = relevant.filter(({ stage }) => stage.endDay <= end);
-			if (due.length > (end - start) * DAILY_CAPACITY) {
-				const last = due.at(-1) as Job;
-				return tooLong(last.stage, 0);
+	// Interval demand per competition is a cheap necessary check before searching.
+	for (const competition of new Set(
+		jobs.map(({ stage }) => stage.node.ref.competition),
+	)) {
+		const own = jobs.filter(
+			({ stage }) => stage.node.ref.competition === competition,
+		);
+		for (const start of new Set(own.map(({ stage }) => stage.startDay))) {
+			const relevant = own.filter(({ stage }) => stage.startDay >= start);
+			for (const end of new Set(relevant.map(({ stage }) => stage.endDay))) {
+				const due = relevant.filter(({ stage }) => stage.endDay <= end);
+				if (due.length > (end - start) * DAILY_CAPACITY) {
+					const last = due.at(-1) as Job;
+					return tooLong(last.stage, 0);
+				}
 			}
 		}
 	}
