@@ -12,14 +12,14 @@ Decisiones en el [registro](../decisions/README.md). Reglas del usuario: respues
 
 ## Cola de fusión (aprobados por el usuario), en orden
 
-#542 (timelines, K19–K22) → #556 (pantalla de carga espera a toda la caché) → #561 (logo CBLOL) → #534 (nombres largos y tabla centrada). Comprobar el CI de `main` tras cada uno.
+#542 (timelines, K19–K22) → #556 (pantalla de carga espera a toda la caché) → #561 (logo CBLOL) → #534 (nombres largos y tabla centrada) → #563 (edad del jugador). Comprobar el CI de `main` tras cada uno.
 
 ## Trabajo en marcha
 
 | Qué | Dónde | Estado |
 | --- | --- | --- |
 | #558 ficha: pool y atributos, **opción A** (barras) elegida | subagente · `../riftlegends-558` | implementando con TDD; traer capturas `vis-558-local/final-*` |
-| #559 edad del jugador (Leaguepedia `Birthdate`, edad por fecha del juego) | subagente · `../riftlegends-559` | en curso |
+| #559 edad del jugador | PR #563, aprobado y en la cola | — |
 | #562 jugadores de relleno («UP bot», «OMG support»), nacionalidad de Thanatos/Van/BAO/Ahn, Van/Van1 | subagente · `../riftlegends-562` | en curso |
 | #546 cerrar «Lectura de la IA» con clic fuera | Codex · `../riftlegends-546` · `~/.cache/rift-tmp/codex/e546.jsonl` / `r546.json` | en curso (el primer intento chocó con el límite de uso) |
 | #550 causas sin traducir («structures») | Codex · `../riftlegends-550` · `e550.jsonl` / `r550.json` | en curso |
