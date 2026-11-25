@@ -10,13 +10,14 @@ const TOP = 0.2;
 /**
  * The champion's art blended into its pick row, with the same framing for
  * every champion: the square tile sits against the right edge and fades in
- * softly over three quarters of its width, so it blends into the player.
+ * along an eased ramp that starts inside it, so it blends into the player
+ * with no visible edge.
  */
 export function PickArt(props: { id: string; label: string }) {
 	return (
 		<span
 			data-framing="common"
-			className="absolute flex aspect-square [mask-image:linear-gradient(to_right,transparent,rgb(0_0_0/0.5)_40%,#000_75%)]"
+			className="absolute flex aspect-square [mask-image:linear-gradient(to_right,transparent_10%,rgb(0_0_0/0.1)_25%,rgb(0_0_0/0.45)_45%,rgb(0_0_0/0.8)_65%,#000_85%)]"
 			style={{
 				height: `${Math.round(SCALE * 100)}%`,
 				right: "0px",
