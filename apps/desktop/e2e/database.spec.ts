@@ -86,6 +86,11 @@ test.describe("with the fictional set (test seam)", () => {
 			expect(box.y).toBeGreaterThanOrEqual(0);
 			expect(box.x + box.width).toBeLessThanOrEqual(width);
 			expect(box.y + box.height).toBeLessThanOrEqual(height);
+			// #558: the whole card, pool included, fits without scrolling inside.
+			await expect(card.getByRole("list", { name: "Weak" })).toBeVisible();
+			expect(
+				await card.evaluate((el) => el.scrollHeight - el.clientHeight),
+			).toBeLessThanOrEqual(0);
 			// The page itself never scrolls.
 			expect(
 				await appWindow.evaluate(() => {

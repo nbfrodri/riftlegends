@@ -59,9 +59,43 @@ async function hasOtherOwner(root: string, ownClaim: string): Promise<boolean> {
 	return busy;
 }
 
+// Contenders of this process queue here instead of racing for the claim: two
+// claimants that see each other both back off, and each retry costs 75-150 ms
+// (tens of seconds on a slow Windows disk, #557). The claim directory then
+// only arbitrates between processes.
+const queues = new Map<string, Promise<unknown>>();
+
 export async function acquireSyncLock(
 	root: string,
 ): Promise<() => Promise<void>> {
+	const previous = queues.get(root) ?? Promise.resolve();
+	let leave = () => {};
+	const turn = new Promise<void>((resolve) => {
+		leave = resolve;
+	});
+	const tail = previous.then(() => turn);
+	queues.set(root, tail);
+	const leaveQueue = () => {
+		leave();
+		if (queues.get(root) === tail) queues.delete(root);
+	};
+	await previous;
+	try {
+		const release = await claimSyncLock(root);
+		return async () => {
+			try {
+				await release();
+			} finally {
+				leaveQueue();
+			}
+		};
+	} catch (error) {
+		leaveQueue();
+		throw error;
+	}
+}
+
+async function claimSyncLock(root: string): Promise<() => Promise<void>> {
 	const name = `sync-${process.pid}-${randomUUID()}`;
 	const path = join(root, name);
 	const deadline = performance.now() + maxWaitMs;

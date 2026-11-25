@@ -20,39 +20,51 @@ const championNames = [
 	"Tahm Kench",
 	"Nunu & Willump",
 ];
+/** #536: the two longest team names in the real content, on the fictional teams. */
+const longTeamNames: Readonly<Record<string, string>> = {
+	Forge: "Fukuoka SoftBank HAWKS gaming",
+	Shoal: "Hanwha Life Esports",
+};
 
 /** Rename the displayed options while the real core plays the same fictional series. */
-async function useLongNames(app: ElectronApplication) {
-	await app.evaluate((_, names) => {
-		const { query } = riftCore;
-		riftCore.query = async (body) => {
-			const result = await query(body);
-			if (
-				!result.ok ||
-				!("view" in result) ||
-				JSON.parse(body).kind !== "series.options"
-			)
-				return result;
-			const options = result.view as SeriesOptions;
-			return {
-				...result,
-				view: {
-					...options,
-					champions: options.champions.map((champion, i) => ({
-						...champion,
-						name: names[i % names.length],
-					})),
-					teams: options.teams.map((team) => ({
-						...team,
-						players: team.players.map((player, i) => ({
-							...player,
-							handle: `Thundershield${i + 1}`,
+async function useLongNames(
+	app: ElectronApplication,
+	teamNames: Readonly<Record<string, string>> = {},
+) {
+	await app.evaluate(
+		(_, { names, teamNames }) => {
+			const { query } = riftCore;
+			riftCore.query = async (body) => {
+				const result = await query(body);
+				if (
+					!result.ok ||
+					!("view" in result) ||
+					JSON.parse(body).kind !== "series.options"
+				)
+					return result;
+				const options = result.view as SeriesOptions;
+				return {
+					...result,
+					view: {
+						...options,
+						champions: options.champions.map((champion, i) => ({
+							...champion,
+							name: names[i % names.length],
 						})),
-					})),
-				},
+						teams: options.teams.map((team) => ({
+							...team,
+							name: teamNames[team.name] ?? team.name,
+							players: team.players.map((player, i) => ({
+								...player,
+								handle: `Thundershield${i + 1}`,
+							})),
+						})),
+					},
+				};
 			};
-		};
-	}, championNames);
+		},
+		{ names: championNames, teamNames },
+	);
 }
 
 /** How far the window and the main area scroll; zero when everything fits. */
@@ -113,6 +125,36 @@ async function expectNoTruncation(page: Page) {
 				.map((el) => `${el.tagName}:${el.textContent}`),
 		);
 	expect(cut).toEqual([]);
+}
+
+/** #536: every key moment in the series recap reads whole, wrapped if needed. */
+async function expectKeyMomentsWhole(page: Page) {
+	await page.evaluate(async () => {
+		await document.fonts.ready;
+	});
+	const moments = await page
+		.getByRole("table", { name: "Recorrido de la serie" })
+		.evaluate((table) =>
+			[...table.querySelectorAll("tbody tr")].map((row) => {
+				// Map, winner, score, key moment, length, open.
+				const cell = row.children[3];
+				return {
+					text: cell?.textContent ?? "",
+					clipped: [...(cell?.querySelectorAll("*") ?? [])]
+						.filter((el) => !el.closest(".sr-only"))
+						.filter((el) => el.scrollWidth > el.clientWidth + 1)
+						.map((el) => el.textContent),
+				};
+			}),
+		);
+	expect(
+		moments.some(({ text }) => text.includes(longTeamNames.Forge ?? "")),
+		"a key moment names the longest team",
+	).toBe(true);
+	expect(
+		moments.flatMap(({ clipped }) => clipped),
+		`clipped key moments at ${page.viewportSize()?.width}px`,
+	).toEqual([]);
 }
 
 /** Narrowest room left between two columns' contents, in pixels (#534). */
@@ -270,4 +312,31 @@ test("#259 #310 #524: the setup, match and results fit the supported test sizes"
 	);
 	expect(checked).toBe(4);
 	expect([...seen]).toEqual(expect.arrayContaining(championNames));
+});
+
+test("#536: the key moments read whole with the longest team names", async ({
+	electronApp,
+	appWindow,
+}) => {
+	test.setTimeout(240_000);
+	await useLongNames(electronApp, longTeamNames);
+	await appWindow.reload();
+	await appWindow.setViewportSize({ width: 1366, height: 768 });
+	let checked = false;
+	await playQuickDraftBo5(
+		electronApp,
+		appWindow,
+		async (screen) => {
+			if (screen !== "series-result") return;
+			for (const size of sizes) {
+				await appWindow.setViewportSize(size);
+				await expectToFit(appWindow);
+				await expectKeyMomentsWhole(appWindow);
+			}
+			checked = true;
+		},
+		undefined,
+		[longTeamNames.Forge ?? "", longTeamNames.Shoal ?? ""],
+	);
+	expect(checked).toBe(true);
 });
