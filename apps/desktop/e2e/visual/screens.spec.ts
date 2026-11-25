@@ -1,7 +1,7 @@
 import type { Page } from "@playwright/test";
 import { expect, test } from "../fixtures";
 import { playQuickDraftBo5, seedNextSeries } from "../quick-draft-flow";
-import { captureScreen } from "./capture";
+import { captureHovered, captureScreen } from "./capture";
 
 test.skip(
 	process.platform !== "linux",
@@ -42,7 +42,7 @@ test("Collapsed sidebar with the Caja tooltip and its shortcut", async ({
 	await appWindow.emulateMedia({ reducedMotion: "reduce" });
 	await appWindow.getByRole("button", { name: "Expandir" }).hover();
 	await expect(appWindow.getByRole("tooltip")).toContainText("Alt+B");
-	await captureScreen(appWindow, "sidebar-tooltip.png");
+	await captureHovered(appWindow, "sidebar-tooltip.png");
 });
 
 test("Mercado with the sidebar expanded", async ({ appWindow }) => {

@@ -89,11 +89,13 @@ export interface RoleGap {
 	players: readonly [LanePlayer, LanePlayer];
 }
 
-/** Who played a role: the player, their team and their champion. */
+/** Who played a role: the player, their team, their champion and their rating. */
 export interface LanePlayer {
 	player: string;
 	team: string;
 	champion: string;
+	/** Out of 100; in a series, the mean of the games they played, to one decimal. */
+	rating: number;
 }
 
 /**
@@ -125,6 +127,7 @@ const laneOf = (game: GameResult, side: "blue" | "red", role: Role) => {
 		player: line?.player ?? "",
 		team: game[side],
 		champion: line?.champion ?? "",
+		rating: line?.rating ?? 0,
 	};
 };
 
@@ -187,10 +190,15 @@ export function gapsOfSeries(
 				const player =
 					first.lines.find((l) => l.team === team && l.role === role)?.player ??
 					"";
+				const ratings = games.flatMap((game) =>
+					game.lines.filter((l) => l.player === player).map((l) => l.rating),
+				);
+				const total = ratings.reduce((sum, rating) => sum + rating, 0);
 				return {
 					player,
 					team,
 					champion: mostPlayed(games, player) ?? "",
+					rating: Math.round((total / Math.max(1, ratings.length)) * 10) / 10,
 				};
 			}) as [LanePlayer, LanePlayer],
 		};

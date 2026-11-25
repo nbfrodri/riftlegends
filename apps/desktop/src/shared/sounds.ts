@@ -1,6 +1,6 @@
 /**
  * The sound effects: one per draft action (#472), the button click (#493) and
- * the turn timer's countdown tick (#505).
+ * the turn timer's countdown tick (#505) and the Roles swap (#512).
  */
 export const soundIds = [
 	"select",
@@ -8,6 +8,7 @@ export const soundIds = [
 	"lock",
 	"ban",
 	"click",
+	"swap",
 	"tick",
 ] as const;
 export type SoundId = (typeof soundIds)[number];
