@@ -98,7 +98,7 @@ async function withoutPointer<T>(
 	try {
 		return await run();
 	} finally {
-		await style.evaluate((element) => element.remove());
+		await style.evaluate((element) => (element as Element).remove());
 	}
 }
 
