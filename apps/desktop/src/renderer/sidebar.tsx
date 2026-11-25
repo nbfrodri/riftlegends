@@ -7,6 +7,7 @@ import {
 	Binoculars,
 	CalendarDays,
 	Columns2,
+	Database,
 	Dumbbell,
 	History,
 	House,
@@ -24,7 +25,12 @@ import { type KeyboardEvent, useId } from "react";
 import { useTranslation } from "react-i18next";
 import { placeholderToday } from "./placeholder-players";
 
-type SectionPath = "/draft" | "/campeones" | "/mercado" | "/ajustes";
+type SectionPath =
+	| "/draft"
+	| "/campeones"
+	| "/base-de-datos"
+	| "/mercado"
+	| "/ajustes";
 
 interface Section {
 	label:
@@ -32,6 +38,7 @@ interface Section {
 		| "shell.nav.calendar"
 		| "shell.nav.draft"
 		| "shell.nav.champions"
+		| "shell.nav.database"
 		| "shell.nav.roster"
 		| "shell.nav.market"
 		| "shell.nav.scouting"
@@ -50,6 +57,7 @@ const sections: readonly Section[] = [
 	{ label: "shell.nav.calendar", icon: CalendarDays },
 	{ label: "shell.nav.draft", icon: Columns2, to: "/draft" },
 	{ label: "shell.nav.champions", icon: Swords, to: "/campeones" },
+	{ label: "shell.nav.database", icon: Database, to: "/base-de-datos" },
 	{ label: "shell.nav.roster", icon: Users },
 	{ label: "shell.nav.market", icon: ArrowLeftRight, to: "/mercado" },
 	{ label: "shell.nav.scouting", icon: Binoculars },

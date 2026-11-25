@@ -14,6 +14,7 @@ const sectionsEs = [
 	"Calendario",
 	"Draft",
 	"Campeones",
+	"Base de datos",
 	"Plantilla",
 	"Mercado",
 	"Scouting",
@@ -24,7 +25,10 @@ const sectionsEs = [
 	"Ajustes",
 ];
 const pendingEs = sectionsEs.filter(
-	(name) => !["Draft", "Campeones", "Mercado", "Ajustes"].includes(name),
+	(name) =>
+		!["Draft", "Campeones", "Base de datos", "Mercado", "Ajustes"].includes(
+			name,
+		),
 );
 
 async function renderShell(path = "/mercado", locale = "es-ES") {
@@ -72,6 +76,7 @@ describe("T5: sidebar sections", () => {
 	test.each([
 		["Draft", "Configurar serie", "/draft"],
 		["Campeones", "Campeones", "/campeones"],
+		["Base de datos", "Base de datos", "/base-de-datos"],
 		["Mercado", "Mercado", "/mercado"],
 		["Ajustes", "Ajustes", "/ajustes"],
 	])(
@@ -108,7 +113,13 @@ describe("T5: sidebar sections", () => {
 
 	test("available sections are not described as coming soon", async () => {
 		await renderShell();
-		for (const name of ["Draft", "Campeones", "Mercado", "Ajustes"]) {
+		for (const name of [
+			"Draft",
+			"Campeones",
+			"Base de datos",
+			"Mercado",
+			"Ajustes",
+		]) {
 			expect(section(name).getAttribute("aria-disabled")).toBeNull();
 			expect(
 				within(sections()).queryByRole("button", {
@@ -131,6 +142,7 @@ describe("T5: sidebar sections", () => {
 			"Calendar",
 			"Draft",
 			"Champions",
+			"Database",
 			"Roster",
 			"Market",
 			"Scouting",
@@ -231,6 +243,8 @@ describe("T6: collapsing and keyboard", () => {
 		section("Draft").focus();
 		await user.tab();
 		expect(document.activeElement).toBe(section("Campeones"));
+		await user.tab();
+		expect(document.activeElement).toBe(section("Base de datos"));
 		await user.tab();
 		expect(document.activeElement).toBe(section("Mercado"));
 		await user.tab();

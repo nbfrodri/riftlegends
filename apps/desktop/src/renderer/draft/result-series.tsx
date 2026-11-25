@@ -128,8 +128,12 @@ function Mvp(props: {
 				<p className="font-semibold text-[12px] text-muted uppercase tracking-[0.055em]">
 					{t("draft.result.mvp.label", { team: name })}
 				</p>
-				<h2 className="mt-2 flex items-center gap-2.5 font-bold font-display text-[28px] leading-none tracking-heading">
-					{role && <GameRoleIcon role={role} size={24} />}
+				<h2 className="mt-2 flex items-baseline gap-2.5 font-bold font-display text-[28px] leading-none tracking-heading">
+					{role && (
+						<span className="flex self-center">
+							<GameRoleIcon role={role} size={24} />
+						</span>
+					)}
 					<CountryFlag country={player?.nationality} />
 					{player?.handle ?? mvp.player}
 				</h2>
