@@ -42,17 +42,17 @@ describe("2026 domestic formats", () => {
 				id,
 				kind: "league",
 				verified: false,
-				tiebreakerBestOf: id === "LCK" ? 1 : 3,
+				tiebreakerBestOf: 3,
 				provenance: { source: "Leaguepedia", licence: "CC BY-SA 3.0" },
 			});
 			expect(format.unverifiedReasons.join(" ")).toMatch(/tiebreak/i);
 		},
 	);
 
-	it("T1 LCK tiebreaks as its rulebook: wins, set difference, head-to-head, then one game", () => {
+	it("T1 LCK keeps its rulebook order, but the tiebreaker series stays Bo3 by user decision", () => {
 		expect(readFormat("LCK")).toMatchObject({
 			tiebreak: ["seriesWins", "gameDiff", "headToHead", "tiebreakerSeries"],
-			tiebreakerBestOf: 1,
+			tiebreakerBestOf: 3,
 		});
 		const reasons: string[] = readFormat("LCK").unverifiedReasons;
 		expect(reasons.join(" ")).toContain("2025 LCK rulebook");
