@@ -42,11 +42,13 @@ export function playGame(setup: MatchSetup) {
 			team: context.blue.team,
 			players: context.blue.players,
 			champions: setup.blue.roles,
+			vision: context.blue.vision,
 		},
 		red: {
 			team: context.red.team,
 			players: context.red.players,
 			champions: setup.red.roles,
+			vision: context.red.vision,
 		},
 	};
 	const swings = decisive(indexed, side);

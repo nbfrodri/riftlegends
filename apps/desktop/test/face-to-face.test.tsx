@@ -152,3 +152,91 @@ test("each player shows their official photo, with a named silhouette as fallbac
 		}).tagName,
 	).toBe("svg");
 });
+
+test("#502: a bigger face to face, with a 48 px photo and a 28 px champion badge in fixed tracks", async () => {
+	await render();
+	for (const cell of [...playerCells("blue"), ...playerCells("red")]) {
+		const photo = cell.querySelector<HTMLElement>(
+			"[data-part=photo] [role=img], [data-part=photo] img",
+		);
+		expect(photo?.getAttribute("class")).toMatch(/\bh-12\b/);
+		expect(photo?.getAttribute("class")).toMatch(/\bw-\[38px\]/);
+		const badge = cell.querySelector<HTMLElement>("[data-part=champion]");
+		expect(badge?.className).toMatch(/\[&_\[role=img\]\]:size-7\b/);
+	}
+	// Taller rows that grow with the window, never below the 1280×720 fit.
+	const rows = within(screen.getByRole("table", { name: "Face to face" }))
+		.getAllByRole("row")
+		.slice(2);
+	for (const row of rows)
+		expect(row.className).toMatch(/\bh-\[clamp\(56px,8\.4vh,72px\)\]/);
+	// Fixed stat tracks, mirrored around the lane column.
+	const widths = [
+		...document.querySelectorAll<HTMLElement>("colgroup col"),
+	].map((col) => col.className);
+	expect(widths).toEqual([
+		"",
+		"w-[66px]",
+		"w-[44px]",
+		"w-[60px]",
+		"w-[80px]",
+		"w-[60px]",
+		"w-[44px]",
+		"w-[66px]",
+		"",
+	]);
+});
+
+test("#502: K/D/A, CS and gold are 15 px tabular numbers in centred cells", async () => {
+	await render();
+	const body = within(screen.getByRole("table", { name: "Face to face" }))
+		.getAllByRole("row")
+		.slice(2);
+	for (const row of body) {
+		const stats = [...row.querySelectorAll("td")].filter(
+			(cell) => !cell.querySelector("[data-lane-player]"),
+		);
+		expect(stats).toHaveLength(6);
+		for (const cell of stats) {
+			expect(cell.className).toMatch(/\btabular-nums\b/);
+			expect(cell.className).toMatch(/\btext-\[15px\]/);
+		}
+	}
+});
+
+test("#502: player names and K/D/A use the normal text colour, never the side colour", async () => {
+	await render();
+	const body = within(screen.getByRole("table", { name: "Face to face" }))
+		.getAllByRole("row")
+		.slice(2);
+	for (const row of body) {
+		const kda = [...row.querySelectorAll("td")].filter((cell) =>
+			/^\d+\/\d+\/\d+$/.test(cell.textContent ?? ""),
+		);
+		expect(kda).toHaveLength(2);
+		for (const cell of kda) expect(cell.className).not.toMatch(/--side/);
+	}
+	for (const cell of [...playerCells("blue"), ...playerCells("red")]) {
+		const name = cell.querySelector<HTMLElement>("[data-part=name]");
+		expect(name?.outerHTML).not.toMatch(/--side/);
+		expect(name?.firstElementChild?.className).toMatch(/\btext-text\b/);
+	}
+});
+
+test("#509: stat headers give the icon room above its label, centred with even padding on both sides", async () => {
+	await render();
+	const headers = [
+		...screen
+			.getByRole("table", { name: "Face to face" })
+			.querySelectorAll<HTMLElement>("thead th[scope=col]"),
+	].filter((th) => th.querySelector("svg"));
+	expect(headers).toHaveLength(6);
+	for (const th of headers) {
+		expect(th.className).toMatch(/\bpy-1!/);
+		expect(th.className).not.toMatch(/\bpy-0!/);
+		const stack = th.firstElementChild as HTMLElement;
+		expect(stack.className).toMatch(/\bflex-col\b/);
+		expect(stack.className).toMatch(/\bgap-1\b/);
+	}
+	expect(new Set(headers.map((th) => th.className)).size).toBe(1);
+});

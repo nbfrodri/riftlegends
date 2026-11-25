@@ -92,6 +92,68 @@ async function expectTeamPanelsInView(page: Page) {
 		).toBeInViewport({ ratio: 1 });
 }
 
+/**
+ * #502: the face to face fits whole without page scroll, with 48 px photos,
+ * 28 px champion badges, rows of 56 px or more, white names and K/D/A, and
+ * the long handle set above never moves a column.
+ */
+async function expectBigFaceToFace(page: Page) {
+	const faceToFace = page.getByRole("table", { name: "Cara a cara" });
+	await expect(faceToFace).toBeInViewport({ ratio: 1 });
+	const measure = await page.evaluate(() => {
+		const table = document.querySelector("table[aria-label='Cara a cara']");
+		if (!table) throw new Error("Missing face to face");
+		const main = document.querySelector("main");
+		const box = (el: Element | null) => el?.getBoundingClientRect();
+		const text = getComputedStyle(document.body).color;
+		const cells = [...table.querySelectorAll("[data-lane-player]")];
+		return {
+			scroll: Math.max(
+				document.documentElement.scrollHeight - innerHeight,
+				main ? main.scrollHeight - main.clientHeight : 0,
+			),
+			rows: [...table.querySelectorAll("tbody tr")].map(
+				(row) => row.getBoundingClientRect().height,
+			),
+			photos: cells.map(
+				(c) => box(c.querySelector("[data-part=photo] > *"))?.height ?? 0,
+			),
+			badges: cells.map(
+				(c) =>
+					box(c.querySelector("[data-part=champion] [role=img]"))?.height ?? 0,
+			),
+			names: cells.map((c) => {
+				const handle = c.querySelector("[data-part=name] > span");
+				return handle ? getComputedStyle(handle).color === text : false;
+			}),
+			kda: [...table.querySelectorAll("tbody td")]
+				.filter((td) => /^\d+\/\d+\/\d+$/.test(td.textContent ?? ""))
+				.map((td) => getComputedStyle(td).color === text),
+			columns: ["blue", "red"].flatMap((side) =>
+				["photo", "champion", "name"].map((part) => {
+					const xs = [
+						...table.querySelectorAll(
+							`[data-side=${side}] [data-part=${part}]`,
+						),
+					].map((el) => el.getBoundingClientRect().left);
+					return Math.max(...xs) - Math.min(...xs);
+				}),
+			),
+		};
+	});
+	expect(measure.scroll).toBeLessThanOrEqual(0);
+	expect(measure.rows).toHaveLength(5);
+	for (const row of measure.rows) expect(row).toBeGreaterThanOrEqual(56);
+	for (const photo of measure.photos) expect(photo).toBeGreaterThanOrEqual(48);
+	for (const badge of measure.badges) expect(badge).toBeGreaterThanOrEqual(28);
+	expect(measure.names).toEqual(Array(10).fill(true));
+	expect(measure.kda).toEqual(Array(10).fill(true));
+	// Name blocks are centred, so a long handle may shift its left edge; the
+	// pictures may not move at all.
+	for (const [i, spread] of measure.columns.entries())
+		if (i % 3 !== 2) expect(spread).toBeLessThanOrEqual(1);
+}
+
 test("replays a drafted game and continues to its result", async ({
 	playwright,
 }, testInfo) => {
@@ -188,8 +250,10 @@ test("replays a drafted game and continues to its result", async ({
 		expect(cut).toBe(true);
 		expect(await height()).toBe(before);
 		await expect(page.getByRole("figure")).toBeInViewport({ ratio: 1 });
+		await expectBigFaceToFace(page);
 		await page.setViewportSize({ width: 1366, height: 768 });
 		await expect(faceToFace).toBeInViewport({ ratio: 1 });
+		await expectBigFaceToFace(page);
 		await page.getByRole("radio", { name: "Mapa" }).check({ force: true });
 		await expectTeamPanelsInView(page);
 		for (const team of ["Forge", "Shoal"]) {

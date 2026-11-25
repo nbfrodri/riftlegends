@@ -97,7 +97,7 @@ function Replay({ match, entry }: { match: MatchView; entry: DraftView }) {
 					</time>
 				</div>
 			</PageHeader>
-			<div className="grid flex-1 grid-cols-[minmax(0,1.38fr)_minmax(0,1fr)] grid-rows-[clamp(78px,11.5vh,100px)_clamp(36px,8vh,80px)_1fr] gap-3 text-[14px] leading-[1.3] tabular-nums [&_[data-side=blue]]:[--side:var(--color-side-blue)] [&_[data-side=red]]:[--side:var(--color-side-red)]">
+			<div className="grid flex-1 grid-cols-[minmax(0,1.7fr)_minmax(0,1fr)] grid-rows-[clamp(78px,11.5vh,100px)_clamp(36px,8vh,80px)_1fr] gap-3 text-[14px] leading-[1.3] tabular-nums [&_[data-side=blue]]:[--side:var(--color-side-blue)] [&_[data-side=red]]:[--side:var(--color-side-red)]">
 				<TeamTotals snapshot={snapshot} names={names} ids={start} />
 				{/* The chart takes a row from the event feed, so leads read at a glance. */}
 				<div className="row-span-2 min-h-0">

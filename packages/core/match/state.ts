@@ -47,6 +47,8 @@ interface SideContext {
 	readonly mental: MentalEdge | null;
 	/** Player id in each role. */
 	readonly players: Readonly<Record<Role, string>>;
+	/** The `vision` attribute of each role's player (issue #499). */
+	readonly vision: Readonly<Record<Role, number>>;
 	/** Weight of each role to score and to assist a kill (issue #346). */
 	readonly attribution: Readonly<
 		Record<Role, { kill: number; assist: number }>
@@ -186,6 +188,12 @@ export function createMatch(setup: MatchSetup): MatchState {
 			strategy: strategy(setup.match, lineup.team),
 			profile,
 			players: ids,
+			vision: Object.fromEntries(
+				ROLES.map((role, i) => [
+					role,
+					(roster[i] as { vision: number }).vision,
+				]),
+			) as SideContext["vision"],
 			attribution: Object.fromEntries(
 				ROLES.map((role, i) => [
 					role,
