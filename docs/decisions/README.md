@@ -132,6 +132,7 @@ Resumen de las decisiones **vigentes**, para empezar cualquier sesión sin volve
 | 2026-11-24 | Doble eliminación: **`drop` por serie** (`null` = eliminado) y **`lowerSeeds`** para los sembrados que entran directos al cuadro inferior; cubre los cuadros reales de 2026 (LCK, LCP, LEC, LCS, CBLOL, LPL Grand Finals, King of the Hill). Los play-in en escalera de LPL y LCK Cup van aparte (#424) | [plan 12](../plans/12-formatos-de-competicion.md), #423 |
 | 2026-11-25 | Las fases combinan fuentes en orden de sembrado. Los play-in en escalera se componen de fases de una serie. Las plazas por liga siguen el orden de sus reglas y los bombos del campo completo se recalculan al cambiar los cupos | [plan 12](../plans/12-formatos-de-competicion.md#3-diseño), #424 |
 | 2026-11-25 | Calendario (#425): día 0 el 1 de enero y fin el 31 de diciembre. Cada fase elige dentro de su ventana los días de partido que admite por semana | [plan 12](../plans/12-formatos-de-competicion.md#calendario) |
+| 2026-11-25 | Formatos de liga de 2026 (#426): `pnpm data:league-formats` los genera desde el snapshot (Leaguepedia, CC BY-SA) con comprobación R1 de equipos, series y Bo; todos `verified: false` con sus motivos. Con 4 series diarias el arranque de 2026 no cabe: el calendario adelanta y amplía ventanas domésticas | [plan 12](../plans/12-formatos-de-competicion.md#ligas-de-2026-en-el-juego-426), #426 |
 
 ## Estilo visual
 
