@@ -125,3 +125,4 @@ Orden acordado con el usuario (25-11): cerrar Fase 3 (#443, #253, Stryker); Fase
 | 25-11 | #524 nombres recortados en diferencias por rol | fix/524-role-gaps-fit · ../riftlegends-524 | gpt-6.2-sol medium | ~/.cache/rift-tmp/codex/e524.jsonl / r524.json | En curso |
 | 25-11 | #508 eventos funcionales (primera sangre, rachas, shutdown, ace, robos, solo kill) | feat/508-match-events · ../riftlegends-508 (sobre #520) | gpt-6.2-sol medium | ~/.cache/rift-tmp/codex/e508.jsonl / r508.json | En curso |
 | 25-11 | #535 desempates del LEC y Super Week de la LCK Cup | feat/535-lec-lck-cup-rules · ../riftlegends-535 | gpt-6.2-sol medium | ~/.cache/rift-tmp/codex/e535.jsonl / r535.json | En curso |
+| 25-11 | #546 cerrar la lectura de la IA con clic fuera | fix/546-ai-panel-outside · ../riftlegends-546 | gpt-6.2-sol medium | ~/.cache/rift-tmp/codex/e546.jsonl / r546.json | En curso |
