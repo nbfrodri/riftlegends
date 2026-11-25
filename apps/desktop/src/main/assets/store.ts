@@ -30,6 +30,7 @@ import {
 	isDigest,
 	matches,
 	readJson,
+	retryHeld,
 	statIfPresent,
 	syncDirectory,
 	writeJson,
@@ -218,9 +219,11 @@ export async function prepareVersion(
 	});
 	const verified = await verifyCatalog(stageRoot, version);
 	if (!verified) throw new Error("Staged assets failed verification");
-	await rm(join(stageRoot, "upstream"), { recursive: true, force: true });
-	await rm(target, { recursive: true, force: true });
-	await rename(stageRoot, target);
+	await retryHeld(() =>
+		rm(join(stageRoot, "upstream"), { recursive: true, force: true }),
+	);
+	await retryHeld(() => rm(target, { recursive: true, force: true }));
+	await retryHeld(() => rename(stageRoot, target));
 	await syncDirectory(root);
 	return verified.catalog;
 }
