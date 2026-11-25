@@ -20,7 +20,9 @@ const origin = "https://raw.communitydragon.org";
 const champSelect = `${origin}/16.23/plugins/rcp-fe-lol-champ-select/global/default/sounds`;
 
 /**
- * The client's champ-select sounds (#472) its small UI click (#493) and the trade-accepted sound for Roles swaps (#512). Riot's files are downloaded at
+ * The client's champ-select sounds (#472), its small UI click (#493) and the
+ * countdown tick it plays in the last 10 s of the player's own ban or pick (#505)
+ * and the trade-accepted sound for Roles swaps (#512). Riot's files are downloaded at
  * runtime and never shipped; only their names and digests live here.
  */
 export const championSelectSounds: readonly SoundSource[] = [
@@ -59,6 +61,12 @@ export const championSelectSounds: readonly SoundSource[] = [
 		url: `${champSelect}/sfx-cs-notif-traderequest-accepted.ogg`,
 		size: 52_815,
 		sha256: "1bc989a2f8a1bfc9f109f6015cdd46aca04907543ff3fee7e61871fbc832a052",
+	},
+	{
+		id: "tick",
+		url: `${champSelect}/sfx-cs-timer-tick.ogg`,
+		size: 36_044,
+		sha256: "e61a579a6b5a695d8220c4e556ac1a4ccea00f6fca1c9c3b4e600e2bb6dfa82d",
 	},
 ];
 
