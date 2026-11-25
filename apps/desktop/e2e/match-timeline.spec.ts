@@ -153,10 +153,8 @@ async function expectBigFaceToFace(page: Page) {
 	expect(measure.names).toEqual(Array(10).fill(true));
 	expect(measure.kda).toEqual(Array(10).fill(true));
 	expect(measure.vision).toEqual([0, 2, 0, 0, 2]);
-	// Name blocks are centred, so a long handle may shift its left edge; the
-	// pictures may not move at all.
-	for (const [i, spread] of measure.columns.entries())
-		if (i % 3 !== 2) expect(spread).toBeLessThanOrEqual(1);
+	// Pictures and name blocks sit in fixed tracks: none of them moves (#548).
+	for (const spread of measure.columns) expect(spread).toBeLessThanOrEqual(1);
 	await expectColumnsAligned(page);
 }
 

@@ -1,5 +1,6 @@
 import type { MapSnapshot, Side } from "@rift-legends/contracts";
 import { Tooltip } from "@rift-legends/ui-kit/components/tooltip";
+import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { GameRoleIcon } from "../assets/game-role-icon";
 import { StatIcon } from "../assets/stat-icon";
@@ -124,6 +125,35 @@ function VisionScore({ value }: { value: number }) {
 }
 
 /**
+ * The player column's tracks, shared by its header and every row: photo,
+ * the visible part of the champion badge, then the name. Fixed widths, so
+ * the name starts at the same place whatever the font (#548).
+ */
+const playerTracks = {
+	blue: "grid grid-cols-[38px_16px_minmax(0,1fr)] items-center",
+	red: "grid grid-cols-[minmax(0,1fr)_16px_38px] items-center",
+} as const;
+/** The name sits next to the pictures: start-aligned, mirrored on red (#548). */
+const nameAlign = {
+	blue: "col-start-3 ml-1.5 text-left",
+	red: "col-start-1 row-start-1 mr-1.5 text-right",
+} as const;
+
+/** «Player» header, aligned like the names below it (#548). */
+function PlayerHeader({ side }: { side: Side }) {
+	const { t } = useTranslation();
+	return (
+		<th scope="col" className="px-1!">
+			<span className={playerTracks[side]}>
+				<span className={`min-w-0 truncate ${nameAlign[side]}`}>
+					{t("draft.match.faceToFace.player")}
+				</span>
+			</span>
+		</th>
+	);
+}
+
+/**
  * Photo, champion portrait and the name block, in fixed tracks with the
  * pictures on the outer edge: a long name is cut, it never moves them (#433).
  */
@@ -166,17 +196,14 @@ function Player({
 			content={player.championName}
 			extra={vision === undefined ? undefined : <VisionScore value={vision} />}
 		>
-			<span
-				data-part="name"
-				className={`min-w-0 text-center ${side === "blue" ? "ml-1.5" : "mr-1.5"}`}
-			>
+			<span data-part="name" className={`min-w-0 ${nameAlign[side]}`}>
 				<span className="block truncate font-bold text-[15px] text-text">
 					{player.handle}
 				</span>
 				{/* The vision score shares the champion's line: the row keeps its height (#510). */}
 				<span
 					aria-hidden="true"
-					className="flex min-w-0 items-center justify-center gap-1.5 truncate text-[12px] text-muted"
+					className={`flex min-w-0 items-center gap-1.5 truncate text-[12px] text-muted ${side === "blue" ? "justify-start" : "justify-end"}`}
 				>
 					<span className="truncate">{player.championName}</span>
 					{inRow && (
@@ -200,10 +227,7 @@ function Player({
 	return (
 		<td data-side={side} className="px-1!">
 			{parts && (
-				<span
-					data-lane-player
-					className={`grid items-center ${side === "blue" ? "grid-cols-[auto_auto_minmax(0,1fr)]" : "grid-cols-[minmax(0,1fr)_auto_auto]"}`}
-				>
+				<span data-lane-player className={playerTracks[side]}>
 					{side === "blue" ? parts : parts.reverse()}
 				</span>
 			)}
@@ -212,25 +236,63 @@ function Player({
 }
 
 const columns = ["kda", "cs", "gold"] as const;
-/** Stat cells: 8 px each side, so neighbouring columns stay 16 px apart (#450). */
-const stat = "px-2! tabular-nums";
-/** Body numbers: 15 px in the normal text colour, like every other figure (#502). */
-const figure = `${stat} text-[15px] text-text`;
-
-function Kda({ line }: { line: Line }) {
+/**
+ * Stat cells: 8 px each side, so neighbouring columns stay 16 px apart (#450).
+ * Header and figures start at the same edge, the player's side (#548).
+ */
+const stat = {
+	blue: "px-2! tabular-nums text-left!",
+	red: "px-2! tabular-nums text-right!",
+} as const;
+/**
+ * A body number: 15 px in the normal text colour, like every other figure
+ * (#502). Flex keeps its start edge even when a wide number overflows the
+ * column: the overflow goes towards the lane, never past the header (#548).
+ */
+function Figure({
+	side,
+	bold = false,
+	children,
+}: {
+	side: Side;
+	bold?: boolean;
+	children: ReactNode;
+}) {
 	return (
-		<td className={`font-bold ${figure}`}>
-			{line.kills}/{line.deaths}/{line.assists}
+		<td
+			className={`${stat[side]} text-[15px] text-text ${bold ? "font-bold" : ""}`}
+		>
+			<span
+				className={`flex whitespace-nowrap ${side === "blue" ? "justify-start" : "justify-end"}`}
+			>
+				{children}
+			</span>
 		</td>
 	);
 }
 
-function StatHeader({ column }: { column: (typeof columns)[number] }) {
+function Kda({ line, side }: { line: Line; side: Side }) {
+	return (
+		<Figure side={side} bold>
+			{line.kills}/{line.deaths}/{line.assists}
+		</Figure>
+	);
+}
+
+function StatHeader({
+	column,
+	side,
+}: {
+	column: (typeof columns)[number];
+	side: Side;
+}) {
 	const { t } = useTranslation();
 	return (
-		// Icon over label with a 4 px gap, centred by even padding (#509).
-		<th scope="col" className={`py-1! ${stat}`}>
-			<span className="flex flex-col items-center gap-1">
+		// Icon over label with a 4 px gap (#509), on the same edge as the figures (#548).
+		<th scope="col" className={`py-1! ${stat[side]}`}>
+			<span
+				className={`flex flex-col gap-1 ${side === "blue" ? "items-start" : "items-end"}`}
+			>
 				<StatIcon stat={column} size={18} />
 				{t(`draft.match.faceToFace.${column}`)}
 			</span>
@@ -335,15 +397,15 @@ export function FaceToFace({
 						</th>
 					</tr>
 					<tr className="text-[12px]">
-						<th scope="col">{t("draft.match.faceToFace.player")}</th>
+						<PlayerHeader side="blue" />
 						{columns.map((column) => (
-							<StatHeader key={column} column={column} />
+							<StatHeader key={column} column={column} side="blue" />
 						))}
 						<th scope="col">{t("draft.match.lane")}</th>
 						{[...columns].reverse().map((column) => (
-							<StatHeader key={column} column={column} />
+							<StatHeader key={column} column={column} side="red" />
 						))}
-						<th scope="col">{t("draft.match.faceToFace.player")}</th>
+						<PlayerHeader side="red" />
 					</tr>
 				</thead>
 				<tbody>
@@ -357,9 +419,9 @@ export function FaceToFace({
 								vision={vision?.get(blue.player)}
 								showVision={visionRoles.has(role)}
 							/>
-							<Kda line={blue} />
-							<td className={figure}>{blue.cs}</td>
-							<td className={figure}>{format.format(blue.gold)}</td>
+							<Kda line={blue} side="blue" />
+							<Figure side="blue">{blue.cs}</Figure>
+							<Figure side="blue">{format.format(blue.gold)}</Figure>
 							<th scope="row">
 								<span className="flex flex-col items-center gap-1.5">
 									<span className="inline-flex items-center gap-1.5">
@@ -370,9 +432,9 @@ export function FaceToFace({
 									<LeadText blue={blue} red={red} names={names} />
 								</span>
 							</th>
-							<td className={figure}>{format.format(red.gold)}</td>
-							<td className={figure}>{red.cs}</td>
-							<Kda line={red} />
+							<Figure side="red">{format.format(red.gold)}</Figure>
+							<Figure side="red">{red.cs}</Figure>
+							<Kda line={red} side="red" />
 							<Player
 								id={red.player}
 								player={lineup.get(red.player)}
