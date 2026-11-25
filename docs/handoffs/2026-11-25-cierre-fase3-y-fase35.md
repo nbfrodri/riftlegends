@@ -12,7 +12,7 @@ Decisiones en el [registro](../decisions/README.md). Reglas del usuario: respues
 
 ## Cola de fusión (aprobados por el usuario), en orden
 
-#542 (timelines, K19–K22) → #556 (pantalla de carga espera a toda la caché) → #561 (logo CBLOL) → #534 (nombres largos y tabla centrada) → #563 (edad del jugador) → #564 (cerrar lectura de la IA) → #565 (causas traducidas) → #566 (jugadores de relleno y nacionalidades; puede chocar con #563 en las consultas de nacionalidad y `players.json`: si sale CONFLICTS, resolver a mano, regenerar el snapshot con el pipeline y volver a encolar) → #567 (ficha con barras) → #569 (candado de la caché en Windows, #557; #570 pendiente de ver `verify-windows` en `main`). Comprobar el CI de `main` tras cada uno.
+#542 (timelines, K19–K22) → #556 (pantalla de carga espera a toda la caché) → #561 (logo CBLOL) → #534 (nombres largos y tabla centrada) → #563 (edad del jugador) → #564 (cerrar lectura de la IA) → #565 (causas traducidas) → #566 (jugadores de relleno y nacionalidades; puede chocar con #563 en las consultas de nacionalidad y `players.json`: si sale CONFLICTS, resolver a mano, regenerar el snapshot con el pipeline y volver a encolar) → #567 (ficha con barras) → #569 (candado de la caché en Windows, #557; #570 pendiente de ver `verify-windows` en `main`) → #571 (momento clave entero, #536). Comprobar el CI de `main` tras cada uno.
 
 ## Trabajo en marcha
 
@@ -22,7 +22,7 @@ Decisiones en el [registro](../decisions/README.md). Reglas del usuario: respues
 | #559 edad del jugador | PR #563, aprobado y en la cola | — |
 | #562 relleno y nacionalidades | PR #566, aprobado y en la cola | — |
 | #557 cuelgues de caché en Windows | PR #569, aprobado y en la cola | — |
-| #536 momento clave cortado | subagente Opus, `../riftlegends-536` (fix/536-key-moment-clip, desde #534) | en curso |
+| #536 momento clave cortado | PR #571, aprobado y en la cola; #572 (partida desborda 36 px con nombres largos) abierto | — |
 | #568 plantillas de lolesports | rama feat/568-lolesports-starters en `../riftlegends-568`, terminada y con `verify` en verde; criterio y 9 titulares nuevos (LCP y CBLOL) **aprobados por el usuario** | tras fusionar #566: `git merge origin/main`, regenerar snapshot si choca, verify, PR con `Closes #568` y encolar |
 | #546 cerrar «Lectura de la IA» con clic fuera | PR #564, aprobado y en la cola | — |
 | #550 causas sin traducir | PR #565, aprobado y en la cola | — |
