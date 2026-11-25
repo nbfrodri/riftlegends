@@ -17,8 +17,8 @@ Es una **app de escritorio instalable** (Electron) que funciona sin conexión, n
 
 ## Idioma
 
-- Código, identificadores, nombres de ramas y mensajes de commit: **inglés**.
-- Documentación, ADR, planes, issues y PR: **español**.
+- Código, identificadores, nombres de ramas, mensajes de commit y **títulos de PR** (Conventional Commit; al fusionar con squash son el commit de `main`): **inglés**.
+- Documentación, ADR, planes, issues y descripción de los PR: **español**.
 - Textos de la UI: siempre en los catálogos i18n (ES y EN).
 
 ## Estilo de escritura
