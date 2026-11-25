@@ -80,7 +80,7 @@ Los rasgos **salen de los datos del juego** y solo lo que estos no deciden queda
 | `knockupUlt` | `rule` | La ulti necesita un objetivo en el aire (solo «Airborne», sin CC propio) |
 | `siege`, `invade`, `farm`, `vision`, `duel`, `antiDash`, `antiAp`, `antiAd`, `competitive` | `estimated` | El dato del juego no los decide: siguen de la tabla curada y salen en `estimatedKit` para revisarlos |
 
-`damage`, `cc` y `mobility` ya no se leen de la tabla curada cuando hay dato: la tabla solo rellena huecos (Kayn sin tipos de daño, o un campeón sin kit). Calibración K1–K5 con contenido real en verde (pool `real` en `calibration.test.ts`).
+`damage`, `cc` y `mobility` ya no se leen de la tabla curada cuando hay dato: la tabla solo rellena huecos (Kayn sin tipos de daño, o un campeón sin kit). El pool `real-champions` de `calibration.test.ts` combina esos campeones con dos plantillas sintéticas para aislar el efecto de los perfiles.
 
 **Prueba de cordura** ([champion-sanity.test.ts](../../tools/data-pipeline/champion-sanity.test.ts)): 25 campeones conocidos (Aatrox, Jax, Renekton, K'Sante, Ornn, Rumble, Azir, Orianna, Ahri, Sylas, Syndra, Kai'Sa, Ezreal, Varus, Jinx, Xayah, Nautilus, Rell, Thresh, Lulu, Lee Sin, Vi, Sejuani, Kindred y Zed) con el tipo de daño y los rangos de `cc` y `mobility` que aceptaría un jugador. Parten de los valores curados antiguos (±2) y solo se ensanchan donde el dato difiere con motivo (p. ej. Ornn con la carga de su ulti). Si un campeón solo pasa con una excepción por nombre, no se retoca: se lista en `traitsToReview`. Las reglas no llevan excepciones por campeón.
 
@@ -169,9 +169,13 @@ Cada regla tiene un **id** que viaja en `reasons` para que la ficha explique el 
 | A1 | Al arrancar, la pantalla de carga muestra el progreso y abre el juego con todos los campeones reales listos | Sin caché utilizable, explica que hace falta conexión la primera vez y permite reintentar |
 | A2 | La configuración agrupa los equipos por liga | 60 equipos: el selector sigue siendo usable (búsqueda o grupos) |
 | A3 | Retratos en draft, roles y resultados; logos de equipo con caída al escudo propio | Imagen que no carga: placeholder sin saltos |
-| A4 | La calibración K1–K5 sigue en verde con el contenido real | Bandas revisadas solo si el contenido real lo justifica, con nota |
-| A5 | E2E de una Bo5 con fearless hard en modo real con una caché de prueba | Sin red |
-| A6 | Créditos visibles en Ajustes: Leaguepedia (CC BY-SA), CommunityDragon, lolesports.com, aviso de Riot (de `NOTICE.md`) y librerías, con un test que las compara con los `package.json` (#253) | — |
+| A4 · Pendiente | La calibración K1–K16 del [plan 08](../archive/plans/08-simulacion-de-partida.md#invariantes-y-calibración) pasa con equipos, jugadores y campeones reales | Semillas fijas, con los dos lados de cada emparejamiento. Bandas intactas |
+| A5 · Hecho | E2E de una Bo5 con fearless hard en modo real (`quick-draft-real-bo5.spec.ts`) | Sin red, con caché local de imágenes de prueba |
+| A6 · Hecho (#412) | Créditos visibles en Ajustes: Leaguepedia (CC BY-SA), CommunityDragon, lolesports.com, aviso de Riot (de `NOTICE.md`) y librerías, con un test que las compara con los `package.json` | — |
+
+El pool `real` pasa K1–K7 y K16 con 1.000 partidas (600 para K1). En K8 la nota media es 75,72 en top, 89,16 en jungla, 81,38 en medio, 83,13 en bot y 85,26 en apoyo (banda 56–64 y separación máxima de 5 frente a 13,44 observados). En K11 la mediana es de 17 torres (banda 8–15) y los dragones pasan.
+
+Quedan por medir K9–K10, K12–K13 y K15, que dependen de los cruces de identidades y el selector de jugadas (#320), las recargas de definitivas (#339) y el desgaste temprano (#320). K14 conserva la comprobación de K4. Quedan sus contrastes al minuto 5 y 35 y con la build completa.
 
 ## Diseño
 
