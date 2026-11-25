@@ -57,4 +57,41 @@ test.describe("with the fictional set (test seam)", () => {
 			await expect(appWindow.getByRole("status")).toHaveText("8 of 8 coaches");
 		});
 	}
+
+	test("the card's flag sits on the baseline of the big name", async ({
+		appWindow,
+	}) => {
+		await appWindow
+			.getByRole("navigation", { name: "Club sections" })
+			.getByRole("button", { name: "Database" })
+			.click();
+		await appWindow.getByRole("row", { name: /Kilnara/ }).click();
+		const heading = appWindow
+			.getByRole("dialog", { name: "Player card: Kilnara" })
+			.getByRole("heading", { level: 2, name: "Kilnara" });
+		await expect(heading.getByRole("img")).toBeVisible();
+		const offset = await heading.evaluate(async (el) => {
+			await document.fonts.ready;
+			const text = [...el.childNodes].find(
+				(node) => node.nodeType === Node.TEXT_NODE && node.textContent?.trim(),
+			);
+			const flag = el.querySelector("svg");
+			const context = document.createElement("canvas").getContext("2d");
+			if (!text || !flag || !context) return Number.NaN;
+			const style = getComputedStyle(el);
+			context.font = `${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
+			const metrics = context.measureText(text.textContent ?? "");
+			const range = document.createRange();
+			range.selectNodeContents(text);
+			const box = range.getBoundingClientRect();
+			const contentArea =
+				metrics.fontBoundingBoxAscent + metrics.fontBoundingBoxDescent;
+			const baseline =
+				box.top +
+				(box.height - contentArea) / 2 +
+				metrics.fontBoundingBoxAscent;
+			return flag.getBoundingClientRect().bottom - baseline;
+		});
+		expect(Math.abs(offset)).toBeLessThanOrEqual(1.5);
+	});
 });
