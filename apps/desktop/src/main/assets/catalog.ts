@@ -172,6 +172,47 @@ export function tileFile(
 	};
 }
 
+export function splashPath(champion: Pick<LocalizedChampionAsset, "id">) {
+	return `splashes/${champion.id}.jpg`;
+}
+
+const splashPattern =
+	/^\/lol-game-data\/assets\/assets\/characters\/([a-z0-9]{1,64})\/skins\/(base|skin0)\/images\/([a-z0-9]{1,64})_splash_centered_0\.jpg$/;
+
+/**
+ * The base skin's centred landscape splash (1280×720 JPEG, #494) named by the
+ * champion's untrusted game data, or undefined when the data does not match
+ * the shape CommunityDragon serves. Same checks and size cap as the tile.
+ */
+export function splashFile(
+	version: string,
+	champion: Pick<LocalizedChampionAsset, "id" | "key">,
+	data: unknown,
+): AssetFile | undefined {
+	if (!isRecord(data) || data.id !== champion.key) return undefined;
+	const skin = Array.isArray(data.skins) ? data.skins[0] : undefined;
+	if (
+		!isRecord(skin) ||
+		skin.isBase !== true ||
+		skin.id !== champion.key * 1000 ||
+		typeof skin.splashPath !== "string" ||
+		skin.splashPath.length > 256
+	)
+		return undefined;
+	const match = splashPattern.exec(skin.splashPath.toLowerCase());
+	if (!match || match[1] !== champion.id.toLowerCase()) return undefined;
+	const [, folder, variant, name] = match;
+	return {
+		path: splashPath(champion),
+		url: new URL(
+			`/${version}/${gameData}/default/assets/characters/${folder}/skins/${variant}/images/${name}_splash_centered_0.jpg`,
+			communityDragon,
+		),
+		limit: maxImageBytes,
+		check: (bytes) => sniffImageMime(bytes) === "image/jpeg",
+	};
+}
+
 export function parseChampionSummary(
 	catalog: unknown,
 ): LocalizedChampionAsset[] {

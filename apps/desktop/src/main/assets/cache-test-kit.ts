@@ -32,11 +32,14 @@ export const png = Buffer.from("89504e470d0a1a0a0102030405060708", "hex");
 export const jpeg = Buffer.from("ffd8ffe000104a464946000101000001", "hex");
 export const championData = `/16.23/${gameData}/default/v1/champions/103.json`;
 export const tile = `/16.23/${gameData}/default/assets/characters/ahri/skins/base/images/ahri_splash_tile_0.jpg`;
-export const ahriData = (tilePath: unknown) =>
+export const splash = `/16.23/${gameData}/default/assets/characters/ahri/skins/base/images/ahri_splash_centered_0.jpg`;
+const ahriSplash =
+	"/lol-game-data/assets/ASSETS/Characters/Ahri/Skins/Base/Images/ahri_splash_centered_0.jpg";
+export const ahriData = (tilePath: unknown, splashPath: unknown = ahriSplash) =>
 	JSON.stringify({
 		id: 103,
 		alias: "Ahri",
-		skins: [{ id: 103000, isBase: true, tilePath }],
+		skins: [{ id: 103000, isBase: true, tilePath, splashPath }],
 	});
 const ahriTile =
 	"/lol-game-data/assets/ASSETS/Characters/Ahri/Skins/Base/Images/ahri_splash_tile_0.jpg";

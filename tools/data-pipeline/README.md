@@ -90,6 +90,14 @@ mise exec -- pnpm data:leagues --offline
 
 Consulta `getLeagues` y escribe `packages/core/content/real/leagues.json` con procedencia y metadatos ordenados por id. Usa las mismas opciones, caché y límites que `data:logos`. `--offline` necesita la respuesta y los metadatos de imagen ya cacheados. El comando lista las competiciones que quedan sin logo.
 
+## Formatos de liga
+
+`mise exec -- pnpm data:league-formats` genera los seis formatos de liga de 2026
+en `packages/core/content/real/formats/` con el snapshot local y los equipos
+del juego. El comando imprime los motivos de las reglas provisionales.
+El [plan 12](../../docs/plans/12-formatos-de-competicion.md#ligas-de-2026-en-el-juego-426)
+recoge las adaptaciones y el resultado del calendario.
+
 ## Torneos internacionales
 
 ```sh

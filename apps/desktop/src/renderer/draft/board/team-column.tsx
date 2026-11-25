@@ -5,6 +5,7 @@ import {
 	type SeriesOptions,
 	type Side,
 } from "@rift-legends/contracts";
+import { BAN_STRIKE } from "@rift-legends/ui-kit/components/champion-face";
 import { Tooltip } from "@rift-legends/ui-kit/components/tooltip";
 import { useReducedMotion } from "@rift-legends/ui-kit/lib/use-reduced-motion";
 import { Ban } from "lucide-react";
@@ -140,16 +141,24 @@ function BanSlot(props: {
 					</button>
 				</Tooltip>
 			) : state === "preview" && preview ? (
-				// Only the portrait pulses, without a border (#435, #436).
-				<span
-					data-ban-preview
-					className={`flex size-full overflow-hidden rounded-control ${reduced ? "opacity-50" : "draft-pending"}`}
-					style={reduced ? undefined : PULSE}
-				>
-					<ChampionPortrait
-						id={preview}
-						label={championLabel(props.options, preview)}
-						size="tile"
+				// Only the portrait pulses, without a border (#435, #436); the
+				// ban's line stays over it, steady (#494).
+				<span className="relative flex size-full overflow-hidden rounded-control">
+					<span
+						data-ban-preview
+						className={`flex size-full ${reduced ? "opacity-50" : "draft-pending"}`}
+						style={reduced ? undefined : PULSE}
+					>
+						<ChampionPortrait
+							id={preview}
+							label={championLabel(props.options, preview)}
+							size="tile"
+						/>
+					</span>
+					<span
+						data-ban-strike
+						aria-hidden="true"
+						className={`pointer-events-none absolute inset-0 ${BAN_STRIKE}`}
 					/>
 				</span>
 			) : (
@@ -263,7 +272,7 @@ export const TeamColumn = memo(function TeamColumn(props: {
 									{champion && (
 										<span
 											data-preview={pending ? "pending" : "locked"}
-											className={`pointer-events-none absolute inset-y-px right-px -z-10 w-3/5 overflow-hidden [mask-image:linear-gradient(to_right,transparent,#000_55%)] ${pending ? (reduced ? "opacity-50" : "draft-pending") : "opacity-100 motion-safe:transition-opacity motion-safe:duration-300 motion-safe:starting:opacity-50"}`}
+											className={`pointer-events-none absolute inset-y-px right-px -z-10 w-[85%] overflow-hidden [container-type:size] [mask-image:linear-gradient(to_right,transparent,rgb(0_0_0/0.15)_20%,rgb(0_0_0/0.45)_40%,rgb(0_0_0/0.8)_60%,#000_78%)] ${pending ? (reduced ? "opacity-50" : "draft-pending") : "opacity-100 motion-safe:transition-opacity motion-safe:duration-300 motion-safe:starting:opacity-50"}`}
 											style={pending && !reduced ? PULSE : undefined}
 										>
 											<PickArt key={champion} id={champion} label={label} />
@@ -279,7 +288,7 @@ export const TeamColumn = memo(function TeamColumn(props: {
 										<small className="block text-[11px] text-muted">
 											{slot}
 										</small>
-										<strong className="block truncate font-display text-[clamp(16px,1.4vw,23px)] leading-tight">
+										<strong className="block truncate font-display text-[clamp(16px,1.4vw,23px)] leading-tight [text-shadow:0_1px_3px_rgb(0_0_0/0.85)]">
 											{handle}
 										</strong>
 										{current && (
