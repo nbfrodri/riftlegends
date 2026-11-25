@@ -301,8 +301,8 @@ describe("M5 · stats come from the facts", () => {
 
 	it("a game with no chances scores the neutral 60 where there is nothing to measure", () => {
 		const quiet = playerStats([], teams, rules, 1800);
-		// Jungle: no kills to join and no objectives (80 % neutral) and no deaths (100).
-		expect(quiet.find((p) => p.player === "b-jungle")?.rating).toBe(68);
+		// Jungle: no kills to join and no objectives (72 % neutral), no deaths (100) and a vision score a little under the reference (teams at 60 vs 66).
+		expect(quiet.find((p) => p.player === "b-jungle")?.rating).toBe(66);
 	});
 
 	it("lists blue then red, in role order, with their champion", () => {
