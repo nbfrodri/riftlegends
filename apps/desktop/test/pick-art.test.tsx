@@ -34,12 +34,13 @@ describe("#438: framing a champion in the pick row", () => {
 		expect(art.style.top).toBe("-24%");
 	});
 
-	test("#494: the art fades in softly over three quarters of its width", () => {
+	test("#494: the art fades in along an eased gradient that ends inside the image", () => {
 		const { container } = render(<PickArt id="Braum" label="Braum" />);
 		const art = container.querySelector("[data-framing]") as HTMLElement;
-		// Half visible at 40 %, fully visible from 75 %: a long blend, not a block.
+		// Fully transparent for the first 10 % of the tile, so its left edge
+		// never shows, then an eased ramp to fully visible at 85 %.
 		expect(art.className).toContain(
-			"[mask-image:linear-gradient(to_right,transparent,rgb(0_0_0/0.5)_40%,#000_75%)]",
+			"[mask-image:linear-gradient(to_right,transparent_10%,rgb(0_0_0/0.1)_25%,rgb(0_0_0/0.45)_45%,rgb(0_0_0/0.8)_65%,#000_85%)]",
 		);
 	});
 });
