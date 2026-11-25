@@ -1,5 +1,7 @@
-import type { CSSProperties } from "react";
+import { type CSSProperties, useState } from "react";
+import { useAssetSrc } from "../../assets";
 import { ChampionPortrait } from "../champion-portrait";
+import { useDraftContent } from "../session";
 
 interface Focus {
 	/** Percent of the tile's width and height. */
@@ -38,6 +40,14 @@ const MAX_ZOOM = 2;
 const round = (value: number) => Math.round(value * 1000) / 1000;
 
 /**
+ * Where to anchor the centred splash (object-position), for champions whose
+ * face the default anchor cuts in the row (#494). Read off the 16.23 splashes.
+ */
+const SPLASH_FOCUS: Readonly<Record<string, string>> = {};
+// Faces in the centred splash sit a little above its middle.
+const SPLASH_ANCHOR = "50% 30%";
+
+/**
  * Sizes and places the square tile so its focal point lands on the target,
  * zooming only as needed and never uncovering the box. Lengths use the art
  * box's container units: the tile's side is a multiple of the box's width.
@@ -58,10 +68,36 @@ export function framing(focus: Focus): CSSProperties {
 }
 
 /**
- * The champion's art blended into its pick row: framed on its face when the
- * champion has a focal point, else the default cover framing.
+ * The champion's art blended into its pick row. With real content, the base
+ * skin's landscape splash covers the art box (#494); without it (fictional
+ * content, or a splash that failed to load) the square tile, framed on its
+ * face when the champion has a focal point, else the default cover framing.
  */
 export function PickArt(props: { id: string; label: string }) {
+	const content = useDraftContent();
+	const splash = useAssetSrc("cdragon", `splashes/${props.id}.jpg`);
+	const [failed, setFailed] = useState(false);
+	if (content === "real" && splash && !failed)
+		return (
+			<span
+				data-framing="splash"
+				role="img"
+				aria-label={props.label}
+				className="absolute inset-0 flex"
+			>
+				<img
+					src={splash}
+					alt=""
+					onError={() => setFailed(true)}
+					className="size-full object-cover"
+					style={{ objectPosition: SPLASH_FOCUS[props.id] ?? SPLASH_ANCHOR }}
+				/>
+			</span>
+		);
+	return <TileArt {...props} />;
+}
+
+function TileArt(props: { id: string; label: string }) {
 	const focus = FOCUS[props.id];
 	if (!focus)
 		return (
