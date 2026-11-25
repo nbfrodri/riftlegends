@@ -1,6 +1,6 @@
 # Handoff · Cierre de la Fase 3 y Fase 3.5
 
-Estado: en curso (25-11, noche). Sustituye a [2026-11-22-fase3-datos-reales.md](2026-11-22-fase3-datos-reales.md).
+Estado: en curso (25-11, 23:30). Fusionados hoy en esta sesión: #561, #534, #563, #564, #565, #567, #569 (arregla #557; #570 abierto hasta ver varias ejecuciones de `verify-windows` en verde), #571 (arregla #536). Abiertos: #570, #572 (partida desborda 36 px con nombres largos). Stryker sigue programado a las 05:00 del 26-11. Sustituye a [2026-11-22-fase3-datos-reales.md](2026-11-22-fase3-datos-reales.md).
 
 Decisiones en el [registro](../decisions/README.md). Reglas del usuario: respuestas en español, claras y breves; **TDD estricto** (commit de test en rojo y después el de implementación); **nada de `git stash`** ni force-push; **títulos de PR en inglés** (Conventional; el squash los usa como commit) y cuerpo en español; visto bueno del usuario antes de fusionar, con capturas (vídeo si hay animación); vigilar el CI de cada PR y de `main` tras cada fusión; máximo 4–5 subagentes (Sonnet medium lógica, Opus medium visual); Codex `gpt-6.2-sol` medium para tareas sin red.
 
@@ -56,5 +56,5 @@ Para Codex: leer `r<N>.json`, comprobar con `tack codex-used <thread_id>` (prime
 | test Q4 lento | test/snapshot-q4-speed | fusionado (#541) |
 | #535 reglas LEC y LCK Cup | feat/535-lec-lck-cup-rules | fusionado (#543) |
 | #546, #550 | ver arriba | en curso |
-| #525 refactor (gpt-6.2-sol medium, 25-11 21:20) | refactor/525-split-modules en `../riftlegends-525` | en curso; informe `~/.cache/rift-tmp/r525.json`, eventos `e525.jsonl`, thread 01a21458-f117-75f1-a1ca-76406abf7bcc |
-| #428 temporada en el dispatcher (gpt-6.2-sol medium, adelantada con permiso del usuario) | feat/428-season-dispatcher en `../riftlegends-428` | en curso; `r428.json`, `e428.jsonl`, thread 01a21463-a3a5-7e93-aedd-4fdae0ea751e |
+| #525 refactor (gpt-6.2-sol medium, verificado con `tack codex-used`) | refactor/525-split-modules en `../riftlegends-525` | terminado; rojo→verde comprobado; fusionando `main` + verify (log `~/.cache/rift-tmp/verify525.log`); falta push, PR por REST (`Closes #525`) y capturas del CI para el visto bueno |
+| #428 temporada en el dispatcher (gpt-6.2-sol medium, verificado) | feat/428-season-dispatcher en `../riftlegends-428` | terminado; rojo→verde comprobado; fusionando `main` + verify (`verify428.log`); falta push y PR. **Pedir visto bueno al usuario** de 3 decisiones de Codex: cambios de formato solo al año siguiente; Swiss impar: descansa el último por balance y sembrado; desempate que no cabe en la ventana rechaza el día entero. Nota: la clasificación por puntos no cabe en el contrato actual |
