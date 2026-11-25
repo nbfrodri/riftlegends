@@ -11,6 +11,7 @@ import { PlayerPortrait } from "../draft/board/player-card";
 import { CountryFlag } from "../draft/country-flag";
 import { TeamCrest } from "../draft/team-crest";
 import { levelColor, levelOf } from "../level-scale";
+import { PlayerAge, playerAge } from "../player-age";
 import {
 	DatabaseFilterChips,
 	DatabaseFilterPanel,
@@ -115,6 +116,15 @@ export function PlayerTable({
 						{country(player.nationality)}
 					</span>
 				),
+			},
+			{
+				id: "age",
+				header: t("database.column.age"),
+				// Unknown ages sort last when ascending.
+				value: (player) =>
+					playerAge(player.birthDate) ?? Number.MAX_SAFE_INTEGER,
+				cell: (player) => <PlayerAge birthDate={player.birthDate} />,
+				numeric: true,
 			},
 			{
 				id: "role",

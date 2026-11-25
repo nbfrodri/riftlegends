@@ -208,9 +208,9 @@ const rowOf = (handle: string) =>
 it("shows each age on the game date and a dash with a hint when unknown", async () => {
 	await open();
 	// The game date is 18 Jun 2027 (the date the sidebar shows).
-	expect(
-		within(rowOf("Faker")).getAllByRole("cell")[2]?.textContent,
-	).toBe("31");
+	expect(within(rowOf("Faker")).getAllByRole("cell")[2]?.textContent).toBe(
+		"31",
+	);
 	if (!unknown) throw new Error("expected a player without a birth date");
 	const cell = within(rowOf(unknown.handle)).getAllByRole("cell")[2];
 	expect(cell?.textContent).toBe("—");
@@ -219,7 +219,7 @@ it("shows each age on the game date and a dash with a hint when unknown", async 
 	).toBeTruthy();
 });
 
-it("sorts the list by age, with unknown ages last when ascending", async () => {
+it("sorts the list by age, with unknown ages after the oldest", async () => {
 	const user = await open();
 	const header = screen.getByRole("columnheader", { name: "Age" });
 	await user.click(within(header).getByRole("button"));
@@ -228,7 +228,10 @@ it("sorts the list by age, with unknown ages last when ascending", async () => {
 	);
 	const known = ages.filter((age) => age !== "—").map(Number);
 	expect(known).toEqual([...known].sort((a, b) => a - b));
-	expect(ages.at(-1)).toBe("—");
+	expect(ages[0]).not.toBe("—");
+	await user.click(within(header).getByRole("button"));
+	const first = within(bodyRows()[0] as HTMLElement).getAllByRole("cell")[2];
+	expect(first?.textContent).toBe("—");
 });
 
 it("shows the age in the player card, in Spanish too", async () => {

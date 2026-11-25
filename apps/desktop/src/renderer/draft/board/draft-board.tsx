@@ -10,6 +10,7 @@ import {
 	useState,
 } from "react";
 import { useTranslation } from "react-i18next";
+import { PlayerAge } from "../../player-age";
 import { playSound } from "../../sound";
 import { CountryFlag } from "../country-flag";
 import { teamName, useDraftSession } from "../session";
@@ -299,6 +300,9 @@ const Inspection = memo(function Inspection(props: {
 							handle={rated.handle}
 						/>
 						<div className="min-w-0 flex-1">
+							<p className="mb-1 text-[13px] text-muted">
+								<PlayerAge birthDate={rated.birthDate} withUnit />
+							</p>
 							<PlayerAttributes
 								attributes={rated.attributes}
 								role={rated.role}

@@ -252,7 +252,10 @@ export async function nationalities(
 	await writeFile(path, body);
 	// The same Players rows carry the birth dates.
 	const dates = buildBirthDates(rows, ids);
-	const birthFile: BirthDatesFile = { provenance: file.provenance, players: dates };
+	const birthFile: BirthDatesFile = {
+		provenance: file.provenance,
+		players: dates,
+	};
 	const birthPath = join(options.outputDir, "birthdates.json");
 	await writeFile(birthPath, await preserveBirthDates(birthPath, birthFile));
 	return {

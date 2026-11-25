@@ -48,7 +48,9 @@ test("career history improves ratings and leaves players without history unchang
 			.filter(({ id }) => !careers.has(id))
 			.map(({ nationality: _n, birthDate: _b, ...player }) => player),
 	).toEqual(
-		withoutHistory.map(({ nationality: _n, birthDate: _b, ...player }) => player),
+		withoutHistory.map(
+			({ nationality: _n, birthDate: _b, ...player }) => player,
+		),
 	);
 });
 
@@ -94,7 +96,7 @@ test("the cached Leaguepedia birth date reaches real player content", async () =
 test("most real players have a birth date, and every one is valid", async () => {
 	const players: { birthDate?: string }[] = await read("players.json");
 	const known = players.filter((player) => player.birthDate);
-	expect(known.length / players.length).toBeGreaterThanOrEqual(0.8);
+	expect(known.length / players.length).toBeGreaterThanOrEqual(0.9);
 	for (const { birthDate } of known)
 		expect(isBirthDate(birthDate ?? ""), birthDate).toBe(true);
 });

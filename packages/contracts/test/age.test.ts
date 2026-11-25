@@ -33,7 +33,8 @@ test("no birth date, or one after the game date, gives no age", () => {
 });
 
 test("the birth date contract accepts a full date or a year and nothing else", () => {
-	for (const ok of ["1996-05-07", "1999"]) expect(BIRTH_DATE.test(ok)).toBe(true);
+	for (const ok of ["1996-05-07", "1999"])
+		expect(BIRTH_DATE.test(ok)).toBe(true);
 	for (const bad of ["", "96", "1996-5-7", "1996-13-01", "1996-05"])
 		expect(BIRTH_DATE.test(bad), bad).toBe(false);
 	expect(isBirthDate("1996-02-30")).toBe(false);

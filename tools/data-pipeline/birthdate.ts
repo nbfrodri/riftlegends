@@ -22,7 +22,10 @@ export function parseBirthDate(value: string | null | undefined) {
 }
 
 /** One date per player of `ids`; a full date beats a year across rows. */
-export function buildBirthDates(rows: readonly CargoRow[], ids: Iterable<string>) {
+export function buildBirthDates(
+	rows: readonly CargoRow[],
+	ids: Iterable<string>,
+) {
 	const resolve = idResolver(ids);
 	const found = new Map<string, string>();
 	for (const row of rows) {
