@@ -1,0 +1,193 @@
+{
+	"id": "worlds",
+	"kind": "international",
+	"stages": [
+		{
+			"id": "playin",
+			"window": {
+				"startWeek": 41,
+				"weeks": 1,
+				"matchDays": 4,
+				"maxSeriesPerDay": 4
+			},
+			"entrants": {
+				"kind": "qualified",
+				"competition": "worlds",
+				"places": [
+					{
+						"league": "LEC",
+						"place": 3
+					},
+					{
+						"league": "LCP",
+						"place": 3
+					},
+					{
+						"league": "CBLOL",
+						"place": 2
+					},
+					{
+						"league": "LCS",
+						"place": 3
+					}
+				]
+			},
+			"play": {
+				"type": "doubleElim",
+				"size": 4,
+				"upper": [
+					5,
+					5
+				],
+				"lower": [
+					5,
+					5
+				],
+				"drop": [
+					[
+						0,
+						0
+					],
+					[
+						1
+					]
+				],
+				"lowerSeeds": [],
+				"grandFinal": 5,
+				"reset": false
+			}
+		},
+		{
+			"id": "swiss",
+			"window": {
+				"startWeek": 42,
+				"weeks": 2,
+				"matchDays": 5,
+				"maxSeriesPerDay": 4
+			},
+			"entrants": [
+				{
+					"kind": "qualified",
+					"competition": "worlds",
+					"places": [
+						{
+							"league": "LCK",
+							"place": 1
+						},
+						{
+							"league": "LPL",
+							"place": 1
+						},
+						{
+							"league": "LEC",
+							"place": 1
+						},
+						{
+							"league": "LCP",
+							"place": 1
+						},
+						{
+							"league": "LCS",
+							"place": 1
+						},
+						{
+							"league": "CBLOL",
+							"place": 1
+						},
+						{
+							"league": "LCK",
+							"place": 2
+						},
+						{
+							"league": "LPL",
+							"place": 2
+						},
+						{
+							"league": "LEC",
+							"place": 2
+						},
+						{
+							"league": "LCP",
+							"place": 2
+						},
+						{
+							"league": "LCS",
+							"place": 2
+						},
+						{
+							"league": "LCK",
+							"place": 3
+						},
+						{
+							"league": "LPL",
+							"place": 3
+						},
+						{
+							"league": "LCK",
+							"place": 4
+						},
+						{
+							"league": "LPL",
+							"place": 4
+						}
+					]
+				},
+				{
+					"kind": "bracket",
+					"stage": "playin",
+					"match": "GF",
+					"result": "winner"
+				}
+			],
+			"play": {
+				"type": "swiss",
+				"size": 16,
+				"wins": 3,
+				"losses": 3,
+				"bestOf": 1,
+				"decisiveBestOf": 3,
+				"round1": "pots",
+				"avoid": [
+					"region",
+					"rematch"
+				]
+			},
+			"draw": {
+				"pots": 4
+			}
+		},
+		{
+			"id": "knockout",
+			"window": {
+				"startWeek": 43,
+				"weeks": 3,
+				"matchDays": 4,
+				"maxSeriesPerDay": 4
+			},
+			"entrants": {
+				"kind": "standing",
+				"stage": "swiss",
+				"from": 1,
+				"to": 8
+			},
+			"play": {
+				"type": "singleElim",
+				"size": 8,
+				"bestOf": [
+					5,
+					5,
+					5
+				]
+			}
+		}
+	],
+	"tiebreak": [
+		"seriesWins",
+		"gameDiff",
+		"headToHead",
+		"tiebreakerSeries",
+		"draw"
+	],
+	"tiebreakerBestOf": 3,
+	"verified": false
+}

@@ -1,0 +1,79 @@
+{
+  "cargoquery": [
+    {
+      "title": {
+        "OverviewPage": "2026 First Stand",
+        "Name": "First Stand 2026",
+        "League": "First Stand",
+        "Year": "2026",
+        "DateStart": "2026-03-16",
+        "Date": "2026-03-22",
+        "TournamentLevel": "Primary",
+        "IsQualifier": "0",
+        "IsOfficial": "1",
+        "DateStart__precision": "1",
+        "Date__precision": "1"
+      }
+    },
+    {
+      "title": {
+        "OverviewPage": "2026 Mid-Season Invitational",
+        "Name": "MSI 2026",
+        "League": "Mid-Season Invitational",
+        "Year": "2026",
+        "DateStart": "2026-06-28",
+        "Date": "2026-07-12",
+        "TournamentLevel": "Primary",
+        "IsQualifier": "0",
+        "IsOfficial": "1",
+        "DateStart__precision": "1",
+        "Date__precision": "1"
+      }
+    },
+    {
+      "title": {
+        "OverviewPage": "2026 Season World Championship/Main Event",
+        "Name": "Worlds 2026 Main Event",
+        "League": "World Championship",
+        "Year": "2026",
+        "DateStart": "2026-10-23",
+        "Date": "2026-11-14",
+        "TournamentLevel": "Primary",
+        "IsQualifier": "0",
+        "IsOfficial": "1",
+        "DateStart__precision": "1",
+        "Date__precision": "1"
+      }
+    },
+    {
+      "title": {
+        "OverviewPage": "2026 Season World Championship/Play-In",
+        "Name": "Worlds 2026 Play-In",
+        "League": "World Championship",
+        "Year": "2026",
+        "DateStart": "2026-10-15",
+        "Date": "2026-10-18",
+        "TournamentLevel": "Primary",
+        "IsQualifier": "1",
+        "IsOfficial": "1",
+        "DateStart__precision": "1",
+        "Date__precision": "1"
+      }
+    },
+    {
+      "title": {
+        "OverviewPage": "LPL/2026 Season/Regional Finals",
+        "Name": "LPL 2026 Regional Finals",
+        "League": "World Championship",
+        "Year": "2026",
+        "DateStart": "2026-09-17",
+        "Date": "2026-09-19",
+        "TournamentLevel": "Primary",
+        "IsQualifier": "1",
+        "IsOfficial": "1",
+        "DateStart__precision": "1",
+        "Date__precision": "1"
+      }
+    }
+  ]
+}
