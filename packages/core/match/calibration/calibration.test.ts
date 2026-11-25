@@ -120,6 +120,27 @@ describe.each(["control", "packaged", "real-champions", "real"] as const)(
 			expect(kills).toBeLessThanOrEqual(30);
 		});
 
+		it("K18 · pentakills: 1.2–3 % of games, mostly the ADC, the support almost never (pro 2,0 %)", () => {
+			const pentas = even.flatMap((g) =>
+				g.streaks.filter((s) => s.count === 5),
+			);
+			const perGame = rate(even, (g) => g.streaks.some((s) => s.count === 5));
+			expect(perGame).toBeGreaterThanOrEqual(0.012);
+			expect(perGame).toBeLessThanOrEqual(0.03);
+			const share = (role: Role) =>
+				pentas.filter((s) => s.role === role).length / pentas.length;
+			expect(share("bot")).toBeGreaterThanOrEqual(0.5);
+			expect(share("bot")).toBeLessThanOrEqual(0.85);
+			expect(share("support")).toBeLessThanOrEqual(0.05);
+		});
+
+		it("K18 · quadras are at least as common as pentas, and triples more than quadras", () => {
+			const games = (count: number) =>
+				rate(even, (g) => g.streaks.some((s) => s.count === count));
+			expect(games(4)).toBeGreaterThanOrEqual(games(5));
+			expect(games(3)).toBeGreaterThan(games(4));
+		});
+
 		it("K8 · role rating means are 56–64 and at most 5 points apart", () => {
 			const teams = even.flatMap((g) => g.teams);
 			const means = ROLES.map((role) => {
