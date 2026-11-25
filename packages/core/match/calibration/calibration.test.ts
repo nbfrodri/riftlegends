@@ -108,6 +108,30 @@ describe.each(["control", "packaged", "real"] as const)(
 			expect(kills).toBeLessThanOrEqual(30);
 		});
 
+		if (pool === "real") {
+			it("K8 · role rating means are 56–64 and at most 5 points apart", () => {
+				const teams = even.flatMap((g) => g.teams);
+				const means = ROLES.map((role) => {
+					const mean =
+						teams.reduce((sum, team) => sum + team.line[role].rating, 0) /
+						teams.length;
+					expect.soft(mean, role).toBeGreaterThanOrEqual(56);
+					expect.soft(mean, role).toBeLessThanOrEqual(64);
+					return mean;
+				});
+				expect(Math.max(...means) - Math.min(...means)).toBeLessThanOrEqual(5);
+			});
+
+			it("K11 · a game has 8–15 towers and 3–6 dragons at the median", () => {
+				const towers = at(even.map((g) => g.towers), 0.5);
+				const dragons = at(even.map((g) => g.dragons), 0.5);
+				expect.soft(towers, "towers").toBeGreaterThanOrEqual(8);
+				expect.soft(towers, "towers").toBeLessThanOrEqual(15);
+				expect.soft(dragons, "dragons").toBeGreaterThanOrEqual(3);
+				expect.soft(dragons, "dragons").toBeLessThanOrEqual(6);
+			});
+		}
+
 		it("K4 · 3,000 gold behind at minute 20, a team wins 15–30 %", () => {
 			const behind = even.filter(
 				(g) =>
