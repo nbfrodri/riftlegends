@@ -216,6 +216,23 @@ export async function responses(
 				},
 			]),
 		],
+		// No wiki redirects, and a current roster with a real player per role.
+		["ScoreboardPlayers=SP,PlayerRedirects=PR", cargo([])],
+		["TournamentPlayers=TP,PlayerRedirects=PR", cargo([])],
+		[
+			"Players",
+			cargo(
+				[...new Set([...teamNames, "T1"])].flatMap((team) =>
+					["Top", "Jungle", "Mid", "Bot", "Support"].map((role) => ({
+						Link: `Synthetic ${team} ${role}`,
+						Player: `Synthetic ${team} ${role}`,
+						Team: team,
+						Role: role,
+						Retired: "0",
+					})),
+				),
+			),
+		],
 		[dataDragonUrl, champions],
 	]);
 }

@@ -49,6 +49,18 @@ export function line(player: string, fields: Partial<Line> = {}): Line {
 	};
 }
 
+type Role = "top" | "jungle" | "mid" | "bot" | "support";
+/** Real-looking players for the roles a test does not care about. */
+export const fillers = (team: string, roles: readonly Role[]) =>
+	roles.map((role) => ({
+		id: `${team}-${role}-real`,
+		name: `${team} ${role}`,
+		team,
+		role,
+		sub: false,
+		noGames: true as const,
+	}));
+
 export function snapshot(games: Game[], league = "LCK"): RealSnapshot {
 	return {
 		provenance: {
@@ -77,14 +89,18 @@ export function snapshot(games: Game[], league = "LCK"): RealSnapshot {
 				],
 			},
 		],
-		seasonPlayers: ["Starter", "Brief", "Reserve"].map((id) => ({
-			id,
-			name: id,
-			team: "Alpha",
-			role: "bot",
-			sub: id !== "Starter",
-			...(id === "Reserve" ? { noGames: true } : {}),
-		})),
+		seasonPlayers: [
+			...["Starter", "Brief", "Reserve"].map((id) => ({
+				id,
+				name: id,
+				team: "Alpha",
+				role: "bot" as const,
+				sub: id !== "Starter",
+				...(id === "Reserve" ? { noGames: true as const } : {}),
+			})),
+			...fillers("Alpha", ["top", "jungle", "mid", "support"]),
+			...fillers("Beta", ["top", "jungle", "mid", "bot", "support"]),
+		],
 		games,
 	};
 }

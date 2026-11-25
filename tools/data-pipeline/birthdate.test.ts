@@ -86,3 +86,12 @@ test("the file round-trips, rejects bad dates and ignores only retrieval dates",
 		await rm(dir, { recursive: true, force: true });
 	}
 });
+
+test("a player found through the page a redirect points to still gets the date", () => {
+	expect(
+		buildBirthDates(
+			[{ Link: "Old Handle", Page: "Faker", Birthdate: "1996-05-07" }],
+			["Faker"],
+		),
+	).toEqual([{ id: "Faker", birthDate: "1996-05-07" }]);
+});
