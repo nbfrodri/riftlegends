@@ -47,7 +47,7 @@ const SPLASH_FOCUS: Readonly<Record<string, Focus>> = {
 	Braum: { x: 50, y: 26 },
 	Illaoi: { x: 50, y: 22 },
 	Orianna: { x: 50, y: 24 },
-	Tryndamere: { x: 58, y: 33 },
+	Tryndamere: { x: 53, y: 33 },
 };
 // Faces in the centred splash sit at the middle, a third from the top.
 const SPLASH_DEFAULT: Focus = { x: 50, y: 33 };
