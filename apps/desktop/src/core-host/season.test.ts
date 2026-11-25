@@ -18,6 +18,7 @@ const season = {
 			id: "league",
 			kind: "league",
 			verified: false,
+			tiebreakerBestOf: 3,
 			tiebreak: ["seriesWins", "gameDiff", "headToHead"],
 			stages: [
 				{
@@ -68,7 +69,9 @@ function client() {
 }
 
 function accepted(result: HostResult) {
-	expect(result).toMatchObject({ ok: true });
+	expect(result, JSON.stringify(result.ok ? null : result.error)).toMatchObject(
+		{ ok: true },
+	);
 	if (!("facts" in result)) throw new Error("Expected facts");
 	return result;
 }
@@ -145,4 +148,151 @@ test("P4 and V6: formats are copied to the creation fact and only change next se
 			.facts[0],
 	).toMatchObject({ year: 2027, competitions: replacement.competitions });
 	expect(created?.competitions).toEqual(season.competitions);
+});
+
+test("a cut tiebreaker unlocks the international bracket and records the slot once", () => {
+	const core = client();
+	const roster = teams.slice(0, 2).map(({ id }) => id);
+	const split = {
+		id: "split",
+		window,
+		entrants: { kind: "fixed", teams: roster },
+		play: { type: "roundRobin", size: 2, rounds: 1, bestOf: 1 },
+	};
+	accepted(
+		core.send("season.create", {
+			...season,
+			competitions: [
+				{
+					...season.competitions[0],
+					stages: [split],
+					tiebreak: ["tiebreakerSeries"],
+					slots: [
+						{
+							to: "cup",
+							rule: "standing",
+							stage: "split",
+							count: 1,
+							cascade: "next",
+						},
+					],
+				},
+				{
+					id: "cup",
+					kind: "international",
+					verified: false,
+					tiebreak: [],
+					stages: [
+						{
+							id: "final",
+							window: { ...window, startWeek: 2 },
+							entrants: [
+								{ kind: "qualified", competition: "cup" },
+								{ kind: "fixed", teams: ["breakwater"] },
+							],
+							play: { type: "singleElim", size: 2, bestOf: [1] },
+						},
+					],
+				},
+			],
+		}),
+	);
+	const regular = accepted(core.send("season.playDay", { day: 0 }));
+	expect(
+		regular.facts.some(({ type }) => type === "competition.stageFinished"),
+	).toBe(false);
+	expect(
+		core.query("competition.schedule", {
+			competition: "league",
+			fromDay: 1,
+			toDay: 1,
+		}),
+	).toMatchObject({
+		ok: true,
+		view: [{ day: 1, bestOf: 3, tiebreaker: true, status: "ready" }],
+	});
+	const tie = accepted(core.send("season.playDay", { day: 1 }));
+	const winner = tie.facts.find(
+		({ type }) => type === "competition.seriesRecorded",
+	)?.winner;
+	const qualified = tie.facts.filter(
+		({ type }) => type === "competition.qualified",
+	);
+	expect(qualified).toMatchObject([
+		{
+			from: "league",
+			to: "cup",
+			team: winner,
+			rule: "standing",
+			via: "direct",
+		},
+	]);
+	expect(
+		core.query("competition.qualified", { competition: "cup" }),
+	).toMatchObject({
+		ok: true,
+		view: [{ team: winner }],
+	});
+	expect(
+		core.query("competition.bracket", { competition: "cup", stage: "final" }),
+	).toMatchObject({
+		ok: true,
+		view: { matches: [{ priority: { team: winner }, status: "ready" }] },
+	});
+	const final = accepted(core.send("season.playDay", { day: 14 }));
+	expect(
+		final.facts.find(({ type }) => type === "ai.sideDecided"),
+	).toMatchObject({ team: winner });
+	expect(final.facts.some(({ type }) => type === "competition.qualified")).toBe(
+		false,
+	);
+	expect(
+		core.query("competition.bracket", { competition: "cup", stage: "final" }),
+	).toMatchObject({
+		ok: true,
+		view: { matches: [{ status: "done" }] },
+	});
+});
+
+test("Swiss finishes a round with an odd active field and removes unused reservations", () => {
+	const core = client();
+	const roster = [...teams, "nightjar", "switchyard"].map((team, index) =>
+		typeof team === "string"
+			? { ...teams[0], id: team, rank: index + 1 }
+			: team,
+	);
+	const split = season.competitions[0]?.stages[0];
+	accepted(
+		core.send("season.create", {
+			...season,
+			teams: roster,
+			competitions: [
+				{
+					...season.competitions[0],
+					stages: [
+						{
+							...split,
+							entrants: { kind: "fixed", teams: roster.map(({ id }) => id) },
+							play: { ...split?.play, size: 6, wins: 1, losses: 2 },
+						},
+					],
+				},
+			],
+		}),
+	);
+	const first = accepted(core.send("season.playDay", { day: 0 }));
+	expect(
+		first.facts.find(({ type }) => type === "competition.paired"),
+	).toMatchObject({
+		round: 2,
+		pairs: [expect.any(Array)],
+	});
+	const last = accepted(core.send("season.playDay", { day: 1 }));
+	expect(
+		last.facts.some(({ type }) => type === "competition.stageFinished"),
+	).toBe(true);
+	expect(core.query("competition.schedule", { fromDay: 2 })).toEqual({
+		ok: true,
+		view: [],
+	});
 });
