@@ -16,4 +16,6 @@ export const SCOPES = {
 	matchFightTiming: 7,
 	/** Pit attendance and opposing Smite for objective steals (issue #508). */
 	matchSteal: 8,
+	/** Scheduling draws within a season (plan 12). */
+	schedule: 9,
 } as const;
