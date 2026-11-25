@@ -110,6 +110,10 @@ function collectEdges(
 	};
 	let size = 0;
 	let qualification = false;
+	for (const stage of node.stage.tiebreakHistory ?? []) {
+		if (!add({ competition: node.ref.competition, stage }))
+			return stageError(node, "invalid-stage-ref", { stage });
+	}
 	for (const source of sourcesOf(stage)) {
 		if (source.kind === "fixed") {
 			for (const id of source.teams) {
@@ -122,14 +126,24 @@ function collectEdges(
 			const origin = add(ref);
 			if (!origin) return stageError(node, "invalid-stage-ref");
 			if (source.kind === "standing") {
-				if (source.to > origin.stage.play.size) {
+				const play = origin.stage.play;
+				if (
+					source.group &&
+					(play.type !== "groups" ||
+						play.seeding !== "cross" ||
+						play.count !== 2 ||
+						play.size % 2 !== 0)
+				)
+					return stageError(node, "invalid-format", { path: "entrants" });
+				const available = source.group ? play.size / 2 : play.size;
+				if (source.to > available) {
 					return stageError(node, "not-enough-teams", {
 						needed: source.to,
-						available: origin.stage.play.size,
+						available,
 					});
 				}
 				for (let rank = source.from; rank <= source.to; rank++) {
-					if (note(JSON.stringify([ref, rank])))
+					if (note(JSON.stringify([ref, source.group, rank])))
 						return stageError(node, "invalid-format", { path: "entrants" });
 					size++;
 				}
@@ -256,6 +270,7 @@ export function buildStageGraph(
 					stage,
 					stageIndex,
 					competitionIndex,
+					tiebreak: competition.tiebreak,
 					bracket: bracketFor(stage),
 				});
 			} catch (error) {

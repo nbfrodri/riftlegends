@@ -691,3 +691,99 @@ test("face to face shows each player's portrait and name, with the champion as s
 	expect(order(cells[0])).toEqual(["photo", "champion", "name"]);
 	expect(order(cells[8])).toEqual(["name", "champion", "photo"]);
 });
+
+test.each([
+	[
+		"en-US",
+		[
+			"First blood",
+			"Solo kill",
+			"Killing spree",
+			"Rampage",
+			"Shutdown · 150 gold",
+			"Ace",
+			"outsmited the opposition",
+			"snatched it from the pit",
+		],
+	],
+	[
+		"es-ES",
+		[
+			"Primera sangre",
+			"Baja en solitario",
+			"En racha",
+			"Dominando",
+			"Fin de la racha · 150 de oro",
+			"Exterminio",
+			"ganó el duelo de Aplastar",
+			"arrebató el objetivo en el foso",
+		],
+	],
+] as const)(
+	"the %s event log shows special plays and varies steal text",
+	async (locale, labels) => {
+		const teams = { blue: "Forge", red: "Shoal" };
+		const steal = {
+			jungler: "b-jungle",
+			controllingSide: "red" as const,
+			defenders: 3,
+			opposingSmite: true,
+		};
+		const facts = [
+			{ ...event, second: 12, steal, kills: [], causes: [] },
+			{ ...event, second: 13, steal, kills: [], causes: [] },
+			{
+				...event,
+				second: 10,
+				kind: "lane" as const,
+				zone: "lane-top" as const,
+				causes: [],
+				kills: [
+					{
+						killer: "b-top",
+						victim: "r-top",
+						assists: [],
+						soloKill: true as const,
+						firstBlood: { killerGold: 100, assistGold: 0 },
+					},
+				],
+			},
+			{
+				...event,
+				kind: "fight" as const,
+				second: 14,
+				causes: [],
+				kills: [
+					{ killer: "b-top", victim: "r-mid", assists: [], spree: 3 as const },
+					{
+						killer: "b-top",
+						victim: "r-top",
+						assists: [],
+						spree: 4 as const,
+						shutdown: 150,
+						ace: true as const,
+					},
+				],
+			},
+		];
+		await renderInLocale(
+			<EventFeed
+				facts={facts}
+				second={14}
+				names={teams}
+				ids={teams}
+				players={new Map()}
+				ended
+			/>,
+			locale,
+		);
+		for (const label of labels)
+			expect(screen.getByText(label, { exact: false })).toBeTruthy();
+		expect(
+			screen.getByText(labels[0]).closest("[data-kill]")?.textContent,
+		).toContain("b-top");
+		expect(screen.getByText(labels[6], { exact: false }).textContent).toContain(
+			"b-jungle",
+		);
+	},
+);
