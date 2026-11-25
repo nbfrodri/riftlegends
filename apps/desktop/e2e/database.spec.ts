@@ -59,6 +59,46 @@ test.describe("with the fictional set (test seam)", () => {
 		});
 	}
 
+	for (const [width, height] of [
+		[1280, 720],
+		[1366, 768],
+	] as const) {
+		test(`the player card fills most of the content area at ${width}x${height}`, async ({
+			appWindow,
+		}) => {
+			await appWindow.setViewportSize({ width, height });
+			await appWindow
+				.getByRole("navigation", { name: "Club sections" })
+				.getByRole("button", { name: "Database" })
+				.click();
+			await appWindow.getByRole("row", { name: /Kilnara/ }).click();
+			const card = appWindow.getByRole("dialog", {
+				name: "Player card: Kilnara",
+			});
+			await expect(card.getByRole("heading", { name: "Lane" })).toBeVisible();
+			const box = await card.boundingBox();
+			const area = await appWindow.getByRole("main").boundingBox();
+			if (!box || !area) throw new Error("no layout");
+			// At least ~75 % of the usable content area, inside the window.
+			expect(box.width).toBeGreaterThanOrEqual(area.width * 0.75);
+			expect(box.height).toBeGreaterThanOrEqual(area.height * 0.75);
+			expect(box.x).toBeGreaterThanOrEqual(0);
+			expect(box.y).toBeGreaterThanOrEqual(0);
+			expect(box.x + box.width).toBeLessThanOrEqual(width);
+			expect(box.y + box.height).toBeLessThanOrEqual(height);
+			// The page itself never scrolls.
+			expect(
+				await appWindow.evaluate(() => {
+					const page = document.scrollingElement ?? document.documentElement;
+					return (
+						page.scrollHeight <= page.clientHeight &&
+						page.scrollWidth <= page.clientWidth
+					);
+				}),
+			).toBe(true);
+		});
+	}
+
 	test("the card's flag sits on the baseline of the big name", async ({
 		appWindow,
 	}) => {
