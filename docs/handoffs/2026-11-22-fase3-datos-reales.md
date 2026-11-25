@@ -76,6 +76,15 @@ Y después (24-11, tarde y noche): #415, #416, #412, #439, #441, #444, #446, #44
 4. Cerrar la Fase 3 con #253 (calibración real, E2E real) y Stryker.
 5. Revisar capturas inestables: `campeones-lista`, `mercado-filters-1280` y `draft-collapsed` cambian en casi cada fusión.
 
+## Delegaciones en Codex (25-11)
+
+| Tarea | Rama y worktree | Modelo | Eventos e informe | Estado |
+| --- | --- | --- | --- | --- |
+| #253 calibración real y E2E Bo5 real (cierra Fase 3) | `feat/253-real-calibration`, `../riftlegends-253` | gpt-6.2-sol, medium | `~/.cache/rift-tmp/codex/e253.jsonl`, `r253.json` | En curso; Codex no hace push |
+| #424 encadenado de fases, bombos y plazas | `feat/424-stage-chaining`, `../riftlegends-424` | gpt-6.2-sol, medium | `~/.cache/rift-tmp/codex/e424.jsonl`, `r424.json` | En curso; Codex no hace push |
+
+Orden acordado con el usuario (25-11): cerrar Fase 3 (#443, #253, Stryker); Fase 3.5 de uno en uno con la estructura de la Fase 4 (#424, #425, #426, #431) en paralelo; #428 y #429 después de la 3.5.
+
 ## Avisos
 
 - **Animaciones:** enseñarlas en vídeo o GIF grabado con Playwright `_electron` (`recordVideo`) y contenido real, nunca con capturas fijas.
