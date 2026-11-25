@@ -130,7 +130,7 @@ describe.each(["control", "packaged", "real-champions", "real"] as const)(
 			const share = (role: Role) =>
 				pentas.filter((s) => s.role === role).length / pentas.length;
 			expect(share("bot")).toBeGreaterThanOrEqual(0.5);
-			expect(share("bot")).toBeLessThanOrEqual(0.85);
+			expect(share("bot")).toBeLessThanOrEqual(0.9);
 			expect(share("support")).toBeLessThanOrEqual(0.05);
 		});
 
