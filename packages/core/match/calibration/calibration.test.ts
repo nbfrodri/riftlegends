@@ -1,8 +1,9 @@
 import { ROLES, type Role } from "@rift-legends/contracts";
-import { describe, expect, it } from "vitest";
-import { sample } from "./scenarios";
+import { describe, expect, it, test } from "vitest";
+import { loadRealContent } from "../../content/real";
+import { sample, scenario } from "./scenarios";
 
-// Monte Carlo bands of plan 08 (K1–K9, K16). Seeds are fixed, so each run is the
+// Monte Carlo bands of plan 08. Seeds are fixed, so each run is the
 // same sample: a failure means a change moved the balance, never bad luck.
 
 const sorted = (values: number[]) => [...values].sort((a, b) => a - b);
@@ -55,12 +56,36 @@ const PRO_GOLD = {
 	lead: [5896, 10_557, 14_954],
 } as const;
 
-describe.each(["control", "packaged", "real"] as const)(
+it("A4 · uses real teams, players and champions", () => {
+	const { draft, match, blue, red } = scenario(0, 253, "real");
+	const real = loadRealContent();
+	expect(blue.team).not.toBe(red.team);
+	for (const lineup of [blue, red]) {
+		expect(real.match.teams.map(({ id }) => id)).toContain(lineup.team);
+		expect(match.teams.find(({ id }) => id === lineup.team)).toEqual(
+			real.match.teams.find(({ id }) => id === lineup.team),
+		);
+		for (const role of ROLES) {
+			const player = draft.players.find(
+				(p) => p.team === lineup.team && p.role === role,
+			);
+			expect(real.draft.players).toContainEqual(player);
+			expect(match.players.find((p) => p.id === player?.id)).toEqual(
+				real.match.players.find((p) => p.id === player?.id),
+			);
+			expect(real.draft.champions).toContainEqual(
+				draft.champions.find((c) => c.id === lineup.roles[role]),
+			);
+		}
+	}
+});
+
+describe.each(["control", "packaged", "real-champions", "real"] as const)(
 	"C6: calibration with the %s pool",
 	(pool) => {
 		const even = sample(1000, 0, pool);
 
-		it("K5 · with equal teams, blue wins 50–54 %", () => {
+		it("K5 · with balanced sides, blue wins 50–54 %", () => {
 			const blue = rate(even, (g) => g.winner === "blue");
 			expect(blue).toBeGreaterThanOrEqual(0.5);
 			expect(blue).toBeLessThanOrEqual(0.54);
@@ -82,6 +107,53 @@ describe.each(["control", "packaged", "real"] as const)(
 			expect(kills).toBeGreaterThanOrEqual(15);
 			expect(kills).toBeLessThanOrEqual(30);
 		});
+
+		if (pool === "real") {
+			// https://github.com/nbfrodri/riftlegends/issues/348 — role-aware rating on a common scale.
+			test.fails("K8 · role rating means are 56–64 and at most 5 points apart", () => {
+				const teams = even.flatMap((g) => g.teams);
+				const means = ROLES.map((role) => {
+					const mean =
+						teams.reduce((sum, team) => sum + team.line[role].rating, 0) /
+						teams.length;
+					expect.soft(mean, role).toBeGreaterThanOrEqual(56);
+					expect.soft(mean, role).toBeLessThanOrEqual(64);
+					return mean;
+				});
+				const ordered = sorted(means);
+				expect(gap(ordered.at(-1) ?? 0, ordered[0] ?? 0)).toBeLessThanOrEqual(
+					5,
+				);
+			});
+
+			// https://github.com/nbfrodri/riftlegends/issues/357 — calibrate the play mix and game totals.
+			test.fails("K11 · a game has 8–15 towers at the median", () => {
+				const towers = at(
+					even.map((g) => g.towers),
+					0.5,
+				);
+				expect(towers).toBeGreaterThanOrEqual(8);
+				expect(towers).toBeLessThanOrEqual(15);
+			});
+
+			it("K11 · a game has 3–6 dragons at the median", () => {
+				const dragons = at(
+					even.map((g) => g.dragons),
+					0.5,
+				);
+				expect(dragons).toBeGreaterThanOrEqual(3);
+				expect(dragons).toBeLessThanOrEqual(6);
+			});
+
+			// https://github.com/nbfrodri/riftlegends/issues/320
+			test.todo("K9 · advantages from composition matchups");
+			test.todo("K10 · play mix by composition");
+			test.todo("K15 · power curves and early fade");
+
+			// https://github.com/nbfrodri/riftlegends/issues/339
+			test.todo("K12 · contest advantage with an ultimate ready");
+			test.todo("K13 · opportunities after the enemy uses an ultimate");
+		}
 
 		it("K4 · 3,000 gold behind at minute 20, a team wins 15–30 %", () => {
 			const behind = even.filter(
@@ -213,7 +285,7 @@ describe.each(["control", "packaged", "real"] as const)(
 			});
 		});
 
-		it("K1 · a clear favourite (+10 on every attribute) wins 60–75 %", () => {
+		it("K1 · the boosted side (+10 up to 100) wins 60–75 %", () => {
 			const favourite = rate(sample(600, 10, pool), (g) => g.winner === "blue");
 			expect(favourite).toBeGreaterThanOrEqual(0.6);
 			expect(favourite).toBeLessThanOrEqual(0.75);
