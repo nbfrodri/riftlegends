@@ -9,6 +9,7 @@ import {
 	type TeamLogoSource,
 } from "./logos";
 import { readPlayerPhotos, syncPlayerPhotos } from "./photos";
+import { readSounds, type SoundSource, syncSounds } from "./sounds";
 import { acquireSyncLock } from "./sync-lock";
 import type { AssetTransport } from "./transport";
 
@@ -16,6 +17,8 @@ export type OptionalAssetSources = {
 	logos?: readonly (Omit<TeamLogoSource, "id"> & { team: string })[];
 	photos?: readonly unknown[];
 	leagueLogos?: readonly TeamLogoSource[];
+	/** Official draft sounds (#472); main passes `championSelectSounds`. */
+	sounds?: readonly SoundSource[];
 };
 
 const toUrls = (paths: Record<string, string>, scheme: string) =>
@@ -30,11 +33,17 @@ const toUrls = (paths: Record<string, string>, scheme: string) =>
 export function createOptionalAssets(
 	userData: string,
 	transport: AssetTransport,
-	{ logos = [], photos = [], leagueLogos = [] }: OptionalAssetSources,
+	{
+		logos = [],
+		photos = [],
+		leagueLogos = [],
+		sounds = [],
+	}: OptionalAssetSources,
 ) {
 	let syncingLogos: Promise<void> | undefined;
 	let syncingPhotos: Promise<void> | undefined;
 	let syncingLeagueLogos: Promise<void> | undefined;
+	let syncingSounds: Promise<void> | undefined;
 	const logoListeners = new Set<() => void>();
 	const photoListeners = new Set<() => void>();
 
@@ -43,6 +52,9 @@ export function createOptionalAssets(
 
 	const leagueLogoRoot = async () =>
 		dirname(await cachePath(userData, "assets/leagues/manifest.json", true));
+
+	const soundRoot = async () =>
+		dirname(await cachePath(userData, "assets/sounds/manifest.json", true));
 
 	const photoRoot = async () =>
 		dirname(await cachePath(userData, "assets/photos/manifest.json", true));
@@ -125,6 +137,21 @@ export function createOptionalAssets(
 			photoListeners.add(listener);
 			return () => photoListeners.delete(listener);
 		},
+		/** Official sounds; failures are per sound and leave the fallback. */
+		async syncSounds(): Promise<void> {
+			const root = await soundRoot();
+			const release = await acquireSyncLock(root);
+			try {
+				await syncSounds(root, sounds, transport);
+			} finally {
+				await release();
+			}
+		},
+		/** The verified sound bytes on disk, by sound id. */
+		async getSounds() {
+			await syncingSounds;
+			return readSounds(await soundRoot(), sounds);
+		},
 		/** Starts the configured downloads once the champion catalog is ready. */
 		startSyncs(): void {
 			if (logos.length && !syncingLogos) {
@@ -151,6 +178,14 @@ export function createOptionalAssets(
 					)
 					.finally(() => {
 						syncingLeagueLogos = undefined;
+					});
+			}
+			if (sounds.length && !syncingSounds) {
+				syncingSounds = assets
+					.syncSounds()
+					.catch(() => undefined)
+					.finally(() => {
+						syncingSounds = undefined;
 					});
 			}
 			// Same for the photos: read again when they land.

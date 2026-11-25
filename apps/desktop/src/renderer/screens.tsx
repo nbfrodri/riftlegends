@@ -11,6 +11,7 @@ import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import { ContentSettings } from "./assets/content-settings";
 import { isLocale, storeLanguage } from "./language";
+import { SoundSettings } from "./sound/sound-settings";
 
 // Placeholder screens: each one only names itself until its real content lands
 // Draft and Mercado have their own files.
@@ -61,6 +62,7 @@ export function SettingsScreen() {
 				</Select>
 			</div>
 			<ContentSettings />
+			<SoundSettings />
 			<section
 				aria-labelledby="settings-credits"
 				className="mx-[clamp(14px,1.35vw,28px)] mt-[clamp(14px,2.1vh,24px)] max-w-[640px] bg-panel px-[clamp(12px,1.15vw,18px)] py-[clamp(10px,1.5vh,16px)]"
