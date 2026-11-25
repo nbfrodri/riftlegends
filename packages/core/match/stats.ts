@@ -8,6 +8,7 @@ import {
 import { SCALE } from "../math";
 import { clamp } from "../math/int";
 import { farmed, paidByRole, type Slot, splitDamage } from "./economy";
+import { per30, rate, share } from "./rating";
 import { minuteOf } from "./state";
 
 export type { EventFact } from "./explain";
@@ -45,8 +46,16 @@ const DAMAGE = { kill: 1500, assist: 600, death: 300, won: 500, lost: 250 };
 const DAMAGE_PER_MINUTE = 150;
 const FIGHTS = new Set(["fight", "siege"]);
 
-/** 60 for a quiet game; kills, assists, deaths and participation move it. */
-const RATING = { base: 60, kill: 6, assist: 3, death: -5, participation: 10 };
+const OBJECTIVES = new Set(["dragon", "herald", "baron", "elder"]);
+const PRESSURE = new Set(["lane", "tower"]);
+const isVisionZone = (zone: string) =>
+	zone.startsWith("jungle") || zone.endsWith("-pit");
+
+interface Chances {
+	won: number;
+	total: number;
+}
+type Contested = "objectives" | "pressure" | "vision";
 
 const SIDES: readonly Side[] = ["blue", "red"];
 
@@ -85,8 +94,31 @@ export function trackPlayerStats(
 		red: ROLES.map(() => 0),
 	};
 	const teamKills = { blue: 0, red: 0 };
+	// What each side won of the objectives, top-lane and jungle contests (R3).
+	const chances = Object.fromEntries(
+		SIDES.map((side) => [
+			side,
+			Object.fromEntries(
+				(["objectives", "pressure", "vision"] as const).map((k) => [
+					k,
+					{ won: 0, total: 0 },
+				]),
+			),
+		]),
+	) as Record<Side, Record<Contested, Chances>>;
+	const contest = (kind: Contested, winner: Side) => {
+		for (const side of SIDES) {
+			const c = chances[side][kind];
+			c.total += 1;
+			if (side === winner) c.won += 1;
+		}
+	};
 	const record = (event: MatchEvent) => {
 		const winner = event.side;
+		if (OBJECTIVES.has(event.kind)) contest("objectives", winner);
+		if (PRESSURE.has(event.kind) && event.zone === "lane-top")
+			contest("pressure", winner);
+		if (isVisionZone(event.zone)) contest("vision", winner);
 		const paid = paidByRole(event, slotOf, rules.economy);
 		for (const side of SIDES) {
 			paid[side].forEach((gold, i) => {
@@ -155,7 +187,7 @@ export function trackPlayerStats(
 		});
 	};
 
-	return { record, at, teamKills };
+	return { record, at, teamKills, chances };
 }
 
 /** Per-player stats of a game, from its events (`match.ended`, plan 08). */
@@ -168,6 +200,13 @@ export function playerStats(
 	const stats = trackPlayerStats(teams, rules);
 	for (const event of events) stats.record(event);
 	const minutes = minuteOf(duration);
+	// The damage of each team, for the share of every player (R3).
+	const teamDamage = { blue: 0, red: 0 };
+	for (const { side, damage } of stats.at(minutes, (slot, _l, _g, damage) => ({
+		side: slot.side,
+		damage,
+	})))
+		teamDamage[side] += damage;
 	return stats.at(minutes, ({ side, role, player }, line, gold, damage) => {
 		const { kills, deaths, assists } = line;
 		const teamKills = stats.teamKills[side];
@@ -185,15 +224,25 @@ export function playerStats(
 			gold,
 			damage,
 			participation,
-			rating: clamp(
-				RATING.base +
-					RATING.kill * kills +
-					RATING.assist * assists +
-					RATING.death * deaths +
-					div(RATING.participation * participation, SCALE),
-				0,
-				100,
-			),
+			rating: rate(role, {
+				damage: share(damage, teamDamage[side]),
+				kills: share(kills, teamKills),
+				kp: teamKills === 0 ? null : participation,
+				assists: per30(assists, duration),
+				deaths: per30(deaths, duration),
+				objectives: share(
+					stats.chances[side].objectives.won,
+					stats.chances[side].objectives.total,
+				),
+				pressure: share(
+					stats.chances[side].pressure.won,
+					stats.chances[side].pressure.total,
+				),
+				vision: share(
+					stats.chances[side].vision.won,
+					stats.chances[side].vision.total,
+				),
+			}).rating,
 		};
 	});
 }

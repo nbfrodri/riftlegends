@@ -17,6 +17,11 @@ const recipes: Record<
 		decay: 60,
 		voices: [{ from: 1900, to: 1500, gain: 0.5 }],
 	},
+	click: {
+		seconds: 0.05,
+		decay: 80,
+		voices: [{ from: 1200, to: 900, gain: 0.35 }],
+	},
 	pick: {
 		seconds: 0.26,
 		decay: 14,
