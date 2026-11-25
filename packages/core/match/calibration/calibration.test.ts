@@ -1,6 +1,7 @@
 import { ROLES, type Role } from "@rift-legends/contracts";
 import { describe, expect, it, test } from "vitest";
 import { loadRealContent } from "../../content/real";
+import timelines from "../../content/real/timelines.json";
 import { sample, scenario } from "./scenarios";
 
 // Monte Carlo bands of plan 08. Seeds are fixed, so each run is the
@@ -191,6 +192,15 @@ describe.each(["control", "packaged", "real-champions", "real"] as const)(
 				expect(seven).toBeGreaterThanOrEqual(0.33);
 				expect(seven).toBeLessThanOrEqual(0.5);
 			});
+		});
+
+		it("K22 · death time: P50 within 5 s of the pros, P10 and P90 within 8 s (#528)", () => {
+			const pro = timelines.bands.k22;
+			const times = even.flatMap((g) => g.deaths);
+			expect(times.length).toBeGreaterThan(10_000);
+			expect(gap(at(times, 0.5), pro.p50)).toBeLessThanOrEqual(5);
+			expect(gap(at(times, 0.1), pro.p10)).toBeLessThanOrEqual(8);
+			expect(gap(at(times, 0.9), pro.p90)).toBeLessThanOrEqual(8);
 		});
 
 		it("K8 · role rating means are 56–64 and at most 5 points apart", () => {
