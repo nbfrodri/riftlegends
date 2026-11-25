@@ -302,7 +302,7 @@ test.each([
 		expect(badge.getAttribute("aria-label")).toContain(
 			summary.split(", ")[1] as string,
 		);
-		expect(badge.textContent).toMatch(/Triple|Triple/);
+		expect(badge.getAttribute("data-badge")).toBe("Triple");
 		expect(label).toBeTruthy();
 		const other = screen.getAllByRole("row").filter((r) => r !== row);
 		for (const r of other)

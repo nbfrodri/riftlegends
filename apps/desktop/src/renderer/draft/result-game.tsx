@@ -59,6 +59,44 @@ const statIcons = {
 	damage: "damage",
 } as const satisfies Record<string, Stat>;
 
+const TIERS = [5, 4, 3, 2] as const;
+
+/** The player's best streak, with every streak listed in words. */
+function MultikillBadge({
+	streaks,
+	player,
+}: {
+	streaks: GameResult["multikills"];
+	player: string;
+}) {
+	const { t, i18n } = useTranslation();
+	const language = i18n.language;
+	const mine = (streaks ?? []).filter((s) => s.killer === player);
+	if (mine.length === 0) return null;
+	const parts = TIERS.flatMap((tier) => {
+		const count = mine.filter((s) => s.count === tier).length;
+		if (count === 0) return [];
+		const label = t(`draft.result.multikillShort.${tier}`);
+		return [
+			count > 1 ? t("draft.result.multikillTimes", { label, count }) : label,
+		];
+	});
+	const all = new Intl.ListFormat(language, {
+		style: "long",
+		type: "conjunction",
+	}).format(parts);
+	return (
+		<Tooltip content={all}>
+			<span
+				role="img"
+				aria-label={t("draft.result.multikillsOf", { list: all })}
+				data-badge={parts[0]}
+				className="shrink-0 rounded-[3px] border border-action px-1 font-bold text-[11px] text-action leading-4 after:content-[attr(data-badge)]"
+			/>
+		</Tooltip>
+	);
+}
+
 function Stats({
 	game,
 	showWinner,
@@ -143,6 +181,10 @@ function Stats({
 										<Tooltip content={t(`draft.roles.role.${line.role}`)}>
 											<span>{player?.handle ?? line.player}</span>
 										</Tooltip>
+										<MultikillBadge
+											streaks={game.multikills}
+											player={line.player}
+										/>
 									</span>
 								</th>
 								<td className="w-1/4 max-w-0 px-1.5 py-1 text-left">
@@ -178,22 +220,6 @@ function Stats({
 			<p className="mt-1.5 text-[12px] text-muted">
 				{t("draft.result.stats.footnote")}
 			</p>
-			{game.multikills && game.multikills.length > 0 && (
-				<ul
-					aria-label={t("draft.result.multikills")}
-					className="mt-1.5 flex max-h-8 flex-wrap content-start gap-x-4 overflow-y-auto text-[13px] leading-4"
-				>
-					{game.multikills.map(({ killer, count }, index) => (
-						// biome-ignore lint/suspicious/noArrayIndexKey: completed streaks retain the fact's order.
-						<li key={index} className="flex gap-x-1.5">
-							<span>{playerProfile(options, killer)?.handle ?? killer}</span>
-							<strong className="text-action">
-								{t(`draft.match.multikill.${count}`)}
-							</strong>
-						</li>
-					))}
-				</ul>
-			)}
 		</section>
 	);
 }

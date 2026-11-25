@@ -1,5 +1,6 @@
 import type { MatchEvent, MatchView } from "@rift-legends/contracts";
 import { Button } from "@rift-legends/ui-kit/components/button";
+import { Tooltip } from "@rift-legends/ui-kit/components/tooltip";
 import { animate as fade } from "motion/mini";
 import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -41,6 +42,35 @@ function Participant({
 			/>
 			<b>{player.handle}</b>
 		</span>
+	);
+}
+
+/** Role icon and portrait only: the name is read aloud and shown in the tooltip. */
+function Assister({
+	player,
+	id,
+}: {
+	player: EventPlayer | undefined;
+	id: string;
+}) {
+	const { t } = useTranslation();
+	if (!player) return <b data-assister>{id}</b>;
+	return (
+		<Tooltip content={player.handle}>
+			<span data-assister className="inline-flex shrink-0 items-center gap-1">
+				<GameRoleIcon
+					role={player.role}
+					size={16}
+					label={t(`draft.roles.role.${player.role}`)}
+				/>
+				<ChampionPortrait
+					id={player.champion}
+					label={player.championName}
+					size="compact"
+				/>
+				<b className="sr-only">{player.handle}</b>
+			</span>
+		</Tooltip>
 	);
 }
 
@@ -135,13 +165,13 @@ const EventRow = memo(function EventRow({
 						{assists.length > 0 && (
 							<p
 								data-assists
-								className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-[12px]"
+								className="flex flex-nowrap items-center gap-x-1.5 text-[12px]"
 							>
-								<span className="text-muted">
+								<span className="shrink-0 text-muted">
 									{t("draft.match.assistedBy")}
 								</span>
 								{assists.map((player) => (
-									<Participant
+									<Assister
 										key={player}
 										player={players.get(player)}
 										id={player}
