@@ -4,16 +4,20 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { clockTime } from "../match/playback";
 import { playSound } from "../sound";
-import { startCountdownTicks } from "../sound/countdown-ticks";
+import { COUNTDOWN_SECONDS, startCountdownTicks } from "../sound/countdown-ticks";
 import { pacing } from "./broadcast/pacing";
 import { useDraftSession } from "./session";
 
-const BAR = { blue: "bg-side-blue", red: "bg-side-red" } as const;
+// Full class names, so Tailwind finds them. The glow follows the side colour.
+const BAR = {
+	blue: "bg-side-blue shadow-[0_0_8px_var(--color-side-blue)]",
+	red: "bg-side-red shadow-[0_0_8px_var(--color-side-red)]",
+} as const;
 const steps = (seconds: number) =>
 	Math.round((seconds * 1000 * 1000) / pacing.turnMs) / 1000;
 
 /**
- * The turn timer (#419): a line in the picking side's colour that shrinks from
+ * The turn timer (#419): an 8 px line with a soft glow in the picking side's colour that shrinks from
  * both ends to the centre, laid over the gap above the board so it spans both
  * team columns and the pool without taking height. It animates its transform once over the whole turn;
  * with reduced motion it steps every second. The time left is screen-reader text.
@@ -51,16 +55,19 @@ function Countdown(props: { side: Side }) {
 		line.style.transitionTimingFunction = "linear";
 		line.style.transform = "scaleX(0)";
 	}, [reduced]);
+	const urgent = seconds <= COUNTDOWN_SECONDS;
 	return (
 		<div
 			role="timer"
 			aria-label={t("draft.timer.label")}
-			className="pointer-events-none absolute inset-x-0 bottom-full mb-1 h-1 overflow-hidden bg-line/50"
+			className="pointer-events-none absolute inset-x-0 bottom-full mb-1 h-2 bg-line/50"
 		>
 			<div
 				ref={bar}
 				data-timer-bar
-				className={`h-full origin-center ${BAR[props.side]}`}
+				data-urgent={urgent || undefined}
+				// Brighter in the last seconds, in step with the ticks (#505).
+				className={`h-full origin-center ${BAR[props.side]} ${urgent ? "brightness-125" : ""}`}
 				style={reduced ? { transform: `scaleX(${steps(seconds)})` } : undefined}
 			/>
 			<span className="sr-only">{clockTime(seconds)}</span>
