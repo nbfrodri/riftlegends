@@ -57,7 +57,10 @@ function Assister({
 	if (!player) return <b data-assister>{id}</b>;
 	return (
 		<Tooltip content={player.handle}>
-			<span data-assister className="inline-flex shrink-0 items-center gap-1">
+			<span
+				data-assister
+				className="relative inline-flex shrink-0 items-center gap-1"
+			>
 				<GameRoleIcon
 					role={player.role}
 					size={16}

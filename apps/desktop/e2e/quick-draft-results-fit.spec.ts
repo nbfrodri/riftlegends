@@ -36,6 +36,8 @@ async function expectNoTruncation(page: Page) {
 		.getByRole("table", { name: /^Estadísticas/ })
 		.evaluate((table) =>
 			[...table.querySelectorAll("td, th, td *, th *")]
+				// Visually hidden labels are clipped on purpose.
+				.filter((el) => !el.closest(".sr-only"))
 				.filter((el) => el.scrollWidth > el.clientWidth + 1)
 				.map((el) => `${el.tagName}:${el.textContent}`),
 		);

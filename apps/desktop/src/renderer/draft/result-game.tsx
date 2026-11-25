@@ -311,7 +311,7 @@ export function GameReport(props: {
 	const { options } = useDraftSession();
 	const { game } = props;
 	return (
-		<div className="grid min-w-0 grid-cols-2 items-stretch gap-3">
+		<div className="grid min-w-0 grid-cols-[minmax(0,1.18fr)_minmax(0,1fr)] items-stretch gap-3">
 			<Stats game={game} showWinner={props.showWinner} />
 			<div className="grid grid-rows-[auto_1fr] gap-3">
 				<GapsTable
