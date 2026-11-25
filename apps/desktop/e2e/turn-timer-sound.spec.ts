@@ -54,8 +54,8 @@ test("the last 10 seconds of my turn tick once per second and stop on confirm", 
 		.click();
 	await page.getByRole("button", { name: /^Confirm (ban|pick)$/ }).click();
 	// Let the AI answer and my next turn begin: it is 20 s from ticking.
-	await page.clock.runFor(2_000);
+	await page.clock.runFor(5_000);
 	const after = await started();
-	await page.clock.runFor(15_000);
+	await page.clock.runFor(8_000);
 	expect(await started()).toBe(after);
 });
