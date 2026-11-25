@@ -169,7 +169,7 @@ export function pairSwissRound(
 	);
 	const seedOf = new Map(teams.map((team, seed) => [team.id, seed]));
 	const active = teams.filter((team) => rows.get(team.id)?.status === "active");
-	if (active.length === 0) return null;
+	if (active.length < 2) return null;
 
 	const round = played.length + 1;
 	const met = new Set(
@@ -200,6 +200,9 @@ export function pairSwissRound(
 			record(y.id).wins - record(x.id).wins ||
 			record(x.id).losses - record(y.id).losses,
 	);
+	// Asymmetric thresholds can leave an odd active field. The last team
+	// in the seeded record order sits out without changing its record.
+	if (order.length % 2 !== 0) order.pop();
 	// Constraints in the order they are dropped: region, then rematch.
 	const relaxed: ("region" | "rematch" | "record")[] = [];
 	let kept: ("region" | "rematch" | "record")[] = [

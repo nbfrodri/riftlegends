@@ -1,6 +1,8 @@
 import {
 	type CommandCatalog,
 	type CoreError,
+	competitionCommands,
+	competitionQueries,
 	debugCommands,
 	debugQueries,
 	draftCommands,
@@ -11,6 +13,7 @@ import {
 	type Response,
 } from "@rift-legends/contracts";
 import {
+	CONTENT_VERSION,
 	type createDispatcher,
 	debugDispatcher,
 	draftDispatcher,
@@ -22,6 +25,8 @@ import {
 	packagedDraftContent,
 	packagedMatchContent,
 	type Session,
+	seasonDispatcher,
+	seasonStateWith,
 } from "@rift-legends/core";
 
 /** Larger messages are rejected before parsing (plan 04, P2). */
@@ -154,6 +159,22 @@ const createHost = (modules: readonly [AnyModule, ...AnyModule[]]) => {
  */
 export const createCoreHost = () =>
 	createHost([
+		{
+			owns: (kind) => /^(season|competition)\./.test(kind),
+			commands: competitionCommands,
+			queries: competitionQueries,
+			dispatcher: seasonDispatcher,
+			initialState: () =>
+				seasonStateWith(function* () {
+					yield {
+						content: packagedDraftContent,
+						match: packagedMatchContent,
+						version: CONTENT_VERSION,
+					};
+					const { draft: content, match, version } = loadRealContent();
+					yield { content, match, version };
+				}),
+		},
 		{
 			owns: (kind) => !kind.startsWith("debug."),
 			commands: draftCommands,
