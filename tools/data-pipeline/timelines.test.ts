@@ -1,7 +1,10 @@
 import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { realTimelinesSchema } from "@rift-legends/contracts/real-timelines";
+import {
+	type RealTimelines,
+	realTimelinesSchema,
+} from "@rift-legends/contracts/real-timelines";
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { Client } from "./client.ts";
 import {
@@ -323,7 +326,7 @@ test("an empty input aggregates to zero without dividing by zero", () => {
 
 test("the published JSON is deterministic, small and validates", () => {
 	const result = aggregate([game({ deaths: [[50, 7]] })]);
-	const file = {
+	const file: RealTimelines = {
 		provenance: {
 			source: "Leaguepedia",
 			domain: "lol.fandom.com",
