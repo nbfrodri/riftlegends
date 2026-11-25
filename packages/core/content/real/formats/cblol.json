@@ -6,9 +6,9 @@
 			"id": "cup",
 			"window": {
 				"startWeek": 2,
-				"weeks": 8,
+				"weeks": 3,
 				"matchDays": 7,
-				"maxSeriesPerDay": 2
+				"maxSeriesPerDay": 4
 			},
 			"entrants": {
 				"kind": "fixed",
@@ -34,7 +34,7 @@
 			"id": "cup-playin-1",
 			"window": {
 				"startWeek": 4,
-				"weeks": 6,
+				"weeks": 1,
 				"matchDays": 7,
 				"maxSeriesPerDay": 4
 			},
@@ -65,7 +65,7 @@
 			"id": "cup-playin-2",
 			"window": {
 				"startWeek": 4,
-				"weeks": 6,
+				"weeks": 1,
 				"matchDays": 7,
 				"maxSeriesPerDay": 4
 			},
@@ -96,7 +96,7 @@
 			"id": "cup-last-chance",
 			"window": {
 				"startWeek": 4,
-				"weeks": 6,
+				"weeks": 1,
 				"matchDays": 7,
 				"maxSeriesPerDay": 4
 			},
@@ -126,7 +126,7 @@
 			"id": "cup-playoffs",
 			"window": {
 				"startWeek": 5,
-				"weeks": 5,
+				"weeks": 4,
 				"matchDays": 7,
 				"maxSeriesPerDay": 4
 			},
@@ -186,9 +186,9 @@
 			"id": "split-1",
 			"window": {
 				"startWeek": 12,
-				"weeks": 13,
+				"weeks": 6,
 				"matchDays": 7,
-				"maxSeriesPerDay": 2
+				"maxSeriesPerDay": 4
 			},
 			"entrants": {
 				"kind": "fixed",
@@ -214,7 +214,7 @@
 			"id": "split-1-playoffs",
 			"window": {
 				"startWeek": 18,
-				"weeks": 7,
+				"weeks": 5,
 				"matchDays": 7,
 				"maxSeriesPerDay": 4
 			},
@@ -260,9 +260,9 @@
 			"id": "split-2",
 			"window": {
 				"startWeek": 29,
-				"weeks": 8,
+				"weeks": 6,
 				"matchDays": 7,
-				"maxSeriesPerDay": 2
+				"maxSeriesPerDay": 4
 			},
 			"entrants": {
 				"kind": "fixed",
@@ -373,7 +373,6 @@
 	"unverifiedReasons": [
 		"Official tiebreak criteria are unconfirmed; use the game defaults, including Bo3 at a cut.",
 		"Fixed bracket seeds and international places use stage finishes; official seeding, points and cascade rules are unconfirmed.",
-		"The global four-series cap requires wider domestic windows than the snapshot; some starts move by more than seven days.",
 		"Cup play-in assigns the first direct playoff seed to the winner of fifth vs sixth."
 	]
 }

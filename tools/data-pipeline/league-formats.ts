@@ -52,28 +52,11 @@ function realWindow(stage: LeagueStage, rows: LeagueSeries[]) {
 	if (!rows.length) throw new Error(`No snapshot series for ${stage.id}`);
 	const first = Math.floor(Math.min(...rows.map(({ day }) => day)) / 7);
 	const last = Math.floor(Math.max(...rows.map(({ day }) => day)) / 7);
-	const winter = first < 10;
-	const spring = first >= 12 && first < 25;
-	const summer = first >= 28 && first < 41;
-	const regular =
-		stage.play.type === "roundRobin" || stage.play.type === "groups";
-	const earlyWinter = stage.id === "cup-groups" || stage.id === "split-1-high";
-	// The winter snapshot exceeds the season-wide capacity before the real
-	// playoff starts. Open two pools early and give each leg room to finish
-	// before the next international window.
-	const startWeek = earlyWinter ? 0 : spring && first < 16 ? 12 : first;
-	const endWeek = winter
-		? 10
-		: spring
-			? 25
-			: summer
-				? Math.min(41, last + 3)
-				: last + 1;
 	return {
-		startWeek,
-		weeks: endWeek - startWeek,
+		startWeek: first,
+		weeks: last + 1 - first,
 		matchDays: 7,
-		maxSeriesPerDay: regular ? 2 : 4,
+		maxSeriesPerDay: 4,
 	};
 }
 
@@ -127,7 +110,6 @@ function build(id: LeagueId): Competition {
 		unverifiedReasons: [
 			"Official tiebreak criteria are unconfirmed; use the game defaults, including Bo3 at a cut.",
 			"Fixed bracket seeds and international places use stage finishes; official seeding, points and cascade rules are unconfirmed.",
-			"The global four-series cap requires wider domestic windows than the snapshot; some starts move by more than seven days.",
 			...definition.notes,
 		],
 	});

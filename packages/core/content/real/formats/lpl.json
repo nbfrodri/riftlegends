@@ -5,10 +5,10 @@
 		{
 			"id": "split-1-high",
 			"window": {
-				"startWeek": 0,
-				"weeks": 10,
+				"startWeek": 1,
+				"weeks": 5,
 				"matchDays": 7,
-				"maxSeriesPerDay": 2
+				"maxSeriesPerDay": 4
 			},
 			"parallelGroup": "split-1",
 			"entrants": {
@@ -33,9 +33,9 @@
 			"id": "split-1-mid",
 			"window": {
 				"startWeek": 2,
-				"weeks": 8,
+				"weeks": 4,
 				"matchDays": 7,
-				"maxSeriesPerDay": 2
+				"maxSeriesPerDay": 4
 			},
 			"parallelGroup": "split-1",
 			"entrants": {
@@ -58,9 +58,9 @@
 			"id": "split-1-low",
 			"window": {
 				"startWeek": 2,
-				"weeks": 8,
+				"weeks": 3,
 				"matchDays": 7,
-				"maxSeriesPerDay": 2
+				"maxSeriesPerDay": 4
 			},
 			"parallelGroup": "split-1",
 			"entrants": {
@@ -83,7 +83,7 @@
 			"id": "split-1-ladder-a",
 			"window": {
 				"startWeek": 5,
-				"weeks": 5,
+				"weeks": 1,
 				"matchDays": 7,
 				"maxSeriesPerDay": 4
 			},
@@ -140,7 +140,7 @@
 			"id": "split-1-ladder-b",
 			"window": {
 				"startWeek": 5,
-				"weeks": 5,
+				"weeks": 1,
 				"matchDays": 7,
 				"maxSeriesPerDay": 4
 			},
@@ -270,10 +270,10 @@
 		{
 			"id": "split-2-high",
 			"window": {
-				"startWeek": 12,
-				"weeks": 13,
+				"startWeek": 13,
+				"weeks": 7,
 				"matchDays": 7,
-				"maxSeriesPerDay": 2
+				"maxSeriesPerDay": 4
 			},
 			"parallelGroup": "split-2",
 			"entrants": [
@@ -300,10 +300,10 @@
 		{
 			"id": "split-2-low",
 			"window": {
-				"startWeek": 12,
-				"weeks": 13,
+				"startWeek": 14,
+				"weeks": 6,
 				"matchDays": 7,
-				"maxSeriesPerDay": 2
+				"maxSeriesPerDay": 4
 			},
 			"parallelGroup": "split-2",
 			"entrants": [
@@ -331,7 +331,7 @@
 			"id": "split-2-playin-1",
 			"window": {
 				"startWeek": 20,
-				"weeks": 5,
+				"weeks": 1,
 				"matchDays": 7,
 				"maxSeriesPerDay": 4
 			},
@@ -362,7 +362,7 @@
 			"id": "split-2-playin-2",
 			"window": {
 				"startWeek": 20,
-				"weeks": 5,
+				"weeks": 1,
 				"matchDays": 7,
 				"maxSeriesPerDay": 4
 			},
@@ -393,7 +393,7 @@
 			"id": "split-2-playin-3",
 			"window": {
 				"startWeek": 20,
-				"weeks": 5,
+				"weeks": 1,
 				"matchDays": 7,
 				"maxSeriesPerDay": 4
 			},
@@ -424,7 +424,7 @@
 			"id": "split-2-playin-4",
 			"window": {
 				"startWeek": 20,
-				"weeks": 5,
+				"weeks": 1,
 				"matchDays": 7,
 				"maxSeriesPerDay": 4
 			},
@@ -455,7 +455,7 @@
 			"id": "split-2-playoffs",
 			"window": {
 				"startWeek": 21,
-				"weeks": 4,
+				"weeks": 3,
 				"matchDays": 7,
 				"maxSeriesPerDay": 4
 			},
@@ -529,9 +529,9 @@
 			"id": "split-3-high",
 			"window": {
 				"startWeek": 28,
-				"weeks": 8,
+				"weeks": 6,
 				"matchDays": 7,
-				"maxSeriesPerDay": 2
+				"maxSeriesPerDay": 4
 			},
 			"parallelGroup": "split-3",
 			"entrants": {
@@ -551,9 +551,9 @@
 			"id": "split-3-low",
 			"window": {
 				"startWeek": 29,
-				"weeks": 7,
+				"weeks": 5,
 				"matchDays": 7,
-				"maxSeriesPerDay": 2
+				"maxSeriesPerDay": 4
 			},
 			"parallelGroup": "split-3",
 			"entrants": [
@@ -593,7 +593,7 @@
 			"id": "knights-road-1",
 			"window": {
 				"startWeek": 34,
-				"weeks": 3,
+				"weeks": 1,
 				"matchDays": 7,
 				"maxSeriesPerDay": 4
 			},
@@ -624,7 +624,7 @@
 			"id": "knights-road-2",
 			"window": {
 				"startWeek": 34,
-				"weeks": 3,
+				"weeks": 1,
 				"matchDays": 7,
 				"maxSeriesPerDay": 4
 			},
@@ -655,7 +655,7 @@
 			"id": "grand-finals",
 			"window": {
 				"startWeek": 34,
-				"weeks": 5,
+				"weeks": 3,
 				"matchDays": 7,
 				"maxSeriesPerDay": 4
 			},
@@ -756,7 +756,6 @@
 	"unverifiedReasons": [
 		"Official tiebreak criteria are unconfirmed; use the game defaults, including Bo3 at a cut.",
 		"Fixed bracket seeds and international places use stage finishes; official seeding, points and cascade rules are unconfirmed.",
-		"The global four-series cap requires wider domestic windows than the snapshot; some starts move by more than seven days.",
 		"Split 1 pools retain the historical memberships and use the game's initial seeds within each pool. The observed tiebreak is handled by the generic cut tiebreak rule.",
 		"Split 2 pools use split 1 regular-season ranks. Split 3 pools use the split 2 playoff field and the four play-in losers, as observed. The exact promotion rules and ladder seed order are unconfirmed.",
 		"Worlds takes the Grand Finals top four; the snapshot shows a different fourth China qualifier."

@@ -6,7 +6,7 @@
 			"id": "lock-in-swiss",
 			"window": {
 				"startWeek": 3,
-				"weeks": 7,
+				"weeks": 3,
 				"matchDays": 7,
 				"maxSeriesPerDay": 4
 			},
@@ -41,7 +41,7 @@
 			"id": "lock-in-last-chance",
 			"window": {
 				"startWeek": 5,
-				"weeks": 5,
+				"weeks": 1,
 				"matchDays": 7,
 				"maxSeriesPerDay": 4
 			},
@@ -63,7 +63,7 @@
 			"id": "lock-in-playoffs",
 			"window": {
 				"startWeek": 6,
-				"weeks": 4,
+				"weeks": 3,
 				"matchDays": 7,
 				"maxSeriesPerDay": 4
 			},
@@ -112,10 +112,10 @@
 		{
 			"id": "spring",
 			"window": {
-				"startWeek": 12,
-				"weeks": 13,
+				"startWeek": 13,
+				"weeks": 7,
 				"matchDays": 7,
-				"maxSeriesPerDay": 2
+				"maxSeriesPerDay": 4
 			},
 			"entrants": {
 				"kind": "fixed",
@@ -141,7 +141,7 @@
 			"id": "spring-playoffs",
 			"window": {
 				"startWeek": 20,
-				"weeks": 5,
+				"weeks": 4,
 				"matchDays": 7,
 				"maxSeriesPerDay": 4
 			},
@@ -183,9 +183,9 @@
 			"id": "summer",
 			"window": {
 				"startWeek": 29,
-				"weeks": 9,
+				"weeks": 7,
 				"matchDays": 7,
-				"maxSeriesPerDay": 2
+				"maxSeriesPerDay": 4
 			},
 			"entrants": {
 				"kind": "fixed",
@@ -211,7 +211,7 @@
 			"id": "summer-playoffs",
 			"window": {
 				"startWeek": 36,
-				"weeks": 5,
+				"weeks": 4,
 				"matchDays": 7,
 				"maxSeriesPerDay": 4
 			},
@@ -296,7 +296,6 @@
 	"unverifiedReasons": [
 		"Official tiebreak criteria are unconfirmed; use the game defaults, including Bo3 at a cut.",
 		"Fixed bracket seeds and international places use stage finishes; official seeding, points and cascade rules are unconfirmed.",
-		"The global four-series cap requires wider domestic windows than the snapshot; some starts move by more than seven days.",
 		"Lock-In Last Chance uses places 6 and 7 of the game's three-round Swiss table."
 	]
 }

@@ -5,10 +5,10 @@
 		{
 			"id": "cup-groups",
 			"window": {
-				"startWeek": 0,
-				"weeks": 10,
+				"startWeek": 1,
+				"weeks": 4,
 				"matchDays": 7,
-				"maxSeriesPerDay": 2
+				"maxSeriesPerDay": 4
 			},
 			"entrants": {
 				"kind": "fixed",
@@ -40,7 +40,7 @@
 			"id": "cup-playin-r1-1",
 			"window": {
 				"startWeek": 5,
-				"weeks": 5,
+				"weeks": 1,
 				"matchDays": 7,
 				"maxSeriesPerDay": 4
 			},
@@ -71,7 +71,7 @@
 			"id": "cup-playin-r1-2",
 			"window": {
 				"startWeek": 5,
-				"weeks": 5,
+				"weeks": 1,
 				"matchDays": 7,
 				"maxSeriesPerDay": 4
 			},
@@ -102,7 +102,7 @@
 			"id": "cup-playin-r2-1",
 			"window": {
 				"startWeek": 5,
-				"weeks": 5,
+				"weeks": 1,
 				"matchDays": 7,
 				"maxSeriesPerDay": 4
 			},
@@ -133,7 +133,7 @@
 			"id": "cup-playin-r2-2",
 			"window": {
 				"startWeek": 5,
-				"weeks": 5,
+				"weeks": 1,
 				"matchDays": 7,
 				"maxSeriesPerDay": 4
 			},
@@ -164,7 +164,7 @@
 			"id": "cup-playin-r3",
 			"window": {
 				"startWeek": 5,
-				"weeks": 5,
+				"weeks": 1,
 				"matchDays": 7,
 				"maxSeriesPerDay": 4
 			},
@@ -194,7 +194,7 @@
 			"id": "cup-playoffs",
 			"window": {
 				"startWeek": 6,
-				"weeks": 4,
+				"weeks": 3,
 				"matchDays": 7,
 				"maxSeriesPerDay": 4
 			},
@@ -260,9 +260,9 @@
 			"id": "rounds-1-2",
 			"window": {
 				"startWeek": 12,
-				"weeks": 13,
+				"weeks": 10,
 				"matchDays": 7,
-				"maxSeriesPerDay": 2
+				"maxSeriesPerDay": 4
 			},
 			"entrants": {
 				"kind": "fixed",
@@ -290,7 +290,7 @@
 			"id": "road-to-msi",
 			"window": {
 				"startWeek": 22,
-				"weeks": 3,
+				"weeks": 2,
 				"matchDays": 7,
 				"maxSeriesPerDay": 4
 			},
@@ -330,9 +330,9 @@
 			"id": "rounds-3-4",
 			"window": {
 				"startWeek": 29,
-				"weeks": 7,
+				"weeks": 5,
 				"matchDays": 7,
-				"maxSeriesPerDay": 2
+				"maxSeriesPerDay": 4
 			},
 			"entrants": {
 				"kind": "standing",
@@ -355,7 +355,7 @@
 			"id": "season-playin-r1-1",
 			"window": {
 				"startWeek": 33,
-				"weeks": 3,
+				"weeks": 1,
 				"matchDays": 7,
 				"maxSeriesPerDay": 4
 			},
@@ -386,7 +386,7 @@
 			"id": "season-playin-r1-2",
 			"window": {
 				"startWeek": 34,
-				"weeks": 3,
+				"weeks": 1,
 				"matchDays": 7,
 				"maxSeriesPerDay": 4
 			},
@@ -417,7 +417,7 @@
 			"id": "season-playin-r2",
 			"window": {
 				"startWeek": 34,
-				"weeks": 3,
+				"weeks": 1,
 				"matchDays": 7,
 				"maxSeriesPerDay": 4
 			},
@@ -447,7 +447,7 @@
 			"id": "season-playoffs",
 			"window": {
 				"startWeek": 34,
-				"weeks": 5,
+				"weeks": 3,
 				"matchDays": 7,
 				"maxSeriesPerDay": 4
 			},
@@ -546,7 +546,6 @@
 	"unverifiedReasons": [
 		"Official tiebreak criteria are unconfirmed; use the game defaults, including Bo3 at a cut.",
 		"Fixed bracket seeds and international places use stage finishes; official seeding, points and cascade rules are unconfirmed.",
-		"The global four-series cap requires wider domestic windows than the snapshot; some starts move by more than seven days.",
 		"Cup cross-group play uses Bo3 throughout; the last five series were Bo5.",
 		"Cup advancement uses a combined table instead of winning/losing group privileges. Summer cuts use the ranked Legend/Rise stage table.",
 		"The snapshot has only one game for Dplus Kia vs Gen.G in Week 10; the scheduled series is Bo3."

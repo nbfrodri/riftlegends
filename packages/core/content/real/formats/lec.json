@@ -6,9 +6,9 @@
 			"id": "versus",
 			"window": {
 				"startWeek": 2,
-				"weeks": 8,
+				"weeks": 4,
 				"matchDays": 7,
-				"maxSeriesPerDay": 2
+				"maxSeriesPerDay": 4
 			},
 			"entrants": {
 				"kind": "fixed",
@@ -36,7 +36,7 @@
 			"id": "versus-playoffs",
 			"window": {
 				"startWeek": 6,
-				"weeks": 4,
+				"weeks": 3,
 				"matchDays": 7,
 				"maxSeriesPerDay": 4
 			},
@@ -84,9 +84,9 @@
 			"id": "spring",
 			"window": {
 				"startWeek": 12,
-				"weeks": 13,
+				"weeks": 7,
 				"matchDays": 7,
-				"maxSeriesPerDay": 2
+				"maxSeriesPerDay": 4
 			},
 			"entrants": {
 				"kind": "fixed",
@@ -114,7 +114,7 @@
 			"id": "spring-playoffs",
 			"window": {
 				"startWeek": 20,
-				"weeks": 5,
+				"weeks": 3,
 				"matchDays": 7,
 				"maxSeriesPerDay": 4
 			},
@@ -156,9 +156,9 @@
 			"id": "summer",
 			"window": {
 				"startWeek": 29,
-				"weeks": 8,
+				"weeks": 6,
 				"matchDays": 7,
-				"maxSeriesPerDay": 2
+				"maxSeriesPerDay": 4
 			},
 			"entrants": {
 				"kind": "fixed",
@@ -186,7 +186,7 @@
 			"id": "summer-playoffs",
 			"window": {
 				"startWeek": 35,
-				"weeks": 5,
+				"weeks": 3,
 				"matchDays": 7,
 				"maxSeriesPerDay": 4
 			},
@@ -267,7 +267,6 @@
 	"unverifiedReasons": [
 		"Official tiebreak criteria are unconfirmed; use the game defaults, including Bo3 at a cut.",
 		"Fixed bracket seeds and international places use stage finishes; official seeding, points and cascade rules are unconfirmed.",
-		"The global four-series cap requires wider domestic windows than the snapshot; some starts move by more than seven days.",
 		"Versus removes two split-only guests: 10 teams and 45 Bo1 instead of 12 teams and 66 Bo1."
 	]
 }

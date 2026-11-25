@@ -6,9 +6,9 @@
 			"id": "split-1",
 			"window": {
 				"startWeek": 2,
-				"weeks": 8,
+				"weeks": 4,
 				"matchDays": 7,
-				"maxSeriesPerDay": 2
+				"maxSeriesPerDay": 4
 			},
 			"entrants": {
 				"kind": "fixed",
@@ -34,7 +34,7 @@
 			"id": "split-1-playoffs",
 			"window": {
 				"startWeek": 6,
-				"weeks": 4,
+				"weeks": 3,
 				"matchDays": 7,
 				"maxSeriesPerDay": 4
 			},
@@ -77,10 +77,10 @@
 		{
 			"id": "split-2",
 			"window": {
-				"startWeek": 12,
-				"weeks": 13,
+				"startWeek": 13,
+				"weeks": 7,
 				"matchDays": 7,
-				"maxSeriesPerDay": 2
+				"maxSeriesPerDay": 4
 			},
 			"entrants": {
 				"kind": "fixed",
@@ -106,7 +106,7 @@
 			"id": "split-2-playoffs",
 			"window": {
 				"startWeek": 20,
-				"weeks": 5,
+				"weeks": 3,
 				"matchDays": 7,
 				"maxSeriesPerDay": 4
 			},
@@ -150,7 +150,7 @@
 			"id": "split-3-swiss",
 			"window": {
 				"startWeek": 29,
-				"weeks": 6,
+				"weeks": 4,
 				"matchDays": 7,
 				"maxSeriesPerDay": 4
 			},
@@ -184,7 +184,7 @@
 			"id": "split-3-seed-high",
 			"window": {
 				"startWeek": 32,
-				"weeks": 3,
+				"weeks": 1,
 				"matchDays": 7,
 				"maxSeriesPerDay": 4
 			},
@@ -207,7 +207,7 @@
 			"id": "split-3-seed-low",
 			"window": {
 				"startWeek": 32,
-				"weeks": 3,
+				"weeks": 1,
 				"matchDays": 7,
 				"maxSeriesPerDay": 4
 			},
@@ -230,7 +230,7 @@
 			"id": "split-3-seed-final",
 			"window": {
 				"startWeek": 32,
-				"weeks": 3,
+				"weeks": 1,
 				"matchDays": 7,
 				"maxSeriesPerDay": 4
 			},
@@ -260,7 +260,7 @@
 			"id": "split-3-playoffs",
 			"window": {
 				"startWeek": 33,
-				"weeks": 4,
+				"weeks": 2,
 				"matchDays": 7,
 				"maxSeriesPerDay": 4
 			},
@@ -358,7 +358,6 @@
 	"unverifiedReasons": [
 		"Official tiebreak criteria are unconfirmed; use the game defaults, including Bo3 at a cut.",
 		"Fixed bracket seeds and international places use stage finishes; official seeding, points and cascade rules are unconfirmed.",
-		"The global four-series cap requires wider domestic windows than the snapshot; some starts move by more than seven days.",
 		"Split 3 uses the generic Swiss to three wins or losses. The calendar reserves up to three series in round 5; the snapshot has one.",
 		"The split 3 seeding ladder approximates team selection from the Swiss; the bottom seeding match is for placement only."
 	]
