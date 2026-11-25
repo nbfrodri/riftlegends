@@ -19,6 +19,7 @@ export interface LeagueStage {
 	entrants: Stage["entrants"] | "roster";
 	play: Play;
 	parallelGroup?: Stage["parallelGroup"];
+	tiebreakHistory?: Stage["tiebreakHistory"];
 }
 
 export interface LeagueDefinition {
@@ -26,16 +27,28 @@ export interface LeagueDefinition {
 	/** Finish stages, with place counts in First Stand, MSI and Worlds order. */
 	qualifiers: [string, number][];
 	notes: string[];
+	/** Tiebreak rules read from the league's own rulebook; absent means game defaults. */
+	tiebreakRule?: {
+		criteria: Competition["tiebreak"];
+		bestOf: Bo;
+		reason: string;
+	};
 }
 
 export const weeks = /^Week \d+$/;
 export const rounds = /^Round \d+$|^Finals$/;
 
-export const standing = (stage: string, from: number, to = from): Source => ({
+export const standing = (
+	stage: string,
+	from: number,
+	to = from,
+	group?: "winner" | "loser",
+): Source => ({
 	kind: "standing",
 	stage,
 	from,
 	to,
+	...(group && { group }),
 });
 
 export const result = (
@@ -57,8 +70,9 @@ export const stage = (
 	play: Play,
 	{
 		parallelGroup,
+		tiebreakHistory,
 		...selection
-	}: Pick<LeagueStage, "parallelGroup"> &
+	}: Pick<LeagueStage, "parallelGroup" | "tiebreakHistory"> &
 		Pick<FixtureEvidence, "anchor" | "match"> = {},
 ): LeagueStage => ({
 	id,
@@ -66,6 +80,7 @@ export const stage = (
 	entrants,
 	play,
 	parallelGroup,
+	tiebreakHistory,
 });
 
 export const rr = (size: number, rounds: 1 | 2 = 1, bestOf: Bo = 3): Play => ({

@@ -1,5 +1,6 @@
 import type { SeriesSummary } from "@rift-legends/contracts";
 import { Tooltip } from "@rift-legends/ui-kit/components/tooltip";
+import { Swords } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { GameRoleIcon } from "../assets/game-role-icon";
 import { isObjectiveKind, MapIcon } from "../assets/map-icon";
@@ -58,6 +59,50 @@ const statIcons = {
 	gold: "gold",
 	damage: "damage",
 } as const satisfies Record<string, Stat>;
+
+const TIERS = [5, 4, 3, 2] as const;
+
+/** The player's best streak, with every streak listed in words. */
+function MultikillBadge({
+	streaks,
+	player,
+}: {
+	streaks: GameResult["multikills"];
+	player: string;
+}) {
+	const { t, i18n } = useTranslation();
+	const language = i18n.language;
+	const mine = (streaks ?? []).filter((s) => s.killer === player);
+	if (mine.length === 0) return null;
+	const found = TIERS.flatMap((tier) => {
+		const count = mine.filter((s) => s.count === tier).length;
+		return count === 0 ? [] : [{ tier, count }];
+	});
+	const parts = found.map(({ tier, count }) => {
+		const label = t(`draft.result.multikillShort.${tier}`);
+		return count > 1
+			? t("draft.result.multikillTimes", { label, count })
+			: label;
+	});
+	const best = found[0] as (typeof found)[number];
+	const chip = best.count > 1 ? `${best.tier} ×${best.count}` : `${best.tier}`;
+	const all = new Intl.ListFormat(language, {
+		style: "long",
+		type: "conjunction",
+	}).format(parts);
+	return (
+		<Tooltip content={all}>
+			<span
+				role="img"
+				aria-label={t("draft.result.multikillsOf", { list: all })}
+				data-badge={chip}
+				className="inline-flex shrink-0 items-center gap-0.5 rounded-[3px] border border-action px-1 font-bold text-[11px] text-action leading-4 after:content-[attr(data-badge)]"
+			>
+				<Swords aria-hidden size={11} />
+			</span>
+		</Tooltip>
+	);
+}
 
 function Stats({
 	game,
@@ -156,6 +201,10 @@ function Stats({
 										<Tooltip content={t(`draft.roles.role.${line.role}`)}>
 											<span>{player?.handle ?? line.player}</span>
 										</Tooltip>
+										<MultikillBadge
+											streaks={game.multikills}
+											player={line.player}
+										/>
 									</span>
 								</th>
 								<td className="w-1/4 max-w-0 px-1 py-1 text-left">
@@ -262,7 +311,7 @@ export function GameReport(props: {
 	const { options } = useDraftSession();
 	const { game } = props;
 	return (
-		<div className="grid min-w-0 grid-cols-2 items-stretch gap-3">
+		<div className="grid min-w-0 grid-cols-[minmax(0,1.18fr)_minmax(0,1fr)] items-stretch gap-3">
 			<Stats game={game} showWinner={props.showWinner} />
 			<div className="grid grid-rows-[auto_1fr] gap-3">
 				<GapsTable

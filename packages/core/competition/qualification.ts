@@ -12,6 +12,7 @@ import type { Standings } from "./standings";
 export interface StageOutcome {
 	/** The final table, or a table with tiebreakers still pending. */
 	readonly standings?: Pick<Standings, "rows" | "pending">;
+	readonly groups?: Readonly<Record<"winner" | "loser", Standings>>;
 	readonly bracket?: BracketState;
 	/** Season points earned up through this stage, supplied by the league. */
 	readonly points?: ReadonlyMap<string, number>;

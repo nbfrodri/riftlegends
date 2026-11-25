@@ -51,6 +51,12 @@ const side = z.enum(["blue", "red"]);
 const points = z.int();
 /** Per 10,000. */
 const share = z.int().min(0).max(10000);
+const multikillCount = z.union([
+	z.literal(2),
+	z.literal(3),
+	z.literal(4),
+	z.literal(5),
+]);
 const perSide = <T extends z.ZodType>(item: T) =>
 	z.strictObject({ blue: item, red: item });
 
@@ -81,7 +87,15 @@ export const matchEventFact = {
 	side,
 	zone: z.enum(MAP_ZONES),
 	kills: z.array(
-		z.strictObject({ killer: id, victim: id, assists: z.array(id) }),
+		z.strictObject({
+			killer: id,
+			victim: id,
+			assists: z.array(id),
+			/** Seconds since the opening kill of this fight. */
+			fightSecond: position.optional(),
+			/** Highest tier of the chain, on the kill that completed it. */
+			multikill: multikillCount.optional(),
+		}),
 	),
 	/** Gold each side earned from the event. */
 	gold: perSide(z.int().nonnegative()),
@@ -117,6 +131,12 @@ export const matchEndedFact = {
 	),
 	/** Events that swung the chance the most, by their index among this game's `match.event` facts. */
 	decisive: z.array(z.strictObject({ event: position, swing: points })).max(3),
+	/** Each completed streak and its fight's index among this game's events. */
+	multikills: z
+		.array(
+			z.strictObject({ event: position, killer: id, count: multikillCount }),
+		)
+		.optional(),
 };
 
 const rating = z.int().min(0).max(100);

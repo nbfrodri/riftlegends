@@ -239,7 +239,19 @@ export function sample(games: number, edge: number, pool: Pool) {
 			}
 			return { kills, line };
 		});
+		const roleOfPlayer = new Map(
+			(["blue", "red"] as const).flatMap((side) =>
+				ROLES.map((role) => [state.context[side].players[role], role] as const),
+			),
+		);
+		const streaks = events.flatMap((e) =>
+			e.kills.flatMap(({ killer, multikill }) => {
+				const role = roleOfPlayer.get(killer);
+				return role && multikill ? [{ role, count: multikill }] : [];
+			}),
+		);
 		return {
+			streaks,
 			teams,
 			winner: state.winner as Side,
 			minutes: state.minute,

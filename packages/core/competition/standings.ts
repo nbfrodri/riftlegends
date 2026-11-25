@@ -1,3 +1,5 @@
+import type { StageOutcomes } from "./qualification";
+import { type StageNode, stageKey } from "./stage-model";
 import {
 	type Criterion,
 	type Explanation,
@@ -23,7 +25,42 @@ export interface StandingsInput
 	extends Omit<TiebreakContext, "tiebreakerResults"> {
 	/** Team ids in seed order, best first. */
 	readonly teams: readonly string[];
+	/** Opponents outside the ranked table, for cross-group play. */
+	readonly opponents?: readonly string[];
 	readonly tiebreakerResults?: readonly SeriesResult[];
+}
+
+type StageStandingsInput = Omit<
+	StandingsInput,
+	"criteria" | "scope" | "priorSplitRanks"
+> & {
+	readonly season: number;
+};
+
+export function computeStageStandings(
+	node: StageNode,
+	outcomes: StageOutcomes,
+	input: StageStandingsInput,
+): Standings {
+	const priorSplitRanks = (node.stage.tiebreakHistory ?? []).flatMap(
+		(stage) => {
+			const table = outcomes.get(stageKey({ ...node.ref, stage }))?.standings;
+			return table && table.pending.length === 0
+				? [new Map(table.rows.map(({ team, rank }) => [team, rank]))]
+				: [];
+		},
+	);
+	const { season, ...standings } = input;
+	return computeStandings({
+		...standings,
+		criteria: node.tiebreak,
+		priorSplitRanks,
+		scope: {
+			competition: node.competitionIndex,
+			stage: node.stageIndex,
+			season,
+		},
+	});
 }
 
 export interface Standings {
@@ -64,13 +101,14 @@ function check(
  * which criterion placed the team.
  */
 export function computeStandings(input: StandingsInput): Standings {
-	const known = new Set(input.teams);
-	if (known.size !== input.teams.length) {
+	const all = [...input.teams, ...(input.opponents ?? [])];
+	const known = new Set(all);
+	if (known.size !== all.length) {
 		throw new RangeError("Team ids must be unique");
 	}
 	const tiebreakerResults = input.tiebreakerResults ?? [];
 	check(known, input.results);
-	check(known, tiebreakerResults);
+	check(new Set(input.teams), tiebreakerResults);
 
 	const { order, explanations, pending } = orderTies(input.teams, {
 		...input,
@@ -78,7 +116,7 @@ export function computeStandings(input: StandingsInput): Standings {
 	});
 
 	const tally = new Map(
-		input.teams.map((team) => [
+		all.map((team) => [
 			team,
 			{ seriesWins: 0, seriesLosses: 0, gameWins: 0, gameLosses: 0 },
 		]),
