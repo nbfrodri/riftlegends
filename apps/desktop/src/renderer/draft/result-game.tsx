@@ -57,6 +57,7 @@ const statIcons = {
 	kda: "kda",
 	gold: "gold",
 	damage: "damage",
+	vision: "vision",
 } as const satisfies Record<string, Stat>;
 
 function Stats({
@@ -75,6 +76,7 @@ function Stats({
 		"kda",
 		"gold",
 		"damage",
+		"vision",
 		"share",
 	] as const;
 	return (
@@ -161,6 +163,9 @@ function Stats({
 								</td>
 								<td className="px-1.5 py-1 text-right">
 									{grouped.format(line.damage)}
+								</td>
+								<td className="px-1.5 py-1 text-right">
+									{grouped.format(line.vision)}
 								</td>
 								<td className="px-1.5 py-1 text-right">
 									{t("draft.result.percent", {

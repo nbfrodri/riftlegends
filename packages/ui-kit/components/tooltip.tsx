@@ -21,8 +21,13 @@ interface TooltipDetails {
 	heading?: string | undefined;
 	/** Optional keyboard shortcut, shown as a `Kbd`. */
 	shortcut?: string | undefined;
+	/** Optional line under the text with rich content, such as an icon and a value. */
+	extra?: ReactNode;
 	side?: Side | undefined;
 }
+
+// Rich lines cannot live in `data-*` attributes; each trigger keeps its own here.
+const extras = new WeakMap<Element, ReactNode>();
 
 const TRIGGER = "[data-tooltip]";
 // Moving to a nearby trigger shortly after one closes skips the delay.
@@ -31,7 +36,7 @@ const WARM_MS = 300;
 const arrow =
 	"absolute size-2 rotate-45 border-line bg-panel data-[side=bottom]:-top-[5px] data-[side=bottom]:border-t data-[side=bottom]:border-l data-[side=left]:-right-[5px] data-[side=left]:border-t data-[side=left]:border-r data-[side=right]:-left-[5px] data-[side=right]:border-b data-[side=right]:border-l data-[side=top]:-bottom-[5px] data-[side=top]:border-r data-[side=top]:border-b";
 
-function TooltipPanel({ content, heading, shortcut }: TooltipDetails) {
+function TooltipPanel({ content, heading, shortcut, extra }: TooltipDetails) {
 	const reduced = useReducedMotion();
 	const popup = useRef<HTMLDivElement>(null);
 	// A quick fade on each opening; moving between triggers keeps it open.
@@ -55,6 +60,7 @@ function TooltipPanel({ content, heading, shortcut }: TooltipDetails) {
 			<div className="min-w-0 wrap-break-word">
 				{heading && <strong className="block font-bold">{heading}</strong>}
 				{content && <span>{content}</span>}
+				{extra && <span className="mt-0.5 block">{extra}</span>}
 			</div>
 			{shortcut && <Kbd>{shortcut}</Kbd>}
 		</Primitive.Popup>
@@ -72,6 +78,7 @@ const read = (anchor: HTMLElement): Shown => ({
 		content: anchor.dataset.tooltip || undefined,
 		heading: anchor.dataset.tooltipHeading,
 		shortcut: anchor.dataset.tooltipShortcut,
+		extra: extras.get(anchor),
 		side: anchor.dataset.tooltipSide as Side | undefined,
 	},
 });
@@ -188,16 +195,26 @@ export function Tooltip({
 	content,
 	heading,
 	shortcut,
+	extra,
 	side,
 }: TooltipDetails & {
 	children: ReactElement;
 	disabled?: boolean | undefined;
 }) {
 	if (disabled) return children;
-	return cloneElement(children, {
+	const props: Record<string, unknown> = {
 		"data-tooltip": content ?? "",
 		"data-tooltip-heading": heading,
 		"data-tooltip-shortcut": shortcut,
 		"data-tooltip-side": side,
-	} as Record<string, string | undefined>);
+	};
+	// A callback ref, not a hook: the child's own ref is replaced, so only
+	// triggers with an extra line pass one.
+	if (extra !== undefined)
+		props.ref = (element: Element | null) => {
+			if (!element) return;
+			extras.set(element, extra);
+			return () => extras.delete(element);
+		};
+	return cloneElement(children, props);
 }

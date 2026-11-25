@@ -46,6 +46,11 @@ function Replay({ match, entry }: { match: MatchView; entry: DraftView }) {
 			),
 		[end, options],
 	);
+	// Only the final score exists: the face to face shows it once the game is over.
+	const vision = useMemo(
+		() => new Map(end?.players.map((p) => [p.player, p.vision])),
+		[end],
+	);
 	const eventPlayers = useMemo(
 		() =>
 			new Map(
@@ -133,7 +138,12 @@ function Replay({ match, entry }: { match: MatchView; entry: DraftView }) {
 						className={`min-w-0 [grid-area:1/1] ${panel === "faceToFace" ? "" : "invisible"}`}
 						inert={panel !== "faceToFace"}
 					>
-						<FaceToFace snapshot={snapshot} names={names} lineup={lineup} />
+						<FaceToFace
+							snapshot={snapshot}
+							names={names}
+							lineup={lineup}
+							vision={player.ended ? vision : undefined}
+						/>
 					</div>
 				</div>
 				<EventFeed

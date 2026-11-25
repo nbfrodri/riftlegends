@@ -304,13 +304,14 @@ test("#510: every player's tooltip shows their vision score with the official ic
 	cache.stats = true;
 	const user = userEvent.setup();
 	await render(vision);
-	for (const [i, handle] of ["P2", "P7"].entries()) {
-		await user.hover(screen.getByText(handle));
-		const tooltip = await screen.findByRole("tooltip", {}, {});
+	const names = ["P2", "P7"].map((handle) => screen.getByText(handle));
+	for (const [i, name] of names.entries()) {
+		await user.hover(name);
+		const tooltip = await screen.findByRole("tooltip");
 		await within(tooltip).findByText(`Vision ${i === 0 ? 32 : 37}`);
 		expect(tooltip.querySelector("img")?.getAttribute("src")).toBe(
 			officialVision,
 		);
-		await user.unhover(screen.getByText(handle));
+		await user.unhover(name);
 	}
 });
