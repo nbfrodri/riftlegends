@@ -53,9 +53,10 @@ afterEach(async () => {
 });
 
 describe("official champ-select sounds (#472)", () => {
-	test("the four draft sounds come from the champ-select plugin of a fixed CommunityDragon patch", () => {
+	test("the draft and button sounds come from the champ-select plugin of a fixed CommunityDragon patch", () => {
 		expect(championSelectSounds.map(({ id }) => id).sort()).toEqual([
 			"ban",
+			"click",
 			"lock",
 			"pick",
 			"select",

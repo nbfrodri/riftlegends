@@ -109,6 +109,7 @@ function TurnBar(props: {
 				)}
 			</div>
 			<Button
+				data-silent-click
 				disabled={!props.mine || !props.selectedName || busy}
 				onClick={() => void confirm()}
 			>
