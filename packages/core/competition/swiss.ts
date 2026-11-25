@@ -17,6 +17,8 @@ export interface SwissRules {
 	readonly wins: number;
 	/** Losses that eliminate. */
 	readonly losses: number;
+	/** Optional cutoff when the standings decide the next stage. */
+	readonly maxRounds?: number | undefined;
 	/** Bo of an ordinary series. */
 	readonly bestOf: number;
 	/** Bo of a series where a win qualifies or a loss eliminates. */
@@ -160,6 +162,8 @@ export function pairSwissRound(
 			`A Swiss stage needs an even number of teams, got ${teams.length}`,
 		);
 	}
+	if (rules.maxRounds !== undefined && played.length >= rules.maxRounds)
+		return null;
 	const rows = new Map(
 		swissStandings(teams, played, rules).map((row) => [row.id, row]),
 	);

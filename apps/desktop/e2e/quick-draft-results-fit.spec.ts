@@ -1,5 +1,6 @@
 import type { Page } from "@playwright/test";
 import { expect, test } from "./fixtures";
+import { flagBaselineOffset } from "./flag-baseline";
 import { playQuickDraftBo5 } from "./quick-draft-flow";
 
 test.use({ systemLocale: "es-ES", appEnv: { RIFT_E2E_CORE: "1" } });
@@ -103,6 +104,11 @@ test("#259 #310: the setup, match and results fit the default window", async ({
 			}
 			if (screen !== "series-result") return;
 			await expectToFit(appWindow);
+			// #443: the MVP's flag stands on the baseline of the big name.
+			const mvp = appWindow
+				.getByRole("region", { name: "MVP de la serie" })
+				.getByRole("heading", { level: 2 });
+			expect(Math.abs(await flagBaselineOffset(mvp))).toBeLessThanOrEqual(1.5);
 			await expectGapsToFit(appWindow);
 			const maps = appWindow.getByRole("tab", { name: /^Mapa \d$/ });
 			for (const map of await maps.all()) {

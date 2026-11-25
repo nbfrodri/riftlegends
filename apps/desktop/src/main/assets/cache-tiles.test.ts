@@ -72,7 +72,8 @@ describe("main asset cache tiles", () => {
 			).toBe(200);
 			if (path === championData)
 				expect(
-					t.requests.some(({ url }) => url.pathname.endsWith(".jpg")),
+					// The splash comes from the same data and has its own tests (#494).
+					t.requests.some(({ url }) => url.pathname.endsWith("_tile_0.jpg")),
 				).toBe(false);
 		},
 	);

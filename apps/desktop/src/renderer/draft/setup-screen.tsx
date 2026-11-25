@@ -14,7 +14,8 @@ import { useDraftSession } from "./session";
 import { TeamCrest } from "./team-crest";
 
 /** Leagues in the order the team selector lists them (plan 11, A2). */
-const LEAGUES = ["LCK", "LPL", "LEC", "LCP", "LCS", "CBLOL"];
+/** The real leagues in their usual order (plan 11). */
+export const LEAGUES = ["LCK", "LPL", "LEC", "LCP", "LCS", "CBLOL"];
 
 type Team = SeriesOptions["teams"][number];
 
