@@ -222,3 +222,21 @@ test("#502: player names and K/D/A use the normal text colour, never the side co
 		expect(name?.firstElementChild?.className).toMatch(/\btext-text\b/);
 	}
 });
+
+test("#509: stat headers give the icon room above its label, centred with even padding on both sides", async () => {
+	await render();
+	const headers = [
+		...screen
+			.getByRole("table", { name: "Face to face" })
+			.querySelectorAll<HTMLElement>("thead th[scope=col]"),
+	].filter((th) => th.querySelector("svg"));
+	expect(headers).toHaveLength(6);
+	for (const th of headers) {
+		expect(th.className).toMatch(/\bpy-1!/);
+		expect(th.className).not.toMatch(/\bpy-0!/);
+		const stack = th.firstElementChild as HTMLElement;
+		expect(stack.className).toMatch(/\bflex-col\b/);
+		expect(stack.className).toMatch(/\bgap-1\b/);
+	}
+	expect(new Set(headers.map((th) => th.className)).size).toBe(1);
+});
