@@ -26,6 +26,10 @@ export function launchApp(
 				".",
 				`--user-data-dir=${options.profileDir}`,
 				`--lang=${options.systemLocale}`,
+				// Skia picks SSE/AVX raster code by CPU model, and GitHub runners
+				// differ: rounded-corner anti-aliasing changed by 1 level between
+				// runs (#501). The portable path renders the same on every CPU.
+				"--disable-skia-runtime-opts",
 			],
 			chromiumSandbox: true,
 			env: {
