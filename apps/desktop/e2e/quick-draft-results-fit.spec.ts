@@ -115,6 +115,69 @@ async function expectNoTruncation(page: Page) {
 	expect(cut).toEqual([]);
 }
 
+/** Narrowest room left between two columns' contents, in pixels (#534). */
+const MIN_COLUMN_GAP = 12;
+
+/**
+ * #534: the figures sit centred under their centred headers, and neighbouring
+ * columns keep at least {@link MIN_COLUMN_GAP} between their contents.
+ */
+async function expectCenteredColumns(page: Page) {
+	const { offCentre, gaps } = await page
+		.getByRole("table", { name: /^Estadísticas/ })
+		.evaluate((table) => {
+			// The visible ink of a cell: its text, pictures and badges, not hidden labels.
+			const box = (cell: Element) => {
+				const rects: DOMRect[] = [];
+				const walker = document.createTreeWalker(cell, NodeFilter.SHOW_ALL);
+				for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+					const element = node instanceof Element ? node : node.parentElement;
+					if (element?.closest(".sr-only")) continue;
+					if (node instanceof Text && node.data.trim()) {
+						const range = document.createRange();
+						range.selectNodeContents(node);
+						rects.push(range.getBoundingClientRect());
+					} else if (
+						node instanceof SVGSVGElement ||
+						node instanceof HTMLImageElement ||
+						(node instanceof HTMLElement && node.matches("[role=img]"))
+					)
+						rects.push(node.getBoundingClientRect());
+				}
+				const left = Math.min(...rects.map((r) => r.left));
+				const right = Math.max(...rects.map((r) => r.right));
+				return { left, right, x: left, width: right - left };
+			};
+			const rows = [...table.querySelectorAll("tr")].map((row) =>
+				[...row.children].map(box),
+			);
+			const [header = [], ...body] = rows;
+			const offCentre: string[] = [];
+			for (const [r, row] of body.entries())
+				for (let c = 2; c < row.length; c++) {
+					const cell = row[c];
+					const head = header[c];
+					if (!cell || !head) continue;
+					const diff = cell.x + cell.width / 2 - (head.x + head.width / 2);
+					if (Math.abs(diff) > 1)
+						offCentre.push(`row ${r} col ${c}: ${diff.toFixed(1)}`);
+				}
+			const gaps = header.slice(1).map((_, c) =>
+				Math.min(
+					...rows.map((row) => {
+						const left = row[c];
+						const right = row[c + 1];
+						return left && right ? right.left - left.right : Infinity;
+					}),
+				),
+			);
+			return { offCentre, gaps: gaps.map((gap) => Math.round(gap * 10) / 10) };
+		});
+	console.log(`column gaps at ${page.viewportSize()?.width}px`, gaps.join(" "));
+	expect(offCentre).toEqual([]);
+	expect(Math.min(...gaps)).toBeGreaterThanOrEqual(MIN_COLUMN_GAP);
+}
+
 test("#259 #310 #524: the setup, match and results fit the supported test sizes", async ({
 	electronApp,
 	appWindow,
@@ -151,6 +214,7 @@ test("#259 #310 #524: the setup, match and results fit the supported test sizes"
 					await expectToFit(appWindow);
 					await expectGapsToFit(appWindow, seen);
 					await expectNoTruncation(appWindow);
+					await expectCenteredColumns(appWindow);
 					// #380: the right column spans exactly the stats table's height.
 					const edges = await appWindow.evaluate(() => {
 						const heading = [...document.querySelectorAll("h2")].find((h) =>
@@ -191,6 +255,8 @@ test("#259 #310 #524: the setup, match and results fit the supported test sizes"
 					await appWindow.setViewportSize(size);
 					await expectToFit(appWindow);
 					await expectGapsToFit(appWindow, seen);
+					await expectNoTruncation(appWindow);
+					await expectCenteredColumns(appWindow);
 				}
 			}
 			checked++;
