@@ -6,10 +6,10 @@ import {
 } from "@rift-legends/contracts";
 import { Tooltip } from "@rift-legends/ui-kit/components/tooltip";
 import { ChevronRight } from "lucide-react";
-import { type ReactNode, useState } from "react";
+import { type ReactNode, useId, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { usePlayerPhotoSrc } from "../../assets";
-import { levelColor, levelOf } from "../../level-scale";
+import { levelColor, levelFill, levelOf } from "../../level-scale";
 import { ChampionPortrait } from "../champion-portrait";
 import { useDraftContent } from "../session";
 
@@ -64,38 +64,68 @@ const AREAS = [
 /**
  * Type and spacing of the card's sections: `panel` for the draft's compact
  * panel, `dialog` for the large Database card, which scales with the window
- * (#544).
+ * (#544). Each area is a card and each attribute has a short bar (#558).
  */
 type CardSize = "panel" | "dialog";
 const CARD = {
 	panel: {
 		note: "mt-1 text-[13px]",
-		grid: "mt-[9px] gap-3",
-		heading: "mb-1 text-[13px]",
-		rows: "text-[12px] leading-[1.47]",
+		grid: "mt-2 gap-2",
+		card: "px-2.5 py-2",
+		heading: "mb-1 text-[12px]",
+		rows: "text-[12px] leading-[1.35]",
+		row: "pb-[9px]",
+		bar: "bottom-[4px] h-[3px]",
 		pool: "mt-3",
-		groups: "gap-x-4 gap-y-1.5",
-		label: "text-[12px]",
-		list: "gap-1.5",
-		item: "gap-1",
-		mastery: "text-[12px]",
-		portrait: "compact",
+		title: "mb-2 text-[12px]",
+		groups: "gap-5",
+		label: "mb-1 text-[12px]",
+		list: "gap-2",
+		item: "w-8",
+		portrait: "ban",
+		mbar: "mt-1 h-[3px]",
+		mastery: "text-[11px]",
 	},
 	dialog: {
 		note: "text-[clamp(13px,1.9vh,16px)]",
-		grid: "mt-[clamp(10px,2vh,22px)] gap-x-[clamp(16px,2.2vw,40px)]",
-		heading:
-			"mb-[clamp(4px,0.9vh,10px)] border-line border-b pb-1 text-[clamp(15px,2.5vh,21px)]",
-		rows: "text-[clamp(14px,2.3vh,19px)] leading-[1.9]",
+		grid: "mt-[clamp(6px,1.1vh,14px)] gap-[clamp(8px,1vw,16px)]",
+		card: "px-[clamp(10px,1vw,18px)] py-[clamp(6px,1.1vh,14px)]",
+		heading: "mb-[clamp(2px,0.5vh,8px)] text-[clamp(14px,2.2vh,19px)]",
+		rows: "text-[clamp(13px,2vh,17px)] leading-[1.2]",
+		row: "pb-[clamp(10px,1.7vh,15px)]",
+		bar: "bottom-[clamp(4px,0.75vh,7px)] h-[clamp(3px,0.5vh,5px)]",
 		pool: "",
-		groups: "gap-x-[clamp(18px,2.4vw,40px)] gap-y-2",
-		label: "text-[clamp(14px,2.2vh,18px)]",
-		list: "gap-[clamp(6px,1vw,12px)]",
-		item: "gap-1.5",
-		mastery: "text-[clamp(14px,2.3vh,19px)]",
+		title: "mb-[clamp(4px,1vh,10px)] text-[clamp(14px,2.2vh,19px)]",
+		groups: "gap-[clamp(20px,3vw,48px)]",
+		label: "mb-[clamp(4px,0.8vh,10px)] text-[clamp(14px,2.2vh,18px)]",
+		list: "gap-[clamp(8px,1vw,14px)]",
+		item: "w-[clamp(40px,7vh,76px)]",
 		portrait: "card",
+		mbar: "mt-1 h-[clamp(3px,0.5vh,5px)]",
+		mastery: "text-[clamp(13px,2vh,17px)]",
 	},
 } as const satisfies Record<CardSize, Record<string, string>>;
+
+/** A short bar under a value, as wide as the value out of 100. */
+function LevelBar(props: {
+	slot: "level-bar" | "mastery-bar";
+	value: number;
+	fill: string;
+	className: string;
+}) {
+	return (
+		<span
+			aria-hidden="true"
+			data-slot={props.slot}
+			className={`block bg-line/60 ${props.className}`}
+		>
+			<span
+				className={`block h-full ${props.fill}`}
+				style={{ width: `${props.value}%` }}
+			/>
+		</span>
+	);
+}
 
 /**
  * A collapsible bar above the board. Open, its content drops over the board
@@ -176,57 +206,74 @@ export function PlayerAttributes({
 				className={`${style.grid} grid grid-cols-[1fr_1.2fr_1.06fr_1.16fr_1.22fr]`}
 			>
 				{AREAS.map(([area, keys]) => (
-					<section key={area}>
-						<h3 className={`${style.heading} font-bold text-action`}>
+					<section
+						key={area}
+						className={`border border-line bg-surface/40 ${style.card}`}
+					>
+						<h3
+							className={`${style.heading} font-bold text-action uppercase tracking-wide`}
+						>
 							{t(`draft.board.area.${area}`)}
 						</h3>
 						<dl className={style.rows}>
-							{keys.map((key) => (
-								<div
-									key={key}
-									className={`flex justify-between gap-2 ${minor.has(key) ? "opacity-50" : ""}`}
-								>
-									<dt className="text-muted">
-										{minor.has(key) ? (
-											<Tooltip content={t("draft.board.lowRelevance")}>
-												<span>{t(`draft.board.attr.${key}`)}</span>
-											</Tooltip>
-										) : (
-											t(`draft.board.attr.${key}`)
-										)}
-									</dt>
-									<dd
-										className={`font-semibold tabular-nums ${guessed.has(key) ? "font-normal text-muted italic" : levelColor[levelOf(attributes[key])]}`}
+							{keys.map((key) => {
+								const value = attributes[key];
+								const level = levelOf(value);
+								return (
+									<div
+										key={key}
+										className={`relative flex justify-between gap-2 ${style.row} ${minor.has(key) ? "opacity-50" : ""}`}
 									>
-										{guessed.has(key) ? (
-											<Tooltip
-												heading={t("draft.board.estimated")}
-												content={t("draft.board.estimatedWhy")}
-											>
-												<span>{attributes[key]}</span>
-											</Tooltip>
-										) : (
-											attributes[key]
-										)}
-										<span className="sr-only">
-											{" "}
-											{t(`draft.board.level.${levelOf(attributes[key])}`)}
-										</span>
-										{guessed.has(key) && (
+										<dt className="text-muted">
+											{minor.has(key) ? (
+												<Tooltip content={t("draft.board.lowRelevance")}>
+													<span>{t(`draft.board.attr.${key}`)}</span>
+												</Tooltip>
+											) : (
+												t(`draft.board.attr.${key}`)
+											)}
+										</dt>
+										<dd
+											className={`font-semibold tabular-nums ${guessed.has(key) ? "font-normal text-muted italic" : levelColor[level]}`}
+										>
+											{guessed.has(key) ? (
+												<Tooltip
+													heading={t("draft.board.estimated")}
+													content={t("draft.board.estimatedWhy")}
+												>
+													<span>{value}</span>
+												</Tooltip>
+											) : (
+												value
+											)}
 											<span className="sr-only">
 												{" "}
-												{t("draft.board.estimated")}
+												{t(`draft.board.level.${level}`)}
 											</span>
-										)}
-										{minor.has(key) && (
-											<span className="sr-only">
-												{" "}
-												{t("draft.board.lowRelevance")}
-											</span>
-										)}
-									</dd>
-								</div>
-							))}
+											{guessed.has(key) && (
+												<span className="sr-only">
+													{" "}
+													{t("draft.board.estimated")}
+												</span>
+											)}
+											{minor.has(key) && (
+												<span className="sr-only">
+													{" "}
+													{t("draft.board.lowRelevance")}
+												</span>
+											)}
+											<LevelBar
+												slot="level-bar"
+												value={value}
+												fill={
+													guessed.has(key) ? "bg-muted/40" : levelFill[level]
+												}
+												className={`absolute inset-x-0 ${style.bar}`}
+											/>
+										</dd>
+									</div>
+								);
+							})}
 						</dl>
 					</section>
 				))}
@@ -248,11 +295,14 @@ export function PlayerPool({
 	size?: CardSize;
 }) {
 	const { t } = useTranslation();
+	const id = useId();
 	const style = CARD[size];
 	if (pool.length === 0) return null;
 	return (
 		<section aria-label={t("draft.board.pool.title")} className={style.pool}>
-			<h3 className={`${style.heading} font-bold text-action`}>
+			<h3
+				className={`${style.title} font-bold text-action uppercase tracking-wide`}
+			>
 				{t("draft.board.pool.title")}
 			</h3>
 			<div className={`flex flex-wrap ${style.groups}`}>
@@ -260,26 +310,44 @@ export function PlayerPool({
 					const rows = pool.filter((entry) => entry.kind === kind);
 					return (
 						rows.length > 0 && (
-							<div key={kind} className={`flex items-center ${style.list}`}>
-								<span className={`${style.label} text-muted`}>
+							<div key={kind}>
+								<p id={`${id}-${kind}`} className={`${style.label} text-muted`}>
 									{t(`draft.board.pool.${kind}`)}
-								</span>
-								<ul className={`flex ${style.list}`}>
+								</p>
+								<ul
+									aria-labelledby={`${id}-${kind}`}
+									className={`flex ${style.list}`}
+								>
 									{rows.map(({ champion, mastery }) => {
 										const name = names.get(champion) ?? champion;
+										const level = levelOf(mastery);
 										return (
 											<li
 												key={champion}
-												className={`flex items-center ${style.item}`}
+												className={`flex flex-col ${style.item} ${kind === "weak" ? "opacity-55" : ""}`}
 												aria-label={t("draft.board.pool.mastery", {
 													champion: name,
 													value: mastery,
 												})}
 											>
-												<ChampionPortrait id={champion} size={style.portrait} />
+												<Tooltip content={name}>
+													<span className="block">
+														<ChampionPortrait
+															id={champion}
+															size={style.portrait}
+														/>
+													</span>
+												</Tooltip>
+												<LevelBar
+													slot="mastery-bar"
+													value={mastery}
+													fill={levelFill[level]}
+													className={style.mbar}
+												/>
 												<span
 													aria-hidden="true"
-													className={`${style.mastery} font-semibold tabular-nums`}
+													data-slot="mastery-value"
+													className={`mt-0.5 text-center font-semibold tabular-nums ${style.mastery} ${levelColor[level]}`}
 												>
 													{mastery}
 												</span>
