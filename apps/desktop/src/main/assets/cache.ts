@@ -43,16 +43,18 @@ export function createAssetCache(
 		},
 		sync(startup = false): Promise<CacheStatus> {
 			if (running) return running;
-			running = synchronizeCatalog({
-				userData,
-				transport,
-				startup,
-				setChampions: (catalog) => {
-					champions = catalog;
-				},
-				reportProgress,
-			})
-				.catch(
+			running = (async (): Promise<CacheStatus> => {
+				const soundsMissing = (await optional.missingSounds()) > 0;
+				const result = await synchronizeCatalog({
+					userData,
+					transport,
+					startup,
+					soundsMissing,
+					setChampions: (catalog) => {
+						champions = catalog;
+					},
+					reportProgress,
+				}).catch(
 					(error): CacheStatus => ({
 						state: "error",
 						reason:
@@ -60,14 +62,27 @@ export function createAssetCache(
 								? error.message
 								: "Asset synchronization failed",
 					}),
-				)
-				.then((result) => {
-					// Optional assets must not delay a playable champion catalog.
-					if (result.state === "ready") optional.startSyncs();
-					status = result;
-					running = undefined;
-					return result;
-				});
+				);
+				if (result.state !== "ready") return result;
+				// The official sounds are part of the cache (#555); the other
+				// optional assets (logos, photos) are best effort and never wait.
+				if (soundsMissing)
+					await optional
+						.syncSounds((completed, total) =>
+							reportProgress({ completed, total, incomplete: true }),
+						)
+						.catch(() => undefined);
+				optional.startSyncs();
+				const incomplete =
+					result.incomplete || (await optional.missingSounds()) > 0;
+				return incomplete
+					? { state: "ready", version: result.version, incomplete: true }
+					: { state: "ready", version: result.version };
+			})().then((result) => {
+				status = result;
+				running = undefined;
+				return result;
+			});
 			reportProgress({ completed: 0, total: 0 });
 			return running;
 		},

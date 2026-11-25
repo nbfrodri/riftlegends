@@ -241,3 +241,15 @@ describe("team logos (#376)", () => {
 		expect(red.querySelector("header svg")).not.toBeNull();
 	});
 });
+
+describe("player age", () => {
+	test("the card says the age is unknown when the content has no birth date", async () => {
+		const user = userEvent.setup();
+		await renderWithDraftCore(<DraftScreen />);
+		await toBoard(user);
+		const blue = screen.getByRole("region", { name: "Blue side Forge" });
+		await user.click(within(blue).getByRole("button", { name: /Kilnara/ }));
+		const card = screen.getByRole("group", { name: /Player card/ });
+		expect(within(card).getByRole("img", { name: "Age unknown" })).toBeTruthy();
+	});
+});

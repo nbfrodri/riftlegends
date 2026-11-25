@@ -77,6 +77,15 @@ it("gives fictional players a country and accepts older entries without one", ()
 	}
 });
 
+it("accepts a full birth date or a year and rejects anything else", () => {
+	const schema = aiContent.shape.players.element;
+	const [player] = packagedDraftContent.players;
+	for (const birthDate of ["1996-05-07", "1999", undefined])
+		expect(schema.safeParse({ ...player, birthDate }).success).toBe(true);
+	for (const birthDate of ["", "96", "1996-02-30", "07/05/1996"])
+		expect(schema.safeParse({ ...player, birthDate }).success).toBe(false);
+});
+
 it("parses as draft and match content", () => {
 	expect(aiContent.parse(packagedDraftContent)).toEqual(packagedDraftContent);
 	expect(matchContent.parse(packagedMatchContent)).toEqual(
