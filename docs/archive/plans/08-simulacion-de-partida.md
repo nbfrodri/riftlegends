@@ -673,3 +673,185 @@ Las bandas son el valor pro más o menos el ruido de la muestra y están como `t
 | 18 | Mostrar identidades, causas de jugadas, definitivas, minimapa y estadísticas (#320, #326) | `area:ui` | #320, #326 | C10 y J5. Tras 5, 9, 13 y 15, con la ficha de #318. |
 
 Cada cambio de hechos actualiza y verifica sus goldens y las bandas ya vigentes. R5 comprueba el conjunto al cerrar la ampliación. Quedan para calibración las estimaciones de visión, presión y objetivos, los puntos de cada cruce y las tolerancias iniciales Monte Carlo. La muestra de Leaguepedia fija la referencia observada.
+
+## Ampliación 25-11: tiempos de muerte y disponibilidad por jugador (#523)
+
+- **Estado:** aprobado por el usuario (25-11-2026; [decisiones](#decisiones-del-usuario-25-11-2026)). Issue [#523](https://github.com/nbfrodri/riftlegends/issues/523), con #339 (definitivas), #374 (hechizos de invocador) y #358 (cara a cara).
+- **Objetivo:** un jugador muerto no cuenta hasta que reaparece. Toda disputa enfrenta solo a los vivos de cada lado (4 contra 5 tras una cazada antes del barón). Ganar una pelea abre una ventana con ventaja numérica para objetivos y estructuras. Un ace tardío con la base abierta puede terminar la partida. El cara a cara muestra al muerto en gris con su cuenta atrás.
+- **Hoy:** el motor no guarda muertes. Las disputas usan el perfil del equipo entero, las bajas de una pelea no afectan a la siguiente y la única secuela de una pelea es `fightPushAt` (puntos de asedio el minuto siguiente). Todas las disputas de un minuto se resuelven sobre el estado del inicio del minuto.
+
+### Referencia pro: qué se puede medir
+
+Las tablas Cargo de Leaguepedia (`ScoreboardGames`, `ScoreboardTeams`, `ScoreboardPlayers`) solo dan totales por partida, sin segundos de ninguna baja, objetivo o estructura. Lo que sí hay es la **timeline de Riot** que Leaguepedia guarda por partida: `PostgameJsonMetadata.TimelinePage` apunta a la página `V5 data:<id>/Timeline`. Trae `CHAMPION_KILL` (víctima, autor, asistentes y milisegundo), `ELITE_MONSTER_KILL` (tipo y equipo), `BUILDING_KILL`, `LEVEL_UP` y `GAME_END`. Cobertura en 2026: LCK, LEC, LCS, LCP y CBLOL completas (≈1.800 partidas), **LPL ninguna**.
+
+Con la timeline, el muerto se reconstruye: muere en el segundo de la baja y reaparece cuando lo marca la fórmula de abajo con su nivel de `LEVEL_UP`. No se tienen en cuenta las resurrecciones (Ángel de la Guarda, Zilean); son raras.
+
+**Piloto (25-11-2026):** 100 partidas de la fase regular de LCK, LEC, LCS, LCP y CBLOL 2026 (una de cada cinco):
+
+| Medida | Resultado |
+| --- | --- |
+| Barón tomado con **más vivos** que el rival / con menos | 62 % / 4 % (129 barones) |
+| Dragón con más vivos / con menos | 23 % / 6 % (458) |
+| Torre con más vivos / con menos | 47 % / 7 % (1.168) |
+| Inhibidor con más vivos / con menos | 75 % / 2 % (152) |
+| Tras una pelea (bajas separadas por ≤ 15 s), el ganador toma objetivo o estructura en ≤ 60 s, según el margen de bajas 1 / 2 / 3 o más | 43 % / 62 % / 80 % (819 / 219 / 183 peleas) |
+| Pelea desde el minuto 25 con 4 o más muertos de un lado: el ganador termina la partida en ≤ 60 s | 56 % (91 peleas) |
+| Al caer el nexo, el perdedor tiene 3 o más muertos | 73 % |
+| Tiempo de muerte P10 / P50 / P90 | 16 / 40 / 55 s |
+
+El piloto es una muestra: las bandas definitivas salen de todas las partidas con timeline, con el mismo cálculo en el pipeline (`pnpm data:timelines`, issue 1 del troceado). El pipeline solo publica los agregados (bandas y curva de nivel), nunca la timeline.
+
+### Fórmula de los tiempos de muerte
+
+Fuente: [LoL Wiki, «Death»](https://wiki.leagueoflegends.com/en-us/Death) (consultada el 25-11-2026). Grieta del Invocador:
+
+`tiempo = BRW + BRW × TIF`
+
+| Nivel | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| BRW (s) | 10 | 10 | 12 | 12 | 14 | 16 | 20 | 25 | 28 | 32,5 | 35 | 37,5 | 40 | 42,5 | 45 | 47,5 | 50 | 52,5 |
+
+| Minuto de la muerte | TIF |
+| --- | --- |
+| 0:00–14:59 | 0 |
+| 15:00–29:59 | `ceil(2 × (min − 15)) × 0,425 %` (pasos de 30 s; 12,75 % a los 30:00) |
+| 30:00–44:59 | `12,75 % + ceil(2 × (min − 30)) × 0,30 %` |
+| 45:00 en adelante | `21,75 % + ceil(2 × (min − 45)) × 1,45 %`, con tope del **50 %** |
+
+Máximo: 78,75 s (nivel 18 desde el minuto 55). En el núcleo, todo entero: BRW en décimas de segundo (100 … 525), TIF en milésimas de punto porcentual (425, 300, 1.450 por paso; tope 50.000 sobre 100.000), producto con redondeo mitad hacia par y `respawnAt = segundo de la muerte + ceil(décimas / 10)`. La tabla vive en `rules` del contenido (`deathTimer`), no en el código, para seguir los parches.
+
+### Lista de tests
+
+| # | Comportamiento | Casos límite |
+| --- | --- | --- |
+| D1 | El tiempo de muerte sigue la fórmula de la wiki por nivel y minuto. | Niveles 1, 6, 18; 14:59, 15:00, 15:30, 29:59, 30:00, 45:00, 55:00 y 70:00 (tope); redondeo de décimas; tabla cambiada en `rules`. Tabla de casos copiada de la wiki. |
+| D2 | Cada baja fija `respawnAt` de la víctima. Hasta ese segundo no participa en nada; desde ese segundo, sí. | Reaparición en el mismo segundo que una disputa, muerte en el segundo 59 que cruza el minuto, dos bajas del mismo jugador imposibles mientras está muerto, nexo antes de reaparecer. |
+| D3 | Una víctima siempre está viva, y el autor y los asistentes también. | Equipo con un solo vivo, ace (no quedan víctimas), lado sin vivos que no puede ganar una pelea ni asistir. Propiedad sobre miles de partidas. |
+| D4 | Las disputas de un minuto se resuelven en orden de segundo e ID; cada una ve las muertes y usos de las anteriores. | Cazada al 0:20 y barón al 0:40 del mismo minuto: el barón ya es 4 contra 5. Dos disputas en el mismo segundo: orden por ID. |
+| D5 | **Monotonía** (propiedad): a igual resto, un vivo más en un lado nunca baja su probabilidad de ganar la disputa. Invertir lados invierte la probabilidad. | 5v5, 4v5, 1v5, 0v5 (el lado sin vivos no disputa: el rival gana sin tirada), jugador sin peso en esa disputa. |
+| D6 | Cada disputa cuenta a los vivos según su **rol**: en un objetivo pesa más la jungla (castigo), en la línea solo cuentan los dos de esa línea. | Línea con su laner muerto: el rival empuja y farmea sin disputa. Objetivo con la jungla muerta. Pelea con el ADC muerto frente al apoyo muerto. |
+| D7 | Una pelea ganada con ventaja numérica abre una **ventana** hasta la primera reaparición rival en la que el ganador intenta objetivos y estructuras. Sustituye a `fightPushAt`. | Ventana sin objetivo disponible ni estructura atacable, ventana que cruza el minuto, ganador también con muertos, reaparición durante la ventana que reduce la ventaja. |
+| D8 | Tras un ace (o con 1 vivo como máximo) con la base abierta y tiempo suficiente, el ganador puede derribar torres del nexo y el nexo en la misma ventana. | Base sin inhibidor caído (no puede caer el nexo), ventana corta, minuto 15 con tiempos de muerte cortos frente al minuto 40. |
+| D9 | Determinismo: misma semilla, mismos hechos byte a byte en Linux y Windows. Los flujos nuevos tienen su ID; añadir la ventana no mueve las tiradas de otras disputas. | Golden por semilla con `SIM_VERSION` nueva; log antiguo sin `respawnAt` legible (estado desconocido). |
+| D10 | Los hechos bastan para reproducir el estado de cada jugador en cualquier segundo. El último snapshot cuadra con los hechos. | Reconstruir vivos al segundo de cada evento y comparar con el estado del motor (propiedad). |
+| D11 | Cara a cara: un muerto se ve en gris con la cuenta atrás; el lector dice «muerto, reaparece en N s» / «dead, respawns in N s». | Reaparición durante la reproducción, ace, log antiguo sin datos (sin gris), movimiento reducido, ES/EN, 1280×720 sin scroll (#358). Test de componente y E2E. |
+| D12 | Rendimiento: un año IA contra IA sigue en **≤ 60 s** en el Arch del usuario y el split del CI en su límite. | Medir `match.play` antes y después; objetivo ≤ +15 %. |
+
+**Calibración** (Monte Carlo sobre las 1.000 semillas por pool; bandas iniciales a partir del piloto, se fijan con la muestra completa):
+
+| Banda | Comprobación |
+| --- | --- |
+| K19 · Vivos al tomar | Barón, inhibidor y torre tomados con más vivos: a ≤ 10 pp del pro (piloto 62 / 75 / 47 %). Con menos vivos: ≤ 10 % en los tres. |
+| K20 · Conversión tras pelea | Objetivo o estructura del ganador en ≤ 60 s, por margen 1 / 2 / 3+: a ≤ 10 pp del pro (piloto 43 / 62 / 80 %) y creciente con el margen. |
+| K21 · Cierre tras ace tardío | Pelea desde el 25 con 4+ muertos que termina la partida en ≤ 60 s: a ≤ 12 pp del pro (piloto 56 %). Perdedor con 3+ muertos al caer el nexo: a ≤ 10 pp (piloto 73 %). |
+| K22 · Tiempos de muerte | P50 a ≤ 5 s del pro (piloto 40 s); P10 y P90 a ≤ 8 s. Depende de la curva de nivel. |
+| Regresión | K1–K18 en verde. Se vigilan sobre todo K2 (duración: los cierres tras ace acortan partidas), K3 y K6 (menos bajas posibles con muertos) y K16. |
+
+### Diseño
+
+#### Estado por jugador
+
+`SideState` gana `players`, un registro por rol en el orden de `ROLES`:
+
+| Campo | Significado | Lo usa |
+| --- | --- | --- |
+| `respawnAt` | Segundo de partida en que vuelve; vivo si `respawnAt ≤ ahora`. 0 al empezar. | #523 |
+| `ult.readyAt`, `ult.rank` | Definitiva lista o en recarga ([diseño de #339](#disponibilidad-de-definitivas-339)). | #339 |
+| `spells.<hechizo>.readyAt` | Recarga de cada hechizo de invocador del jugador. | #374 |
+
+Una sola pregunta para todo el motor: `available(state, side, role, segundo)`. Un jugador **participa** en una jugada si está vivo y la jugada le afecta (local o de equipo). Las recargas siguen corriendo mientras está muerto, como en el juego. El segundo de partida es `(minute − 1) × 60 + second`, como en #339.
+
+**Nivel.** El tiempo de muerte necesita el nivel, que llega con #338. Hasta entonces, una **curva de nivel por rol y minuto** (mediana de `LEVEL_UP` en las timelines, en `rules.levelCurve`). Cuando #338 calcule el nivel de cada jugador, sustituye a la curva sin cambiar este diseño.
+
+#### Orden dentro del minuto
+
+Hoy cada disputa resuelve contra el estado del inicio del minuto. Se pasa a **resolución secuencial**:
+
+1. Cada disputa que toca saca su segundo como **primera** tirada de su propio flujo (`deriveSeed(seed, match, game, minuto, id)`).
+2. Se ordenan por (segundo, ID) y se resuelven una a una. Cada una ve el estado con los hechos anteriores ya aplicados (muertes, usos de ulti y hechizos, objetivos tomados).
+3. El nexo corta el minuto, como ahora.
+
+Cambia la posición de las tiradas de todas las disputas, así que cambian todos los goldens: se hace en la misma subida de `SIM_VERSION` que las muertes. El diseño de #339 ya pedía este orden; lo reutiliza.
+
+#### Cómo cuenta cada lado solo a sus vivos
+
+Cada tipo de disputa tiene un **peso por rol** (enteros que suman 10.000, en `rules`, calibrables). Propuesta inicial:
+
+| Disputa | Top | Jungla | Mid | ADC | Apoyo |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Línea | solo los dos de la línea | — | — | — | — |
+| Jungla / invasión | 1.500 | 4.000 | 1.500 | 1.000 | 2.000 |
+| Pelea | 2.000 | 2.000 | 2.000 | 2.200 | 1.800 |
+| Objetivo | 1.500 | 3.000 | 2.000 | 2.000 | 1.500 |
+| Asedio | 2.000 | 1.500 | 2.000 | 2.500 | 2.000 |
+
+`presencia(lado) = Σ peso de los roles vivos` (0 a 10.000). En `edge`:
+
+- **Causa `numbers`:** `NUMBERS_POINTS[disputa] × (presencia azul − presencia roja) / 10.000`. Monótona por construcción (D5). Es la causa que se ve en el desglose: «Pelearon 4 contra 5: su jungla estaba muerto».
+- **Atributos de los vivos:** los factores que salen de atributos de jugador (líneas, peleas, mecánicas, maestría…) pasan de media del equipo a **suma ponderada por presencia** de los vivos: con los cinco vivos equivale a la media actual; un muerto aporta 0. Los valores de atributo son siempre ≥ 0, así que un muerto nunca suma.
+- **Factores de draft** (composición, sinergias, meta, cruces): no cambian. Describen las composiciones, que siguen ahí al reaparecer; escalarlos con signo rompería la monotonía.
+- **Sin vivos** en un lado: la disputa no se tira y la gana el otro (si tiene alguien vivo). La tirada se consume igual para no mover el flujo.
+- **Línea** con un laner muerto: el rival gana la disputa de línea sin tirada (oro de línea y presión). Con los dos muertos, no hay disputa.
+
+Las **bajas** solo eligen víctimas entre los vivos del perdedor (barajado del flujo de la disputa) y autor y asistentes entre los vivos del ganador (`matchAttribution`, que ya filtra por participantes). Un lado no puede perder más jugadores de los que tiene vivos. Los objetivos disputados pueden causar bajas con la misma regla que las peleas.
+
+#### Ventana tras la pelea y cierre de partida
+
+Sustituye a `fightPushAt`. Al terminar una pelea en la que el ganador queda con **más vivos**, se abre una **conversión** (disputa nueva, ID **46**, flujo propio) 15 s después de la pelea:
+
+1. **Duración:** hasta la primera reaparición del perdedor que iguale los vivos. Puede cruzar el minuto: lo que no quepa sigue en el minuto siguiente con el flujo de ese minuto.
+2. **Objetivo:** el mejor disponible por orden fijo: nexo si la base está abierta, barón o elder si están arriba, dragón o heraldo, y si no, la siguiente estructura de la línea más avanzada. Desempate por orden de línea.
+3. **Toma:** cada intento es una disputa de asedio u objetivo con la causa `numbers` ya calculada (con 5 contra 2 casi siempre sale). Cada estructura o objetivo consume un tiempo fijo de `rules` (calibrable: p. ej. 20 s una torre, 25 s el barón con el equipo entero). Se encadenan intentos mientras quede ventana.
+4. **Cierre tras ace:** si la ventana es larga (muertes tardías de 50–75 s) y la base está abierta o se abre en la ventana, la cadena llega a las torres del nexo y al nexo. La partida termina por el nexo, como siempre (M2).
+
+La vieja ventaja de `fightPushAt` desaparece del perfil; su efecto lo dan las muertes. **Un muerto pierde su oro de farmeo:** la parte proporcional de su oro pasivo por los segundos que está muerto. K7 y K16 siguen en verde.
+
+#### Hechos, reproducción y cara a cara
+
+- Cada baja del hecho (`kills[]`) lleva `respawnAt` (segundo de partida), opcional en el contrato para leer logs antiguos. Con eso el cliente calcula vivos y cuenta atrás en **cualquier segundo** sin snapshots por segundo.
+- El snapshot de cada minuto añade por rol `respawnAt`, `ult` y `spells` (o `null` si está listo / vivo), para saltar a un minuto sin recorrer los hechos.
+- La conversión emite sus hechos canónicos (`tower`, `baron`, `nexus`…) con la causa `numbers` y el lado iniciador.
+- Log antiguo sin `respawnAt`: el estado queda **desconocido** y el cara a cara no pinta gris.
+- Cara a cara (#358): retrato en gris, cuenta atrás en segundos, mismo ancho de fila. Lector de pantalla: «muerto, reaparece en N s».
+
+#### Determinismo y versión
+
+- Enteros y punto fijo 10.000 ([plan 05](../../plans/05-rng-determinismo.md)); los tiempos de muerte no usan azar.
+- ID **46** para la conversión. Los ID existentes no cambian. Sin ámbitos RNG nuevos: las víctimas usan el flujo de su disputa y los autores, `matchAttribution`.
+- `SIM_VERSION` sube en la entrega que añade muertes y orden secuencial (14 si nada sube antes), y otra vez con la ventana. Goldens con `pnpm goldens:update`.
+
+#### Rendimiento
+
+Sin bucle por segundo: las muertes son marcas de tiempo y se consultan al resolver. El coste añadido por minuto es ordenar unas 10 disputas y leer 10 registros de jugador. Copias inmutables solo del lado tocado. D12 mide `match.play` y el año IA contra IA.
+
+#### Cómo encajan #339 y #374
+
+| Pieza | Sobre el estado por jugador |
+| --- | --- |
+| Definitivas (#339) | Cuentan solo si el portador **participa** (vivo y en la jugada). Su recarga corre aunque esté muerto. La ventana tras gastar ultis (U3) y la de muertes (D7) usan el mismo selector: el rival busca jugada mientras dure la mayor de las dos. |
+| Hechizos (#374) | `spells.<hechizo>.readyAt` con recargas de los datos del juego. Flash baja la probabilidad de morir en cazadas y dives (menos muertes, D2). Teleport permite a un jugador recién reaparecido unirse a la jugada o a la ventana (acorta la ventaja numérica rival). Castigo pesa en los objetivos: sin castigo listo, la jungla pierde parte de su peso de objetivo. |
+| Cara a cara (#358) | Lee los tres campos del mismo registro: gris y cuenta atrás si está muerto; iconos de ulti y hechizos atenuados con su recarga. |
+
+### Decisiones del usuario (25-11-2026)
+
+| # | Decisión |
+| --- | --- |
+| 1 | **Timelines de Riot de Leaguepedia** (`V5 data`) en el pipeline: sí, **solo agregados** (bandas y curva de nivel), nunca datos por partida. LPL queda fuera (no tiene timelines). Se añade a Créditos y al registro de decisiones. |
+| 2 | **Nivel:** curva por rol y minuto desde las timelines; #338 la sustituye después sin cambiar este diseño. |
+| 3 | **Resolución en orden de segundo** dentro del minuto, con una sola subida de `SIM_VERSION` y sin bucle por segundo. |
+| 4 | **Un muerto pierde** la parte proporcional de su oro pasivo y de farmeo; K7 y K16 siguen en verde. |
+| 5 | **Fuerza por rol:** causa `numbers` más atributos de los vivos sumados por peso de rol; los factores de draft no cambian. |
+| 6 | **Sin resurrecciones ni estasis** por ahora. |
+
+### Troceado (milestone «Fase 3.5 — Simulación por composiciones»; paraguas #523)
+
+| # | Issue | Área | Test que lo cierra | Depende de |
+| --- | --- | --- | --- | --- |
+| 1 | #527 `data:timelines`: bandas K19–K22 y curva de nivel por rol y minuto desde las timelines; Créditos | `area:data-pipeline` | Bandas y curva reproducibles desde la caché; sin datos de partida en el repo | — |
+| 2 | #528 Estado por jugador, fórmula de muerte, víctimas vivas, oro perdido al morir y resolución secuencial por segundo | `area:core` | D1–D4, D9, D10 y K22; `SIM_VERSION` | #527 (curva) y #525 (refactor de `state.ts`) |
+| 3 | #529 Las disputas cuentan solo a los vivos por peso de rol | `area:core` | D5, D6 y K19; regresión K1–K18 | #528 |
+| 4 | #530 Ventana de conversión tras pelea y cierre tras ace; retirar `fightPushAt` | `area:core` | D7, D8, K20 y K21; `SIM_VERSION` | #529 |
+| 5 | #531 Cara a cara: muerto en gris con cuenta atrás | `area:ui` | D11 (componente y E2E) | #528; junto a #358 |
+| 6 | #532 Rendimiento del año IA contra IA | `area:core` | D12 | #530 |
+
+#339 y #374 mantienen sus issues y se construyen sobre el estado de #528.

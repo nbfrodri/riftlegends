@@ -2,7 +2,11 @@ import { z } from "zod";
 import { defineCommands, defineQueries } from "../envelope";
 import type { CoreError } from "../errors";
 import { defineFacts } from "../facts";
-import { type Competition, competitionSchema } from "./format";
+import {
+	type Competition,
+	competitionCriterion,
+	competitionSchema,
+} from "./format";
 
 export * from "./format";
 
@@ -68,15 +72,7 @@ const count = z.int().min(0);
 
 /** Why a team sits where it does: the criterion that split it from the tied ones. */
 const explanation = z.strictObject({
-	criterion: z.enum([
-		"seriesWins",
-		"gameDiff",
-		"headToHead",
-		"gameWins",
-		"tiebreakerSeries",
-		"draw",
-		"none",
-	]),
+	criterion: z.union([competitionCriterion, z.literal("none")]),
 	tied: z.array(teamId),
 	values: z.record(teamId, z.int()),
 });
