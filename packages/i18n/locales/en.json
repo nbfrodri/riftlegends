@@ -838,7 +838,7 @@
 	"credits.title": "Credits",
 	"credits.back": "Back to Settings",
 	"credits.sources.title": "Data sources",
-	"credits.sources.leaguepedia": "Esports teams, rosters and results. Derived data are shared under the same licence.",
+	"credits.sources.leaguepedia": "Esports teams, rosters and results, plus aggregate figures from Riot match timelines (deaths, objectives and levels). Derived data are shared under the same licence.",
 	"credits.sources.communityDragon": "Champion portraits, icons, champ select sounds and game data.",
 	"credits.sources.lolesports": "Team and league logos and player photos.",
 	"credits.sources.kenney": "Cursors of the game (Cursor Pack by Kenney).",
