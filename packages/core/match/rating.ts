@@ -23,10 +23,10 @@ export interface Anchors {
 	high: number;
 }
 
-/** Approved on 2026-11-23: the weight of each metric, in percent. */
+/** Approved on 2026-11-23 (jungle changed by the user on 2026-11-25): the weight of each metric, in percent. */
 export const WEIGHTS: Record<Role, Partial<Record<Metric, number>>> = {
 	top: { damage: 40, pressure: 35, deaths: 25 },
-	jungle: { kp: 45, objectives: 35, deaths: 20 },
+	jungle: { kp: 40, objectives: 32, deaths: 18, vision: 10 },
 	mid: { damage: 45, kills: 30, deaths: 25 },
 	bot: { damage: 45, kills: 30, deaths: 25 },
 	support: { kp: 35, assists: 25, deaths: 20, vision: 20 },
@@ -51,6 +51,7 @@ export const ANCHORS: Record<Role, Partial<Record<Metric, Anchors>>> = {
 		kp: { low: 5000, mid: 6490, high: 9333 },
 		objectives: { low: 0, mid: 4600, high: 10_000 },
 		deaths: { low: 393, mid: 105, high: 0 },
+		vision: { low: 40, mid: 54, high: 69 },
 	},
 	mid: {
 		damage: { low: 1755, mid: 2425, high: 3231 },
