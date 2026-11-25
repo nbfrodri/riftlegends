@@ -157,14 +157,31 @@ describe("R2 unconfirmed data is marked and listed", () => {
 	});
 });
 
-describe("Q4 international seeding by region pots", () => {
-	it("worlds draws its Swiss from the six leagues in four pots", () => {
+describe("Q4–Q5 international seeding and stage links", () => {
+	it("crosses the two First Stand group winners with the opposite runners-up", () => {
+		expect(formats["first-stand"].stages.at(-1)?.entrants).toEqual([
+			{ kind: "bracket", stage: "groupA", match: "U2-1", result: "winner" },
+			{ kind: "bracket", stage: "groupB", match: "U2-1", result: "winner" },
+			{ kind: "bracket", stage: "groupA", match: "L2-1", result: "winner" },
+			{ kind: "bracket", stage: "groupB", match: "L2-1", result: "winner" },
+		]);
+	});
+
+	it("MSI adds only the play-in champion to the seven direct qualifiers", () => {
+		const bracket = formats.msi.stages.find((s) => s.id === "bracket");
+		expect(bracket?.entrants).toEqual([
+			{ kind: "qualified", competition: "msi", places: expect.any(Array) },
+			{ kind: "bracket", stage: "playin", match: "GF", result: "winner" },
+		]);
+	});
+
+	it("Worlds draws four pots including only the play-in champion", () => {
 		const swiss = formats.worlds.stages.find((s) => s.play.type === "swiss");
-		expect(swiss?.entrants).toEqual({
-			kind: "pots",
-			from: ["LCK", "LPL", "LEC", "LCP", "LCS", "CBLOL"],
-			pots: 4,
-		});
+		expect(swiss?.entrants).toEqual([
+			{ kind: "qualified", competition: "worlds", places: expect.any(Array) },
+			{ kind: "bracket", stage: "playin", match: "GF", result: "winner" },
+		]);
+		expect(swiss?.draw).toEqual({ pots: 4 });
 		expect(swiss?.play).toMatchObject({
 			round1: "pots",
 			avoid: ["region", "rematch"],
