@@ -26,6 +26,12 @@ export interface LeagueDefinition {
 	/** Finish stages, with place counts in First Stand, MSI and Worlds order. */
 	qualifiers: [string, number][];
 	notes: string[];
+	/** Tiebreak rules read from the league's own rulebook; absent means game defaults. */
+	tiebreakRule?: {
+		criteria: Competition["tiebreak"];
+		bestOf: Bo;
+		reason: string;
+	};
 }
 
 export const weeks = /^Week \d+$/;

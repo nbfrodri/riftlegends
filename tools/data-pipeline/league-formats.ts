@@ -84,14 +84,14 @@ function build(id: LeagueId): Competition {
 					: stage.entrants,
 			play: stage.play,
 		})),
-		tiebreak: [
+		tiebreak: definition.tiebreakRule?.criteria ?? [
 			"seriesWins",
 			"gameDiff",
 			"headToHead",
 			"tiebreakerSeries",
 			"draw",
 		],
-		tiebreakerBestOf: 3,
+		tiebreakerBestOf: definition.tiebreakRule?.bestOf ?? 3,
 		slots: definition.qualifiers.map(([stage, count], i) => ({
 			to: ["first-stand", "msi", "worlds"][i],
 			stage,
@@ -108,7 +108,8 @@ function build(id: LeagueId): Competition {
 			snapshot: file,
 		},
 		unverifiedReasons: [
-			"Official tiebreak criteria are unconfirmed; use the game defaults, including Bo3 at a cut.",
+			definition.tiebreakRule?.reason ??
+				"Official tiebreak criteria are unconfirmed; use the game defaults, including Bo3 at a cut.",
 			"Fixed bracket seeds and international places use stage finishes; official seeding, points and cascade rules are unconfirmed.",
 			...definition.notes,
 		],

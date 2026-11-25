@@ -358,7 +358,7 @@
 	"unverifiedReasons": [
 		"Official tiebreak criteria are unconfirmed; use the game defaults, including Bo3 at a cut.",
 		"Fixed bracket seeds and international places use stage finishes; official seeding, points and cascade rules are unconfirmed.",
-		"Split 3 uses the generic Swiss to three wins or losses. The calendar reserves up to three series in round 5; the snapshot has one.",
+		"Split 3 Swiss rules (Bo3, Bo5 on the third win or loss, Bo5 seeding matches) match lolesports. The calendar reserves up to three series in round 5; the snapshot has one. The third Worlds place goes to the Championship Points leader (ties: Split 3 playoff placement, then Swiss result), approximated here by the playoff third place.",
 		"The split 3 seeding ladder approximates team selection from the Swiss; the bottom seeding match is for placement only."
 	]
 }

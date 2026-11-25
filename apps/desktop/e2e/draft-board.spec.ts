@@ -135,6 +135,60 @@ test("the draft fits and keeps the player card right above the board", async ({
 	}
 });
 
+// #503: at any window size the board (both columns and the pool) reaches
+// the bottom of the page, past only its padding, and nothing scrolls.
+test("the board fills the whole window at every size", async ({
+	appWindow,
+	electronApp,
+}) => {
+	await seedNextSeries(electronApp, 7);
+	await appWindow.getByRole("button", { name: "Start series" }).click();
+	await appWindow.getByRole("button", { name: "Confirm choice" }).click();
+	await appWindow.getByRole("button", { name: "Go to draft" }).click();
+	const parts = [
+		appWindow.getByRole("region", { name: "Blue side Forge" }),
+		appWindow.getByRole("region", { name: "Red side Shoal" }),
+		appWindow.getByRole("region", { name: "Champions" }),
+	];
+	for (const viewport of [
+		{ width: 1280, height: 720 },
+		{ width: 1366, height: 768 },
+		{ width: 1920, height: 1080 },
+		{ width: 2560, height: 1440 },
+	]) {
+		await appWindow.setViewportSize(viewport);
+		const page = await appWindow.evaluate(() => {
+			const main = document.querySelector("main") as HTMLElement;
+			// The page inside <main> holds the padding around the board.
+			const content = main.firstElementChild as HTMLElement;
+			const box = main.getBoundingClientRect();
+			const padding = Number.parseFloat(
+				getComputedStyle(content).paddingBottom,
+			);
+			return {
+				bottom: Math.min(box.bottom, innerHeight) - padding,
+				scroll: {
+					page: document.documentElement.scrollHeight - innerHeight,
+					main: main.scrollHeight - main.clientHeight,
+				},
+			};
+		});
+		expect(page.scroll, `${viewport.width}x${viewport.height}`).toEqual({
+			page: 0,
+			main: 0,
+		});
+		for (const part of parts) {
+			const box = await part.boundingBox();
+			if (!box) throw new Error("The board must show");
+			// The board ends where the page's content ends: no gap below it.
+			expect(
+				page.bottom - (box.y + box.height),
+				`${viewport.width}x${viewport.height}`,
+			).toBeLessThanOrEqual(2);
+		}
+	}
+});
+
 // #398: opening the champion card from the pool keeps the pool where it was.
 test("opening a champion card keeps the pool's scroll position", async ({
 	appWindow,
