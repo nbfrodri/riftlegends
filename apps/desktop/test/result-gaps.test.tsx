@@ -1,9 +1,22 @@
 import type { SeriesOptions } from "@rift-legends/contracts";
-import { cleanup, screen, within } from "@testing-library/react";
-import { afterEach, expect, test } from "vitest";
+import {
+	cleanup,
+	fireEvent,
+	screen,
+	waitFor,
+	within,
+} from "@testing-library/react";
+import { afterEach, expect, test, vi } from "vitest";
+import { AssetsProvider } from "../src/renderer/assets";
 import type { RoleGap } from "../src/renderer/draft/result-data";
 import { GapsTable } from "../src/renderer/draft/result-gaps";
+import { fakeAssets } from "./fake-assets";
 import { renderInLocale } from "./render-in-locale";
+
+vi.mock("../src/renderer/draft/session", async (original) => ({
+	...(await original<typeof import("../src/renderer/draft/session")>()),
+	useDraftContent: () => "real",
+}));
 
 afterEach(cleanup);
 
@@ -62,14 +75,16 @@ const gaps: RoleGap[] = [
 ];
 
 /** Renders the table in Spanish and returns a way to find a role's row. */
-async function renderGaps() {
+async function renderGaps(assets = fakeAssets()) {
 	await renderInLocale(
-		<GapsTable
-			name="Diferencias por rol"
-			options={options}
-			sideOf={(team) => (team === "forge" ? "blue" : "red")}
-			gaps={gaps}
-		/>,
+		<AssetsProvider api={assets.api}>
+			<GapsTable
+				name="Diferencias por rol"
+				options={options}
+				sideOf={(team) => (team === "forge" ? "blue" : "red")}
+				gaps={gaps}
+			/>
+		</AssetsProvider>,
 		"es-ES",
 	);
 	const table = screen.getByRole("table", { name: "Diferencias por rol" });
@@ -79,6 +94,24 @@ async function renderGaps() {
 		return row;
 	};
 }
+
+test("uses a cached champion tile when the portrait icon cannot load", async () => {
+	const row = await renderGaps(
+		fakeAssets({ state: "ready", version: "16.23" }),
+	);
+	const portrait = within(row("top")).getByRole("img", { name: "c1" });
+	await waitFor(() =>
+		expect(portrait.querySelector("img")?.getAttribute("src")).toBe(
+			"rift-asset://cdragon/champions/c1.png",
+		),
+	);
+	const icon = portrait.querySelector("img");
+	if (!icon) throw new Error("Missing champion icon");
+	fireEvent.error(icon);
+	expect(portrait.querySelector("img")?.getAttribute("src")).toBe(
+		"rift-asset://cdragon/tiles/c1.jpg",
+	);
+});
 
 test("says in words who is ahead in each role and by how much", async () => {
 	const row = await renderGaps();
