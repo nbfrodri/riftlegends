@@ -35,14 +35,25 @@ export async function waitForCaptureAssets(page: Page) {
 				requestAnimationFrame(() => requestAnimationFrame(() => done())),
 			),
 	);
+	// A window that has not painted yet can refuse the capture; wait two frames
+	// and retry only this throwaway shot, never the assertion.
+	// Then wait for the page to settle byte for byte: toHaveScreenshot's own
+	// stability check tolerates maxDiffPixelRatio, so it accepts a frame that
+	// still has anti-aliasing 1 level off at a rounded corner (#501).
+	let previous: Buffer | undefined;
 	for (let attempt = 1; ; attempt++) {
 		try {
-			await page.screenshot({ animations: "disabled", caret: "hide" });
-			return;
+			const frame = await page.screenshot({
+				animations: "disabled",
+				caret: "hide",
+			});
+			if (previous?.equals(frame)) return;
+			previous = frame;
 		} catch (error) {
 			if (attempt === 5) throw error;
-			await page.waitForTimeout(500);
 		}
+		if (attempt === 20) throw new Error("The window never settled");
+		await page.waitForTimeout(250);
 	}
 }
 
