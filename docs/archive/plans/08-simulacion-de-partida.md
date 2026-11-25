@@ -618,6 +618,10 @@ Primer objetivo de la partida: **un solo grupo de 3**, sin reaparición, en el f
 | Ganks | El jungla que llega a la línea aparece como autor o asistente de la baja. |
 | Registro y resultado | Ambos muestran la racha y su autor en español e inglés. |
 
+**K18 · Pentakills (#366).** Fuente: Leaguepedia (CC BY-SA), `ScoreboardPlayers.Pentakills` por rol en las ligas principales de 2021 a 2025, 13.607 partidas: **277 pentas, 2,04 % de las partidas** (ADC 185 = 67 %, mid 49 = 18 %, top 22 = 8 %, jungla 21 = 8 %, apoyo 0). Leaguepedia no publica dobles, triples ni cuádruples; esas se mantienen plausibles (cuádruples al menos tan frecuentes como pentas y triples más que cuádruples) sin referencia pro. Banda (1.000 partidas por pool): pentas en **1,2–3 %** de las partidas, ADC **50–90 %** de ellas y apoyo **≤ 5 %**. Antes del cambio, 0–0,1 % de las partidas.
+
+Mecanismo: en una pelea ganada 4–0 o 5–0 hay una **racha** con probabilidad 10 % y 36 %. Un solo jugador se lleva todas las bajas de su equipo en esa pelea (ya sin asistirse a sí mismo), elegido por el reparto pro de pentas por rol (ADC 67 %, mid 18 %, top 8 %, jungla 8 %, apoyo 0,5 %) corregido por los factores de arquetipo y atributos de #346. Sus bajas se encadenan dentro de las ventanas (10 s, 30 s la quinta); el flujo `matchAttribution` usa la ranura 99. Medición (1.500 partidas, campeones reales, % de partidas con al menos una racha de ese nivel): doble 63,5, triple 7,3, cuádruple 4,3, penta 1,9; por rol, penta ADC 1,4, top y mid 0,2, jungla 0,07, apoyo 0.
+
 Cada pelea registra segundos relativos a su primera baja mediante el flujo `matchFightTiming`. La última baja de cada racha lleva el mayor nivel alcanzado. `match.ended` enumera las rachas junto con el índice de la pelea. El KDA se sigue contando a partir de las bajas y sus participantes. Los ganks usan el calendario actual. Las jugadas de #356 quedan pendientes.
 
 ### Troceado propuesto · Fase 3 — Pipeline de contenido real

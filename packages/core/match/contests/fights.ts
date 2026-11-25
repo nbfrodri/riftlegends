@@ -1,10 +1,11 @@
-import { ROLES, type Side } from "@rift-legends/contracts";
+import { ROLES, type Role, type Side } from "@rift-legends/contracts";
 import { min } from "../../math";
-import { int, pick, shuffle } from "../../rng/helpers";
+import { int, pick, shuffle, weighted } from "../../rng/helpers";
 import { SCOPES } from "../../rng/scopes";
 import { deriveSeed } from "../../rng/seeds";
 import { createRng, type Rng } from "../../rng/streams";
 import { attribute, type Engagement } from "../attribution/attribute";
+import { KILL_BASE } from "../attribution/weights";
 import { type MatchState, other } from "../state";
 import { type Contest, roll } from "./contest";
 import { edge, MID_GAME, outcome } from "./edge";
@@ -49,28 +50,78 @@ function casualties(
 	rng: Rng,
 	engagement: Engagement,
 	first: number,
+	streaker?: Role,
 ) {
 	return shuffle(rng, ROLES)
 		.slice(0, count)
 		.map((victim, index) => {
 			pick(rng, ROLES);
 			pick(rng, ROLES.slice(1));
-			const { killer, assists } = attribute(state, side, engagement, {
+			const drawn = attribute(state, side, engagement, {
 				contest: FIGHT_ID,
 				event: 0,
 				kill: first + index,
 			});
+			// A rampage: one player takes every kill of the winning side.
+			const { killer, assists } = streaker
+				? {
+						killer: streaker,
+						assists: drawn.assists.filter((role) => role !== streaker),
+					}
+				: drawn;
 			return kill(state, side, killer, victim, assists);
 		});
 }
 
 const FIGHT_ID = 30;
 
+/** Chance per 10,000 that a fight won 5–0 or 4–0 is one player's rampage (K18). */
+const RAMPAGE_CHANCE = { 4: 1000, 5: 3600 } as const;
+/** Slot of the rampage draws in the attribution stream, past every kill slot. */
+const RAMPAGE_SLOT = 99;
+/**
+ * Pro pentakills by role, per mille (Leaguepedia, 277 pentas in 13,607 games
+ * of 2021–2025): the ADC is two thirds of them and the support has none.
+ */
+const RAMPAGE_SHARE: Readonly<Record<Role, number>> = {
+	top: 79,
+	jungle: 76,
+	mid: 177,
+	bot: 668,
+	support: 5,
+};
+
+/** Who rampages, if anyone: drawn from the attribution stream by kill weight. */
+function rampage(state: MatchState, side: Side, won: number): Role | undefined {
+	if (won !== 4 && won !== 5) return undefined;
+	const { seed, game } = state.context;
+	const rng = createRng(
+		deriveSeed(
+			seed,
+			SCOPES.matchAttribution,
+			game,
+			state.minute,
+			FIGHT_ID,
+			0,
+			RAMPAGE_SLOT,
+		),
+	);
+	if (!roll(rng, RAMPAGE_CHANCE[won])) return undefined;
+	const weights = state.context[side].attribution;
+	// The pro share of rampages by role, bent by the team's own kill factors
+	// (archetype and attributes): `kill / KILL_BASE` is that factor alone.
+	const odds = ROLES.map(
+		(role) => RAMPAGE_SHARE[role] * (weights[role].kill / KILL_BASE[role]),
+	);
+	return ROLES[weighted(rng, odds)];
+}
+
 /** Place casualties within the exchange without consuming resolution or attribution draws. */
 function timeKills(
 	state: MatchState,
 	kills: ReturnType<typeof casualties>,
 	won: number,
+	streak: boolean,
 ) {
 	const { seed, game } = state.context;
 	const rng = createRng(
@@ -80,7 +131,15 @@ function timeKills(
 	return kills.map((kill, index) => {
 		if (index > 0) {
 			const fifth = index === ROLES.length - 1 && won === ROLES.length;
-			fightSecond += int(rng, 1, fifth ? 32 : 12);
+			// A rampage keeps to the windows of the game: 10 s, 30 s for the fifth.
+			const longest = fifth
+				? streak
+					? 30
+					: 32
+				: streak && index < won
+					? 10
+					: 12;
+			fightSecond += int(rng, 1, longest);
 		}
 		return { ...kill, fightSecond };
 	});
@@ -108,8 +167,9 @@ export const FIGHT_CONTEST: Contest = {
 			PITS.has(zone) || won + lost >= 4
 				? { kind: "teamfight" }
 				: { kind: "skirmish" };
+		const streaker = rampage(state, winner, won);
 		const kills = [
-			...casualties(state, winner, won, rng, engagement, 0),
+			...casualties(state, winner, won, rng, engagement, 0, streaker),
 			...casualties(state, loser, lost, rng, engagement, won),
 		];
 		const { kill: killGold, assist } = rules.economy;
@@ -121,7 +181,7 @@ export const FIGHT_CONTEST: Contest = {
 				side: winner,
 				zone,
 				second,
-				kills: timeKills(state, kills, won),
+				kills: timeKills(state, kills, won, streaker !== undefined),
 				gold:
 					winner === "blue"
 						? { blue: wonGold, red: lostGold }
