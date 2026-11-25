@@ -3,6 +3,7 @@ import { Button } from "@rift-legends/ui-kit/components/button";
 import { Check } from "lucide-react";
 import { memo, useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { playSound } from "../../sound";
 import { CountryFlag } from "../country-flag";
 import { teamName, useDraftSession } from "../session";
 import { TurnTimer } from "../turn-controls";
@@ -115,6 +116,10 @@ export function DraftBoard() {
 	);
 	if (!view) throw new Error("The draft board needs a series");
 	const pool = usePool(view, options);
+	const select = useCallback((id: string) => {
+		setSelected(id);
+		playSound("select");
+	}, []);
 
 	const showPlayer = useCallback((ref: PlayerRef) => {
 		setPlayer(ref);
@@ -178,7 +183,7 @@ export function DraftBoard() {
 					<ChampionPool
 						champions={pool}
 						selected={choice?.id ?? null}
-						onSelect={setSelected}
+						onSelect={select}
 					/>
 					{turn && (
 						<TurnBar
