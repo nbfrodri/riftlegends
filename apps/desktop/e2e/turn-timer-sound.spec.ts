@@ -7,6 +7,8 @@ declare global {
 	}
 }
 
+test.use({ appEnv: { RIFT_E2E_CORE: "1" } });
+
 // #505: with the turn timer on, my turn ticks once per second over its last
 // 10 seconds. The spy counts the buffers Web Audio starts; the page clock
 // skips the 30 s turn.
@@ -19,6 +21,7 @@ test("the last 10 seconds of my turn tick once per second and stop on confirm", 
 	);
 	await expect.poll(() => page.evaluate(() => document.hasFocus())).toBe(true);
 	await seedNextSeries(electronApp, 7);
+	await page.getByRole("button", { name: "Draft", exact: true }).click();
 	await page
 		.getByRole("radio", { name: "On", exact: true })
 		.check({ force: true });
@@ -37,10 +40,12 @@ test("the last 10 seconds of my turn tick once per second and stop on confirm", 
 	});
 	const started = () => page.evaluate(() => window.startedSounds);
 
-	await page.clock.runFor(19_500);
+	// The page clock keeps running in real time, so keep clear of the edges.
+	await page.clock.runFor(15_000);
 	expect(await started()).toBe(0);
-	await page.clock.runFor(3_000);
-	expect(await started()).toBe(3);
+	await page.clock.runFor(7_000);
+	expect(await started()).toBeGreaterThanOrEqual(1);
+	expect(await started()).toBeLessThanOrEqual(4);
 
 	await page
 		.getByRole("group", { name: "Champions" })
@@ -48,6 +53,8 @@ test("the last 10 seconds of my turn tick once per second and stop on confirm", 
 		.first()
 		.click();
 	await page.getByRole("button", { name: /^Confirm (ban|pick)$/ }).click();
+	// Let the AI answer and my next turn begin: it is 20 s from ticking.
+	await page.clock.runFor(2_000);
 	const after = await started();
 	await page.clock.runFor(15_000);
 	expect(await started()).toBe(after);

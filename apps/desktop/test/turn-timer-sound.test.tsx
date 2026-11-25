@@ -58,7 +58,7 @@ test("confirming stops the ticks at once", async () => {
 	expect(ticks()).toHaveLength(before);
 });
 
-test("the AI's turn never ticks, nor does a game without the timer", async () => {
+test("the AI's turn never ticks", async () => {
 	await start(true);
 	fireEvent.click(firstAvailable());
 	fireEvent.click(screen.getByRole("button", { name: /^Confirm/ }));
@@ -66,8 +66,9 @@ test("the AI's turn never ticks, nor does a game without the timer", async () =>
 	expect(screen.queryByRole("timer")).not.toBeNull();
 	await advance(19_000);
 	expect(ticks()).toHaveLength(0);
-	cleanup();
-	sound.play.mockClear();
+});
+
+test("a game without the timer never ticks", async () => {
 	await start(false);
 	await advance(60_000);
 	expect(ticks()).toHaveLength(0);

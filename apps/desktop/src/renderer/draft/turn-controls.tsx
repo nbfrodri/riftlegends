@@ -3,6 +3,8 @@ import { useReducedMotion } from "@rift-legends/ui-kit/lib/use-reduced-motion";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { clockTime } from "../match/playback";
+import { playSound } from "../sound";
+import { startCountdownTicks } from "../sound/countdown-ticks";
 import { pacing } from "./broadcast/pacing";
 import { useDraftSession } from "./session";
 
@@ -27,6 +29,8 @@ function Countdown(props: { side: Side }) {
 		const tick = window.setInterval(() => {
 			setSeconds(Math.max(0, Math.ceil((deadline - performance.now()) / 1000)));
 		}, 1000);
+		// The client's tick over the last 10 s, from the same deadline (#505).
+		const stopTicks = startCountdownTicks(deadline, () => playSound("tick"));
 		const timeout = window.setTimeout(
 			() => void send("draft.timeout", {}),
 			pacing.turnMs,
@@ -34,6 +38,7 @@ function Countdown(props: { side: Side }) {
 		return () => {
 			window.clearInterval(tick);
 			window.clearTimeout(timeout);
+			stopTicks();
 		};
 	}, [send]);
 	useLayoutEffect(() => {
