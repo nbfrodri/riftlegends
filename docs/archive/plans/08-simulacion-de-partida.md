@@ -636,7 +636,18 @@ Cada pelea registra segundos relativos a su primera baja mediante el flujo `matc
 
 El registro usa variantes de texto en español e inglés. Los hechos anteriores se pueden seguir leyendo. `SIM_VERSION` 15.
 
-**TODO de calibración pro.** Completar las bandas observadas de primera sangre con asistencia, bajas en solitario, rachas y recompensas por partida, exterminios y robos por tipo de objetivo. El repositorio aún no tiene cifras de referencia para esas bandas.
+**Referencia pro (#508, 25-11-2026).** Leaguepedia (Cargo) no tiene primera sangre, robos, exterminios, shutdowns ni bajas en solitario. Se miden en las timelines de Riot que guarda Leaguepedia (`PostgameJsonMetadata.TimelinePage`), con una muestra de **317 partidas** de LCK, LEC, LCS, LCP y CBLOL (un script aparte; el agregado general es #527). Estimación de exterminios con la fórmula de reaparición de la wiki.
+
+| Banda | Pro | Sim (real, 1.000 partidas) | Estado |
+| --- | --- | --- | --- |
+| K23 · minuto de la primera sangre P10 / P50 / P90 | 2,2 / 4,5 / 8,8 | 3 / 3 / 4 | falla |
+| K23 · primera sangre con asistente | 89 % | 59 % | falla |
+| K24 · bajas en solitario por partida (top y mid) | 1,19 (todas las líneas 1,79) | 2,00 | falla |
+| K25 · shutdowns por partida / partidas con alguno | 4,6 / 97 % (≈ 1.070 de oro) | 1,55 / 76 % (≈ 375) | falla |
+| K26 · exterminios por partida / partidas con alguno | 0,94 / 68 % | 0,08 / 8 % | falla |
+| K27 · racha máxima ≥ 5 / ≥ 7 | 84 % / 43 % | 37 % / 9 % | falla |
+
+Las bandas son el valor pro más o menos el ruido de la muestra y están como `test.fails` en la calibración: **el simulador no se ha tocado**. Las bajas por partida son 29,0 en el pro y 23,7 en el sim, lo que explica parte de K25 y K27. **Robos de objetivo: no hay dato.** Riot no marca el robo en la timeline y Leaguepedia tampoco; el sim da 0,12 por partida, sin referencia.
 
 ### Troceado propuesto · Fase 3 — Pipeline de contenido real
 
