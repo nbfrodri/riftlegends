@@ -279,9 +279,16 @@ describe("M5 · stats come from the facts", () => {
 		);
 	});
 
-	it("rates the one who carries above the one who dies", () => {
-		expect(of("b-jungle").rating).toBeGreaterThan(of("r-mid").rating);
-		expect(of("b-top").rating).toBe(60);
+	it("rates the one who carries above the one who dies, in the same role", () => {
+		expect(of("b-mid").rating).toBeGreaterThan(of("r-mid").rating);
+		expect(of("b-mid").rating).toBeGreaterThan(60);
+		expect(of("r-mid").rating).toBeLessThan(60);
+	});
+
+	it("a game with no chances scores the neutral 60 where there is nothing to measure", () => {
+		const quiet = playerStats([], teams, rules, 1800);
+		// Jungle: no kills to join and no objectives (80 % neutral) and no deaths (100).
+		expect(quiet.find((p) => p.player === "b-jungle")?.rating).toBe(68);
 	});
 
 	it("lists blue then red, in role order, with their champion", () => {
