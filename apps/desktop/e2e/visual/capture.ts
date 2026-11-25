@@ -8,6 +8,34 @@ const cajaFonts = [
 	'700 16px "Unbounded Variable"',
 ];
 
+// Chromium repaints only what was invalidated and keeps the rest of the old
+// raster, so consecutive screenshots of the same page flip between frames whose
+// rounded corners differ by one level (tiles sit at fractional positions) and
+// two runs of the same commit saved different PNGs (#501). Hiding and showing
+// the body drops every paint chunk; the frame that follows is the same in every
+// run. Scroll offsets and focus do not survive display:none, so put them back.
+async function repaintFromScratch(page: Page) {
+	await page.evaluate(() => {
+		const scrolled = [
+			document.documentElement,
+			...document.body.querySelectorAll("*"),
+		]
+			.filter((element) => element.scrollTop > 0 || element.scrollLeft > 0)
+			.map((element) => ({
+				element,
+				top: element.scrollTop,
+				left: element.scrollLeft,
+			}));
+		const focused = document.activeElement;
+		document.body.style.display = "none";
+		void document.body.offsetHeight;
+		document.body.style.display = "";
+		for (const { element, top, left } of scrolled) element.scrollTo(left, top);
+		if (focused instanceof HTMLElement && focused !== document.body)
+			focused.focus({ preventScroll: true });
+	});
+}
+
 export async function waitForCaptureAssets(page: Page) {
 	await page.evaluate(async (fonts) => {
 		const sample = "Ajustes 0123 áéíóúñ ·";
@@ -24,15 +52,7 @@ export async function waitForCaptureAssets(page: Page) {
 			}
 		}
 	}, cajaFonts);
-	// Repaint from scratch. Chromium repaints only the invalidated parts over
-	// what the tile already holds, so the anti-aliasing at a rounded corner
-	// kept a 1-level trace of the earlier state (a hover, a loading image) and
-	// the same screen differed from run to run (#501). A resize drops every tile.
-	const size = page.viewportSize();
-	if (size) {
-		await page.setViewportSize({ width: size.width + 1, height: size.height });
-		await page.setViewportSize(size);
-	}
+	await repaintFromScratch(page);
 	// The first screenshot of a cold app takes over a second on CI (software
 	// rendering). Take it now, outside the assertion, so toHaveScreenshot's
 	// stability loop compares fast frames instead of timing out (#317).
@@ -44,8 +64,6 @@ export async function waitForCaptureAssets(page: Page) {
 				requestAnimationFrame(() => requestAnimationFrame(() => done())),
 			),
 	);
-	// A window that has not painted yet can refuse the capture; wait two frames
-	// and retry only this throwaway shot, never the assertion.
 	// Then wait for the page to settle byte for byte: toHaveScreenshot's own
 	// stability check tolerates maxDiffPixelRatio, so it accepts a frame that
 	// still has anti-aliasing 1 level off at a rounded corner (#501).
