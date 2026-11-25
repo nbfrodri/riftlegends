@@ -12,7 +12,7 @@ Decisiones en el [registro](../decisions/README.md). Reglas del usuario: respues
 
 ## Cola de fusión (aprobados por el usuario), en orden
 
-#542 (timelines, K19–K22) → #556 (pantalla de carga espera a toda la caché) → #561 (logo CBLOL) → #534 (nombres largos y tabla centrada) → #563 (edad del jugador). Comprobar el CI de `main` tras cada uno.
+#542 (timelines, K19–K22) → #556 (pantalla de carga espera a toda la caché) → #561 (logo CBLOL) → #534 (nombres largos y tabla centrada) → #563 (edad del jugador) → #564 (cerrar lectura de la IA) → #565 (causas traducidas). Comprobar el CI de `main` tras cada uno.
 
 ## Trabajo en marcha
 
@@ -21,8 +21,8 @@ Decisiones en el [registro](../decisions/README.md). Reglas del usuario: respues
 | #558 ficha: pool y atributos, **opción A** (barras) elegida | subagente · `../riftlegends-558` | implementando con TDD; traer capturas `vis-558-local/final-*` |
 | #559 edad del jugador | PR #563, aprobado y en la cola | — |
 | #562 jugadores de relleno («UP bot», «OMG support»), nacionalidad de Thanatos/Van/BAO/Ahn, Van/Van1 | subagente · `../riftlegends-562` | en curso |
-| #546 cerrar «Lectura de la IA» con clic fuera | Codex · `../riftlegends-546` · `~/.cache/rift-tmp/codex/e546.jsonl` / `r546.json` | en curso (el primer intento chocó con el límite de uso) |
-| #550 causas sin traducir («structures») | Codex · `../riftlegends-550` · `e550.jsonl` / `r550.json` | en curso |
+| #546 cerrar «Lectura de la IA» con clic fuera | PR #564, aprobado y en la cola | — |
+| #550 causas sin traducir | PR #565, aprobado y en la cola | — |
 
 Si un subagente se perdió con el `/clear`, su trabajo está en su worktree: revisar `git log origin/main..HEAD` y `git status`, y terminarlo.
 Para Codex: leer `r<N>.json`, comprobar con `tack codex-used <thread_id>` (primera línea de `e<N>.jsonl`), revisar que haya commit de test separado, fusionar `main`, push, PR por REST y capturas.
