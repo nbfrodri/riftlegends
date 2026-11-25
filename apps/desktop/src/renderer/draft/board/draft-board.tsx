@@ -204,7 +204,7 @@ export function DraftBoard() {
 	return (
 		// biome-ignore lint/a11y/noStaticElementInteractions: clears the selection on empty space; every control keeps its own handler.
 		<div
-			className="flex flex-1 flex-col gap-gap short:gap-3"
+			className="flex min-h-0 flex-[1_1_0px] flex-col gap-gap short:gap-3"
 			onClick={clearOnClick}
 			onKeyDown={clearOnEscape}
 		>

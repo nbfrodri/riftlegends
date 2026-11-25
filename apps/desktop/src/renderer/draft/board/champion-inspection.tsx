@@ -44,7 +44,7 @@ export function ChampionInspection({ children }: { children: ReactNode }) {
 		// child is added, and the pool lost its scroll on opening the card (#398).
 		// biome-ignore lint/a11y/noStaticElementInteractions: delegates right click and I from the board's own buttons.
 		<div
-			className="relative grid min-h-0 min-w-0 grid-cols-[minmax(0,1fr)_minmax(0,2fr)_minmax(0,1fr)] gap-3"
+			className="relative grid min-h-0 min-w-0 flex-1 grid-cols-[minmax(0,1fr)_minmax(0,2fr)_minmax(0,1fr)] grid-rows-[minmax(0,1fr)] gap-3"
 			onContextMenu={(e) => {
 				const trigger = triggerOf(e.target);
 				if (trigger) {
