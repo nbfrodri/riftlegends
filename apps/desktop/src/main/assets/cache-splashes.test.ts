@@ -80,6 +80,7 @@ describe("#494: the base skin's landscape splash for the pick rows", () => {
 		expect(await create().sync()).toEqual({
 			state: "ready",
 			version: t.version,
+			incomplete: true,
 		});
 
 		t.override = undefined;
