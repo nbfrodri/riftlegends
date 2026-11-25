@@ -30,6 +30,8 @@ export interface Bracket {
 	size: number;
 	matches: BracketMatch[];
 	reset: boolean;
+	/** Set only without a grand final: the upper bracket winner is first. */
+	upperChampion?: Slot;
 }
 
 export interface Entrant {
@@ -208,11 +210,20 @@ export const buildDoubleElim = (format: DoubleElim): Bracket => {
 	if (survivors.length !== 1) {
 		throw new RangeError("The lower bracket must end with one team");
 	}
+	if (format.grandFinal === null) {
+		return {
+			size: format.size,
+			matches,
+			reset: false,
+			upperChampion: upper.champion,
+		};
+	}
+	const grandFinal = format.grandFinal;
 	const final = (id: string, side: "final" | "reset"): BracketMatch => ({
 		id,
 		side,
 		round: 1,
-		bestOf: format.grandFinal,
+		bestOf: grandFinal,
 		a: upper.champion,
 		b: survivors[0] as Slot,
 	});

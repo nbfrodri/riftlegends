@@ -109,6 +109,20 @@ export interface LanePlayer {
 	championName: string;
 }
 
+/** Lanes whose vision tells the most: their rows show it next to the name (#510). */
+const visionRoles = new Set<string>(["jungle", "support"]);
+
+/** The vision score with the scoreboard's eye; screen readers hear it in words. */
+function VisionScore({ value }: { value: number }) {
+	const { t } = useTranslation();
+	return (
+		<span className="inline-flex items-center gap-1">
+			<StatIcon stat="vision" size={14} />
+			{t("draft.match.faceToFace.vision", { value })}
+		</span>
+	);
+}
+
 /**
  * Photo, champion portrait and the name block, in fixed tracks with the
  * pictures on the outer edge: a long name is cut, it never moves them (#433).
@@ -117,20 +131,28 @@ function Player({
 	id,
 	player,
 	side,
+	vision,
+	showVision,
 }: {
 	id: string;
 	player: LanePlayer | undefined;
 	side: Side;
+	/** The final vision score; unknown while the game plays. */
+	vision: number | undefined;
+	/** Show it in the row too, not only in the tooltip. */
+	showVision: boolean;
 }) {
+	const { t } = useTranslation();
+	const inRow = showVision && vision !== undefined;
 	const parts = player && [
 		<span key="photo" data-part="photo" className="flex">
-			<PlayerPortrait id={id} handle={player.handle} size="h-8 w-[26px]" />
+			<PlayerPortrait id={id} handle={player.handle} size="h-12 w-[38px]" />
 		</span>,
-		// A 20 px champion badge over the photo's lower inner corner leaves the name more room (#450).
+		// A 28 px champion badge over the photo's lower inner corner leaves the name more room (#450, #502).
 		<span
 			key="champion"
 			data-part="champion"
-			className={`relative flex self-end ring-2 ring-panel [&_[role=img]]:size-5 ${side === "blue" ? "-ml-2" : "-mr-2"}`}
+			className={`relative flex self-end ring-2 ring-panel [&_[role=img]]:size-7 ${side === "blue" ? "-ml-3" : "-mr-3"}`}
 		>
 			<ChampionPortrait
 				id={player.champion}
@@ -138,20 +160,40 @@ function Player({
 				size="compact"
 			/>
 		</span>,
-		<Tooltip key="name" heading={player.handle} content={player.championName}>
+		<Tooltip
+			key="name"
+			heading={player.handle}
+			content={player.championName}
+			extra={vision === undefined ? undefined : <VisionScore value={vision} />}
+		>
 			<span
 				data-part="name"
 				className={`min-w-0 text-center ${side === "blue" ? "ml-1.5" : "mr-1.5"}`}
 			>
-				<span className="block truncate font-bold text-(--side)">
+				<span className="block truncate font-bold text-[15px] text-text">
 					{player.handle}
 				</span>
+				{/* The vision score shares the champion's line: the row keeps its height (#510). */}
 				<span
 					aria-hidden="true"
-					className="block truncate text-[11px] text-muted"
+					className="flex min-w-0 items-center justify-center gap-1.5 truncate text-[12px] text-muted"
 				>
-					{player.championName}
+					<span className="truncate">{player.championName}</span>
+					{inRow && (
+						<span
+							data-vision
+							className="inline-flex shrink-0 items-center gap-0.5 font-bold text-text tabular-nums"
+						>
+							<StatIcon stat="vision" size={12} />
+							{vision}
+						</span>
+					)}
 				</span>
+				{inRow && (
+					<span className="sr-only">
+						{t("draft.match.faceToFace.vision", { value: vision })}
+					</span>
+				)}
 			</span>
 		</Tooltip>,
 	];
@@ -172,10 +214,12 @@ function Player({
 const columns = ["kda", "cs", "gold"] as const;
 /** Stat cells: 8 px each side, so neighbouring columns stay 16 px apart (#450). */
 const stat = "px-2! tabular-nums";
+/** Body numbers: 15 px in the normal text colour, like every other figure (#502). */
+const figure = `${stat} text-[15px] text-text`;
 
-function Kda({ line, side }: { line: Line; side: Side }) {
+function Kda({ line }: { line: Line }) {
 	return (
-		<td data-side={side} className={`font-bold text-(--side) ${stat}`}>
+		<td className={`font-bold ${figure}`}>
 			{line.kills}/{line.deaths}/{line.assists}
 		</td>
 	);
@@ -184,9 +228,9 @@ function Kda({ line, side }: { line: Line; side: Side }) {
 function StatHeader({ column }: { column: (typeof columns)[number] }) {
 	const { t } = useTranslation();
 	return (
-		// Icon over label: narrow headers; tight padding keeps the row low.
-		<th scope="col" className={`py-0.5! ${stat}`}>
-			<span className="inline-flex flex-col items-center gap-0.5">
+		// Icon over label with a 4 px gap, centred by even padding (#509).
+		<th scope="col" className={`py-1! ${stat}`}>
+			<span className="flex flex-col items-center gap-1">
 				<StatIcon stat={column} size={18} />
 				{t(`draft.match.faceToFace.${column}`)}
 			</span>
@@ -235,10 +279,13 @@ export function FaceToFace({
 	snapshot,
 	names,
 	lineup,
+	vision,
 }: {
 	snapshot: MapSnapshot;
 	lineup: ReadonlyMap<string, LanePlayer>;
 	names: TeamNames;
+	/** Each player's final vision score, once the game is over (`match.ended`). */
+	vision?: ReadonlyMap<string, number> | undefined;
 }) {
 	const { t } = useTranslation();
 	const format = useGoldFormat();
@@ -258,22 +305,32 @@ export function FaceToFace({
 				{/* Fixed stat columns, 16 px apart (#450); the players take the rest. */}
 				<colgroup>
 					<col />
-					<col className="w-[62px]" />
-					<col className="w-[42px]" />
-					<col className="w-[56px]" />
-					<col className="w-[84px]" />
-					<col className="w-[56px]" />
-					<col className="w-[42px]" />
-					<col className="w-[62px]" />
+					<col className="w-[66px]" />
+					<col className="w-[44px]" />
+					<col className="w-[60px]" />
+					<col className="w-[80px]" />
+					<col className="w-[60px]" />
+					<col className="w-[44px]" />
+					<col className="w-[66px]" />
 					<col />
 				</colgroup>
 				<thead>
 					<tr>
-						<th scope="colgroup" data-side="blue" colSpan={4}>
+						<th
+							scope="colgroup"
+							data-side="blue"
+							colSpan={4}
+							className="py-0.5!"
+						>
 							{names.blue}
 						</th>
 						<td />
-						<th scope="colgroup" data-side="red" colSpan={4}>
+						<th
+							scope="colgroup"
+							data-side="red"
+							colSpan={4}
+							className="py-0.5!"
+						>
 							{names.red}
 						</th>
 					</tr>
@@ -291,15 +348,18 @@ export function FaceToFace({
 				</thead>
 				<tbody>
 					{lines.map(({ role, blue, red }) => (
-						<tr key={role}>
+						// Rows grow with the window, from 56 px at 1280×720 (#502).
+						<tr key={role} className="h-[clamp(56px,8.4vh,72px)] [&>*]:py-0.5!">
 							<Player
 								id={blue.player}
 								player={lineup.get(blue.player)}
 								side="blue"
+								vision={vision?.get(blue.player)}
+								showVision={visionRoles.has(role)}
 							/>
-							<Kda line={blue} side="blue" />
-							<td className={stat}>{blue.cs}</td>
-							<td className={stat}>{format.format(blue.gold)}</td>
+							<Kda line={blue} />
+							<td className={figure}>{blue.cs}</td>
+							<td className={figure}>{format.format(blue.gold)}</td>
 							<th scope="row">
 								<span className="flex flex-col items-center gap-1.5">
 									<span className="inline-flex items-center gap-1.5">
@@ -310,13 +370,15 @@ export function FaceToFace({
 									<LeadText blue={blue} red={red} names={names} />
 								</span>
 							</th>
-							<td className={stat}>{format.format(red.gold)}</td>
-							<td className={stat}>{red.cs}</td>
-							<Kda line={red} side="red" />
+							<td className={figure}>{format.format(red.gold)}</td>
+							<td className={figure}>{red.cs}</td>
+							<Kda line={red} />
 							<Player
 								id={red.player}
 								player={lineup.get(red.player)}
 								side="red"
+								vision={vision?.get(red.player)}
+								showVision={visionRoles.has(role)}
 							/>
 						</tr>
 					))}

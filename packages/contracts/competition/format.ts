@@ -11,8 +11,8 @@ const competitionId = id;
 /** Best-of lengths a series can have: 1, 3 or 5. */
 const bestOf = z.union([z.literal(1), z.literal(3), z.literal(5)]);
 
-/** Most series a team may play in a match day (decision 4 of plan 12). */
-const MAX_SERIES_PER_DAY = 4;
+/** Cap on series per match day in each competition (decision 4 of plan 12). */
+export const MAX_SERIES_PER_DAY = 4;
 
 /** Whole days from the season start are counted by the core; weeks only here. */
 const window = z.strictObject({
@@ -40,7 +40,7 @@ const groups = z.strictObject({
 	size: teamCount,
 	count: z.int().min(1).max(16),
 	/** `cross`: each team plays only the other groups (LCK Cup). */
-	seeding: z.enum(["snake", "cross"]),
+	seeding: z.enum(["snake", "cross", "ranked"]),
 	inner: z.strictObject({
 		rounds: z.union([z.literal(1), z.literal(2)]),
 		bestOf,
@@ -52,6 +52,7 @@ const swiss = z.strictObject({
 	size: teamCount,
 	wins: z.int().min(1).max(5),
 	losses: z.int().min(1).max(5),
+	maxRounds: z.int().min(1).max(9).optional(),
 	bestOf,
 	/** Bo of the series that qualify or eliminate. */
 	decisiveBestOf: bestOf,
@@ -83,7 +84,8 @@ const doubleElim = z.strictObject({
 		.max(5),
 	/** Seeds that enter the lower bracket directly in each lower round (worst seeds first). */
 	lowerSeeds: z.array(z.int().min(0).max(8)).max(8).default([]),
-	grandFinal: bestOf,
+	/** `null`: no grand final (GSL groups); the upper and lower finals decide the ranking. */
+	grandFinal: bestOf.nullable(),
 	/** Extra final when the lower bracket wins (off in LoL). */
 	reset: z.boolean(),
 });
@@ -99,17 +101,39 @@ const play = z.discriminatedUnion("type", [
 const source = z.discriminatedUnion("kind", [
 	z.strictObject({
 		kind: z.literal("fixed"),
-		teams: z.array(teamId).min(2).max(32),
+		teams: z.array(teamId).min(1).max(32),
 	}),
 	/** Teams ranked `from` to `to` (1-based) in an earlier stage. */
 	z.strictObject({
 		kind: z.literal("standing"),
 		stage: stageId,
+		competition: competitionId.optional(),
 		from: z.int().min(1),
 		to: z.int().min(1),
 	}),
+	z.strictObject({
+		kind: z.literal("bracket"),
+		stage: stageId,
+		competition: competitionId.optional(),
+		match: id,
+		result: z.enum(["winner", "loser"]),
+	}),
 	/** The teams that other competitions qualified into this one. */
-	z.strictObject({ kind: z.literal("qualified"), competition: competitionId }),
+	z.strictObject({
+		kind: z.literal("qualified"),
+		competition: competitionId,
+		/** Optional 1-based places from specific leagues, in seed order. */
+		places: z
+			.array(
+				z.strictObject({
+					league: competitionId,
+					place: z.int().min(1).max(32),
+				}),
+			)
+			.min(1)
+			.max(32)
+			.optional(),
+	}),
 	/** Qualified teams of these competitions, drawn from `pots` pots by region and place. */
 	z.strictObject({
 		kind: z.literal("pots"),
@@ -118,7 +142,21 @@ const source = z.discriminatedUnion("kind", [
 	}),
 ]);
 
-const stage = z.strictObject({ id: stageId, window, entrants: source, play });
+const stage = z.strictObject({
+	id: stageId,
+	window,
+	/** Consecutive league stages in the same block may play in parallel. */
+	parallelGroup: id.optional(),
+	/** Multiple sources fill the seed list in declaration order. */
+	entrants: z.union([source, z.array(source).min(1).max(32)]),
+	play,
+	draw: z
+		.strictObject({
+			pots: z.int().min(1).max(8),
+			avoidSameLeague: z.boolean().optional(),
+		})
+		.optional(),
+});
 
 const CRITERIA = [
 	"seriesWins",
@@ -161,13 +199,23 @@ export const competitionSchema = z
 	.strictObject({
 		id: competitionId,
 		kind: z.enum(["league", "international"]),
-		stages: z.array(stage).min(1).max(12),
+		stages: z.array(stage).min(1).max(32),
 		tiebreak: z.array(criterion).max(CRITERIA.length),
 		/** Bo of the tiebreaker series that decides a tie at a cut. */
 		tiebreakerBestOf: bestOf.default(3),
 		slots: z.array(slot).max(16).optional(),
 		/** False while the format is not checked against the rulebook. */
 		verified: z.boolean(),
+		provenance: z
+			.strictObject({
+				source: z.string().min(1),
+				licence: z.string().min(1),
+				attribution: z.string().min(1),
+				retrievedAt: z.iso.datetime(),
+				snapshot: z.string().min(1),
+			})
+			.optional(),
+		unverifiedReasons: z.array(z.string().min(1)).min(1).optional(),
 	})
 	.superRefine((c, ctx) => {
 		const seen = new Set<string>();
@@ -181,7 +229,8 @@ export const competitionSchema = z
 			}
 			if (
 				play.type === "swiss" &&
-				play.wins + play.losses - 1 > play.size - 1
+				Math.min(play.maxRounds ?? Infinity, play.wins + play.losses - 1) >
+					play.size - 1
 			) {
 				issue(ctx, [...p, "size"], "more rounds than opponents");
 			}
@@ -192,6 +241,9 @@ export const competitionSchema = z
 				issue(ctx, [...p, "bestOf"], "one Bo per round");
 			}
 			if (play.type === "doubleElim") {
+				if (play.grandFinal === null && play.reset) {
+					issue(ctx, [...p, "reset"], "a reset needs a grand final");
+				}
 				const seeds = play.lowerSeeds;
 				const entering = seeds.reduce((a, b) => a + b, 0);
 				const upperSize = play.size - entering;
@@ -210,9 +262,13 @@ export const competitionSchema = z
 					if (!fits) issue(ctx, [...p, "drop"], "one drop per upper series");
 				}
 			}
-			if (s.entrants.kind === "standing" && s.entrants.to < s.entrants.from) {
-				issue(ctx, ["stages", i, "entrants", "to"], "empty range");
-			}
+			const sources = Array.isArray(s.entrants) ? s.entrants : [s.entrants];
+			sources.forEach((entry, index) => {
+				if (entry.kind !== "standing" || entry.to >= entry.from) return;
+				const path: (string | number)[] = ["stages", i, "entrants"];
+				if (Array.isArray(s.entrants)) path.push(index);
+				issue(ctx, [...path, "to"], "empty range");
+			});
 		});
 		if (new Set(c.tiebreak).size !== c.tiebreak.length) {
 			issue(ctx, ["tiebreak"], "repeated criterion");

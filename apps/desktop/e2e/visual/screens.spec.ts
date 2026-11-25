@@ -1,7 +1,7 @@
 import type { Page } from "@playwright/test";
 import { expect, test } from "../fixtures";
 import { playQuickDraftBo5, seedNextSeries } from "../quick-draft-flow";
-import { captureScreen } from "./capture";
+import { captureHovered, captureScreen } from "./capture";
 
 test.skip(
 	process.platform !== "linux",
@@ -42,7 +42,7 @@ test("Collapsed sidebar with the Caja tooltip and its shortcut", async ({
 	await appWindow.emulateMedia({ reducedMotion: "reduce" });
 	await appWindow.getByRole("button", { name: "Expandir" }).hover();
 	await expect(appWindow.getByRole("tooltip")).toContainText("Alt+B");
-	await captureScreen(appWindow, "sidebar-tooltip.png");
+	await captureHovered(appWindow, "sidebar-tooltip.png");
 });
 
 test("Mercado with the sidebar expanded", async ({ appWindow }) => {
@@ -213,8 +213,11 @@ test.describe("Quick draft", () => {
 				).toBeVisible();
 				await captureScreen(appWindow, "quick-draft-champion-card.png");
 				await appWindow.keyboard.press("Escape");
-				const blue = appWindow.getByRole("region", { name: /^Lado azul/ });
-				await blue.getByRole("button", { name: /Tidewren/ }).click();
+				// Tidewren sits on either side depending on the seeded side choice.
+				await appWindow
+					.getByRole("region", { name: /^Lado (azul|rojo)/ })
+					.getByRole("button", { name: /Tidewren/ })
+					.click();
 				const playerCard = appWindow.getByRole("group", {
 					name: /Ficha de jugador/,
 				});
@@ -244,6 +247,18 @@ test.describe("Quick draft", () => {
 				await appWindow.mouse.move(0, 0);
 				await captureScreen(appWindow, "quick-draft-ai-read.png");
 				if (!aiWasOpen) await aiRead.locator("summary").first().click();
+				// #435: a selected champion previews in the picking row until it is
+				// confirmed; with reduced motion it is marked instead of pulsing.
+				await appWindow
+					.getByRole("group", { name: "Campeones", exact: true })
+					.getByRole("button", { disabled: false })
+					.first()
+					.click();
+				await expect(appWindow.locator("[data-pending]")).toContainText(
+					"Eligiendo",
+				);
+				await appWindow.mouse.move(0, 0);
+				await captureScreen(appWindow, "quick-draft-pick-preview.png");
 			}
 			if (screen === "match") {
 				const panel = appWindow.getByRole("radiogroup", { name: "Panel" });

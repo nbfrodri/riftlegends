@@ -1,13 +1,19 @@
 import { describe, expect, it } from "vitest";
-import type { Fixed } from "../math";
+import { type Fixed, SCALE } from "../math";
 import { int } from "../rng/helpers";
 import { SCOPES } from "../rng/scopes";
 import { deriveSeed } from "../rng/seeds";
 import { createRng as rawRng } from "../rng/streams";
 import { choose, type DIFFICULTY, difficultyOf, type Scored } from "./choose";
-import { PROFILES } from "./profiles";
+import type { Profile } from "./profiles";
 
-const { balanced } = PROFILES;
+// A neutral profile: these tests are about the choice mechanics, not the calibrated base weights.
+const balanced: Profile = {
+	weights: {},
+	temperature: SCALE,
+	pool: 0,
+	wildcard: SCALE,
+};
 
 // Seeds go through deriveSeed, as in production: consecutive raw seeds give
 // correlated first draws.

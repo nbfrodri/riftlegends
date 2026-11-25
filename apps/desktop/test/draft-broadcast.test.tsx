@@ -131,6 +131,24 @@ describe("#419: the turn timer is a bar shrinking from both sides", () => {
 		expect(screen.getByRole("timer").textContent).toBe("00:30");
 	});
 
+	test("is a thick line with a soft glow in the side colour (#505)", async () => {
+		await start(true);
+		expect(screen.getByRole("timer").className).toMatch(/\bh-2\b/);
+		expect(bar().className).toContain(
+			`shadow-[0_0_8px_var(--color-side-${forgeSide()})]`,
+		);
+		expect(bar().dataset.urgent).toBeUndefined();
+	});
+
+	test("turns brighter in the last 10 seconds, with the countdown ticks (#505)", async () => {
+		await start(true);
+		await advance(pacing.turnMs - 10_000 - 1000);
+		expect(bar().dataset.urgent).toBeUndefined();
+		await advance(1000);
+		expect(bar().dataset.urgent).toBe("true");
+		expect(bar().className).toContain("brightness-125");
+	});
+
 	test("sits above the board, across both team columns and the pool", async () => {
 		await start(true);
 		const timer = screen.getByRole("timer");
@@ -156,4 +174,12 @@ describe("#419: the turn timer is a bar shrinking from both sides", () => {
 		expect(bar().style.transitionDuration).toBe("");
 		expect(screen.getByRole("timer").textContent).toBe("00:20");
 	});
+});
+
+test("the broadcast header does not repeat who has first pick; the team column already says it", async () => {
+	await start(false);
+	const live = screen.getByRole("status", { name: "Draft confirmation" });
+	const header = live.parentElement?.parentElement as HTMLElement;
+	expect(header.textContent).not.toMatch(/First pick/);
+	expect(screen.getAllByText("First pick")).toHaveLength(1);
 });

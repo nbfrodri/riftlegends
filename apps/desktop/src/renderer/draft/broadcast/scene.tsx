@@ -84,15 +84,6 @@ export function BroadcastScene() {
 			);
 	return (
 		<>
-			{view?.first && view.phase !== "roles" && (
-				<small
-					className={view.first === "blue" ? "text-side-blue" : "text-side-red"}
-				>
-					{t("draft.broadcast.first", {
-						side: t(`draft.side.column.${view.first}`),
-					})}
-				</small>
-			)}
 			<div
 				data-draft-lock={current?.position}
 				className={`relative min-w-0 overflow-hidden ${current ? "border-l-2 bg-panel px-3 py-1" : "w-0"} ${current?.team === view?.blue.team ? "border-side-blue" : "border-side-red"}`}

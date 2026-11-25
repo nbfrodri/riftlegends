@@ -56,8 +56,11 @@ export async function synchronizeCatalog({
 		}
 
 		for (const version of await candidatePatches(transport)) {
-			// A cache made before tiles is fetched again on its own patch.
-			const refresh = active && !active.tiles && version === active.version;
+			// A cache made before tiles or splashes is fetched again on its own patch.
+			const refresh =
+				active &&
+				(!active.tiles || !active.splashes) &&
+				version === active.version;
 			if (active && !newer(version, active.version) && !refresh)
 				return fallback;
 			const catalog = await prepareVersion(

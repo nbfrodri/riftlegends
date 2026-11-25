@@ -133,6 +133,7 @@ const match: MatchView = {
 				gold: 0,
 				damage: 0,
 				participation: 0,
+				vision: 40,
 				rating: 50,
 			})),
 			decisive: [],

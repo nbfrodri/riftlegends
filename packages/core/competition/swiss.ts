@@ -8,6 +8,8 @@ export interface SwissTeam {
 	readonly id: string;
 	/** Used to keep teams of one region apart in round 1. */
 	readonly region?: string;
+	/** One league can span several regions. */
+	readonly league?: string;
 }
 
 export interface SwissRules {
@@ -15,6 +17,8 @@ export interface SwissRules {
 	readonly wins: number;
 	/** Losses that eliminate. */
 	readonly losses: number;
+	/** Optional cutoff when the standings decide the next stage. */
+	readonly maxRounds?: number | undefined;
 	/** Bo of an ordinary series. */
 	readonly bestOf: number;
 	/** Bo of a series where a win qualifies or a loss eliminates. */
@@ -124,6 +128,9 @@ function findMatching<T>(
 
 const UINT32_MAX = 0xffffffff;
 const pairKey = (a: string, b: string) => (a < b ? `${a}|${b}` : `${b}|${a}`);
+const sameAffiliation = (a: SwissTeam, b: SwissTeam) =>
+	(a.region !== undefined && a.region === b.region) ||
+	(a.league !== undefined && a.league === b.league);
 
 /** Round-1 pots by seed: four equal pots meet 1 v 4 and 2 v 3; other sizes split top and bottom half. */
 function potOf(rank: number, size: number): number {
@@ -155,6 +162,8 @@ export function pairSwissRound(
 			`A Swiss stage needs an even number of teams, got ${teams.length}`,
 		);
 	}
+	if (rules.maxRounds !== undefined && played.length >= rules.maxRounds)
+		return null;
 	const rows = new Map(
 		swissStandings(teams, played, rules).map((row) => [row.id, row]),
 	);
@@ -206,12 +215,7 @@ export function pairSwissRound(
 				return (
 					potOf(seedOf.get(x.id) as number, teams.length) +
 						potOf(seedOf.get(y.id) as number, teams.length) ===
-						3 &&
-					!(
-						kept.includes("region") &&
-						x.region !== undefined &&
-						x.region === y.region
-					)
+						3 && !(kept.includes("region") && sameAffiliation(x, y))
 				);
 			}
 			return (
@@ -226,10 +230,7 @@ export function pairSwissRound(
 	// Report only the constraints the final pairing really breaks, in drop order.
 	const breaks = {
 		region: ([x, y]: [SwissTeam, SwissTeam]) =>
-			round === 1 &&
-			rules.avoid.includes("region") &&
-			x.region !== undefined &&
-			x.region === y.region,
+			round === 1 && rules.avoid.includes("region") && sameAffiliation(x, y),
 		rematch: ([x, y]: [SwissTeam, SwissTeam]) =>
 			rules.avoid.includes("rematch") && met.has(pairKey(x.id, y.id)),
 		record: ([x, y]: [SwissTeam, SwissTeam]) => !sameRecord(x.id, y.id),

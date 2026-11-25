@@ -1,5 +1,6 @@
 import type { MapSnapshot } from "@rift-legends/contracts";
 import { cleanup, fireEvent, screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { afterEach, expect, test, vi } from "vitest";
 import {
 	FaceToFace,
@@ -10,16 +11,23 @@ import { renderInLocale } from "./render-in-locale";
 const photos: Record<string, string> = {
 	"b-top": "rift-asset://photos/players/b-top.png",
 };
+/** Whether the official stat icons are cached; off by default (Lucide fallback). */
+const cache = vi.hoisted(() => ({ stats: false }));
 vi.mock("../src/renderer/assets", async (original) => ({
 	...(await original<typeof import("../src/renderer/assets")>()),
 	usePlayerPhotoSrc: (id: string) => photos[id],
+	useAssetSrc: (source: string, path: string) =>
+		cache.stats ? `rift-asset://${source}/${path}` : undefined,
 }));
 vi.mock("../src/renderer/draft/session", async (original) => ({
 	...(await original<typeof import("../src/renderer/draft/session")>()),
 	useDraftContent: () => "real",
 }));
 
-afterEach(cleanup);
+afterEach(() => {
+	cleanup();
+	cache.stats = false;
+});
 
 const side = {
 	gold: 0,
@@ -62,12 +70,15 @@ const lineup = new Map<string, LanePlayer>(
 		},
 	]),
 );
-const render = () =>
+/** Final vision scores, known once the game is over: 30 plus the index. */
+const vision = new Map(ids.map((id, i) => [id, 30 + i]));
+const render = (final?: ReadonlyMap<string, number>) =>
 	renderInLocale(
 		<FaceToFace
 			snapshot={snapshot}
 			lineup={lineup}
 			names={{ blue: "Forge", red: "Shoal" }}
+			vision={final}
 		/>,
 	);
 
@@ -151,4 +162,156 @@ test("each player shows their official photo, with a named silhouette as fallbac
 			name: "Portrait of P6",
 		}).tagName,
 	).toBe("svg");
+});
+
+test("#502: a bigger face to face, with a 48 px photo and a 28 px champion badge in fixed tracks", async () => {
+	await render();
+	for (const cell of [...playerCells("blue"), ...playerCells("red")]) {
+		const photo = cell.querySelector<HTMLElement>(
+			"[data-part=photo] [role=img], [data-part=photo] img",
+		);
+		expect(photo?.getAttribute("class")).toMatch(/\bh-12\b/);
+		expect(photo?.getAttribute("class")).toMatch(/\bw-\[38px\]/);
+		const badge = cell.querySelector<HTMLElement>("[data-part=champion]");
+		expect(badge?.className).toMatch(/\[&_\[role=img\]\]:size-7\b/);
+	}
+	// Taller rows that grow with the window, never below the 1280×720 fit.
+	const rows = within(screen.getByRole("table", { name: "Face to face" }))
+		.getAllByRole("row")
+		.slice(2);
+	for (const row of rows)
+		expect(row.className).toMatch(/\bh-\[clamp\(56px,8\.4vh,72px\)\]/);
+	// Fixed stat tracks, mirrored around the lane column.
+	const widths = [
+		...document.querySelectorAll<HTMLElement>("colgroup col"),
+	].map((col) => col.className);
+	expect(widths).toEqual([
+		"",
+		"w-[66px]",
+		"w-[44px]",
+		"w-[60px]",
+		"w-[80px]",
+		"w-[60px]",
+		"w-[44px]",
+		"w-[66px]",
+		"",
+	]);
+});
+
+test("#502: K/D/A, CS and gold are 15 px tabular numbers in centred cells", async () => {
+	await render();
+	const body = within(screen.getByRole("table", { name: "Face to face" }))
+		.getAllByRole("row")
+		.slice(2);
+	for (const row of body) {
+		const stats = [...row.querySelectorAll("td")].filter(
+			(cell) => !cell.querySelector("[data-lane-player]"),
+		);
+		expect(stats).toHaveLength(6);
+		for (const cell of stats) {
+			expect(cell.className).toMatch(/\btabular-nums\b/);
+			expect(cell.className).toMatch(/\btext-\[15px\]/);
+		}
+	}
+});
+
+test("#502: player names and K/D/A use the normal text colour, never the side colour", async () => {
+	await render();
+	const body = within(screen.getByRole("table", { name: "Face to face" }))
+		.getAllByRole("row")
+		.slice(2);
+	for (const row of body) {
+		const kda = [...row.querySelectorAll("td")].filter((cell) =>
+			/^\d+\/\d+\/\d+$/.test(cell.textContent ?? ""),
+		);
+		expect(kda).toHaveLength(2);
+		for (const cell of kda) expect(cell.className).not.toMatch(/--side/);
+	}
+	for (const cell of [...playerCells("blue"), ...playerCells("red")]) {
+		const name = cell.querySelector<HTMLElement>("[data-part=name]");
+		expect(name?.outerHTML).not.toMatch(/--side/);
+		expect(name?.firstElementChild?.className).toMatch(/\btext-text\b/);
+	}
+});
+
+test("#509: stat headers give the icon room above its label, centred with even padding on both sides", async () => {
+	await render();
+	const headers = [
+		...screen
+			.getByRole("table", { name: "Face to face" })
+			.querySelectorAll<HTMLElement>("thead th[scope=col]"),
+	].filter((th) => th.querySelector("svg"));
+	expect(headers).toHaveLength(6);
+	for (const th of headers) {
+		expect(th.className).toMatch(/\bpy-1!/);
+		expect(th.className).not.toMatch(/\bpy-0!/);
+		const stack = th.firstElementChild as HTMLElement;
+		expect(stack.className).toMatch(/\bflex-col\b/);
+		expect(stack.className).toMatch(/\bgap-1\b/);
+	}
+	expect(new Set(headers.map((th) => th.className)).size).toBe(1);
+});
+
+const officialVision = "rift-asset://cdragon/stats/vision.svg";
+
+test("#510: once the game is over, only the jungle and support rows show the vision score with the official icon", async () => {
+	cache.stats = true;
+	await render(vision);
+	const blue = playerCells("blue");
+	const red = playerCells("red");
+	const shown = (cell: HTMLElement) =>
+		cell.querySelector<HTMLElement>("[data-vision]");
+	for (const [row, role] of roles.entries()) {
+		for (const [cells, offset] of [
+			[blue, 0],
+			[red, 5],
+		] as const) {
+			const cell = cells[row] as HTMLElement;
+			const value = shown(cell);
+			if (role === "jungle" || role === "support") {
+				expect(value?.textContent).toBe(String(30 + offset + row));
+				expect(value?.querySelector("img")?.getAttribute("src")).toBe(
+					officialVision,
+				);
+				expect(
+					within(cell).getByText(`Vision ${30 + offset + row}`).className,
+				).toMatch(/\bsr-only\b/);
+			} else {
+				expect(value).toBeNull();
+			}
+		}
+	}
+});
+
+test("#510: without the cache the vision score uses Lucide's eye", async () => {
+	await render(vision);
+	const [, jungle] = playerCells("blue");
+	expect(
+		jungle?.querySelector("[data-vision] svg")?.getAttribute("class"),
+	).toMatch(/\blucide-eye\b/);
+});
+
+test("#510: while the game plays, the final vision score is not shown", async () => {
+	await render();
+	expect(document.querySelector("[data-vision]")).toBeNull();
+	await userEvent.setup().hover(screen.getByText("P1"));
+	expect((await screen.findByRole("tooltip")).textContent).not.toMatch(
+		/Vision/,
+	);
+});
+
+test("#510: every player's tooltip shows their vision score with the official icon", async () => {
+	cache.stats = true;
+	const user = userEvent.setup();
+	await render(vision);
+	const names = ["P2", "P7"].map((handle) => screen.getByText(handle));
+	for (const [i, name] of names.entries()) {
+		await user.hover(name);
+		const tooltip = await screen.findByRole("tooltip");
+		await within(tooltip).findByText(`Vision ${i === 0 ? 32 : 37}`);
+		expect(tooltip.querySelector("img")?.getAttribute("src")).toBe(
+			officialVision,
+		);
+		await user.unhover(name);
+	}
 });

@@ -1,11 +1,43 @@
 @import "@rift-legends/ui-kit/styles.css";
 @source "./";
 
+/*
+ * Game cursors (#515): Kenney Cursor Pack, CC0, in public/cursors. Hotspots
+ * are the sword tip (4 3) and the gauntlet fingertip (2 2). Text, resize and
+ * not-allowed stay the system ones. One rule on the root; "Game cursor" in
+ * Settings sets data-game-cursor="off" to bring the system cursors back.
+ */
+:root:not([data-game-cursor="off"]) {
+	--cursor-arrow:
+		image-set(url("/cursors/arrow.png") 1x, url("/cursors/arrow@2x.png") 2x) 4 3,
+		default;
+	--cursor-pointer:
+		image-set(url("/cursors/pointer.png") 1x, url("/cursors/pointer@2x.png") 2x)
+		2 2,
+		pointer;
+	cursor: var(--cursor-arrow);
+}
+@utility cursor-pointer {
+	cursor: var(--cursor-pointer, pointer);
+}
+@utility cursor-default {
+	cursor: var(--cursor-arrow, default);
+}
+a:any-link {
+	cursor: var(--cursor-pointer, pointer);
+}
+
 /* Short windows (the 1280x720 minimum), as in the approved mockups. */
 @custom-variant short (@media (max-height: 740px));
 
 .startup-screen[hidden] {
 	display: none;
+	opacity: 0;
+}
+
+/* The stamp layers end hidden, so without animation the ban is already final. */
+.draft-ban-colour,
+.draft-ban-mark {
 	opacity: 0;
 }
 
@@ -20,6 +52,62 @@
 	}
 	.startup-progress {
 		animation: startup-scan 1.2s ease-in-out infinite alternate;
+	}
+	/* What is still being chosen on the draft board (#435, #436). */
+	.draft-pending {
+		animation: draft-pending 1.2s ease-in-out infinite;
+	}
+	@keyframes draft-pending {
+		50% {
+			opacity: 0.45;
+		}
+	}
+	/* A new ban (#436): enters, greys out and is stamped; timing in pacing.ts. */
+	.draft-ban-enter {
+		animation: draft-ban-enter var(--ban-ms) cubic-bezier(0.23, 1, 0.32, 1) both;
+	}
+	.draft-ban-colour {
+		animation: draft-ban-colour var(--ban-ms) ease-out both;
+	}
+	.draft-ban-mark {
+		animation: draft-ban-mark var(--ban-ms) ease-out both;
+	}
+	@keyframes draft-ban-enter {
+		from {
+			opacity: 0;
+			transform: scale(1.18);
+		}
+		35% {
+			opacity: 1;
+			transform: scale(1);
+		}
+	}
+	@keyframes draft-ban-colour {
+		0%,
+		35% {
+			opacity: 1;
+		}
+		100% {
+			opacity: 0;
+		}
+	}
+	@keyframes draft-ban-mark {
+		0%,
+		40% {
+			opacity: 0;
+			transform: scale(1.8);
+		}
+		65% {
+			opacity: 1;
+			transform: scale(1);
+		}
+		85% {
+			opacity: 1;
+		}
+		100% {
+			opacity: 0;
+			transform: scale(1);
+		}
 	}
 	@keyframes startup-scan {
 		to {

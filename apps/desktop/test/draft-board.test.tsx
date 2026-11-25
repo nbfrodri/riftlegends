@@ -55,6 +55,14 @@ describe("draft board (U3)", () => {
 
 		expect(screen.getByText("Ban 1 · Forge")).toBeTruthy();
 		expect(confirm().hasAttribute("disabled")).toBe(true);
+		// #436: the slot of the ban being chosen is marked from the start.
+		const blueSlots = within(
+			within(screen.getByRole("region", { name: "Blue side Forge" })).getByRole(
+				"list",
+				{ name: "Bans" },
+			),
+		).getAllByRole("listitem");
+		expect(blueSlots[0]?.getAttribute("aria-current")).toBe("step");
 		const name = "The Unforgotten Guardian of Cragbell";
 		await user.type(screen.getByRole("searchbox"), "guARDian of Crag");
 		expect(
@@ -265,5 +273,107 @@ describe("draft board (U3)", () => {
 		// still catches that without failing on CI timing noise (Windows hit
 		// 0.36 × mount). The Electron E2E measures the actual S1 frame budget.
 		expect(Math.min(...samples)).toBeLessThan(mount / 2);
+	});
+});
+
+describe("#469: a click on empty space clears the selection", () => {
+	const pool = () => screen.getByRole("region", { name: "Champions" });
+	const blue = () => screen.getByRole("region", { name: "Blue side Forge" });
+	const red = () => screen.getByRole("region", { name: /^Red side/ });
+	const rows = (side: HTMLElement) =>
+		within(within(side).getAllByRole("list")[0] as HTMLElement).getAllByRole(
+			"button",
+		);
+	const pressedRows = () =>
+		[...rows(blue()), ...rows(red())].filter(
+			(row) => row.getAttribute("aria-pressed") === "true",
+		);
+
+	test("clears the champion, its pick preview and the player; another click selects again", async () => {
+		const user = userEvent.setup();
+		await renderWithDraftCore(<DraftScreen />);
+		await toFirstPick(user);
+		const free = firstAvailable();
+		const name = free.getAttribute("aria-label") ?? "";
+		await user.click(free);
+		const rival = rows(red())[1] as HTMLElement;
+		await user.click(rival);
+		const first = rows(blue())[0] as HTMLElement;
+		expect(within(first).getByRole("img", { name })).toBeTruthy();
+		expect(pressedRows()).toEqual([rival]);
+
+		await user.click(pool());
+
+		expect(free.getAttribute("aria-pressed")).toBe("false");
+		expect(within(first).queryByRole("img", { name })).toBeNull();
+		expect(confirm().hasAttribute("disabled")).toBe(true);
+		expect(pressedRows()).toEqual([]);
+		// The player card closes with the selection instead of staying open
+		// and empty (user, 25-11).
+		expect(
+			(
+				screen.getByRole("group", {
+					name: /^Player card/,
+				}) as HTMLDetailsElement
+			).open,
+		).toBe(false);
+
+		// Clicks on a champion or a player still select, as before.
+		await user.click(free);
+		await user.click(rival);
+		expect(free.getAttribute("aria-pressed")).toBe("true");
+		expect(pressedRows()).toEqual([rival]);
+		// The empty part of a team column is empty space too.
+		await user.click(blue());
+		expect(free.getAttribute("aria-pressed")).toBe("false");
+		expect(pressedRows()).toEqual([]);
+	});
+
+	test("clicks on controls, the turn bar and the inspection bars keep it", async () => {
+		const user = userEvent.setup();
+		await renderWithDraftCore(<DraftScreen />);
+		await toBoard(user);
+		const champion = tile("Cragbell");
+		await user.click(champion);
+		const rival = rows(red())[2] as HTMLElement;
+		await user.click(rival);
+
+		const card = screen.getByRole("group", { name: /^Player card/ });
+		const ai = screen.getByRole("group", { name: /^AI decisions/ });
+		const targets = [
+			() => screen.getByRole("searchbox"),
+			() => screen.getByRole("button", { name: "All roles" }),
+			() => screen.getByText("Ban 1 · Forge"),
+			() => screen.getByRole("heading", { name: "Cragbell" }),
+			() => within(card).getByText("Player card", { exact: true }),
+			() => card.querySelector('[data-slot="panel-body"]') as HTMLElement,
+			() => within(ai).getByText("AI decisions", { exact: true }),
+		];
+		for (const target of targets) {
+			await user.click(target());
+			expect(champion.getAttribute("aria-pressed")).toBe("true");
+			expect(pressedRows()).toEqual([rival]);
+		}
+		expect(confirm().hasAttribute("disabled")).toBe(false);
+	});
+
+	test("Escape on the board clears it too, but first closes an open champion card", async () => {
+		const user = userEvent.setup();
+		await renderWithDraftCore(<DraftScreen />);
+		await toBoard(user);
+		const champion = tile("Cragbell");
+		await user.click(champion);
+		fireEvent.contextMenu(champion);
+		const card = await screen.findByRole("region", {
+			name: "Champion card: Cragbell",
+		});
+
+		await user.keyboard("{Escape}");
+		expect(card.isConnected).toBe(false);
+		expect(champion.getAttribute("aria-pressed")).toBe("true");
+
+		await user.keyboard("{Escape}");
+		expect(champion.getAttribute("aria-pressed")).toBe("false");
+		expect(confirm().hasAttribute("disabled")).toBe(true);
 	});
 });

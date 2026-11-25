@@ -148,3 +148,14 @@ Cada decisión cambia los goldens de draft: el primer PR que la usa sube `SIM_VE
 2. Las **12 personalidades** de la tabla entran en la Fase 2.
 3. Explicación: los 3 motivos principales al pasar el ratón; el desglose completo en el resumen del draft.
 4. Reparto: Claude hace los issues 1, 5 y 8; Codex (gpt-6.2-astra, high) los 2, 3, 4, 6 y 7.
+
+## Calibración con drafts pro (#468)
+
+Los pesos se ajustan con datos, no a mano. Los drafts salen del snapshot de Leaguepedia (CC BY-SA) de `packages/core/content/real`; la app no consulta Leaguepedia.
+
+- **Banco:** 47.000 turnos de unas 2.400 partidas de las seis ligas con picks, vetos, orden y lado. La regla fearless se infiere por torneo: sin picks repetidos en ninguna serie, es hard.
+- **Métrica:** en cada turno se puntúan todos los campeones libres con los componentes de la IA, se pesan con la personalidad del coach real y se mira el puesto del pick o veto real (top 1 y top 3, sin lookahead). Informe por fase, liga y personalidad.
+- **Búsqueda:** descenso por coordenadas con semilla sobre una muestra del entrenamiento, en punto fijo. Meta queda en ×1; el resto de la base va de ×0,25 a ×1,2. Los pesos propios de cada personalidad solo se tocan entre ×0,7 y ×1,4 y se conservan si no empeoran su validación.
+- **Se aplica solo si mejora el top 3 de validación.** `pnpm calibrate` reproduce el informe (`CALIBRATION_OUT` elige el fichero).
+- **Variedad:** cada personalidad sigue eligiendo distinto en los casos de referencia (`profiles.test.ts`); `shipped.test.ts` fija que los pesos actuales mejoran los anteriores en drafts fuera de la búsqueda.
+

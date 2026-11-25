@@ -2,7 +2,7 @@
 
 Capturas de pantalla (`toHaveScreenshot`) de cuatro pantallas del shell y de las ocho del draft rápido (de la configuración al resultado de la serie, con semilla fija) a 1366x768 y con el sistema en `es-ES`: Draft con la barra lateral plegada (y, aparte, con el tooltip Caja abierto sobre «Expandir»), Campeones con la lista de Top (y, aparte, con el detalle de un campeón abierto), Mercado con la barra expandida y Ajustes (pantalla entera y, aparte, la sección «Contenido» en su estado sin conexión: «Sin descargar»). También se captura la pantalla de carga inicial con el contenido real todavía sin preparar (`startup.spec.ts`). Corren con `pnpm e2e:visual`, fuera del `pnpm e2e` normal, y solo en Linux (en otros sistemas el test se omite).
 
-El tablero del draft se captura también con la ficha de campeón fijada, con la ficha de jugador abierta y con la «Lectura de la IA» abierta, y en otra serie con el tiempo por turno activado (barra del temporizador llena: el test congela `performance.now`). «Lado y orden» se captura también antes del mapa 3, con los campeones bloqueados agrupados por mapa.
+El tablero del draft se captura también con la ficha de campeón fijada, con la ficha de jugador abierta, con la «Lectura de la IA» abierta y con un campeón elegido sin confirmar (vista previa en la fila del jugador), y en otra serie con el tiempo por turno activado (barra del temporizador llena: el test congela `performance.now`). «Lado y orden» se captura también antes del mapa 3, con los campeones bloqueados agrupados por mapa.
 
 ## Por qué solo en el CI
 
@@ -12,7 +12,7 @@ La tipografía se rasteriza distinto en cada distribución, así que las captura
 
 `maxDiffPixelRatio: 0.002` (0,2 % de los píxeles, unos 2.100 a 1366x768): absorbe el ruido de suavizado de bordes, pero no un elemento movido ni un color distinto. Las animaciones están desactivadas y el cursor de texto oculto. Se configura en `playwright.visual.config.ts`.
 
-Playwright fija el tamaño del área visible del renderer. Antes de cada captura, `captureScreen` comprueba que las fuentes Caja estén cargadas y espera a que se decodifiquen las imágenes de la pantalla.
+Playwright fija el tamaño del área visible del renderer. Antes de cada captura, `captureScreen` oculta y muestra el `body` para repintar desde cero (Chromium conserva trazas del pintado anterior y los bordes redondeados salían 1 nivel distintos entre ejecuciones, #501), espera a dos fotogramas idénticos byte a byte, quita el puntero a todos los elementos (Xvfb deja el puntero real a mitad de pantalla y a veces dejaba un botón en hover; solo el tooltip usa `captureHovered`) y comprueba que las fuentes Caja estén cargadas y espera a que se decodifiquen las imágenes de la pantalla.
 
 ## Puesta en marcha (referencias iniciales)
 

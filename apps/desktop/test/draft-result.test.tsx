@@ -125,7 +125,7 @@ describe("game result (U9)", () => {
 	test("shows the winner and every player's stats from match.view", async () => {
 		const core = await renderResult("game1");
 		const table = await screen.findByRole("table", { name: "Map 1 stats" });
-		for (const name of ["K/D/A", "Gold", "Damage"]) {
+		for (const name of ["K/D/A", "Gold", "Damage", "Vision"]) {
 			expect(
 				within(table)
 					.getByRole("columnheader", { name })
@@ -140,6 +140,17 @@ describe("game result (U9)", () => {
 		expect(
 			screen.getByText(`Victory for ${capital(ended.winner)}`),
 		).toBeTruthy();
+		// #510: vision uses the scoreboard's eye (Lucide's without the cache);
+		// its header is the icon alone, named and in the Caja tooltip, so the
+		// champion keeps its room at 1280×720.
+		const vision = within(table).getByRole("columnheader", { name: "Vision" });
+		expect(vision.querySelector("svg")?.getAttribute("class")).toMatch(
+			/\blucide-eye\b/,
+		);
+		expect(within(vision).getByText("Vision").className).toMatch(/\bsr-only\b/);
+		expect(
+			vision.querySelector<HTMLElement>("[data-tooltip]")?.dataset.tooltip,
+		).toBe("Vision");
 		const rows = within(table).getAllByRole("row").slice(1);
 		expect(rows).toHaveLength(10);
 		ended.players.forEach((p, i) => {
@@ -159,6 +170,7 @@ describe("game result (U9)", () => {
 				`${p.kills}/${p.deaths}/${p.assists}`,
 				grouped(p.gold),
 				grouped(p.damage),
+				grouped(p.vision),
 				`${Math.round(p.participation / 100)} %`,
 				String(p.rating),
 			]);
@@ -242,14 +254,14 @@ describe("game result (U9)", () => {
 			expect(row.textContent).toContain(
 				line.rating === 0
 					? "Even"
-					: `${points} ${points === 1 ? "point" : "points"} more`,
+					: `${points} ${points === 1 ? "point" : "points"} above`,
 			);
-			const gold = line.gold * (line.rating < 0 ? -1 : 1);
 			expect(row.textContent).toContain(
-				gold === 0
+				line.gold === 0
 					? "Even"
-					: `${gold > 0 ? "+" : "−"}${grouped(Math.abs(gold))} gold`,
+					: `${grouped(Math.abs(line.gold))} gold more than`,
 			);
+			expect(row.textContent).not.toMatch(/[+−]\d/);
 			expect(points > 15).toBe(line.gap);
 		});
 		const gaps = lines.flatMap((l, i) => (l.gap ? [ROLES[i]] : []));

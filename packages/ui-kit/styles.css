@@ -50,6 +50,27 @@
 	}
 }
 
+/* Vertical lists with a native scrollbar (#471). The bar's space stays
+   reserved, so the content keeps its width with or without scrolling.
+   `scroll-edge` is for a scroller that is its own panel: its bar already sits
+   at the panel's edge. `scroll-edge-<padding>` is for a scroller inside a
+   panel with that right padding: it reaches into the padding (bar plus an
+   8 px gap, at most the padding) so the bar sits at or near the panel's edge,
+   a grid gap away from the content, and the content stays aligned with the
+   rest of the panel. Spacing never touches the left or vertical sides. */
+@utility scroll-edge {
+	overflow-y: auto;
+	scrollbar-gutter: stable;
+}
+
+@utility scroll-edge-* {
+	--scroll-reach: min(--value(--spacing-*, [*]), 16px);
+	overflow-y: auto;
+	scrollbar-gutter: stable;
+	margin-right: calc(var(--scroll-reach) * -1);
+	padding-right: max(0px, calc(var(--scroll-reach) - 8px));
+}
+
 /* The press state of every Caja control (#376): darker and 1 px lower while
    held, never when disabled; with reduced motion it only darkens. */
 @utility press {

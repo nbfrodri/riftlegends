@@ -1,16 +1,32 @@
+import { readFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { isAbsolute, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
 import { Client } from "./client.ts";
 import { history } from "./history.ts";
+import { internationals } from "./internationals.ts";
+import { writeLeagueFormats } from "./league-formats.ts";
 import { writeLeagueLogos } from "./league-logos.ts";
 import { writeLogos } from "./logos.ts";
 import { nationalities } from "./nationality.ts";
 import { writePhotos } from "./photos.ts";
+import { seasonOf } from "./season.ts";
 import { snapshot } from "./snapshot.ts";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
+
+/** Year of the six league snapshots: the season the international events share. */
+async function snapshotSeason(dir: string) {
+	const snapshots = await Promise.all(
+		["cblol", "lck", "lcp", "lcs", "lec", "lpl"].map(async (league) =>
+			JSON.parse(await readFile(join(dir, `${league}.json`), "utf8")),
+		),
+	);
+	const season = seasonOf(snapshots);
+	if (!season) throw new Error("The league snapshots have no season");
+	return season;
+}
 
 try {
 	const { values, positionals } = parseArgs({
@@ -24,8 +40,10 @@ try {
 	});
 	if (values.help) {
 		console.log(
-			"pnpm data:(snapshot|logos|photos|leagues) [--offline] [--cache-dir <path>] [--max-attempts <n>]",
+			"pnpm data:(snapshot|logos|photos|leagues|league-formats|internationals) [--offline] [--cache-dir <path>] [--max-attempts <n>]",
 		);
+	} else if (positionals[0] === "league-formats") {
+		writeLeagueFormats();
 	} else {
 		const cacheDir = resolve(
 			values["cache-dir"] ??
@@ -67,6 +85,23 @@ try {
 			console.log(`${result.photos} of ${result.players} player photos`);
 			for (const miss of result.unmatched)
 				console.log(`unmatched ${miss.player}: ${miss.reason}`);
+		} else if (positionals[0] === "internationals") {
+			const season = await snapshotSeason(outputDir);
+			const result = await internationals(
+				{
+					...imageOptions,
+					fetch: (input, init) => {
+						console.error(
+							`Fetching ${new URL(String(input)).searchParams.get("tables")}`,
+						);
+						return fetch(input, init);
+					},
+				},
+				season,
+			);
+			console.log(
+				`${result.matches} series in ${result.events.join(", ")} (${season})`,
+			);
 		} else if (positionals[0] === "leagues") {
 			const result = await writeLeagueLogos(imageOptions);
 			console.log(`${result.logos} of ${result.total} league logos`);

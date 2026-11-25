@@ -1,8 +1,16 @@
 import type { DraftView, SeriesOptions, Side } from "@rift-legends/contracts";
 import { Button } from "@rift-legends/ui-kit/components/button";
 import { Check } from "lucide-react";
-import { memo, useCallback, useMemo, useState } from "react";
+import {
+	type KeyboardEvent,
+	type MouseEvent,
+	memo,
+	useCallback,
+	useMemo,
+	useState,
+} from "react";
 import { useTranslation } from "react-i18next";
+import { playSound } from "../../sound";
 import { CountryFlag } from "../country-flag";
 import { teamName, useDraftSession } from "../session";
 import { TurnTimer } from "../turn-controls";
@@ -40,6 +48,15 @@ function usePool(view: DraftView, options: SeriesOptions) {
 	}, [view.availability, options.champions, options.positions]);
 }
 
+/** Clicks here keep the selection: champions, players, controls and open panels (#469). */
+const KEEPS_ON_CLICK =
+	"button, a, input, select, textarea, label, details, [data-champion-card], [data-keep-selection]";
+/** Escape here belongs to the control: search, inspection bars and the champion card. */
+const KEEPS_ON_ESCAPE =
+	"input, select, textarea, details, [data-champion-card]";
+const inside = (target: EventTarget, selector: string) =>
+	target instanceof Element && !!target.closest(selector);
+
 /** The bar under the grid: whose turn it is, the selection and Confirm. */
 function TurnBar(props: {
 	turn: Turn;
@@ -70,7 +87,10 @@ function TurnBar(props: {
 					team,
 				});
 	return (
-		<div className="-mx-[15px] mt-auto flex items-center justify-between gap-3.5 border-line border-t bg-surface px-[15px] py-[9px]">
+		<div
+			data-keep-selection
+			className="-mx-[15px] mt-auto flex items-center justify-between gap-3.5 border-line border-t bg-surface px-[15px] py-[9px]"
+		>
 			<div aria-live="polite" className="min-w-0">
 				<p className="font-semibold text-[11px] text-action uppercase tracking-[0.055em]">
 					{label}
@@ -89,6 +109,7 @@ function TurnBar(props: {
 				)}
 			</div>
 			<Button
+				data-silent-click
 				disabled={!props.mine || !props.selectedName || busy}
 				onClick={() => void confirm()}
 			>
@@ -107,7 +128,8 @@ function TurnBar(props: {
 export function DraftBoard() {
 	const { view, options, mine, send } = useDraftSession();
 	const [selected, setSelected] = useState<string | null>(null);
-	const [player, setPlayer] = useState<PlayerRef | null>(null);
+	// `undefined` shows the user's mid until a click; `null` is a cleared card.
+	const [player, setPlayer] = useState<PlayerRef | null | undefined>();
 	const [cardOpen, setCardOpen] = useState(false);
 	const myMid = useMemo<PlayerRef | null>(
 		() => (mine ? { team: mine, role: "mid" } : null),
@@ -115,13 +137,37 @@ export function DraftBoard() {
 	);
 	if (!view) throw new Error("The draft board needs a series");
 	const pool = usePool(view, options);
+	const select = useCallback((id: string) => {
+		setSelected(id);
+		playSound("select");
+	}, []);
 
 	const showPlayer = useCallback((ref: PlayerRef) => {
 		setPlayer(ref);
 		setCardOpen(true);
 	}, []);
 
-	const shown = player ?? myMid;
+	const shown = player === undefined ? myMid : player;
+
+	// One handler for the whole board, none per tile (S1): a click on empty
+	// space, or Escape with nothing to close, clears the champion and the player.
+	// The player card closes with it instead of staying open and empty.
+	const clear = () => {
+		setSelected(null);
+		setPlayer(null);
+		setCardOpen(false);
+	};
+	const clearOnClick = (event: MouseEvent) => {
+		if (!inside(event.target, KEEPS_ON_CLICK)) clear();
+	};
+	const clearOnEscape = (event: KeyboardEvent<HTMLDivElement>) => {
+		if (
+			event.key === "Escape" &&
+			!inside(event.target, KEEPS_ON_ESCAPE) &&
+			!event.currentTarget.querySelector("[data-champion-card]")
+		)
+			clear();
+	};
 	const turn = draftTurn(view);
 	const myTurn = turn !== null && turn.team === mine;
 	const choice = pool.find((c) => c.id === selected && c.unavailable === null);
@@ -146,7 +192,9 @@ export function DraftBoard() {
 				team={team}
 				options={options}
 				current={picking}
-				preview={picking === null ? null : (choice?.id ?? null)}
+				banning={turn?.action === "ban" && turn.side === side}
+				// The selection previews in the picking row or the active ban slot.
+				preview={myTurn && turn.side === side ? (choice?.id ?? null) : null}
 				selected={shown?.team === team.team ? shown.role : null}
 				onPlayer={showPlayer}
 			/>
@@ -154,7 +202,12 @@ export function DraftBoard() {
 	};
 
 	return (
-		<>
+		// biome-ignore lint/a11y/noStaticElementInteractions: clears the selection on empty space; every control keeps its own handler.
+		<div
+			className="flex flex-1 flex-col gap-gap short:gap-3"
+			onClick={clearOnClick}
+			onKeyDown={clearOnEscape}
+		>
 			<Inspection
 				player={shown}
 				red={view.red.team}
@@ -176,7 +229,7 @@ export function DraftBoard() {
 					<ChampionPool
 						champions={pool}
 						selected={choice?.id ?? null}
-						onSelect={setSelected}
+						onSelect={select}
 					/>
 					{turn && (
 						<TurnBar
@@ -190,7 +243,7 @@ export function DraftBoard() {
 				</section>
 				{column("red")}
 			</ChampionInspection>
-		</>
+		</div>
 	);
 }
 

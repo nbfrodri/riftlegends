@@ -185,6 +185,7 @@ describe("match.ended", () => {
 		gold: 14200,
 		damage: 28500,
 		participation: 8125,
+		vision: 40,
 		rating: 84,
 	};
 	const fact = {

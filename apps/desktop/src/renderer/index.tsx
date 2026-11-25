@@ -7,8 +7,10 @@ import { I18nextProvider } from "react-i18next";
 import { AssetsProvider } from "./assets";
 import { CoreProvider } from "./core";
 import { CoreProbe } from "./core/probe";
+import { initGameCursor } from "./cursor/settings";
 import { initialLocale } from "./language";
 import { createAppRouter } from "./router";
+import { ButtonClickSound } from "./sound/button-click";
 import { TitleBar } from "./title-bar";
 
 // Set by main only in the E2E runs of plan 04.
@@ -16,6 +18,7 @@ const probe =
 	new URLSearchParams(window.location.search).get("probe") === "core";
 
 async function start(root: HTMLElement) {
+	initGameCursor();
 	const locale = await initialLocale(() => window.riftlegends.systemLocale());
 	const i18n = await createI18n(locale);
 	document.documentElement.lang = i18n.language;
@@ -24,6 +27,7 @@ async function start(root: HTMLElement) {
 			<QueryClientProvider client={new QueryClient()}>
 				<CoreProvider api={window.riftlegends.core}>
 					<AssetsProvider api={window.riftlegends.assets}>
+						<ButtonClickSound />
 						<TooltipProvider>
 							<div className="flex h-dvh flex-col">
 								<TitleBar controls={window.riftlegends.window} />
