@@ -73,3 +73,46 @@ test("opens from the complete installed catalog during the background update che
 		),
 	).toBeTruthy();
 });
+
+test("#555: holds the loading screen while the cache is incomplete, then opens", async () => {
+	const assets = fakeAssets(
+		{
+			state: "syncing",
+			progress: { completed: 2, total: 5, incomplete: true },
+		},
+		testCatalog(ids),
+	);
+	await open(assets);
+	expect(
+		(await screen.findByRole("progressbar")).getAttribute("aria-valuenow"),
+	).toBe("2");
+	expect(screen.getByText("Downloading…")).toBeTruthy();
+	expect(screen.queryByRole("navigation")).toBeNull();
+	await act(async () => assets.finish(ready));
+	expect(
+		await screen.findByRole(
+			"heading",
+			{ name: "Set up series" },
+			{ timeout: 8000 },
+		),
+	).toBeTruthy();
+});
+
+test("#555: offline with an incomplete cache shows a notice and lets the player continue", async () => {
+	await open(
+		fakeAssets(
+			{ state: "ready", version: "16.23", incomplete: true },
+			testCatalog(ids),
+		),
+	);
+	expect(await screen.findByText(/official images and sounds/i)).toBeTruthy();
+	expect(screen.queryByRole("navigation")).toBeNull();
+	await userEvent.click(screen.getByRole("button", { name: "Continue" }));
+	expect(
+		await screen.findByRole(
+			"heading",
+			{ name: "Set up series" },
+			{ timeout: 8000 },
+		),
+	).toBeTruthy();
+});
