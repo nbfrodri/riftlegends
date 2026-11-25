@@ -45,11 +45,11 @@ describe("realTimelinesSchema", () => {
 			}),
 		).toThrow();
 	});
-	it("rejects levels outside 1 to 18 and basis points above 10000", () => {
+	it("rejects levels outside 1 to 20 and basis points above 10000", () => {
 		expect(() =>
 			realTimelinesSchema.parse({
 				...file,
-				levelCurve: { ...file.levelCurve, top: [10, 200] },
+				levelCurve: { ...file.levelCurve, top: [10, 210] },
 			}),
 		).toThrow();
 		expect(() =>
