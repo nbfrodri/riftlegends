@@ -35,9 +35,23 @@
 			"play": {
 				"type": "doubleElim",
 				"size": 4,
-				"upper": [5, 5],
-				"lower": [5, 5],
-				"drop": [[0, 0], [1]],
+				"upper": [
+					5,
+					5
+				],
+				"lower": [
+					5,
+					5
+				],
+				"drop": [
+					[
+						0,
+						0
+					],
+					[
+						1
+					]
+				],
 				"lowerSeeds": [],
 				"grandFinal": 5,
 				"reset": false
@@ -133,7 +147,10 @@
 				"bestOf": 1,
 				"decisiveBestOf": 3,
 				"round1": "pots",
-				"avoid": ["region", "rematch"]
+				"avoid": [
+					"region",
+					"rematch"
+				]
 			},
 			"draw": {
 				"pots": 4
@@ -156,7 +173,11 @@
 			"play": {
 				"type": "singleElim",
 				"size": 8,
-				"bestOf": [5, 5, 5]
+				"bestOf": [
+					5,
+					5,
+					5
+				]
 			}
 		}
 	],

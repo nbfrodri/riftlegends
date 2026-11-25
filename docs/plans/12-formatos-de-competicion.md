@@ -246,7 +246,7 @@ No se implementan aquí (plan 24), pero el esquema ya los cubre: la serie de pro
    | MSI | Play-in de 4 en doble eliminación con final → cuadro de 8 en doble eliminación (7 directos + el ganador del play-in), `drop [[0,0,0,0],[1,1],[3]]`, sin reset |
    | Worlds | Play-in de 4 en doble eliminación (pasa 1) → Swiss de 16 a 3 victorias o 3 derrotas (Bo1; Bo3 si la serie clasifica o elimina) → cuartos, semis y final de 8 |
 
-   Pendiente: la plaza de cada liga y las fases con equipos de dos fases previas necesitan el encadenado (#424); los bombos de Worlds (Q4) se comprueban allí.
+   El generador incluye las referencias de plazas, las fases previas y los bombos de Worlds del #424. Las reglas de sembrado siguen pendientes de confirmación en el reglamento.
 
 Inferido del snapshot (22-11-2026). Lo marcado con **(?)** hay que verificarlo en el reglamento.
 
