@@ -1,6 +1,7 @@
 import { ROLES, type Role } from "@rift-legends/contracts";
 import { describe, expect, it } from "vitest";
-import { sample } from "./scenarios";
+import { loadRealContent } from "../../content/real";
+import { sample, scenario } from "./scenarios";
 
 // Monte Carlo bands of plan 08 (K1–K9, K16). Seeds are fixed, so each run is the
 // same sample: a failure means a change moved the balance, never bad luck.
@@ -54,6 +55,30 @@ const PRO_GOLD = {
 	total: [115_698, 123_359, 131_639],
 	lead: [5896, 10_557, 14_954],
 } as const;
+
+it("A4 · uses real teams, players and champions", () => {
+	const { draft, match, blue, red } = scenario(0, 253, "real");
+	const real = loadRealContent();
+	expect(blue.team).not.toBe(red.team);
+	for (const lineup of [blue, red]) {
+		expect(real.match.teams.map(({ id }) => id)).toContain(lineup.team);
+		expect(match.teams.find(({ id }) => id === lineup.team)).toEqual(
+			real.match.teams.find(({ id }) => id === lineup.team),
+		);
+		for (const role of ROLES) {
+			const player = draft.players.find(
+				(p) => p.team === lineup.team && p.role === role,
+			);
+			expect(real.draft.players).toContainEqual(player);
+			expect(match.players.find((p) => p.id === player?.id)).toEqual(
+				real.match.players.find((p) => p.id === player?.id),
+			);
+			expect(real.draft.champions).toContainEqual(
+				draft.champions.find((c) => c.id === lineup.roles[role]),
+			);
+		}
+	}
+});
 
 describe.each(["control", "packaged", "real"] as const)(
 	"C6: calibration with the %s pool",
