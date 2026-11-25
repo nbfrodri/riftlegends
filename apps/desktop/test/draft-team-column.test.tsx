@@ -262,6 +262,25 @@ describe("#436: the ban preview pulses in the active slot", () => {
 		expect(slots()[1]?.querySelector("[class*='border']")).toBeNull();
 	});
 
+	test("the preview shows the ban's diagonal line, which does not pulse", async () => {
+		await renderInLocale(
+			<TurnHarness bans={["toppy"]} banning preview="middy" />,
+		);
+		const strike = slots()[1]?.querySelector<HTMLElement>("[data-ban-strike]");
+		// The same line as a confirmed ban: it reads "this will be banned".
+		expect(strike?.className).toContain(
+			"after:bg-[linear-gradient(to_bottom_right",
+		);
+		expect(strike?.getAttribute("aria-hidden")).toBe("true");
+		// Outside the pulsing portrait, which stays in colour.
+		expect(preview()?.contains(strike as Node)).toBe(false);
+		const face = within(slots()[1] as HTMLElement).getByRole("img", {
+			name: "Middy",
+		});
+		expect(face.querySelector("img.grayscale")).toBeNull();
+		expect(face.className).not.toContain("after:bg-[linear-gradient");
+	});
+
 	test("deselecting clears the preview", async () => {
 		await renderInLocale(
 			<TurnHarness bans={["toppy"]} banning preview="middy" />,
@@ -289,6 +308,10 @@ describe("#436: the ban preview pulses in the active slot", () => {
 		);
 		expect(preview()?.className).not.toContain("draft-pending");
 		expect(preview()?.className).toContain("opacity-50");
+		// The portrait is dimmed; the line stays at full strength.
+		const strike = slots()[1]?.querySelector("[data-ban-strike]");
+		expect(strike).not.toBeNull();
+		expect(preview()?.contains(strike as Node)).toBe(false);
 	});
 
 	test("confirming the previewed ban plays the stamp in that slot", async () => {
