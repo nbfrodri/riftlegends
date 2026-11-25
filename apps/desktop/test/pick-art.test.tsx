@@ -1,6 +1,10 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, test, vi } from "vitest";
-import { framing, PickArt } from "../src/renderer/draft/board/pick-art";
+import {
+	framing,
+	PickArt,
+	splashFraming,
+} from "../src/renderer/draft/board/pick-art";
 
 // Real content with a ready cache, toggled per test (#494).
 const real = vi.hoisted(() => ({ on: false }));
@@ -66,6 +70,19 @@ describe("#438, #494: framing a champion on its face in the pick row", () => {
 });
 
 describe("#494: the landscape splash fills the pick row", () => {
+	test("zooms the splash 1.5x and puts its focal point right of centre", () => {
+		expect(splashFraming({ x: 50, y: 33 })).toEqual({
+			width: "150cqw",
+			left: "-13cqw",
+			top: "clamp(calc(100cqh - 84.375cqw), calc(50cqh - 27.844cqw), 0px)",
+		});
+	});
+
+	test("never uncovers the art box, whatever the focal point", () => {
+		expect(splashFraming({ x: 5, y: 0 }).left).toBe("0cqw");
+		expect(splashFraming({ x: 95, y: 100 }).left).toBe("-50cqw");
+	});
+
 	const art = (id: string) => {
 		const { container } = render(<PickArt id={id} label={id} />);
 		return container.querySelector("[data-framing]") as HTMLElement;
@@ -80,9 +97,9 @@ describe("#494: the landscape splash fills the pick row", () => {
 		expect(img.getAttribute("src")).toBe(
 			"rift-asset://cdragon/splashes/Teemo.jpg",
 		);
-		expect(img.className).toContain("object-cover");
-		// Faces in the centred splash sit a little above its middle.
-		expect(img.style.objectPosition).toBe("50% 30%");
+		// Zoomed 1.5x so the champion is big, its face right of centre.
+		expect(img.getAttribute("style")).toContain("width: 150cqw");
+		expect(img.style.left).toBe(splashFraming({ x: 50, y: 33 }).left);
 	});
 
 	test("a missing splash falls back to the tile framing", () => {
