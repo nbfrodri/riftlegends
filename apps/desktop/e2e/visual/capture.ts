@@ -24,6 +24,15 @@ export async function waitForCaptureAssets(page: Page) {
 			}
 		}
 	}, cajaFonts);
+	// Repaint from scratch. Chromium repaints only the invalidated parts over
+	// what the tile already holds, so the anti-aliasing at a rounded corner
+	// kept a 1-level trace of the earlier state (a hover, a loading image) and
+	// the same screen differed from run to run (#501). A resize drops every tile.
+	const size = page.viewportSize();
+	if (size) {
+		await page.setViewportSize({ width: size.width + 1, height: size.height });
+		await page.setViewportSize(size);
+	}
 	// The first screenshot of a cold app takes over a second on CI (software
 	// rendering). Take it now, outside the assertion, so toHaveScreenshot's
 	// stability loop compares fast frames instead of timing out (#317).
