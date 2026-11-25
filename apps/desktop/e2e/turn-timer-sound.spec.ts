@@ -1,3 +1,4 @@
+import { COUNTDOWN_SECONDS } from "../src/renderer/sound/countdown-ticks";
 import { expect, test } from "./fixtures";
 import { seedNextSeries } from "./quick-draft-flow";
 
@@ -10,7 +11,7 @@ declare global {
 test.use({ appEnv: { RIFT_E2E_CORE: "1" } });
 
 // #505: with the turn timer on, my turn ticks once per second over its last
-// 10 seconds. The spy counts the buffers Web Audio starts; the page clock
+// 10 seconds. The spy counts the tick marks the sound player leaves; the page clock
 // skips the 30 s turn.
 test("the last 10 seconds of my turn tick once per second and stop on confirm", async ({
 	electronApp,
@@ -30,12 +31,14 @@ test("the last 10 seconds of my turn tick once per second and stop on confirm", 
 	await page.clock.install();
 	await page.getByRole("button", { name: "Go to draft" }).click();
 	await expect(page.getByRole("timer")).toBeVisible();
+	// Count only the tick: the player marks `sound:<id>` on every start, and
+	// the AI's ban and pick sounds must not count.
 	await page.evaluate(() => {
 		window.startedSounds = 0;
-		const start = AudioBufferSourceNode.prototype.start;
-		AudioBufferSourceNode.prototype.start = function (...args) {
-			window.startedSounds++;
-			return start.apply(this, args);
+		const mark = performance.mark.bind(performance);
+		performance.mark = (name, options) => {
+			if (name === "sound:tick") window.startedSounds++;
+			return mark(name, options);
 		};
 	});
 	const started = () => page.evaluate(() => window.startedSounds);
@@ -43,9 +46,10 @@ test("the last 10 seconds of my turn tick once per second and stop on confirm", 
 	// The page clock keeps running in real time, so keep clear of the edges.
 	await page.clock.runFor(15_000);
 	expect(await started()).toBe(0);
+	// Real time keeps running under the page clock, so only bound the count.
 	await page.clock.runFor(7_000);
 	expect(await started()).toBeGreaterThanOrEqual(1);
-	expect(await started()).toBeLessThanOrEqual(4);
+	expect(await started()).toBeLessThanOrEqual(COUNTDOWN_SECONDS);
 
 	await page
 		.getByRole("group", { name: "Champions" })
@@ -53,9 +57,9 @@ test("the last 10 seconds of my turn tick once per second and stop on confirm", 
 		.first()
 		.click();
 	await page.getByRole("button", { name: /^Confirm (ban|pick)$/ }).click();
-	// Let the AI answer and my next turn begin: it is 20 s from ticking.
-	await page.clock.runFor(5_000);
+	// The old turn still had ticks left (22 s of 30 s), so any that survive the
+	// confirm fire within seconds; my next turn is 20 s from ticking.
 	const after = await started();
-	await page.clock.runFor(8_000);
+	await page.clock.runFor(6_000);
 	expect(await started()).toBe(after);
 });
