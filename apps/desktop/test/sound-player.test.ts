@@ -149,6 +149,17 @@ describe("sound player (#472)", () => {
 		expect(fake.started).toHaveLength(0);
 	});
 
+	test("the countdown tick plays synthesized without a cache and is silent in the background (#505)", async () => {
+		const sounds = player(async () => ({}));
+		await sounds.preload();
+		sounds.play("tick");
+		expect(fake.started).toHaveLength(1);
+		expect(fake.started[0]?.buffer).toMatchObject({ synthesized: true });
+		focused = false;
+		sounds.play("tick");
+		expect(fake.started).toHaveLength(1);
+	});
+
 	test("never overlaps two of the same sound; different sounds may", async () => {
 		const sounds = player();
 		await sounds.preload();
