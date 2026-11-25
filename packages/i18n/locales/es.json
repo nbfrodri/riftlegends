@@ -237,7 +237,7 @@
 	"errors.invalid-stage-ref": "La fase «{{stage}}» se alimenta de una fase que no existe o que no la precede.",
 	"errors.slots-mismatch": "Las plazas hacia «{{competition}}» suman {{actual}} y deben sumar {{expected}}.",
 	"errors.format-locked": "El formato no se puede cambiar con la temporada empezada; el cambio vale para la siguiente.",
-	"errors.format-too-long": "«{{competition}}» necesita {{needed}} días de partido y la ventana solo tiene {{available}}. Baja el Bo o quita una vuelta.",
+	"errors.format-too-long": "«{{competition}}» necesita al menos {{needed}} días de partido y la ventana solo tiene {{available}}. Quita una vuelta o reduce el número de equipos.",
 	"draft.placeholder": "Esta pantalla llega pronto.",
 	"draft.loading": "Cargando",
 	"draft.crumb.label": "Estás aquí",
