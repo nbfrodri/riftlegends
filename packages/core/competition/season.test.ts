@@ -445,7 +445,7 @@ describe("international slots and pots", () => {
 	it("Q4 recalculates pots by regional place and draws groups without regional clashes", () => {
 		const a = ["a1", "a2", "a3", "a4"];
 		const b = ["b1", "b2", "b3", "b4"];
-		for (const countA of [2, 3]) {
+		for (const countA of [2, 3, 4]) {
 			const graph = build(
 				[
 					format(
@@ -456,7 +456,9 @@ describe("international slots and pots", () => {
 					format(
 						"LEC",
 						[stage("split", fixed(...b), { ...leaguePlay, size: 4 })],
-						[slot("worlds", "standing", "split", 4 - countA)],
+						countA === 4
+							? []
+							: [slot("worlds", "standing", "split", 4 - countA)],
 					),
 					format("worlds", [
 						stage(
@@ -495,7 +497,12 @@ describe("international slots and pots", () => {
 					.filter((e) => e.pot === 1)
 					.map((e) => e.team)
 					.sort(),
-			).toEqual([standingsA.rows[0]?.team, standingsB.rows[0]?.team].sort());
+			).toEqual(
+				[
+					standingsA.rows[0]?.team,
+					countA === 4 ? standingsA.rows[1]?.team : standingsB.rows[0]?.team,
+				].sort(),
+			);
 			expect(result.groups?.flat().sort()).toEqual(
 				[
 					...standingsA.rows.slice(0, countA),

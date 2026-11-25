@@ -174,7 +174,11 @@ describe("chained 2026 international formats", () => {
 				const swiss = event.stages.find((s) => s.play.type === "swiss")?.play;
 				if (swiss?.type !== "swiss") throw new Error("Missing Swiss");
 				const round = pairSwissRound(
-					ready.entrants.map(({ team, region }) => ({ id: team, region })),
+					ready.entrants.map(({ team, region, league }) => ({
+						id: team,
+						region,
+						league,
+					})),
 					[],
 					swiss,
 					33,
