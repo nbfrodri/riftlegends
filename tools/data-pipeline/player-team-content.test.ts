@@ -80,7 +80,7 @@ test("J3 keeps played champions ahead of role fillers and uses exposure for mast
 	expect(mastery.get("Jinx")).toBeGreaterThan(mastery.get("Kaisa") ?? 100);
 });
 
-test("J4 uses game results, chooses the head coach, copies logo and fills vacant roles", () => {
+test("J4 uses game results, chooses the head coach, copies logo and keeps real players in every role", () => {
 	const content = buildPlayerTeamContent([
 		snapshot([game(1, [line("Starter")], "Beta")]),
 	]);
@@ -187,4 +187,12 @@ test("a player has a nationality only when the data has one", () => {
 	expect(
 		buildPlayerTeamContent([source]).players.some((p) => "nationality" in p),
 	).toBe(false);
+});
+
+test("a team without a player in some role is an error, never a placeholder", () => {
+	const source = snapshot(season());
+	source.seasonPlayers = source.seasonPlayers.filter(
+		(row) => !(row.team === "Alpha" && row.role === "support"),
+	);
+	expect(() => buildPlayerTeamContent([source])).toThrow(/Alpha.*support/s);
 });
