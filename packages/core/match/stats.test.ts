@@ -438,6 +438,14 @@ describe("V1 · vision score (#499)", () => {
 		);
 	});
 
+	it("more vision gives a better rating to the jungle, all else equal", () => {
+		const low = playerStats(lane, withVision(40), rules, 1800);
+		const high = playerStats(lane, withVision(90), rules, 1800);
+		expect(line(high, "b-jungle").rating).toBeGreaterThan(
+			line(low, "b-jungle").rating,
+		);
+	});
+
 	it("more vision gives a better rating to the support, all else equal", () => {
 		const low = playerStats(lane, withVision(40), rules, 1800);
 		const high = playerStats(lane, withVision(90), rules, 1800);
