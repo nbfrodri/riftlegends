@@ -1,3 +1,4 @@
+import { readFile } from "node:fs/promises";
 import { isBirthDate } from "@rift-legends/contracts/age";
 import type { CargoRow } from "./client.ts";
 import { idResolver } from "./normalization.ts";
@@ -35,4 +36,54 @@ export function buildBirthDates(rows: readonly CargoRow[], ids: Iterable<string>
 	return [...found]
 		.map(([id, birthDate]) => ({ id, birthDate }))
 		.sort((a, b) => compare(a.id, b.id));
+}
+
+export interface BirthDatesFile {
+	provenance: {
+		source: string;
+		domain: string;
+		retrievedAt: string;
+		licence: string;
+		attribution: string;
+		queries: { url: string; retrievedAt: string }[];
+	};
+	players: { id: string; birthDate: string }[];
+}
+
+export function serializeBirthDates(file: BirthDatesFile) {
+	const rows = file.players.map((row) => `\t\t${JSON.stringify(row)}`);
+	return `{\n\t"provenance": ${JSON.stringify(file.provenance)},\n\t"players": ${rows.length ? `[\n${rows.join(",\n")}\n\t]` : "[]"}\n}\n`;
+}
+
+/** Reads birthdates.json; throws on a malformed file. */
+export function parseBirthDates(text: string): BirthDatesFile {
+	const body = JSON.parse(text) as BirthDatesFile;
+	if (!body || typeof body !== "object" || !Array.isArray(body.players))
+		throw new Error("Invalid birth dates file");
+	for (const { id, birthDate } of body.players)
+		if (typeof id !== "string" || !isBirthDate(birthDate))
+			throw new Error(`Invalid birth date for ${id}`);
+	return body;
+}
+
+const withoutDates = (file: BirthDatesFile) =>
+	JSON.stringify({
+		...file,
+		provenance: {
+			...file.provenance,
+			retrievedAt: undefined,
+			queries: file.provenance.queries.map(({ url }) => url),
+		},
+	});
+
+/** Keeps the published bytes when only retrieval dates changed. */
+export async function preserveBirthDates(path: string, file: BirthDatesFile) {
+	try {
+		const existing = await readFile(path, "utf8");
+		if (withoutDates(parseBirthDates(existing)) === withoutDates(file))
+			return existing;
+	} catch {
+		// Missing or unreadable: write the new one.
+	}
+	return serializeBirthDates(file);
 }

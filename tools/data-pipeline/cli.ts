@@ -148,6 +148,9 @@ try {
 			console.error(
 				`Nationalities: ${countries.players} players${countries.unmapped.length ? `, unmapped: ${countries.unmapped.join(", ")}` : ""}`,
 			);
+			console.error(
+				`Birth dates: ${countries.birthDates} of ${countries.ids} players`,
+			);
 			console.table(result.totals);
 			console.log(JSON.stringify({ bytes: result.bytes, ...result.oddities }));
 		}
