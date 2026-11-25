@@ -91,6 +91,54 @@ test("hashed disambiguators of the same handle and team merge too", () => {
 	]);
 });
 
+test("look-alike characters (I for l, 0 for o) on the same team merge", () => {
+	const snapshot = build();
+	snapshot.games = [game("1", [line("BrokenBlade"), line("BrokenBlade")])];
+	snapshot.rosters = [];
+	snapshot.seasonPlayers = [
+		{
+			id: "BrokenBlade",
+			name: "BrokenBlade",
+			role: "top",
+			sub: false,
+			team: "Alpha",
+		},
+		{
+			id: "BrokenBIade",
+			name: "BrokenBIade",
+			sub: true,
+			noGames: true,
+			team: "Alpha",
+		},
+		{ id: "Z0ro", name: "Z0ro", sub: false, team: "Alpha" },
+		{ id: "Zoro", name: "Zoro", sub: false, noGames: true, team: "Alpha" },
+	];
+	const [merged] = mergeSamePlayers([snapshot]);
+	expect(merged?.seasonPlayers.map((p) => p.id)).toEqual([
+		"BrokenBlade",
+		"Z0ro",
+	]);
+});
+
+test("look-alike handles on different teams stay separate", () => {
+	const snapshot = build();
+	snapshot.seasonPlayers.push({
+		id: "XyIo",
+		name: "XyIo",
+		sub: false,
+		team: "Beta",
+	});
+	snapshot.seasonPlayers.push({
+		id: "Xylo",
+		name: "Xylo",
+		sub: false,
+		team: "Alpha",
+	});
+	const [merged] = mergeSamePlayers([snapshot]);
+	expect(merged?.seasonPlayers.map((p) => p.id)).toContain("XyIo");
+	expect(merged?.seasonPlayers.map((p) => p.id)).toContain("Xylo");
+});
+
 test("the same handle on different teams stays as separate players", () => {
 	const snapshot = build();
 	snapshot.seasonPlayers.push({
@@ -114,4 +162,27 @@ test("the committed snapshot has no duplicated players left", () => {
 		JSON.parse(readFileSync(fileURLToPath(new URL(`${id}.json`, dir)), "utf8")),
 	);
 	expect(mergeSamePlayers(snapshots)).toEqual(snapshots);
+});
+
+test("no two players of a team share a normalized handle in the committed snapshot", () => {
+	const dir = new URL("../../packages/core/content/real/", import.meta.url);
+	const normalized = (id: string) =>
+		(id.split("~")[0] ?? id)
+			.replace(/I/g, "l")
+			.toLowerCase()
+			.replace(/0/g, "o");
+	const clashes: string[] = [];
+	for (const league of ["lck", "lpl", "lec", "lcp", "lcs", "cblol"]) {
+		const snapshot = JSON.parse(
+			readFileSync(fileURLToPath(new URL(`${league}.json`, dir)), "utf8"),
+		) as Snapshot;
+		const seen = new Map<string, string>();
+		for (const { id, team } of snapshot.seasonPlayers) {
+			const key = `${league}|${team}|${normalized(id)}`;
+			const other = seen.get(key);
+			if (other !== undefined) clashes.push(`${team}: ${other} / ${id}`);
+			seen.set(key, id);
+		}
+	}
+	expect(clashes).toEqual([]);
 });
