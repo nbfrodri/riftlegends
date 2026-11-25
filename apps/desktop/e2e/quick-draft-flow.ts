@@ -34,6 +34,7 @@ export async function playQuickDraftBo5(
 	page: Page,
 	capture?: (screen: QuickDraftScreen) => Promise<void>,
 	inspectChoices?: () => Promise<void>,
+	[mine, theirs]: readonly [string, string] = ["Forge", "Shoal"],
 ) {
 	await seedNextSeries(app, 198);
 
@@ -53,7 +54,11 @@ export async function playQuickDraftBo5(
 	await capture?.("setup");
 	await button("Empezar serie").click();
 
-	const wins = { Forge: 0, Shoal: 0 };
+	const wins: [number, number] = [0, 0];
+	const escapePattern = (name: string) =>
+		name.replace(/[.*+?^$(){}|[\]\\]/g, "\\$&");
+	const ownPattern = escapePattern(mine);
+	const rivalPattern = escapePattern(theirs);
 	for (let game = 1; game <= 5; game++) {
 		await expect(heading("Lado y orden")).toBeVisible();
 		await expect(choices.first()).toBeVisible();
@@ -85,8 +90,8 @@ export async function playQuickDraftBo5(
 		await makeDraftMoves(page, game === 1 ? capture : undefined);
 
 		await expect(heading("Roles")).toBeVisible();
-		const own = page.getByRole("region", { name: "Quinteto de Forge" });
-		const rival = page.getByRole("region", { name: "Quinteto de Shoal" });
+		const own = page.getByRole("region", { name: `Quinteto de ${mine}` });
+		const rival = page.getByRole("region", { name: `Quinteto de ${theirs}` });
 		await expect(rival.getByRole("article")).toHaveCount(5);
 		const swaps = own.getByRole("button", { name: /^Intercambiar / });
 		await expect(swaps).toHaveCount(5);
@@ -114,25 +119,23 @@ export async function playQuickDraftBo5(
 		await expect(heading("Resultado")).toBeVisible();
 		const winnerHeading = page.getByRole("heading", {
 			level: 2,
-			name: /^Victoria de (Forge|Shoal)$/,
+			name: new RegExp(`^Victoria de (${ownPattern}|${rivalPattern})$`),
 		});
 		await expect(winnerHeading).toBeVisible();
 		const winner =
-			(await winnerHeading.textContent()) === "Victoria de Forge"
-				? "Forge"
-				: "Shoal";
+			(await winnerHeading.textContent()) === `Victoria de ${mine}` ? 0 : 1;
 		wins[winner]++;
 
 		if (wins[winner] === 3) {
 			await expect(
 				page.getByText("Ganador de la serie", { exact: true }),
 			).toBeVisible();
-			const score = page.getByRole("group", { name: "Marcador de la serie" });
-			await expect(score).toHaveText(
-				new RegExp(
-					`Forge\\s*${wins.Forge} – ${wins.Shoal}\\s*Shoal|Shoal\\s*${wins.Shoal} – ${wins.Forge}\\s*Forge`,
+			const score = (text: string) => page.getByText(text, { exact: true });
+			await expect(
+				score(`${mine} ${wins[0]} – ${wins[1]} ${theirs}`).or(
+					score(`${theirs} ${wins[1]} – ${wins[0]} ${mine}`),
 				),
-			);
+			).toBeVisible();
 			const recap = page.getByRole("table", { name: "Recorrido de la serie" });
 			await expect(recap.getByRole("row")).toHaveCount(game + 1);
 			await expect(

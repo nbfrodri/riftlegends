@@ -19,14 +19,32 @@ const balanced: Profile = {
 	wildcard: SCALE,
 };
 
-export const PROFILES: Record<Personality, Profile> = {
+/**
+ * Weights every personality shares for the components it does not name.
+ * Calibrated against pro drafts (issue #468, `pnpm calibrate`).
+ */
+export const BASE_WEIGHTS: Weights = {
+	fearlessReserve: 2_500 as Fixed,
+	matchup: 2_500 as Fixed,
+	synergy: 2_500 as Fixed,
+	composition: 2_500 as Fixed,
+	identity: 2_500 as Fixed,
+	threatBan: 2_500 as Fixed,
+	targetBan: 11_000 as Fixed,
+	comfort: 12_000 as Fixed,
+	side: 12_000 as Fixed,
+	flex: 5_000 as Fixed,
+};
+
+/** What each personality weighs differently from `BASE_WEIGHTS`. */
+export const PROFILE_DEFINITIONS: Record<Personality, Profile> = {
 	balanced,
 	// One draw policy covers picks and bans. Use DraftSim's pick settings where they differ.
 	meta: {
 		weights: {
-			meta: 16_000 as Fixed,
-			comfort: 6_000 as Fixed,
-			matchup: 9_000 as Fixed,
+			meta: 22_400 as Fixed,
+			comfort: 8_400 as Fixed,
+			matchup: 6_300 as Fixed,
 		},
 		temperature: 4_500,
 		pool: -1,
@@ -68,10 +86,10 @@ export const PROFILES: Record<Personality, Profile> = {
 	architect: {
 		...balanced,
 		weights: {
-			synergy: 19_000 as Fixed,
+			synergy: 15_200 as Fixed,
 			identity: 18_000 as Fixed,
-			meta: 8_500 as Fixed,
-			matchup: 8_500 as Fixed,
+			meta: 9_350 as Fixed,
+			matchup: 6_800 as Fixed,
 		},
 		temperature: 9_000,
 	},
@@ -102,6 +120,19 @@ export const PROFILES: Record<Personality, Profile> = {
 	// Identity rewards an established splitpush plan. Threat bans can remove engage.
 	"side-lane": {
 		...balanced,
-		weights: { identity: 22_000 as Fixed, threatBan: 16_000 as Fixed },
+		weights: { identity: 16_940 as Fixed, threatBan: 16_000 as Fixed },
 	},
 };
+
+/** A personality's own weights replace the base for the keys it names. */
+export const composeWeights = (base: Weights, own: Weights): Weights => ({
+	...base,
+	...own,
+});
+
+export const PROFILES = Object.fromEntries(
+	Object.entries(PROFILE_DEFINITIONS).map(([personality, profile]) => [
+		personality,
+		{ ...profile, weights: composeWeights(BASE_WEIGHTS, profile.weights) },
+	]),
+) as Record<Personality, Profile>;
