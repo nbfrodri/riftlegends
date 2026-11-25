@@ -104,6 +104,13 @@ describe("R3 · common rating scale", () => {
 		);
 	});
 
+	it("a higher vision score per 30 minutes improves the support rating", () => {
+		const base = performance("support", 60);
+		const low = rate("support", { ...base, vision: 110 }).rating;
+		const high = rate("support", { ...base, vision: 140 }).rating;
+		expect(high).toBeGreaterThan(low);
+	});
+
 	it("more deaths never improve the rating, and fewer never worsen it", () => {
 		fc.assert(
 			fc.property(
