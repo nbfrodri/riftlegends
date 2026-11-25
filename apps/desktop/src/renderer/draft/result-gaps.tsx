@@ -21,7 +21,7 @@ const handleOf = (options: SeriesOptions, player: string) =>
 /** A full bar is the biggest lead of the table, and at least this much. */
 const MIN_SCALE = { rating: 10, gold: 1000 };
 /** Width of a full bar, in pixels; the amount follows its end. */
-const BAR = 40;
+const BAR = 28;
 
 /**
  * Photo (silhouette without one) with the champion as a badge on its inner
@@ -56,9 +56,9 @@ function Player(props: {
 		</span>,
 		<Tooltip key="name" heading={handle} content={champion}>
 			<span
-				className={`min-w-0 ${left ? "ml-1.5 text-left" : "mr-1.5 text-right"}`}
+				className={`min-w-0 ${left ? "ml-1 text-left" : "mr-1 text-right"}`}
 			>
-				<span className="block truncate font-bold leading-[14px]">
+				<span className="block truncate font-bold text-[12px] leading-[14px]">
 					{handle}
 				</span>
 				<span
@@ -189,7 +189,7 @@ export function GapsTable(props: {
 		);
 
 	return (
-		<section className="bg-panel px-4 py-3 short:py-2 [&_[data-side=blue]]:[--side:var(--color-side-blue)] [&_[data-side=red]]:[--side:var(--color-side-red)]">
+		<section className="bg-panel px-3 py-3 short:py-2 [&_[data-side=blue]]:[--side:var(--color-side-blue)] [&_[data-side=red]]:[--side:var(--color-side-red)]">
 			<div className="flex items-baseline justify-between gap-2">
 				<h2 className="whitespace-nowrap font-bold font-display text-[19px] leading-tight tracking-heading">
 					{t("draft.result.gaps.title")}
@@ -210,7 +210,7 @@ export function GapsTable(props: {
 				<colgroup>
 					<col />
 					<col className="w-9" />
-					<col className="w-[240px]" />
+					<col className="w-[216px]" />
 					<col className="w-9" />
 					<col />
 				</colgroup>

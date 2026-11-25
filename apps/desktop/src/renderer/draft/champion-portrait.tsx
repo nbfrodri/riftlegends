@@ -12,8 +12,8 @@ const large = new Set<ComponentProps<typeof ChampionFace>["size"]>([
 
 /**
  * A champion's face: its cached art with real content (A3), else the drawn
- * placeholder. Large slots show the base skin tile and fall back to the icon;
- * an image that fails to load leaves the placeholder, in the same box.
+ * placeholder. Large slots prefer the base skin tile and small slots prefer the
+ * icon. Try the other cached image before showing the placeholder.
  */
 export function ChampionPortrait(
 	props: Omit<ComponentProps<typeof ChampionFace>, "src" | "fallbackSrc">,
@@ -22,9 +22,10 @@ export function ChampionPortrait(
 	const icon = useAssetSrc("cdragon", `champions/${props.id}.png`);
 	const tile = useAssetSrc("cdragon", `tiles/${props.id}.jpg`);
 	if (content !== "real" || !icon) return <ChampionFace {...props} />;
-	return large.has(props.size) && tile ? (
+	if (!tile) return <ChampionFace {...props} src={icon} />;
+	return large.has(props.size) ? (
 		<ChampionFace {...props} src={tile} fallbackSrc={icon} />
 	) : (
-		<ChampionFace {...props} src={icon} />
+		<ChampionFace {...props} src={icon} fallbackSrc={tile} />
 	);
 }
