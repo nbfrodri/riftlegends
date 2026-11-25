@@ -15,6 +15,9 @@ test.beforeEach(async ({ appWindow }) => {
 	await expect(appWindow.getByRole("heading", { level: 1 })).toHaveText(
 		"Configurar serie",
 	);
+	// Xvfb parks the pointer mid-screen, which lands on the Bo1 button and
+	// hovers it in some runs (#501). Park it on a spot with no control.
+	await appWindow.mouse.move(0, 0);
 });
 
 const goTo = async (page: Page, section: string) => {
