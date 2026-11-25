@@ -27,7 +27,7 @@ const apiRoles: Readonly<Record<string, Role>> = {
 };
 
 /**
- * Who lolesports lists at a position of a team: handles as written, in listed order, empty
+ * Who lolesports lists at a position of a team: handles as written, empty
  * when the team has no unambiguous match there. Only the position of the
  * player comes from here; attributes and stats stay with Leaguepedia.
  */
@@ -66,9 +66,10 @@ export function snapshotTeamById(snapshot: RealSnapshot, id: string) {
 
 /**
  * Tiebreak: when a team has several players for a position, the core uses the
- * last of the (sub, games) order. If lolesports lists another candidate as
- * starter, that one becomes the non-sub and the current starter a sub. A
- * handle shared by several candidates is never guessed.
+ * last of the (sub, games) order. If exactly one of them is on the lolesports
+ * roster of that position (the others are no longer on the team page), that
+ * one becomes the non-sub and the others subs. Ambiguous handles are never
+ * guessed.
  */
 export function preferOfficialStarters(
 	snapshots: readonly RealSnapshot[],
@@ -98,13 +99,15 @@ export function preferOfficialStarters(
 						played(a.id) - played(b.id) ||
 						compare(a.id, b.id),
 				)[candidates.length - 1];
-				const wanted = official(snapshotTeam(snapshot, team), role)
-					.map((handle) =>
-						candidates.filter(
-							(row) => handleKey(row.name) === handleKey(handle),
-						),
-					)
-					.find((found) => found.length === 1)?.[0];
+				// lolesports has no starter flag: its page lists the whole roster of a
+				// position in no meaningful order. Only a lone listed candidate counts.
+				const listed = new Set(
+					official(snapshotTeam(snapshot, team), role).map(handleKey),
+				);
+				const named = candidates.filter((row) =>
+					listed.has(handleKey(row.name)),
+				);
+				const wanted = named.length === 1 ? named[0] : undefined;
 				if (!wanted || !current || wanted.id === current.id) continue;
 				flipped.set(wanted.id, false);
 				for (const row of candidates)

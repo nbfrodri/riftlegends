@@ -167,7 +167,7 @@ const botsOf = (source: RealSnapshot) =>
 			.map((p) => [p.id, p.sub]),
 	);
 
-test("tiebreak: among several candidates the one lolesports lists as starter wins", () => {
+test("tiebreak: among several candidates the only one lolesports still lists wins", () => {
 	const source = snapshot([game(0, [line("Starter")])]);
 	expect(botsOf(source)).toEqual({
 		Starter: false,
@@ -176,10 +176,8 @@ test("tiebreak: among several candidates the one lolesports lists as starter win
 	});
 	const [result] = preferOfficialStarters(
 		[source],
-		api([
-			["Brief", "bottom"],
-			["Starter", "bottom"],
-		]),
+		// Starter left the lolesports roster; Reserve is still there but not listed.
+		api([["Brief", "bottom"]]),
 	);
 	expect(botsOf(result as RealSnapshot)).toEqual({
 		Starter: true,
@@ -193,6 +191,11 @@ test("tiebreak leaves the snapshot alone when the official starter already leads
 	for (const players of [
 		[["Starter", "bottom"]],
 		[["Nobody", "bottom"]],
+		// Two candidates listed: lolesports does not say which one starts.
+		[
+			["Starter", "bottom"],
+			["Brief", "bottom"],
+		],
 		[],
 	] as [string, string][][]) {
 		const [result] = preferOfficialStarters([source], api(players));

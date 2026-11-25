@@ -131,7 +131,7 @@ export function fillRoleGaps(
 			});
 			const found =
 				roster.find((row) => listed.some(({ id }) => id === row.id)) ??
-				listed[0] ??
+				[...listed].sort((a, b) => compare(a.id, b.id))[0] ??
 				roster[0];
 			if (!found)
 				throw new Error(
