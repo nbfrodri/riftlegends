@@ -43,7 +43,12 @@ const round = (value: number) => Math.round(value * 1000) / 1000;
  * Where the face sits in the centred splash, for champions whose face the
  * default point cuts in the row (#494). Read off the 16.23 splashes.
  */
-const SPLASH_FOCUS: Readonly<Record<string, Focus>> = {};
+const SPLASH_FOCUS: Readonly<Record<string, Focus>> = {
+	Braum: { x: 50, y: 20 },
+	Illaoi: { x: 50, y: 22 },
+	Orianna: { x: 50, y: 24 },
+	Tryndamere: { x: 58, y: 33 },
+};
 // Faces in the centred splash sit at the middle, a third from the top.
 const SPLASH_DEFAULT: Focus = { x: 50, y: 33 };
 // Big enough to read the face in a wide row; the 1280 px splash stays sharp.
@@ -52,6 +57,11 @@ const SPLASH_ZOOM = 1.5;
 const SPLASH_RATIO = 9 / 16;
 // Where the splash's face lands in the art box: right of centre, past the fade.
 const SPLASH_TARGET = { x: 0.62, y: 0.5 };
+
+/** Where the champion's face sits in its centred splash. */
+export function splashFocus(id: string): Focus {
+	return SPLASH_FOCUS[id] ?? SPLASH_DEFAULT;
+}
 
 /**
  * Sizes and places the landscape splash, in percent of the art box (its height in
@@ -114,7 +124,7 @@ export function PickArt(props: { id: string; label: string }) {
 					alt=""
 					onError={() => setFailed(true)}
 					className="absolute aspect-video max-w-none"
-					style={splashFraming(SPLASH_FOCUS[props.id] ?? SPLASH_DEFAULT)}
+					style={splashFraming(splashFocus(props.id))}
 				/>
 			</span>
 		);
