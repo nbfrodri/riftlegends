@@ -109,6 +109,11 @@ describe("#494: the landscape splash fills the pick row", () => {
 		fireEvent.error(splash.querySelector("img") as HTMLImageElement);
 		const tile = document.querySelector("[data-framing]") as HTMLElement;
 		expect(tile.dataset.framing).toBe("focus");
+		// The tile keeps its own 3/5-of-the-row box: the splash box is wider
+		// and would zoom the square tile too much.
+		const box = tile.parentElement as HTMLElement;
+		expect(box.className).toContain("w-[70.6%]");
+		expect(box.className).toContain("[container-type:size]");
 		expect(screen.getByRole("img", { name: "Gwen" })).toBeTruthy();
 	});
 
