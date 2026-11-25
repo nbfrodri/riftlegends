@@ -188,3 +188,9 @@ test("a player has a nationality only when the data has one", () => {
 		buildPlayerTeamContent([source]).players.some((p) => "nationality" in p),
 	).toBe(false);
 });
+
+test("a team without a player in some role is an error, never a placeholder", () => {
+	expect(() => buildPlayerTeamContent([snapshot(season())])).toThrow(
+		/Alpha.*top/s,
+	);
+});

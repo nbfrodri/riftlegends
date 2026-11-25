@@ -217,3 +217,40 @@ test("no player is duplicated anywhere in the committed content", () => {
 	}
 	expect(clashes).toEqual([]);
 });
+
+test("a redirect alias merges two ids whose handles differ", () => {
+	// Leaguepedia redirects `Van (Kim Seung-hoo)` to `Van1`: one person.
+	const alias = "Van~413d6f18ab7937e2";
+	const source: Snapshot = {
+		games: [
+			game("1", [line("Van1"), line("Other", "Beta")]),
+			game("2", [line("Van1")]),
+			game("3", [line(alias)]),
+		],
+		rosters: [
+			{
+				tournament: "t",
+				team: "Alpha",
+				players: [
+					{ id: "Van1", name: "Van1", role: "jungle", sub: false },
+					{ id: alias, name: "Van", role: "jungle", sub: true },
+				],
+				coaches: [],
+			},
+		],
+		seasonPlayers: [
+			{ id: "Van1", name: "Van1", role: "jungle", sub: false, team: "Alpha" },
+			{ id: alias, name: "Van", role: "jungle", sub: true, team: "Alpha" },
+		],
+	};
+	const [plain] = mergeSamePlayers([source]);
+	expect(plain?.seasonPlayers.map((p) => p.id)).toEqual([alias, "Van1"]);
+	const [merged] = mergeSamePlayers([source], new Map([[alias, "Van1"]]));
+	expect(merged?.seasonPlayers.map((p) => p.id)).toEqual(["Van1"]);
+	expect(merged?.games.flatMap((g) => g.lines.map((l) => l.player))).toEqual([
+		"Van1",
+		"Other",
+		"Van1",
+		"Van1",
+	]);
+});

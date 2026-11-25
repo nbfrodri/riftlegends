@@ -94,7 +94,7 @@ test("ids outside the snapshot are dropped", () => {
 	expect(JSON.stringify(result)).not.toContain("Stranger");
 });
 
-test("two cargo queries join the players table by page, and answers are cached", async () => {
+test("cargo queries join the players table by page, and answers are cached", async () => {
 	const urls: URL[] = [];
 	const body = await fixture();
 	const fetch = vi.fn<typeof globalThis.fetch>(async (input) => {
@@ -103,7 +103,7 @@ test("two cargo queries join the players table by page, and answers are cached",
 	});
 	const client = new Client({ cacheDir: dir, fetch, sleep: async () => {} });
 	const rows = await acquireNationalities(client, ["LCK/2026 Season/Cup"]);
-	expect(urls).toHaveLength(2);
+	expect(urls).toHaveLength(4);
 	for (const { searchParams } of urls) {
 		expect(searchParams.get("tables")).toMatch(/Players=P/);
 		expect(searchParams.get("fields")).toContain("P.Country=Country");
@@ -121,7 +121,34 @@ test("two cargo queries join the players table by page, and answers are cached",
 	);
 	expect(JSON.stringify(rows)).not.toContain("Disambiguator");
 	await acquireNationalities(client, ["LCK/2026 Season/Cup"]);
-	expect(fetch).toHaveBeenCalledTimes(2);
+	expect(fetch).toHaveBeenCalledTimes(4);
+});
+
+test("a link that is a wiki redirect still finds its player page", async () => {
+	// Leaguepedia files games under `Ahn (An Shan-Ye)`, a redirect to the page
+	// `Ahn` that holds the country: the direct join misses it, the join through
+	// PlayerRedirects does not.
+	const moved = "Synthetic Moved (Old Spelling)";
+	const fetch = vi.fn<typeof globalThis.fetch>(async (input) => {
+		const tables = new URL(String(input)).searchParams.get("tables") ?? "";
+		const rows = tables.includes("PlayerRedirects")
+			? [{ Link: moved, Country: "South Korea", NationalityPrimary: "" }]
+			: [];
+		return Response.json({ cargoquery: rows.map((title) => ({ title })) });
+	});
+	const client = new Client({ cacheDir: dir, fetch, sleep: async () => {} });
+	const rows = await acquireNationalities(client, ["LCK/2026 Season/Cup"]);
+	const id = person(moved).id;
+	expect(id).toContain("~");
+	expect(buildNationalities(rows, [id]).players).toEqual([
+		{ id, country: "KR" },
+	]);
+	expect(JSON.stringify(rows)).not.toContain("Old Spelling");
+	for (const [url] of fetch.mock.calls) {
+		const { searchParams } = new URL(String(url));
+		if (!searchParams.get("tables")?.includes("PlayerRedirects")) continue;
+		expect(searchParams.get("join_on")).toContain("PR.AllName");
+	}
 });
 
 const file = (country: string, retrievedAt = "2026-11-22") => ({
