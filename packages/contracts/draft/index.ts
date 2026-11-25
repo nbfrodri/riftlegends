@@ -113,6 +113,8 @@ export const draftQueries = defineQueries({
 	 * U1). Of `content` when given, else of the session's current content.
 	 */
 	"series.options": z.strictObject({ content: contentSet.optional() }),
+	/** Every player and team of `content`, or of the session's content (#443). */
+	"content.database": z.strictObject({ content: contentSet.optional() }),
 });
 
 const factCatalog = defineFacts({

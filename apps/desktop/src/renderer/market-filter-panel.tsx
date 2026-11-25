@@ -30,15 +30,18 @@ const ANY = "any";
 const ALL_TEAMS = "";
 
 /** Slider value from a range; a thumb at its bound leaves that end open. */
-const toSlider = (range: Range, [low, high]: Bounds) =>
+export const toSlider = (range: Range, [low, high]: Bounds) =>
 	[range.min ?? low, range.max ?? high] as const;
-const fromSlider = ([a, b]: [number, number], [low, high]: Bounds): Range => ({
+export const fromSlider = (
+	[a, b]: [number, number],
+	[low, high]: Bounds,
+): Range => ({
 	...(a > low && { min: a }),
 	...(b < high && { max: b }),
 });
 
 /** A visible heading over a control that carries the same name itself. */
-function Section(props: { label: string; children: ReactNode }) {
+export function Section(props: { label: string; children: ReactNode }) {
 	return (
 		<div className="flex flex-col gap-1.5">
 			<span aria-hidden className="text-muted">
@@ -50,10 +53,10 @@ function Section(props: { label: string; children: ReactNode }) {
 }
 
 /** Segments share the panel width and keep each label on one line. */
-const segmentFill =
+export const segmentFill =
 	"w-full [&>label]:flex-1 [&_span]:whitespace-nowrap [&_span]:px-1.5";
 
-const presetClass =
+export const presetClass =
 	"press cursor-pointer rounded-control border border-line bg-surface px-2 py-[3px] text-[13px] text-text hover:border-muted focus-visible:outline-2 focus-visible:outline-action aria-pressed:border-action aria-pressed:bg-action/15 aria-pressed:font-semibold";
 
 export function MarketFilterPanel(props: {
@@ -263,29 +266,41 @@ export function ActiveFilterChips(props: {
 		return t("market.chip", { label, value });
 	};
 	return (
+		<FilterChipList
+			chips={active.map((key) => ({ key, text: chip(key) }))}
+			onRemove={(key) => props.onChange(clearFilter(filters, key))}
+		/>
+	);
+}
+
+/** Chips of the filters in use; each one removes itself. */
+export function FilterChipList<Key extends string>(props: {
+	chips: readonly { key: Key; text: string }[];
+	onRemove: (key: Key) => void;
+}) {
+	const { t } = useTranslation();
+	if (props.chips.length === 0) return null;
+	return (
 		<ul
 			aria-label={t("market.filters.active")}
 			className="m-0 flex list-none flex-wrap gap-1.5 p-0 text-table"
 		>
-			{active.map((key) => {
-				const text = chip(key);
-				return (
-					<li
-						key={key}
-						className="inline-flex items-center gap-1 rounded-control border border-line bg-surface ps-2 text-[13px]"
+			{props.chips.map(({ key, text }) => (
+				<li
+					key={key}
+					className="inline-flex items-center gap-1 rounded-control border border-line bg-surface ps-2 text-[13px]"
+				>
+					{text}
+					<button
+						type="button"
+						aria-label={t("market.filters.remove", { filter: text })}
+						onClick={() => props.onRemove(key)}
+						className="press grid size-6 cursor-pointer place-items-center text-muted hover:bg-panel hover:text-text focus-visible:outline-2 focus-visible:outline-action"
 					>
-						{text}
-						<button
-							type="button"
-							aria-label={t("market.filters.remove", { filter: text })}
-							onClick={() => props.onChange(clearFilter(filters, key))}
-							className="press grid size-6 cursor-pointer place-items-center text-muted hover:bg-panel hover:text-text focus-visible:outline-2 focus-visible:outline-action"
-						>
-							<X aria-hidden className="size-3.5" />
-						</button>
-					</li>
-				);
-			})}
+						<X aria-hidden className="size-3.5" />
+					</button>
+				</li>
+			))}
 		</ul>
 	);
 }

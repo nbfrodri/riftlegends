@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
 	CONTRACT_VERSION,
+	contentDatabase,
 	decodeFact,
 	draftCommands,
 	draftFacts,
@@ -230,6 +231,80 @@ describe("series options", () => {
 		expect(query({ content: "real" }).ok).toBe(true);
 		expect(query({ content: "fictional" }).ok).toBe(true);
 		expect(query({ content: "fantasy" }).ok).toBe(false);
+	});
+});
+
+describe("content database (#443)", () => {
+	const query = (params: unknown) =>
+		parseQuery(draftQueries, {
+			v: CONTRACT_VERSION,
+			kind: "content.database",
+			sessionId: 1,
+			params,
+		});
+	const attributes = Object.fromEntries(
+		[
+			"lanes",
+			"farming",
+			"waves",
+			"macro",
+			"roaming",
+			"vision",
+			"anticipation",
+			"objectiveControl",
+			"teamfight",
+			"mechanics",
+			"positioning",
+			"aggression",
+			"composure",
+			"resilience",
+			"experience",
+			"consistency",
+			"focus",
+			"shotcalling",
+			"communication",
+			"versatility",
+		].map((key) => [key, 70]),
+	);
+	const player = {
+		id: "faker",
+		team: "t1",
+		role: "mid",
+		handle: "Faker",
+		nationality: "KR",
+		level: 82,
+		sub: false,
+		attributes,
+		pool: [{ champion: "azir", kind: "main", mastery: 80 }],
+	};
+	const team = {
+		id: "t1",
+		name: "T1",
+		short: "T1",
+		league: "LCK",
+		seed: 3,
+		coach: { name: "kkOma", personality: "balanced", rating: 30 },
+	};
+
+	it("asks for the session's content or for a named content set", () => {
+		expect(query({}).ok).toBe(true);
+		expect(query({ content: "real" }).ok).toBe(true);
+		expect(query({ content: "fantasy" }).ok).toBe(false);
+	});
+
+	it("answers every player with team, level and sub, and every team", () => {
+		const view = { teams: [team], players: [player] };
+		expect(contentDatabase.parse(view)).toEqual(view);
+		expect(
+			contentDatabase.safeParse({
+				teams: [team],
+				players: [{ ...player, level: 101 }],
+			}).success,
+		).toBe(false);
+		const { sub: _, ...withoutSub } = player;
+		expect(
+			contentDatabase.safeParse({ teams: [], players: [withoutSub] }).success,
+		).toBe(false);
 	});
 });
 
