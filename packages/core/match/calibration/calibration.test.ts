@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { loadRealContent } from "../../content/real";
 import { sample, scenario } from "./scenarios";
 
-// Monte Carlo bands of plan 08 (K1–K9, K16). Seeds are fixed, so each run is the
+// Monte Carlo bands of plan 08. Seeds are fixed, so each run is the
 // same sample: a failure means a change moved the balance, never bad luck.
 
 const sorted = (values: number[]) => [...values].sort((a, b) => a - b);
@@ -80,12 +80,12 @@ it("A4 · uses real teams, players and champions", () => {
 	}
 });
 
-describe.each(["control", "packaged", "real"] as const)(
+describe.each(["control", "packaged", "real-champions", "real"] as const)(
 	"C6: calibration with the %s pool",
 	(pool) => {
 		const even = sample(1000, 0, pool);
 
-		it("K5 · with equal teams, blue wins 50–54 %", () => {
+		it("K5 · with balanced sides, blue wins 50–54 %", () => {
 			const blue = rate(even, (g) => g.winner === "blue");
 			expect(blue).toBeGreaterThanOrEqual(0.5);
 			expect(blue).toBeLessThanOrEqual(0.54);
@@ -119,12 +119,21 @@ describe.each(["control", "packaged", "real"] as const)(
 					expect.soft(mean, role).toBeLessThanOrEqual(64);
 					return mean;
 				});
-				expect(Math.max(...means) - Math.min(...means)).toBeLessThanOrEqual(5);
+				const ordered = sorted(means);
+				expect(gap(ordered.at(-1) ?? 0, ordered[0] ?? 0)).toBeLessThanOrEqual(
+					5,
+				);
 			});
 
 			it("K11 · a game has 8–15 towers and 3–6 dragons at the median", () => {
-				const towers = at(even.map((g) => g.towers), 0.5);
-				const dragons = at(even.map((g) => g.dragons), 0.5);
+				const towers = at(
+					even.map((g) => g.towers),
+					0.5,
+				);
+				const dragons = at(
+					even.map((g) => g.dragons),
+					0.5,
+				);
 				expect.soft(towers, "towers").toBeGreaterThanOrEqual(8);
 				expect.soft(towers, "towers").toBeLessThanOrEqual(15);
 				expect.soft(dragons, "dragons").toBeGreaterThanOrEqual(3);
@@ -262,7 +271,7 @@ describe.each(["control", "packaged", "real"] as const)(
 			});
 		});
 
-		it("K1 · a clear favourite (+10 on every attribute) wins 60–75 %", () => {
+		it("K1 · the boosted side (+10 up to 100) wins 60–75 %", () => {
 			const favourite = rate(sample(600, 10, pool), (g) => g.winner === "blue");
 			expect(favourite).toBeGreaterThanOrEqual(0.6);
 			expect(favourite).toBeLessThanOrEqual(0.75);
