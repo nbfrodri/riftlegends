@@ -263,3 +263,90 @@ test("the turn timer spans the whole board right above it", async ({
 		).toEqual({ page: 0, main: 0 });
 	}
 });
+
+test("#469: a click on empty space drops the pick preview", async ({
+	appWindow,
+	electronApp,
+}) => {
+	await seedNextSeries(electronApp, 7);
+	await appWindow.getByRole("button", { name: "Start series" }).click();
+	await appWindow.getByRole("button", { name: "Confirm choice" }).click();
+	await appWindow.getByRole("button", { name: "Go to draft" }).click();
+	const grid = appWindow.getByRole("group", { name: "Champions" });
+	const free = grid.locator("button:not([aria-disabled])").first();
+	for (let ban = 1; ban <= 3; ban++) {
+		await expect(appWindow.getByText(`Ban ${ban} · Forge`)).toBeVisible();
+		await free.click();
+		await appWindow.getByRole("button", { name: "Confirm ban" }).click();
+	}
+	await expect(appWindow.getByText("B1 · Forge pick")).toBeVisible();
+
+	const name = (await free.getAttribute("aria-label")) ?? "";
+	await free.click();
+	const blue = appWindow.getByRole("region", { name: "Blue side Forge" });
+	const row = blue.getByRole("listitem").first();
+	const confirm = appWindow.getByRole("button", { name: "Confirm pick" });
+	await expect(row.getByRole("img", { name })).toBeVisible();
+	await expect(confirm).toBeEnabled();
+
+	// The gap between the blue column and the pool is empty space.
+	const box = await blue.boundingBox();
+	if (!box) throw new Error("The blue column must be visible");
+	await appWindow.mouse.click(box.x + box.width + 6, box.y + box.height / 2);
+
+	await expect(row.getByRole("img", { name })).toHaveCount(0);
+	await expect(confirm).toBeDisabled();
+	await expect(grid.getByRole("button", { name, exact: true })).toHaveAttribute(
+		"aria-pressed",
+		"false",
+	);
+});
+
+// #471: the pool's scrollbar sits at the panel's right edge, at least the
+// grid's gap away from the last column, and its space stays reserved so the
+// tiles keep their width when a filter leaves nothing to scroll.
+test("the pool's scrollbar sits at the panel edge, a grid gap from the tiles", async ({
+	appWindow,
+	electronApp,
+}) => {
+	await seedNextSeries(electronApp, 7);
+	await appWindow.getByRole("button", { name: "Start series" }).click();
+	await appWindow.getByRole("button", { name: "Confirm choice" }).click();
+	await appWindow.getByRole("button", { name: "Go to draft" }).click();
+	const grid = appWindow.getByRole("group", { name: "Champions" });
+	const search = appWindow.getByRole("searchbox");
+	const measure = () =>
+		grid.evaluate((node) => {
+			const box = node.getBoundingClientRect();
+			const panel = node.closest("section")?.getBoundingClientRect();
+			const tiles = [...node.querySelectorAll("button")].map((tile) =>
+				tile.getBoundingClientRect(),
+			);
+			return {
+				scrolls: node.scrollHeight > node.clientHeight,
+				gap: Number.parseFloat(getComputedStyle(node).columnGap),
+				// A fieldset scrolls an anonymous inner box, so its clientWidth
+				// keeps the bar; the Caja bar is 8 px wide (#307).
+				bar: box.right - 8,
+				edge: (panel?.right ?? 0) - box.right,
+				lastColumn: Math.max(...tiles.map((tile) => tile.right)),
+				tileWidth: tiles[0]?.width ?? 0,
+			};
+		});
+	for (const viewport of [
+		{ width: 1280, height: 720 },
+		{ width: 1366, height: 768 },
+	]) {
+		await appWindow.setViewportSize(viewport);
+		await search.fill("");
+		const full = await measure();
+		expect(full.scrolls).toBe(true);
+		expect(full.bar - full.lastColumn).toBeGreaterThanOrEqual(full.gap);
+		expect(full.edge).toBeLessThanOrEqual(4);
+		await search.fill("Cragbell");
+		await expect(grid.getByRole("button")).toHaveCount(1);
+		const filtered = await measure();
+		expect(filtered.scrolls).toBe(false);
+		expect(filtered.tileWidth).toBeCloseTo(full.tileWidth, 1);
+	}
+});

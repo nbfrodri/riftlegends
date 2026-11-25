@@ -74,7 +74,8 @@ describe("side choice (U2)", () => {
 				await screen.findByRole("region", { name: `${side} side Forge` }),
 			).getByText("First pick"),
 		).toBeTruthy();
-		expect(screen.getByText(`First pick · ${side}`)).toBeTruthy();
+		// Only the team column says it; the broadcast header does not repeat it.
+		expect(screen.queryByText(`First pick · ${side}`)).toBeNull();
 	});
 
 	test("#398: the chosen option's tick uses the success colour", async () => {
