@@ -18,9 +18,9 @@ const lckPlayIn = "Season Play-In";
 export const lck: LeagueDefinition = {
 	tiebreakRule: {
 		criteria: ["seriesWins", "gameDiff", "headToHead", "tiebreakerSeries"],
-		bestOf: 1,
+		bestOf: 3,
 		reason:
-			"Tiebreak order (wins, set difference, head-to-head) and the single-game tiebreaker come from the 2025 LCK rulebook, section 2.8; the 2026 edition was not available.",
+			"Tiebreak order (wins, set difference, head-to-head) comes from the 2025 LCK rulebook, section 2.8 (the 2026 edition was not available). The rulebook's single-game tiebreaker is replaced by the game's Bo3 by user decision.",
 	},
 	stages: [
 		stage("cup-groups", lckCup, weeks, "roster", {
