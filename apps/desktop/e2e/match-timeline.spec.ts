@@ -157,6 +157,72 @@ async function expectBigFaceToFace(page: Page) {
 	// pictures may not move at all.
 	for (const [i, spread] of measure.columns.entries())
 		if (i % 3 !== 2) expect(spread).toBeLessThanOrEqual(1);
+	await expectColumnsAligned(page);
+}
+
+/**
+ * #548: every column of the face to face starts where its header starts:
+ * the left edge on blue's side, the right edge on red's (mirrored). Edges
+ * come from the painted text and icons, not from the cells, so a label
+ * centred in a wide cell fails.
+ */
+async function expectColumnsAligned(page: Page) {
+	const edges = await page.evaluate(() => {
+		const table = document.querySelector("table[aria-label='Cara a cara']");
+		if (!table) throw new Error("Missing face to face");
+		/** Painted extent of an element's text and icons, clipped to its box. */
+		const extent = (el: Element) => {
+			const clip = el.getBoundingClientRect();
+			const rects: DOMRect[] = [];
+			const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+			for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+				if (
+					!node.textContent?.trim() ||
+					node.parentElement?.closest(".sr-only")
+				)
+					continue;
+				const range = document.createRange();
+				range.selectNodeContents(node);
+				rects.push(range.getBoundingClientRect());
+			}
+			for (const svg of el.querySelectorAll("svg"))
+				rects.push(svg.getBoundingClientRect());
+			return {
+				left: Math.max(clip.left, Math.min(...rects.map((r) => r.left))),
+				right: Math.min(clip.right, Math.max(...rects.map((r) => r.right))),
+			};
+		};
+		const headers = [...table.querySelectorAll("thead tr:last-child th")];
+		const rows = [...table.querySelectorAll("tbody tr")];
+		// Columns: player, K/D/A, CS, gold, lane, gold, CS, K/D/A, player.
+		const column = (index: number, side: "blue" | "red") => {
+			const edge = side === "blue" ? "left" : "right";
+			const header = headers[index];
+			if (!header) throw new Error(`Missing header ${index}`);
+			const cells = rows.map((row) => {
+				const cell = row.children[index];
+				const target =
+					index === 0 || index === 8
+						? cell?.querySelector("[data-part=name] > span")
+						: cell;
+				if (!target) throw new Error(`Missing cell ${index}`);
+				return Math.round(extent(target)[edge]);
+			});
+			return { header: Math.round(extent(header)[edge]), cells };
+		};
+		return [
+			...[0, 1, 2, 3].map((i) => column(i, "blue")),
+			...[5, 6, 7, 8].map((i) => column(i, "red")),
+		];
+	});
+	for (const { header, cells } of edges) {
+		expect(cells).toHaveLength(5);
+		for (const cell of cells)
+			expect(
+				Math.abs(cell - header),
+				JSON.stringify(edges),
+			).toBeLessThanOrEqual(1);
+	}
 }
 
 test("replays a drafted game and continues to its result", async ({
