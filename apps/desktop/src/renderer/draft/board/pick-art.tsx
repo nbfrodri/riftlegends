@@ -40,12 +40,36 @@ const MAX_ZOOM = 2;
 const round = (value: number) => Math.round(value * 1000) / 1000;
 
 /**
- * Where to anchor the centred splash (object-position), for champions whose
- * face the default anchor cuts in the row (#494). Read off the 16.23 splashes.
+ * Where the face sits in the centred splash, for champions whose face the
+ * default point cuts in the row (#494). Read off the 16.23 splashes.
  */
-const SPLASH_FOCUS: Readonly<Record<string, string>> = {};
-// Faces in the centred splash sit a little above its middle.
-const SPLASH_ANCHOR = "50% 30%";
+const SPLASH_FOCUS: Readonly<Record<string, Focus>> = {};
+// Faces in the centred splash sit at the middle, a third from the top.
+const SPLASH_DEFAULT: Focus = { x: 50, y: 33 };
+// Big enough to read the face in a wide row; the 1280 px splash stays sharp.
+const SPLASH_ZOOM = 1.5;
+// 16:9 splash: its height in widths.
+const SPLASH_RATIO = 9 / 16;
+// Where the splash's face lands in the art box: right of centre, past the fade.
+const SPLASH_TARGET = { x: 0.62, y: 0.5 };
+
+/**
+ * Sizes and places the landscape splash, in percent of the art box (its height in
+ * container units), so its focal point lands right of centre without
+ * uncovering the box.
+ */
+export function splashFraming(focus: Focus) {
+	const fx = focus.x / 100;
+	const fy = focus.y / 100;
+	const zoom = SPLASH_ZOOM;
+	const left = Math.min(0, Math.max(1 - zoom, SPLASH_TARGET.x - fx * zoom));
+	const height = round(zoom * SPLASH_RATIO * 100);
+	return {
+		width: `${round(zoom * 100)}%`,
+		left: `${round(left * 100)}%`,
+		top: `clamp(calc(100cqh - ${height}cqw), calc(${SPLASH_TARGET.y * 100}cqh - ${round(fy * zoom * SPLASH_RATIO * 100)}cqw), 0px)`,
+	};
+}
 
 /**
  * Sizes and places the square tile so its focal point lands on the target,
@@ -89,8 +113,8 @@ export function PickArt(props: { id: string; label: string }) {
 					src={splash}
 					alt=""
 					onError={() => setFailed(true)}
-					className="size-full object-cover"
-					style={{ objectPosition: SPLASH_FOCUS[props.id] ?? SPLASH_ANCHOR }}
+					className="absolute aspect-video max-w-none"
+					style={splashFraming(SPLASH_FOCUS[props.id] ?? SPLASH_DEFAULT)}
 				/>
 			</span>
 		);
