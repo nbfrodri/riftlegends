@@ -58,6 +58,28 @@ describe("series.options (plan 09, U1)", () => {
 			expect(view.positions[champion.id]).toEqual(champion.positions);
 	});
 
+	it("carries a starter's birth date to the player card", () => {
+		const content = {
+			...fictionalContent,
+			players: fictionalContent.players.map((player) =>
+				player.id === "forge-mid"
+					? { ...player, birthDate: "2001-03-03" }
+					: player,
+			),
+		};
+		const result = options(draftStateWith(content, fictionalMatchContent));
+		if (!result.ok) throw new Error(JSON.stringify(result));
+		const players = seriesOptions
+			.parse(result.view)
+			.teams.flatMap((team) => team.players);
+		expect(players.find((p) => p.id === "forge-mid")?.birthDate).toBe(
+			"2001-03-03",
+		);
+		expect(players.find((p) => p.id === "forge-top")).not.toHaveProperty(
+			"birthDate",
+		);
+	});
+
 	it("gives each champion's roles and each team's players with their attributes (U3, U5)", () => {
 		const result = options(
 			draftStateWith(fictionalContent, fictionalMatchContent),

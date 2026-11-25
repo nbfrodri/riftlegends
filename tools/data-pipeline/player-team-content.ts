@@ -239,6 +239,7 @@ export function buildPlayerTeamContent(
 	careers: CareerHistory = new Map(),
 	nationalities: ReadonlyMap<string, string> = new Map(),
 	exceptions: LeagueMemberExceptions = leagueMemberExceptions,
+	birthDates: ReadonlyMap<string, string> = new Map(),
 ) {
 	const season = seasonOf(snapshots);
 	const built =
@@ -261,7 +262,12 @@ export function buildPlayerTeamContent(
 		built.flatMap(({ players: rows }) =>
 			rows.map((row) => {
 				const nationality = nationalities.get(row.id);
-				return { ...row, ...(nationality && { nationality }) };
+				const birthDate = birthDates.get(row.id);
+				return {
+					...row,
+					...(nationality && { nationality }),
+					...(birthDate && { birthDate }),
+				};
 			}),
 		),
 		new Map(teams.map((team) => [team.id, team.short ?? team.id])),

@@ -11,6 +11,7 @@ import {
 import { CountryFlag } from "../draft/country-flag";
 import { TeamCrest } from "../draft/team-crest";
 import { levelColor, levelOf } from "../level-scale";
+import { PlayerAge } from "../player-age";
 import type { DatabasePlayer } from "./database-filters";
 
 export interface OpenPlayer {
@@ -114,6 +115,7 @@ export function PlayerDialog({
 								<GameRoleIcon role={player.role} size={20} />
 								{t(`market.role.${player.role}`)}
 							</span>
+							<PlayerAge birthDate={player.birthDate} withUnit />
 							<span>
 								{t(
 									player.sub

@@ -13,3 +13,10 @@ export const levelColor = {
 	mid: "",
 	low: "text-bad",
 } as const satisfies Record<Level, string>;
+
+/** The fill of a level bar (#558): same scale, muted in the middle. */
+export const levelFill = {
+	high: "bg-good",
+	mid: "bg-muted/70",
+	low: "bg-bad",
+} as const satisfies Record<Level, string>;

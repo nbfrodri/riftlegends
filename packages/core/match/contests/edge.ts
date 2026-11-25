@@ -1,5 +1,6 @@
 import { ROLES, type Side } from "@rift-legends/contracts";
 import { type Fixed, mul } from "../../math";
+import type { MatchCause, MatchCauseKey } from "../cause-keys";
 import { spreeBounty } from "../events";
 import type { CONTESTS, Scored } from "../profile";
 import { LANES, type Lane, type MatchState, SOUL } from "../state";
@@ -49,8 +50,8 @@ function strength(
 		profile.contests[contest],
 		profile.phases[phaseOf(state.minute)],
 	];
-	const byKey = new Map<string, number>();
-	const add = (key: string, points: number) =>
+	const byKey = new Map<MatchCauseKey, number>();
+	const add = (key: MatchCauseKey, points: number) =>
 		byKey.set(key, (byKey.get(key) ?? 0) + points);
 	for (const part of parts) {
 		for (const { key, points } of part.causes) add(key, points);
@@ -102,7 +103,7 @@ export interface Edge {
 	/** Chance, per 10,000, that blue wins. */
 	readonly blue: number;
 	/** Why, as blue's edge over red; negative points favour red. */
-	readonly causes: readonly { key: string; points: number }[];
+	readonly causes: readonly MatchCause[];
 }
 
 /** Edge of blue over red in a contest, from the profiles and the state. */
@@ -110,9 +111,7 @@ export function edge(
 	state: MatchState,
 	contest: Contest,
 	/** Points a contest adds on top, by side. */
-	extra: Partial<
-		Record<Side, { key: string; points: number } | undefined>
-	> = {},
+	extra: Partial<Record<Side, MatchCause | undefined>> = {},
 	lane?: Lane,
 ): Edge {
 	const blue = strength(state, "blue", contest, lane);
@@ -124,7 +123,7 @@ export function edge(
 		const bonus = extra[side];
 		if (bonus) map.set(bonus.key, (map.get(bonus.key) ?? 0) + bonus.points);
 	}
-	const causes: { key: string; points: number }[] = [];
+	const causes: MatchCause[] = [];
 	for (const key of new Set([...blue.keys(), ...red.keys()])) {
 		const points = (blue.get(key) ?? 0) - (red.get(key) ?? 0);
 		if (points !== 0) causes.push({ key, points });
