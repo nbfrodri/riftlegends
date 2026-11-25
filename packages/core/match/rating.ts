@@ -23,10 +23,10 @@ export interface Anchors {
 	high: number;
 }
 
-/** Approved on 2026-11-23: the weight of each metric, in percent. */
+/** Approved on 2026-11-23 (jungle changed by the user on 2026-11-25): the weight of each metric, in percent. */
 export const WEIGHTS: Record<Role, Partial<Record<Metric, number>>> = {
 	top: { damage: 40, pressure: 35, deaths: 25 },
-	jungle: { kp: 45, objectives: 35, deaths: 20 },
+	jungle: { kp: 40, objectives: 32, deaths: 18, vision: 10 },
 	mid: { damage: 45, kills: 30, deaths: 25 },
 	bot: { damage: 45, kills: 30, deaths: 25 },
 	support: { kp: 35, assists: 25, deaths: 20, vision: 20 },
@@ -38,7 +38,8 @@ export const WEIGHTS: Record<Role, Partial<Record<Metric, number>>> = {
  * the simulated mean would score under 60 on a bent scale (more room above the
  * reference than below it), so it is set where the mean of the simulation
  * scores 60 (calibration of 2026-11-25, K8). Shares are per 10,000 of the team
- * (or of the chances); assists and deaths are hundredths per 30 minutes.
+ * (or of the chances); assists and deaths are hundredths per 30 minutes;
+ * vision is the vision score per 30 minutes.
  */
 export const ANCHORS: Record<Role, Partial<Record<Metric, Anchors>>> = {
 	top: {
@@ -50,6 +51,7 @@ export const ANCHORS: Record<Role, Partial<Record<Metric, Anchors>>> = {
 		kp: { low: 5000, mid: 6490, high: 9333 },
 		objectives: { low: 0, mid: 4600, high: 10_000 },
 		deaths: { low: 393, mid: 105, high: 0 },
+		vision: { low: 40, mid: 54, high: 69 },
 	},
 	mid: {
 		damage: { low: 1755, mid: 2425, high: 3231 },
@@ -65,7 +67,7 @@ export const ANCHORS: Record<Role, Partial<Record<Metric, Anchors>>> = {
 		kp: { low: 5000, mid: 6630, high: 9444 },
 		assists: { low: 107, mid: 610, high: 1478 },
 		deaths: { low: 389, mid: 110, high: 0 },
-		vision: { low: 0, mid: 4695, high: 10_000 },
+		vision: { low: 103, mid: 127, high: 151 },
 	},
 };
 

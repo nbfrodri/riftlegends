@@ -37,7 +37,12 @@ describe("R3 · common rating scale", () => {
 
 	it("uses the approved weights of each role", () => {
 		expect(WEIGHTS.top).toEqual({ damage: 40, pressure: 35, deaths: 25 });
-		expect(WEIGHTS.jungle).toEqual({ kp: 45, objectives: 35, deaths: 20 });
+		expect(WEIGHTS.jungle).toEqual({
+			kp: 40,
+			objectives: 32,
+			deaths: 18,
+			vision: 10,
+		});
 		expect(WEIGHTS.mid).toEqual({ damage: 45, kills: 30, deaths: 25 });
 		expect(WEIGHTS.bot).toEqual({ damage: 45, kills: 30, deaths: 25 });
 		expect(WEIGHTS.support).toEqual({
@@ -102,6 +107,20 @@ describe("R3 · common rating scale", () => {
 				}
 			}),
 		);
+	});
+
+	it("a higher vision score per 30 minutes improves the support rating", () => {
+		const base = performance("support", 60);
+		const low = rate("support", { ...base, vision: 110 }).rating;
+		const high = rate("support", { ...base, vision: 140 }).rating;
+		expect(high).toBeGreaterThan(low);
+	});
+
+	it("a higher vision score per 30 minutes improves the jungle rating", () => {
+		const base = performance("jungle", 60);
+		const low = rate("jungle", { ...base, vision: 42 }).rating;
+		const high = rate("jungle", { ...base, vision: 66 }).rating;
+		expect(high).toBeGreaterThan(low);
 	});
 
 	it("more deaths never improve the rating, and fewer never worsen it", () => {

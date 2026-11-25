@@ -10,11 +10,13 @@ const teamsOf = (state: ReturnType<typeof playMatch>["state"]) => ({
 		team: "forge",
 		players: state.context.blue.players,
 		champions: Object.fromEntries(ROLES.map((r) => [r, r])) as never,
+		vision: Object.fromEntries(ROLES.map((r) => [r, 60])) as never,
 	},
 	red: {
 		team: "shoal",
 		players: state.context.red.players,
 		champions: Object.fromEntries(ROLES.map((r) => [r, r])) as never,
+		vision: Object.fromEntries(ROLES.map((r) => [r, 60])) as never,
 	},
 });
 

@@ -23,9 +23,21 @@ const ids = (prefix: string) =>
 		Role,
 		string
 	>;
+const visionOf = (value: number) =>
+	Object.fromEntries(ROLES.map((r) => [r, value])) as Record<Role, number>;
 const teams: Teams = {
-	blue: { team: "forge", players: ids("b"), champions: ids("bc") },
-	red: { team: "shoal", players: ids("r"), champions: ids("rc") },
+	blue: {
+		team: "forge",
+		players: ids("b"),
+		champions: ids("bc"),
+		vision: visionOf(60),
+	},
+	red: {
+		team: "shoal",
+		players: ids("r"),
+		champions: ids("rc"),
+		vision: visionOf(60),
+	},
 };
 
 const event = (change: Partial<EventFact>): EventFact => ({
@@ -163,11 +175,13 @@ function playGame(seed: number) {
 			team: blue.team,
 			players: blue.players,
 			champions: champions(blue.players),
+			vision: blue.vision,
 		},
 		red: {
 			team: red.team,
 			players: red.players,
 			champions: champions(red.players),
+			vision: red.vision,
 		},
 	};
 	const events = result.events.map(
@@ -287,8 +301,8 @@ describe("M5 · stats come from the facts", () => {
 
 	it("a game with no chances scores the neutral 60 where there is nothing to measure", () => {
 		const quiet = playerStats([], teams, rules, 1800);
-		// Jungle: no kills to join and no objectives (80 % neutral) and no deaths (100).
-		expect(quiet.find((p) => p.player === "b-jungle")?.rating).toBe(68);
+		// Jungle: no kills to join and no objectives (72 % neutral), no deaths (100) and a vision score a little under the reference (teams at 60 vs 66).
+		expect(quiet.find((p) => p.player === "b-jungle")?.rating).toBe(66);
 	});
 
 	it("lists blue then red, in role order, with their champion", () => {
@@ -352,5 +366,93 @@ describe("fights where both sides score", () => {
 		const farm = tenMinutes(rules.economy.passive);
 		expect(of("r-bot")?.gold).toBe((farm[ROLES.indexOf("bot")] as number) + k);
 		expect(of("b-mid")?.gold).toBe((farm[ROLES.indexOf("mid")] as number) + k);
+	});
+});
+
+describe("V1 · vision score (#499)", () => {
+	const line = (stats: ReturnType<typeof playerStats>, player: string) =>
+		stats.find((p) => p.player === player) as (typeof stats)[number];
+	const withVision = (blue: number): Teams => ({
+		...teams,
+		blue: { ...teams.blue, vision: visionOf(blue) },
+	});
+	const lane = [event({ kind: "lane", zone: "jungle-blue-top" })];
+
+	it("more vision gives more vision score in every role, all else equal", () => {
+		const low = playerStats(lane, withVision(40), rules, 1800);
+		const high = playerStats(lane, withVision(80), rules, 1800);
+		for (const role of ROLES) {
+			const id = `b-${role}`;
+			expect(line(high, id).vision, role).toBeGreaterThan(line(low, id).vision);
+		}
+		// The rival, with the same vision in both runs, does not move.
+		expect(line(high, "r-support").vision).toBe(line(low, "r-support").vision);
+	});
+
+	it("the support scores far more than the lanes and the jungle more than them", () => {
+		const stats = playerStats(lane, teams, rules, 1800);
+		const of = (role: Role) => line(stats, `b-${role}`).vision;
+		expect(of("support")).toBeGreaterThan(2 * of("jungle"));
+		expect(of("jungle")).toBeGreaterThan(of("top"));
+	});
+
+	it("a longer game gives more vision score", () => {
+		const short = playerStats(lane, teams, rules, 1500);
+		const long = playerStats(lane, teams, rules, 2400);
+		for (const role of ROLES)
+			expect(line(long, `b-${role}`).vision).toBeGreaterThan(
+				line(short, `b-${role}`).vision,
+			);
+	});
+
+	it("is a deterministic non-negative integer", () => {
+		fc.assert(
+			fc.property(
+				eventsArb,
+				fc.integer({ min: 1, max: 50 }),
+				fc.integer({ min: 0, max: 100 }),
+				(events, mins, vision) => {
+					const a = playerStats(events, withVision(vision), rules, mins * 60);
+					const b = playerStats(events, withVision(vision), rules, mins * 60);
+					expect(a).toEqual(b);
+					for (const p of a) {
+						expect(Number.isInteger(p.vision)).toBe(true);
+						expect(p.vision).toBeGreaterThanOrEqual(0);
+					}
+				},
+			),
+		);
+	});
+
+	it("winning the contests of the jungle and pits adds vision score", () => {
+		const won = [
+			event({ kind: "gank", side: "blue", zone: "jungle-blue-top" }),
+		];
+		const lost = [
+			event({ kind: "gank", side: "red", zone: "jungle-blue-top" }),
+		];
+		const a = playerStats(won, teams, rules, 1800);
+		const b = playerStats(lost, teams, rules, 1800);
+		expect(line(a, "b-support").vision).toBeGreaterThan(
+			line(b, "b-support").vision,
+		);
+	});
+
+	it("more vision gives a better rating to the jungle, all else equal", () => {
+		const low = playerStats(lane, withVision(40), rules, 1800);
+		const high = playerStats(lane, withVision(90), rules, 1800);
+		expect(line(high, "b-jungle").rating).toBeGreaterThan(
+			line(low, "b-jungle").rating,
+		);
+	});
+
+	it("more vision gives a better rating to the support, all else equal", () => {
+		const low = playerStats(lane, withVision(40), rules, 1800);
+		const high = playerStats(lane, withVision(90), rules, 1800);
+		expect(line(high, "b-support").rating).toBeGreaterThan(
+			line(low, "b-support").rating,
+		);
+		// The lanes do not weigh vision: their rating does not change.
+		expect(line(high, "b-mid").rating).toBe(line(low, "b-mid").rating);
 	});
 });
