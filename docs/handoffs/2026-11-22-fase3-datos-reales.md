@@ -1,6 +1,6 @@
 # Handoff · Fase 3, datos reales
 
-Estado: en curso (actualizado el 24-11, sesión larga de la madrugada)
+Estado: sustituido por [2026-11-25-cierre-fase3-y-fase35.md](2026-11-25-cierre-fase3-y-fase35.md)
 
 Para retomar en una sesión nueva. Decisiones en el [registro](../decisions/README.md); detalle en el [plan 11](../plans/11-datos-reales.md) y el [plan general](../plans/00-plan-general.md).
 
