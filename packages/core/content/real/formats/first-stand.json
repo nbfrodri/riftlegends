@@ -12,7 +12,25 @@
 			},
 			"entrants": {
 				"kind": "qualified",
-				"competition": "first-stand"
+				"competition": "first-stand",
+				"places": [
+					{
+						"league": "LPL",
+						"place": 1
+					},
+					{
+						"league": "LEC",
+						"place": 1
+					},
+					{
+						"league": "LCP",
+						"place": 1
+					},
+					{
+						"league": "LCK",
+						"place": 2
+					}
+				]
 			},
 			"play": {
 				"type": "doubleElim",
@@ -49,7 +67,25 @@
 			},
 			"entrants": {
 				"kind": "qualified",
-				"competition": "first-stand"
+				"competition": "first-stand",
+				"places": [
+					{
+						"league": "LCK",
+						"place": 1
+					},
+					{
+						"league": "LCS",
+						"place": 1
+					},
+					{
+						"league": "CBLOL",
+						"place": 1
+					},
+					{
+						"league": "LPL",
+						"place": 2
+					}
+				]
 			},
 			"play": {
 				"type": "doubleElim",
@@ -84,10 +120,32 @@
 				"matchDays": 2,
 				"maxSeriesPerDay": 4
 			},
-			"entrants": {
-				"kind": "qualified",
-				"competition": "first-stand"
-			},
+			"entrants": [
+				{
+					"kind": "bracket",
+					"stage": "groupA",
+					"match": "U2-1",
+					"result": "winner"
+				},
+				{
+					"kind": "bracket",
+					"stage": "groupB",
+					"match": "U2-1",
+					"result": "winner"
+				},
+				{
+					"kind": "bracket",
+					"stage": "groupA",
+					"match": "L2-1",
+					"result": "winner"
+				},
+				{
+					"kind": "bracket",
+					"stage": "groupB",
+					"match": "L2-1",
+					"result": "winner"
+				}
+			],
 			"play": {
 				"type": "singleElim",
 				"size": 4,
