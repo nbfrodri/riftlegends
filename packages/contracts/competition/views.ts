@@ -94,5 +94,3 @@ const teamProfile = z.strictObject({
 });
 
 export const competitionViews = { overview: seasonOverview, teamProfile };
-export type SeasonOverview = z.infer<typeof seasonOverview>;
-export type TeamProfile = z.infer<typeof teamProfile>;

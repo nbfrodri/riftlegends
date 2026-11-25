@@ -6,7 +6,7 @@ import type { SeasonSession } from "./handlers";
 import { playSeasonSeries, type SeasonFixture } from "./season-series";
 
 /** A player's line in a game, as `match.ended` writes it. */
-export interface GameLine {
+interface GameLine {
 	readonly player: string;
 	readonly team: string;
 	readonly champion: string;
