@@ -7,6 +7,7 @@ import { FIGHT_CONTEST } from "./contests/fights";
 import { LANE_CONTESTS } from "./contests/lane";
 import { OBJECTIVE_CONTESTS } from "./contests/objectives";
 import { STRUCTURE_CONTESTS } from "./contests/structures";
+import { recordPlays } from "./events";
 import { recordMultikills } from "./multikills";
 import { trackSnapshots } from "./snapshot";
 import {
@@ -65,8 +66,11 @@ export function playMinute(
 	// Nothing happens after the nexus falls.
 	const end = resolved.findIndex((e) => e.kind === "nexus");
 	if (end >= 0) resolved.length = end + 1;
-	const events = resolved.map(recordMultikills);
-	return { state: applyEvents(current, events), events };
+	const { events, plays } = recordPlays(
+		current,
+		resolved.map(recordMultikills),
+	);
+	return { state: applyEvents({ ...current, plays }, events), events };
 }
 
 /**

@@ -1,6 +1,10 @@
 import { min } from "../math/int";
 import type { Slot } from "./bracket";
-import { crossGroupSchedule, groupSchedule } from "./groups";
+import {
+	balancedCrossSchedule,
+	crossGroupSchedule,
+	groupSchedule,
+} from "./groups";
 import type { StageOutcomes } from "./qualification";
 import { roundRobin } from "./round-robin";
 import { resolveStage } from "./season";
@@ -18,6 +22,9 @@ export interface FixtureSlot {
 	/** Entrant slots also distinguish pending teams in a round robin. */
 	readonly entrants: readonly string[];
 	readonly after: readonly string[];
+	readonly bestOf?: 1 | 3 | 5;
+	readonly groupPoints?: number;
+	readonly earliestWeek?: number;
 }
 
 function bracketSlots(
@@ -109,6 +116,7 @@ export function stageFixtures(
 
 	const entrants =
 		ids ?? Array.from({ length: play.size }, (_, index) => String(index + 1));
+	const special = play.type === "groups" ? play.finalRound : undefined;
 	let days: ReturnType<typeof roundRobin>;
 	if (play.type === "roundRobin") {
 		days = roundRobin(entrants, play.rounds);
@@ -127,17 +135,28 @@ export function stageFixtures(
 			[];
 		const schedule =
 			play.seeding === "cross" ? crossGroupSchedule : groupSchedule;
-		days = schedule(groups, play.inner.rounds);
+		days = special
+			? balancedCrossSchedule(groups[0] ?? [], groups[1] ?? [])
+			: schedule(groups, play.inner.rounds);
 	}
-	const fixtures = days.flatMap(({ fixtures }, round) =>
-		fixtures.map(
-			({ a, b }, index): FixtureSlot => ({
+	const fixtures: FixtureSlot[] = [];
+	for (const [round, day] of days.entries()) {
+		const final = special && round === days.length - 1 ? special : undefined;
+		const after = final ? fixtures.map(({ id }) => id) : [];
+		for (const [index, { a, b }] of day.fixtures.entries()) {
+			fixtures.push({
 				id: `round-${round + 1}-${index + 1}`,
 				teams: ready ? [a, b] : [null, null],
 				entrants: [a, b],
-				after: [],
-			}),
-		),
-	);
+				after,
+				...(special &&
+					play.type === "groups" && {
+						bestOf: final?.bestOf ?? play.inner.bestOf,
+						groupPoints: final?.groupPoints ?? 1,
+					}),
+				...(final && { earliestWeek: final.week }),
+			});
+		}
+	}
 	return { fixtures };
 }

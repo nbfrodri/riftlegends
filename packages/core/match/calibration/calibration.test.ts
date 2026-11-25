@@ -141,6 +141,58 @@ describe.each(["control", "packaged", "real-champions", "real"] as const)(
 			expect(games(3)).toBeGreaterThan(games(4));
 		});
 
+		// K23–K27 (plan 08, #508): Leaguepedia's stored Riot timelines, 317 games of
+		// LCK, LEC, LCS, LCP and CBLOL. Bands are the pro value ± sampling noise.
+		// The sim misses several of them; they stay `test.fails` until it is calibrated.
+		describe("K23–K27 · special plays against pro timelines", () => {
+			const plays = even.map((g) => g.plays);
+			const share = (test: (p: (typeof plays)[number]) => boolean) =>
+				rate(plays, test);
+			const mean = (value: (p: (typeof plays)[number]) => number) =>
+				plays.reduce((sum, p) => sum + value(p), 0) / plays.length;
+
+			// https://github.com/nbfrodri/riftlegends/issues/508
+			test.fails("K23 · first blood: median minute 3.5–5.5, P90 at least 6.5 (pro 4.5 and 8.8)", () => {
+				const minutes = plays.map((p) => p.firstBloodMinute ?? 99);
+				expect(at(minutes, 0.5)).toBeGreaterThanOrEqual(3.5);
+				expect(at(minutes, 0.5)).toBeLessThanOrEqual(5.5);
+				expect(at(minutes, 0.9)).toBeGreaterThanOrEqual(6.5);
+			});
+
+			test.fails("K23 · first blood has an assistant in 80–95 % of games (pro 89 %)", () => {
+				const assisted = share((p) => p.firstBloodAssisted);
+				expect(assisted).toBeGreaterThanOrEqual(0.8);
+				expect(assisted).toBeLessThanOrEqual(0.95);
+			});
+
+			test.fails("K24 · 0.9–1.5 unassisted top or mid kills per game (pro 1.19)", () => {
+				expect(mean((p) => p.soloKills)).toBeGreaterThanOrEqual(0.9);
+				expect(mean((p) => p.soloKills)).toBeLessThanOrEqual(1.5);
+			});
+
+			test.fails("K25 · 3.5–5.5 shutdowns per game, and at least one in 90 % of games (pro 4.6 and 97 %)", () => {
+				expect(mean((p) => p.shutdowns)).toBeGreaterThanOrEqual(3.5);
+				expect(mean((p) => p.shutdowns)).toBeLessThanOrEqual(5.5);
+				expect(share((p) => p.shutdowns > 0)).toBeGreaterThanOrEqual(0.9);
+			});
+
+			test.fails("K26 · 0.7–1.2 aces per game, in 55–80 % of games (pro 0.94 and 68 %)", () => {
+				expect(mean((p) => p.aces)).toBeGreaterThanOrEqual(0.7);
+				expect(mean((p) => p.aces)).toBeLessThanOrEqual(1.2);
+				expect(share((p) => p.aces > 0)).toBeGreaterThanOrEqual(0.55);
+				expect(share((p) => p.aces > 0)).toBeLessThanOrEqual(0.8);
+			});
+
+			test.fails("K27 · longest kill streak: 5 or more in 75–90 % of games, 7 or more in 33–50 % (pro 84 % and 43 %)", () => {
+				const five = share((p) => p.topSpree >= 5);
+				const seven = share((p) => p.topSpree >= 7);
+				expect(five).toBeGreaterThanOrEqual(0.75);
+				expect(five).toBeLessThanOrEqual(0.9);
+				expect(seven).toBeGreaterThanOrEqual(0.33);
+				expect(seven).toBeLessThanOrEqual(0.5);
+			});
+		});
+
 		it("K8 · role rating means are 56–64 and at most 5 points apart", () => {
 			const teams = even.flatMap((g) => g.teams);
 			const means = ROLES.map((role) => {
