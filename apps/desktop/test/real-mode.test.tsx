@@ -218,6 +218,12 @@ describe("real champions on the board (R4, A3)", () => {
 		expect(within(card).queryByText(/cannot be measured/)).toBeNull();
 		const first = marks[0] as HTMLElement;
 		expect(first.textContent).toMatch(/Estimated$/);
+		// #558: an estimated value's bar stays muted, without the level color.
+		for (const mark of marks) {
+			const fill = mark.querySelector('[data-slot="level-bar"] > *');
+			expect(fill?.className).toContain("bg-muted/40");
+			expect(fill?.className).not.toMatch(/bg-(good|bad)/);
+		}
 		await user.hover(first.firstElementChild as HTMLElement);
 		const tooltip = await screen.findByRole("tooltip");
 		expect(tooltip.textContent).toBe(
