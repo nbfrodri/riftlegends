@@ -3,7 +3,14 @@ import { Tooltip } from "@rift-legends/ui-kit/components/tooltip";
 import * as flags from "country-flag-icons/react/3x2";
 import { useTranslation } from "react-i18next";
 
-export function CountryFlag({ country }: { country?: string | undefined }) {
+export function CountryFlag({
+	country,
+	className = "h-3 w-[18px]",
+}: {
+	country?: string | undefined;
+	/** Tailwind size classes of the 3:2 flag; 18×12 px by default. */
+	className?: string;
+}) {
 	const { i18n } = useTranslation();
 	if (!country || !COUNTRY_CODES.has(country) || !Object.hasOwn(flags, country))
 		return null;
@@ -17,7 +24,7 @@ export function CountryFlag({ country }: { country?: string | undefined }) {
 	return (
 		<Tooltip content={name}>
 			<span className="inline-flex shrink-0 align-middle">
-				<Flag role="img" aria-label={name} className="h-3 w-[18px]" />
+				<Flag role="img" aria-label={name} className={className} />
 			</span>
 		</Tooltip>
 	);

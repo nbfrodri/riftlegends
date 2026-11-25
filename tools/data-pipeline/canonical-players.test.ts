@@ -91,6 +91,54 @@ test("hashed disambiguators of the same handle and team merge too", () => {
 	]);
 });
 
+test("look-alike characters (I for l, 0 for o) on the same team merge", () => {
+	const snapshot = build();
+	snapshot.games = [game("1", [line("BrokenBlade"), line("BrokenBlade")])];
+	snapshot.rosters = [];
+	snapshot.seasonPlayers = [
+		{
+			id: "BrokenBlade",
+			name: "BrokenBlade",
+			role: "top",
+			sub: false,
+			team: "Alpha",
+		},
+		{
+			id: "BrokenBIade",
+			name: "BrokenBIade",
+			sub: true,
+			noGames: true,
+			team: "Alpha",
+		},
+		{ id: "Z0ro", name: "Z0ro", sub: false, team: "Alpha" },
+		{ id: "Zoro", name: "Zoro", sub: false, noGames: true, team: "Alpha" },
+	];
+	const [merged] = mergeSamePlayers([snapshot]);
+	expect(merged?.seasonPlayers.map((p) => p.id)).toEqual([
+		"BrokenBlade",
+		"Z0ro",
+	]);
+});
+
+test("look-alike handles on different teams stay separate", () => {
+	const snapshot = build();
+	snapshot.seasonPlayers.push({
+		id: "XyIo",
+		name: "XyIo",
+		sub: false,
+		team: "Beta",
+	});
+	snapshot.seasonPlayers.push({
+		id: "Xylo",
+		name: "Xylo",
+		sub: false,
+		team: "Alpha",
+	});
+	const [merged] = mergeSamePlayers([snapshot]);
+	expect(merged?.seasonPlayers.map((p) => p.id)).toContain("XyIo");
+	expect(merged?.seasonPlayers.map((p) => p.id)).toContain("Xylo");
+});
+
 test("the same handle on different teams stays as separate players", () => {
 	const snapshot = build();
 	snapshot.seasonPlayers.push({
@@ -114,4 +162,58 @@ test("the committed snapshot has no duplicated players left", () => {
 		JSON.parse(readFileSync(fileURLToPath(new URL(`${id}.json`, dir)), "utf8")),
 	);
 	expect(mergeSamePlayers(snapshots)).toEqual(snapshots);
+});
+
+test("no player is duplicated anywhere in the committed content", () => {
+	const dir = new URL("../../packages/core/content/real/", import.meta.url);
+	const read = (file: string) =>
+		JSON.parse(readFileSync(fileURLToPath(new URL(file, dir)), "utf8"));
+	const normalized = (id: string) =>
+		(id.split("~")[0] ?? id)
+			.replace(/I/g, "l")
+			.toLowerCase()
+			.replace(/0/g, "o")
+			.replace(/[^a-z0-9]/g, "");
+	const clashes: string[] = [];
+	const unique = (
+		kind: string,
+		values: string[],
+		label: (v: string) => string,
+	) => {
+		const seen = new Map<string, string>();
+		for (const value of values) {
+			const key = label(value);
+			const other = seen.get(key);
+			if (other !== undefined) clashes.push(`${kind}: ${other} / ${value}`);
+			else seen.set(key, value);
+		}
+	};
+	const players = read("players.json") as { id: string }[];
+	unique(
+		"id",
+		players.map((p) => p.id),
+		(id) => id,
+	);
+	unique(
+		"handle",
+		players.map((p) => p.id),
+		normalized,
+	);
+	const photos = (
+		read("photos.json") as { photos: { player: string; url: string }[] }
+	).photos;
+	unique(
+		"photo",
+		photos.map((p) => p.url),
+		(url) => url,
+	);
+	for (const league of ["lck", "lpl", "lec", "lcp", "lcs", "cblol"]) {
+		const snapshot = read(`${league}.json`) as Snapshot;
+		unique(
+			"season id",
+			snapshot.seasonPlayers.map((p) => p.id),
+			(id) => id,
+		);
+	}
+	expect(clashes).toEqual([]);
 });

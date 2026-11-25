@@ -65,10 +65,16 @@ export interface AssetProgress {
 	readonly total: number;
 	/** Verified installed version available during a background startup update. */
 	readonly cachedVersion?: string;
+	/**
+	 * The cache lacks assets the app uses (#555): startup keeps the loading
+	 * screen until they are downloaded.
+	 */
+	readonly incomplete?: boolean;
 }
 
 export type AssetStatus =
 	| { state: "missing" }
 	| { state: "syncing"; progress: AssetProgress }
-	| { state: "ready"; version: string }
+	/** `incomplete`: usable, but some official assets are missing (offline). */
+	| { state: "ready"; version: string; incomplete?: true }
 	| { state: "error" };

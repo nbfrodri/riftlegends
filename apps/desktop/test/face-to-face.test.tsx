@@ -99,7 +99,7 @@ const parts = (cell: HTMLElement) =>
 		(part) => (part as HTMLElement).dataset.part,
 	);
 
-test("each lane player sits in fixed tracks: photo and champion at the outer edge, name block centred", async () => {
+test("each lane player sits in fixed tracks: photo and champion at the outer edge, name next to them", async () => {
 	await render();
 	const blue = playerCells("blue");
 	const red = playerCells("red");
@@ -116,9 +116,20 @@ test("each lane player sits in fixed tracks: photo and champion at the outer edg
 	expect(new Set(grids.slice(5)).size).toBe(1);
 	expect(grids[0]).toMatch(/\bgrid\b/);
 	expect(grids[0]).not.toMatch(/justify-center/);
-	for (const cell of [...blue, ...red]) {
+	// #548: the «Player» header uses the same tracks as its rows.
+	const playerHeaders = [
+		...screen
+			.getByRole("table", { name: "Face to face" })
+			.querySelectorAll<HTMLElement>("thead th[scope=col]"),
+	].filter((th) => th.textContent === "Player");
+	expect(playerHeaders.map((th) => th.firstElementChild?.className)).toEqual([
+		grids[0],
+		grids[5],
+	]);
+	for (const [i, cell] of [...blue, ...red].entries()) {
 		const name = cell.querySelector<HTMLElement>("[data-part=name]");
-		expect(name?.className).toMatch(/\btext-center\b/);
+		// #548: next to the pictures, mirrored on red.
+		expect(name?.className).toMatch(i < 5 ? /\btext-left\b/ : /\btext-right\b/);
 		expect(name?.className).toMatch(/\bmin-w-0\b/);
 		for (const line of name?.children ?? [])
 			expect(line.className).toMatch(/\btruncate\b/);
@@ -198,7 +209,7 @@ test("#502: a bigger face to face, with a 48 px photo and a 28 px champion badge
 	]);
 });
 
-test("#502: K/D/A, CS and gold are 15 px tabular numbers in centred cells", async () => {
+test("#502: K/D/A, CS and gold are 15 px tabular numbers", async () => {
 	await render();
 	const body = within(screen.getByRole("table", { name: "Face to face" }))
 		.getAllByRole("row")
@@ -234,7 +245,7 @@ test("#502: player names and K/D/A use the normal text colour, never the side co
 	}
 });
 
-test("#509: stat headers give the icon room above its label, centred with even padding on both sides", async () => {
+test("#509: stat headers give the icon room above its label, with even padding on both sides", async () => {
 	await render();
 	const headers = [
 		...screen
@@ -249,7 +260,22 @@ test("#509: stat headers give the icon room above its label, centred with even p
 		expect(stack.className).toMatch(/\bflex-col\b/);
 		expect(stack.className).toMatch(/\bgap-1\b/);
 	}
-	expect(new Set(headers.map((th) => th.className)).size).toBe(1);
+	// #548: each side's headers start at the player's edge, like their figures.
+	const classes = headers.map((th) => th.className);
+	expect(new Set(classes.slice(0, 3)).size).toBe(1);
+	expect(new Set(classes.slice(3)).size).toBe(1);
+	expect(classes[0]).toMatch(/\btext-left!/);
+	expect(classes[3]).toMatch(/\btext-right!/);
+	const body = within(screen.getByRole("table", { name: "Face to face" }))
+		.getAllByRole("row")
+		.slice(2);
+	for (const row of body) {
+		const stats = [...row.querySelectorAll("td")].filter(
+			(cell) => !cell.querySelector("[data-lane-player]"),
+		);
+		for (const [i, cell] of stats.entries())
+			expect(cell.className).toMatch(i < 3 ? /\btext-left!/ : /\btext-right!/);
+	}
 });
 
 const officialVision = "rift-asset://cdragon/stats/vision.svg";

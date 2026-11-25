@@ -150,6 +150,7 @@ describe("main asset cache tiles", () => {
 		expect(await offline.sync()).toEqual({
 			state: "ready",
 			version: t.version,
+			incomplete: true,
 		});
 		expect(offline.getChampions()?.[0]?.key).toBe(103);
 

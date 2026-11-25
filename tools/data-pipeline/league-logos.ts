@@ -8,7 +8,7 @@ import { type LogosOptions, writeLogoMetadata } from "./logos.ts";
 
 const leaguesUrl = `${lolesportsApi}/getLeagues?hl=en-US`;
 const leagueSlugs = {
-	CBLOL: "cblol",
+	CBLOL: "cblol-brazil",
 	"First Stand": "first-stand",
 	LCK: "lck",
 	LCP: "lcp",
