@@ -636,7 +636,7 @@ Cada cambio de hechos actualiza y verifica sus goldens y las bandas ya vigentes.
 
 ## Ampliación 25-11: tiempos de muerte y disponibilidad por jugador (#523)
 
-- **Estado:** propuesta (25-11-2026), pendiente de las preguntas del final. Issue [#523](https://github.com/nbfrodri/riftlegends/issues/523), con #339 (definitivas), #374 (hechizos de invocador) y #358 (cara a cara).
+- **Estado:** aprobado por el usuario (25-11-2026; [decisiones](#decisiones-del-usuario-25-11-2026)). Issue [#523](https://github.com/nbfrodri/riftlegends/issues/523), con #339 (definitivas), #374 (hechizos de invocador) y #358 (cara a cara).
 - **Objetivo:** un jugador muerto no cuenta hasta que reaparece. Toda disputa enfrenta solo a los vivos de cada lado (4 contra 5 tras una cazada antes del barón). Ganar una pelea abre una ventana con ventaja numérica para objetivos y estructuras. Un ace tardío con la base abierta puede terminar la partida. El cara a cara muestra al muerto en gris con su cuenta atrás.
 - **Hoy:** el motor no guarda muertes. Las disputas usan el perfil del equipo entero, las bajas de una pelea no afectan a la siguiente y la única secuela de una pelea es `fightPushAt` (puntos de asedio el minuto siguiente). Todas las disputas de un minuto se resuelven sobre el estado del inicio del minuto.
 
@@ -701,11 +701,11 @@ Máximo: 78,75 s (nivel 18 desde el minuto 55). En el núcleo, todo entero: BRW 
 
 | Banda | Comprobación |
 | --- | --- |
-| K18 · Vivos al tomar | Barón, inhibidor y torre tomados con más vivos: a ≤ 10 pp del pro (piloto 62 / 75 / 47 %). Con menos vivos: ≤ 10 % en los tres. |
-| K19 · Conversión tras pelea | Objetivo o estructura del ganador en ≤ 60 s, por margen 1 / 2 / 3+: a ≤ 10 pp del pro (piloto 43 / 62 / 80 %) y creciente con el margen. |
-| K20 · Cierre tras ace tardío | Pelea desde el 25 con 4+ muertos que termina la partida en ≤ 60 s: a ≤ 12 pp del pro (piloto 56 %). Perdedor con 3+ muertos al caer el nexo: a ≤ 10 pp (piloto 73 %). |
-| K21 · Tiempos de muerte | P50 a ≤ 5 s del pro (piloto 40 s); P10 y P90 a ≤ 8 s. Depende de la curva de nivel. |
-| Regresión | K1–K17 en verde. Se vigilan sobre todo K2 (duración: los cierres tras ace acortan partidas), K3 y K6 (menos bajas posibles con muertos) y K16. |
+| K19 · Vivos al tomar | Barón, inhibidor y torre tomados con más vivos: a ≤ 10 pp del pro (piloto 62 / 75 / 47 %). Con menos vivos: ≤ 10 % en los tres. |
+| K20 · Conversión tras pelea | Objetivo o estructura del ganador en ≤ 60 s, por margen 1 / 2 / 3+: a ≤ 10 pp del pro (piloto 43 / 62 / 80 %) y creciente con el margen. |
+| K21 · Cierre tras ace tardío | Pelea desde el 25 con 4+ muertos que termina la partida en ≤ 60 s: a ≤ 12 pp del pro (piloto 56 %). Perdedor con 3+ muertos al caer el nexo: a ≤ 10 pp (piloto 73 %). |
+| K22 · Tiempos de muerte | P50 a ≤ 5 s del pro (piloto 40 s); P10 y P90 a ≤ 8 s. Depende de la curva de nivel. |
+| Regresión | K1–K18 en verde. Se vigilan sobre todo K2 (duración: los cierres tras ace acortan partidas), K3 y K6 (menos bajas posibles con muertos) y K16. |
 
 ### Diseño
 
@@ -764,7 +764,7 @@ Sustituye a `fightPushAt`. Al terminar una pelea en la que el ganador queda con 
 3. **Toma:** cada intento es una disputa de asedio u objetivo con la causa `numbers` ya calculada (con 5 contra 2 casi siempre sale). Cada estructura o objetivo consume un tiempo fijo de `rules` (calibrable: p. ej. 20 s una torre, 25 s el barón con el equipo entero). Se encadenan intentos mientras quede ventana.
 4. **Cierre tras ace:** si la ventana es larga (muertes tardías de 50–75 s) y la base está abierta o se abre en la ventana, la cadena llega a las torres del nexo y al nexo. La partida termina por el nexo, como siempre (M2).
 
-La vieja ventaja de `fightPushAt` desaparece del perfil; su efecto lo dan las muertes. El oro de farmeo que un muerto pierde (minutos muertos × su parte del oro pasivo) es la pregunta 5.
+La vieja ventaja de `fightPushAt` desaparece del perfil; su efecto lo dan las muertes. **Un muerto pierde su oro de farmeo:** la parte proporcional de su oro pasivo por los segundos que está muerto. K7 y K16 siguen en verde.
 
 #### Hechos, reproducción y cara a cara
 
@@ -792,25 +792,25 @@ Sin bucle por segundo: las muertes son marcas de tiempo y se consultan al resolv
 | Hechizos (#374) | `spells.<hechizo>.readyAt` con recargas de los datos del juego. Flash baja la probabilidad de morir en cazadas y dives (menos muertes, D2). Teleport permite a un jugador recién reaparecido unirse a la jugada o a la ventana (acorta la ventaja numérica rival). Castigo pesa en los objetivos: sin castigo listo, la jungla pierde parte de su peso de objetivo. |
 | Cara a cara (#358) | Lee los tres campos del mismo registro: gris y cuenta atrás si está muerto; iconos de ulti y hechizos atenuados con su recarga. |
 
-### Preguntas para el usuario
+### Decisiones del usuario (25-11-2026)
 
-| # | Pregunta | Recomendación |
-| --- | --- | --- |
-| 1 | ¿De dónde sale el nivel mientras no exista #338? | Curva de nivel por rol y minuto desde las timelines. Desbloquea #523 ahora; #338 la sustituye después. |
-| 2 | ¿Se pueden usar las timelines de Riot que guarda Leaguepedia (`V5 data`) en el pipeline? | Sí, solo para agregados (bandas y curva de nivel) y sin publicar datos de partida. LPL queda fuera porque no tiene timelines. Se añade a créditos y al registro de decisiones. |
-| 3 | ¿Cuánto modelo por rol? | Causa `numbers` más atributos de los vivos sumados por peso de rol, y los factores de draft sin cambios. Un perfil completo por jugador se deja para cuando la calibración lo pida. |
-| 4 | ¿Resolución secuencial por segundo dentro del minuto? | Sí. Es lo que permite el 4 contra 5 en el mismo minuto; cambia todos los goldens, así que va en una sola subida de versión. |
-| 5 | ¿Un muerto pierde su oro de farmeo mientras está muerto? | Sí, la parte proporcional de su oro pasivo, porque es real y barato. Se vigila K7 y K16. |
-| 6 | ¿Se modelan resurrecciones (Ángel de la Guarda, Zilean) o estasis? | No por ahora; son raras y no cambian las bandas. |
+| # | Decisión |
+| --- | --- |
+| 1 | **Timelines de Riot de Leaguepedia** (`V5 data`) en el pipeline: sí, **solo agregados** (bandas y curva de nivel), nunca datos por partida. LPL queda fuera (no tiene timelines). Se añade a Créditos y al registro de decisiones. |
+| 2 | **Nivel:** curva por rol y minuto desde las timelines; #338 la sustituye después sin cambiar este diseño. |
+| 3 | **Resolución en orden de segundo** dentro del minuto, con una sola subida de `SIM_VERSION` y sin bucle por segundo. |
+| 4 | **Un muerto pierde** la parte proporcional de su oro pasivo y de farmeo; K7 y K16 siguen en verde. |
+| 5 | **Fuerza por rol:** causa `numbers` más atributos de los vivos sumados por peso de rol; los factores de draft no cambian. |
+| 6 | **Sin resurrecciones ni estasis** por ahora. |
 
 ### Troceado propuesto
 
 | # | Issue | Área | Test que lo cierra | Depende de |
 | --- | --- | --- | --- | --- |
-| 1 | `data:timelines`: bandas K18–K21 y curva de nivel por rol y minuto desde las timelines | `area:data` | Bandas y curva reproducibles desde la caché; sin datos de partida en el repo | Pregunta 2 |
-| 2 | Estado por jugador, fórmula de muerte, víctimas vivas y resolución secuencial por segundo | `area:core` | D1–D4, D9, D10 y K21; `SIM_VERSION` | 1 (curva) |
-| 3 | Las disputas cuentan solo a los vivos por peso de rol | `area:core` | D5, D6 y K18; regresión K1–K17 | 2 |
-| 4 | Ventana de conversión tras pelea y cierre tras ace; retirar `fightPushAt` | `area:core` | D7, D8, K19 y K20; `SIM_VERSION` | 3 |
+| 1 | `data:timelines`: bandas K19–K22 y curva de nivel por rol y minuto desde las timelines | `area:data` | Bandas y curva reproducibles desde la caché; sin datos de partida en el repo | — |
+| 2 | Estado por jugador, fórmula de muerte, víctimas vivas, oro perdido al morir y resolución secuencial por segundo | `area:core` | D1–D4, D9, D10 y K22; `SIM_VERSION` | 1 (curva) y #525 (refactor de `state.ts`) |
+| 3 | Las disputas cuentan solo a los vivos por peso de rol | `area:core` | D5, D6 y K19; regresión K1–K18 | 2 |
+| 4 | Ventana de conversión tras pelea y cierre tras ace; retirar `fightPushAt` | `area:core` | D7, D8, K20 y K21; `SIM_VERSION` | 3 |
 | 5 | Cara a cara: muerto en gris con cuenta atrás | `area:ui` | D11 (componente y E2E) | 2; junto a #358 |
 | 6 | Rendimiento del año IA contra IA | `area:core` | D12 | 4 |
 
