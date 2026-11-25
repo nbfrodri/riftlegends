@@ -6,14 +6,23 @@ import {
 import { cleanup, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useEffect, useRef } from "react";
-import { afterEach, expect, test, vi } from "vitest";
+import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { BroadcastScene } from "../src/renderer/draft/broadcast/scene";
 import { RolesScreen } from "../src/renderer/draft/roles-screen";
 import {
 	DraftSessionProvider,
 	useDraftSession,
 } from "../src/renderer/draft/session";
+import { ButtonClickSound } from "../src/renderer/sound/button-click";
 import { namedDraft, renderWithDraftCore } from "./draft-core";
+
+const sound = vi.hoisted(() => ({ play: vi.fn(), preload: vi.fn() }));
+vi.mock("../src/renderer/sound", () => ({
+	playSound: sound.play,
+	preloadSounds: sound.preload,
+}));
+beforeEach(() => sound.play.mockClear());
+const played = () => sound.play.mock.calls.map(([id]) => id);
 
 afterEach(() => {
 	cleanup();
@@ -57,6 +66,7 @@ function renderRoles(mine = "shoal") {
 	return renderWithDraftCore(
 		<DraftSessionProvider>
 			<Driver mine={mine} />
+			<ButtonClickSound />
 			<RolesScreen />
 		</DraftSessionProvider>,
 		"en-US",
@@ -245,4 +255,28 @@ test("every row of both lineups shows the player's photo or its silhouette", asy
 			within(row).getByRole("img", { name: `Portrait of ${handle}` });
 		}
 	}
+});
+
+test("completing a swap with its button plays swap once, with no generic click on top (#512)", async () => {
+	const { user } = await pendingOnFirst();
+	expect(played()).toEqual([]);
+	await user.click(swapButton(own()[2] as HTMLElement));
+	expect(played()).toEqual(["swap"]);
+});
+
+test("swapping by clicking the row also plays swap once", async () => {
+	const { user } = await pendingOnFirst();
+	sound.play.mockClear();
+	await user.click(own()[3] as HTMLElement);
+	expect(played()).toEqual(["swap"]);
+});
+
+test("cancelling a pending swap plays no swap, by Escape or by the same button", async () => {
+	const { user } = await pendingOnFirst();
+	sound.play.mockClear();
+	await user.keyboard("{Escape}");
+	await user.click(swapButton(own()[0] as HTMLElement));
+	sound.play.mockClear();
+	await user.click(swapButton(own()[0] as HTMLElement));
+	expect(played()).toEqual([]);
 });
