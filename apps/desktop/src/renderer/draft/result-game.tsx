@@ -57,7 +57,6 @@ const statIcons = {
 	kda: "kda",
 	gold: "gold",
 	damage: "damage",
-	vision: "vision",
 } as const satisfies Record<string, Stat>;
 
 function Stats({
@@ -110,15 +109,27 @@ function Stats({
 								scope="col"
 								className={`whitespace-nowrap px-1 py-1 font-normal ${i < 2 ? "text-left" : "text-right"}`}
 							>
-								<span className="inline-flex items-center gap-1">
-									{key in statIcons && (
-										<StatIcon
-											stat={statIcons[key as keyof typeof statIcons]}
-											size={18}
-										/>
-									)}
-									{t(`draft.result.stats.${key}`)}
-								</span>
+								{key === "vision" ? (
+									// The icon alone, so the champion keeps its room at 1280×720 (#510).
+									<Tooltip content={t("draft.result.stats.vision")}>
+										<span className="inline-flex items-center">
+											<StatIcon stat="vision" size={18} />
+											<span className="sr-only">
+												{t("draft.result.stats.vision")}
+											</span>
+										</span>
+									</Tooltip>
+								) : (
+									<span className="inline-flex items-center gap-1">
+										{key in statIcons && (
+											<StatIcon
+												stat={statIcons[key as keyof typeof statIcons]}
+												size={18}
+											/>
+										)}
+										{t(`draft.result.stats.${key}`)}
+									</span>
+								)}
 							</th>
 						))}
 						<th scope="col" className="px-1 py-1 text-right font-normal">
