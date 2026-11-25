@@ -4,7 +4,10 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { clockTime } from "../match/playback";
 import { playSound } from "../sound";
-import { COUNTDOWN_SECONDS, startCountdownTicks } from "../sound/countdown-ticks";
+import {
+	COUNTDOWN_SECONDS,
+	startCountdownTicks,
+} from "../sound/countdown-ticks";
 import { pacing } from "./broadcast/pacing";
 import { useDraftSession } from "./session";
 
