@@ -254,6 +254,7 @@ export const seriesOptions = z.strictObject({
 						role: z.enum(ROLES),
 						handle: aiContent.shape.players.element.shape.handle,
 						nationality: aiContent.shape.players.element.shape.nationality,
+						birthDate: aiContent.shape.players.element.shape.birthDate,
 						attributes: matchContent.shape.players.element.shape.attributes,
 						/** Attributes estimated rather than measured; the UI marks them. */
 						estimated: aiContent.shape.players.element.shape.estimated,

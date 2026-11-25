@@ -2,6 +2,7 @@ import { readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { realSnapshotSchema } from "@rift-legends/contracts/real-snapshot";
+import { parseBirthDates } from "./birthdate.ts";
 import { parseHistory } from "./history.ts";
 import { parseNationalities } from "./nationality.ts";
 import { buildPlayerTeamContent } from "./player-team-content.ts";
@@ -39,10 +40,20 @@ export async function buildContent(inputDir = dir) {
 	});
 	const nationalities =
 		countryData === undefined ? [] : parseNationalities(countryData).players;
+	const birthData = await readFile(
+		join(inputDir, "birthdates.json"),
+		"utf8",
+	).catch((error: NodeJS.ErrnoException) => {
+		if (error.code !== "ENOENT") throw error;
+	});
+	const birthDates =
+		birthData === undefined ? [] : parseBirthDates(birthData).players;
 	const { players, teams, provenance } = buildPlayerTeamContent(
 		snapshots,
 		careers,
 		new Map(nationalities.map(({ id, country }) => [id, country])),
+		undefined,
+		new Map(birthDates.map(({ id, birthDate }) => [id, birthDate])),
 	);
 	return {
 		"players.json": serializeRows(players),
