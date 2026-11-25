@@ -44,11 +44,11 @@
 				"image": "https://static.lolesports.com/leagues/lcs.png"
 			},
 			{
-				"id": "7",
-				"slug": "cblol",
+				"id": "98767991325878492",
+				"slug": "cblol-brazil",
 				"name": "CBLOL",
-				"region": "REGIONAL",
-				"image": "https://static.lolesports.com/leagues/cblol.png"
+				"region": "BRAZIL",
+				"image": "http://static.lolesports.com/leagues/cblol-logo-symbol-offwhite.png"
 			},
 			{
 				"id": "8",

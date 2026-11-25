@@ -124,7 +124,7 @@ function Stats({
 		"share",
 	] as const;
 	return (
-		<section className="bg-panel px-4 py-3">
+		<section className="bg-panel px-3 py-3">
 			<div className="flex flex-wrap items-baseline justify-between gap-x-4">
 				<p className="font-semibold text-[12px] text-muted uppercase tracking-[0.055em]">
 					{t("draft.result.game.label", {
@@ -144,7 +144,7 @@ function Stats({
 			</div>
 			<table
 				aria-label={t("draft.result.stats.name", { game: game.game })}
-				className="mt-2 w-full text-[14px] tabular-nums"
+				className="mt-2 w-full whitespace-nowrap text-[13px] tabular-nums"
 			>
 				<thead className="bg-surface text-[13px] text-muted">
 					<tr>
@@ -152,24 +152,36 @@ function Stats({
 							<th
 								key={key}
 								scope="col"
-								className={`whitespace-nowrap px-1 py-1 font-normal ${i < 2 ? "text-left" : "text-right"}`}
+								className={`px-1.5 py-1 font-normal ${i < 2 ? "w-px text-left" : "text-center"}`}
 							>
 								{key === "vision" ? (
 									// The icon alone, so the champion keeps its room at 1280×720 (#510).
 									<Tooltip content={t("draft.result.stats.vision")}>
 										<span className="inline-flex items-center">
-											<StatIcon stat="vision" size={18} />
+											<StatIcon stat="vision" size={16} />
 											<span className="sr-only">
 												{t("draft.result.stats.vision")}
 											</span>
 										</span>
 									</Tooltip>
+								) : key === "share" ? (
+									// Short, with the full name in the tooltip, so long champion names fit (#524).
+									<Tooltip content={t("draft.result.stats.share")}>
+										<span>
+											<span aria-hidden="true">
+												{t("draft.result.stats.shareShort")}
+											</span>
+											<span className="sr-only">
+												{t("draft.result.stats.share")}
+											</span>
+										</span>
+									</Tooltip>
 								) : (
-									<span className="inline-flex items-center gap-1">
+									<span className="inline-flex items-center gap-0.5">
 										{key in statIcons && (
 											<StatIcon
 												stat={statIcons[key as keyof typeof statIcons]}
-												size={18}
+												size={16}
 											/>
 										)}
 										{t(`draft.result.stats.${key}`)}
@@ -177,7 +189,7 @@ function Stats({
 								)}
 							</th>
 						))}
-						<th scope="col" className="px-1 py-1 text-right font-normal">
+						<th scope="col" className="px-1.5 py-1 text-center font-normal">
 							{t("draft.result.stats.rating")}
 						</th>
 					</tr>
@@ -190,9 +202,9 @@ function Stats({
 								key={line.player}
 								className={`border-line border-b ${i === 5 ? "border-t-2 border-t-muted" : ""}`}
 							>
-								<th scope="row" className="px-1 py-1 text-left font-semibold">
+								<th scope="row" className="px-1.5 py-1 text-left font-semibold">
 									<span
-										className={`flex items-center gap-1.5 whitespace-nowrap ${line.side === "blue" ? "text-side-blue" : "text-side-red"}`}
+										className={`flex items-center gap-1 whitespace-nowrap ${line.side === "blue" ? "text-side-blue" : "text-side-red"}`}
 									>
 										<GameRoleIcon role={line.role} size={16} />
 										<span className="flex w-[18px] shrink-0">
@@ -207,32 +219,30 @@ function Stats({
 										/>
 									</span>
 								</th>
-								<td className="w-1/4 max-w-0 px-1 py-1 text-left">
-									<span className="flex items-center gap-1.5">
+								<td className="px-1.5 py-1 text-left">
+									<span className="flex items-center gap-1">
 										<ChampionPortrait id={line.champion} size="compact" />
-										<span className="truncate">
-											{championLabel(options, line.champion)}
-										</span>
+										<span>{championLabel(options, line.champion)}</span>
 									</span>
 								</td>
-								<td className="px-1 py-1 text-right">
+								<td className="px-1.5 py-1 text-center">
 									{line.kills}/{line.deaths}/{line.assists}
 								</td>
-								<td className="px-1 py-1 text-right">
+								<td className="px-1.5 py-1 text-center">
 									{grouped.format(line.gold)}
 								</td>
-								<td className="px-1 py-1 text-right">
+								<td className="px-1.5 py-1 text-center">
 									{grouped.format(line.damage)}
 								</td>
-								<td className="px-1 py-1 text-right">
+								<td className="px-1.5 py-1 text-center">
 									{grouped.format(line.vision)}
 								</td>
-								<td className="px-1 py-1 text-right">
+								<td className="px-1.5 py-1 text-center">
 									{t("draft.result.percent", {
 										value: percent(line.participation),
 									})}
 								</td>
-								<td className="px-1 py-1 text-right font-bold">
+								<td className="px-1.5 py-1 text-center font-bold">
 									{line.rating}
 								</td>
 							</tr>
@@ -311,7 +321,7 @@ export function GameReport(props: {
 	const { options } = useDraftSession();
 	const { game } = props;
 	return (
-		<div className="grid min-w-0 grid-cols-[minmax(0,1.18fr)_minmax(0,1fr)] items-stretch gap-3">
+		<div className="grid min-w-0 grid-cols-[minmax(0,1.17fr)_minmax(0,1fr)] items-stretch gap-3">
 			<Stats game={game} showWinner={props.showWinner} />
 			<div className="grid grid-rows-[auto_1fr] gap-3">
 				<GapsTable
