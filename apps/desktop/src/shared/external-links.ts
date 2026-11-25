@@ -4,5 +4,6 @@ export const CREDIT_LINK_HOSTS: readonly string[] = [
 	"creativecommons.org",
 	"www.communitydragon.org",
 	"lolesports.com",
+	"kenney.nl",
 	"www.npmjs.com",
 ];

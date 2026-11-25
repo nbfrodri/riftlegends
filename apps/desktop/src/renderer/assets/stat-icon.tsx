@@ -20,6 +20,10 @@ const fallbacks = {
 
 export type Stat = keyof typeof fallbacks;
 
+// The client draws these grey; its eye is dark (#1E2328), so it is inverted (#510).
+const lighten = (stat: Stat) =>
+	stat === "vision" ? "invert" : "brightness-200";
+
 /**
  * The client's scoreboard icon for a stat; the own icon when it is not cached
  * or fails to load. A plain image: a CSS mask over a rift-asset:// SVG does not
@@ -38,7 +42,7 @@ export function StatIcon({ stat, size = 14 }: { stat: Stat; size?: number }) {
 				width={size}
 				height={size}
 				onError={() => setFailed(src)}
-				className={`${box} object-contain brightness-200`}
+				className={`${box} object-contain ${lighten(stat)}`}
 			/>
 		);
 	}

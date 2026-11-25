@@ -22,6 +22,14 @@ const recipes: Record<
 		decay: 80,
 		voices: [{ from: 1200, to: 900, gain: 0.35 }],
 	},
+	swap: {
+		seconds: 0.2,
+		decay: 16,
+		voices: [
+			{ from: 880, to: 660, gain: 0.3 },
+			{ from: 660, to: 880, gain: 0.3 },
+		],
+	},
 	tick: {
 		seconds: 0.09,
 		decay: 40,

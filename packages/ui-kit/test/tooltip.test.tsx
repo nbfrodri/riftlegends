@@ -141,3 +141,31 @@ test("hover waits for the provider delay; a disabled tooltip never opens", async
 		undefined,
 	);
 });
+
+test("an extra line shows rich content, such as an icon and a value, under the text", async () => {
+	const user = userEvent.setup();
+	render(
+		<TooltipProvider delay={0}>
+			<Tooltip
+				heading="Keria"
+				content="Rakan"
+				extra={
+					<span data-testid="extra">
+						<img alt="" src="rift-asset://cdragon/stats/vision.svg" />
+						Vision 42
+					</span>
+				}
+			>
+				<span>Keria</span>
+			</Tooltip>
+		</TooltipProvider>,
+	);
+	await user.hover(screen.getByText("Keria"));
+	const popup = within(await screen.findByRole("tooltip"));
+	expect(popup.getByText("Rakan")).toBeTruthy();
+	const extra = popup.getByTestId("extra");
+	expect(extra.textContent).toBe("Vision 42");
+	expect(extra.querySelector("img")?.getAttribute("src")).toBe(
+		"rift-asset://cdragon/stats/vision.svg",
+	);
+});
