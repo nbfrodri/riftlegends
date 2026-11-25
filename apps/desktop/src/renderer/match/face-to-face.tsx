@@ -271,11 +271,21 @@ export function FaceToFace({
 				</colgroup>
 				<thead>
 					<tr>
-						<th scope="colgroup" data-side="blue" colSpan={4} className="py-0.5!">
+						<th
+							scope="colgroup"
+							data-side="blue"
+							colSpan={4}
+							className="py-0.5!"
+						>
 							{names.blue}
 						</th>
 						<td />
-						<th scope="colgroup" data-side="red" colSpan={4} className="py-0.5!">
+						<th
+							scope="colgroup"
+							data-side="red"
+							colSpan={4}
+							className="py-0.5!"
+						>
 							{names.red}
 						</th>
 					</tr>
