@@ -83,6 +83,7 @@ const game = (n: number, winner: string, mid: string): GameResult => {
 			gold: 0,
 			damage: 0,
 			participation: 0,
+			vision: 40,
 			rating: role === "mid" && team === "forge" && n === 2 ? 90 : 50,
 		})),
 	);
