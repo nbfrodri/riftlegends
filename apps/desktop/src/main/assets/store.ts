@@ -19,6 +19,8 @@ import {
 	mergeChampionCatalogs,
 	parseChampionSummary,
 	portraitFile,
+	splashFile,
+	splashPath,
 	tileFile,
 	tilePath,
 } from "./catalog";
@@ -44,6 +46,8 @@ interface VerifiedCatalog {
 	catalog: ChampionCatalog;
 	/** False for a cache made before champion tiles (#367). */
 	tiles: boolean;
+	/** False for a cache made before landscape splashes (#494). */
+	splashes: boolean;
 }
 
 async function verifyCatalog(
@@ -84,11 +88,14 @@ async function verifyCatalog(
 		...communityFiles,
 		...english.map((champion) => portraitFile(version, champion)),
 	];
-	// A champion's tile is optional: the UI falls back to its icon.
+	// A champion's tile and splash are optional: the UI falls back to its icon.
 	const limits = new Map([
 		...locales.map((locale) => [catalogPath(locale), maxCatalogBytes] as const),
 		...required.map(({ path, limit }) => [path, limit] as const),
 		...english.map((champion) => [tilePath(champion), maxImageBytes] as const),
+		...english.map(
+			(champion) => [splashPath(champion), maxImageBytes] as const,
+		),
 	]);
 	if (required.some(({ path }) => !Object.hasOwn(digests, path)))
 		return undefined;
@@ -96,7 +103,11 @@ async function verifyCatalog(
 		const limit = limits.get(path);
 		if (!limit || !(await verifyFile(path, limit))) return undefined;
 	}
-	return { catalog, tiles: manifest.tiles === true };
+	return {
+		catalog,
+		tiles: manifest.tiles === true,
+		splashes: manifest.splashes === true,
+	};
 }
 
 export async function readActiveVersion(
@@ -130,7 +141,7 @@ export async function prepareVersion(
 ): Promise<ChampionCatalog | undefined> {
 	const target = join(root, version);
 	const existing = await verifyCatalog(target, version).catch(() => undefined);
-	if (existing?.tiles) return existing.catalog;
+	if (existing?.tiles && existing.splashes) return existing.catalog;
 	const staging = await cachePath(
 		root,
 		`staging-${version}/manifest.json`,
@@ -194,11 +205,17 @@ export async function prepareVersion(
 		progress(++completed, total);
 	}
 	for (const champion of localized.en) {
-		const tile = await downloadTile(stageRoot, version, champion, transport);
-		if (tile) manifest[tilePath(champion)] = tile;
+		const art = await downloadArt(stageRoot, version, champion, transport);
+		if (art.tile) manifest[tilePath(champion)] = art.tile;
+		if (art.splash) manifest[splashPath(champion)] = art.splash;
 		progress(++completed, total);
 	}
-	await writeJson(staging, { version, tiles: true, files: manifest });
+	await writeJson(staging, {
+		version,
+		tiles: true,
+		splashes: true,
+		files: manifest,
+	});
 	const verified = await verifyCatalog(stageRoot, version);
 	if (!verified) throw new Error("Staged assets failed verification");
 	await rm(join(stageRoot, "upstream"), { recursive: true, force: true });
@@ -208,13 +225,16 @@ export async function prepareVersion(
 	return verified.catalog;
 }
 
-/** Missing or unexpected champion data leaves the champion with its icon. */
-async function downloadTile(
+/**
+ * The base skin's tile and landscape splash. Missing or unexpected champion
+ * data leaves the champion with its icon; a missing splash keeps the tile.
+ */
+async function downloadArt(
 	stageRoot: string,
 	version: string,
 	champion: LocalizedChampionAsset,
 	transport: AssetTransport,
-): Promise<Digest | undefined> {
+): Promise<{ tile?: Digest | undefined; splash?: Digest | undefined }> {
 	const missing = (error: unknown) => {
 		if (error instanceof AssetHttpError && error.status === 404)
 			return undefined;
@@ -222,13 +242,17 @@ async function downloadTile(
 	};
 	const data = championDataFile(version, champion);
 	if (!(await downloadFile(stageRoot, data, transport).catch(missing)))
-		return undefined;
-	const file = tileFile(
-		version,
-		champion,
-		await readJson(await cachePath(stageRoot, data.path), maxChampionDataBytes),
+		return {};
+	const json = await readJson(
+		await cachePath(stageRoot, data.path),
+		maxChampionDataBytes,
 	);
-	return file && downloadFile(stageRoot, file, transport).catch(missing);
+	const download = (file: ReturnType<typeof tileFile>) =>
+		file && downloadFile(stageRoot, file, transport).catch(missing);
+	return {
+		tile: await download(tileFile(version, champion, json)),
+		splash: await download(splashFile(version, champion, json)),
+	};
 }
 
 export async function activateVersion(

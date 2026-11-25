@@ -262,6 +262,25 @@ describe("#436: the ban preview pulses in the active slot", () => {
 		expect(slots()[1]?.querySelector("[class*='border']")).toBeNull();
 	});
 
+	test("the preview shows the ban's diagonal line, which does not pulse", async () => {
+		await renderInLocale(
+			<TurnHarness bans={["toppy"]} banning preview="middy" />,
+		);
+		const strike = slots()[1]?.querySelector<HTMLElement>("[data-ban-strike]");
+		// The same line as a confirmed ban: it reads "this will be banned".
+		expect(strike?.className).toContain(
+			"after:bg-[linear-gradient(to_bottom_right",
+		);
+		expect(strike?.getAttribute("aria-hidden")).toBe("true");
+		// Outside the pulsing portrait, which stays in colour.
+		expect(preview()?.contains(strike as Node)).toBe(false);
+		const face = within(slots()[1] as HTMLElement).getByRole("img", {
+			name: "Middy",
+		});
+		expect(face.querySelector("img.grayscale")).toBeNull();
+		expect(face.className).not.toContain("after:bg-[linear-gradient");
+	});
+
 	test("deselecting clears the preview", async () => {
 		await renderInLocale(
 			<TurnHarness bans={["toppy"]} banning preview="middy" />,
@@ -289,6 +308,10 @@ describe("#436: the ban preview pulses in the active slot", () => {
 		);
 		expect(preview()?.className).not.toContain("draft-pending");
 		expect(preview()?.className).toContain("opacity-50");
+		// The portrait is dimmed; the line stays at full strength.
+		const strike = slots()[1]?.querySelector("[data-ban-strike]");
+		expect(strike).not.toBeNull();
+		expect(preview()?.contains(strike as Node)).toBe(false);
 	});
 
 	test("confirming the previewed ban plays the stamp in that slot", async () => {
@@ -335,6 +358,28 @@ describe("#435: the pick preview pulses until it is locked in", () => {
 		// Only the portrait pulses: no border around the row (user, 24-11).
 		expect(mark()).toBeNull();
 		expect(row().textContent).toContain("Choosing");
+	});
+
+	test("#494: the art covers most of the row and melts into the player", async () => {
+		await renderInLocale(
+			<TeamColumn
+				side="blue"
+				first
+				team={team(["toppy"])}
+				options={options}
+				current={null}
+				onPlayer={() => {}}
+			/>,
+		);
+		const box = portrait("Toppy") as HTMLElement;
+		expect(box.className).toContain("w-[85%]");
+		expect(box.className).toContain("[container-type:size]");
+		// A long eased fade: transparent on the player's side, solid on the right.
+		expect(box.className).toContain(
+			"[mask-image:linear-gradient(to_right,transparent,rgb(0_0_0/0.15)_20%,rgb(0_0_0/0.45)_40%,rgb(0_0_0/0.8)_60%,#000_78%)]",
+		);
+		// The name stays readable over the art.
+		expect(row().querySelector("strong")?.className).toContain("[text-shadow:");
 	});
 
 	test("a locked pick stops pulsing", async () => {
