@@ -29,7 +29,9 @@ export function buildBirthDates(
 	const resolve = idResolver(ids);
 	const found = new Map<string, string>();
 	for (const row of rows) {
-		const id = row.Link ? resolve(row.Link) : undefined;
+		const id =
+			(row.Link ? resolve(row.Link) : undefined) ??
+			(row.Page ? resolve(row.Page) : undefined);
 		const birthDate = parseBirthDate(row.Birthdate);
 		if (!id || !birthDate) continue;
 		const previous = found.get(id);
