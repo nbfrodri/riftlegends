@@ -12,6 +12,15 @@ export { expect } from "@playwright/test";
 
 // Chromium's --lang sets app.getLocale() on every platform, so the UI
 // language does not depend on the machine running the tests.
+// Visual captures only (#501): the default GPU path runs on SwiftShader, which
+// JITs by CPU model, so rounded-corner anti-aliasing differed by 1 level
+// between GitHub runners (EPYC 9V74 vs 7763). CPU raster with portable Skia
+// code renders the same everywhere.
+const rasterFlags = () =>
+	process.env.RIFT_VISUAL_RASTER === "software"
+		? ["--disable-gpu", "--disable-skia-runtime-opts"]
+		: [];
+
 export function launchApp(
 	{ playwright }: Pick<PlaywrightWorkerArgs, "playwright">,
 	options: {
@@ -26,10 +35,7 @@ export function launchApp(
 				".",
 				`--user-data-dir=${options.profileDir}`,
 				`--lang=${options.systemLocale}`,
-				// Skia picks SSE/AVX raster code by CPU model, and GitHub runners
-				// differ: rounded-corner anti-aliasing changed by 1 level between
-				// runs (#501). The portable path renders the same on every CPU.
-				"--disable-skia-runtime-opts",
+				...rasterFlags(),
 			],
 			chromiumSandbox: true,
 			env: {

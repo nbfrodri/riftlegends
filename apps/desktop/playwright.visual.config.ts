@@ -4,6 +4,9 @@ import { defineConfig } from "@playwright/test";
 // the CI image (ubuntu-latest under Xvfb) and are never generated locally: see
 // e2e/visual/README.md. The path has no platform suffix on purpose, because the
 // tests skip on every other platform.
+// Read by e2e/fixtures.ts when the app is launched.
+process.env.RIFT_VISUAL_RASTER = "software";
+
 export default defineConfig({
 	testDir: "e2e/visual",
 	snapshotPathTemplate: "{testDir}/__screenshots__/{testFilePath}/{arg}{ext}",
