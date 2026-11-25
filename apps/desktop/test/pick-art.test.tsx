@@ -3,6 +3,7 @@ import { afterEach, describe, expect, test, vi } from "vitest";
 import {
 	framing,
 	PickArt,
+	splashFocus,
 	splashFraming,
 } from "../src/renderer/draft/board/pick-art";
 
@@ -113,5 +114,13 @@ describe("#494: the landscape splash fills the pick row", () => {
 
 	test("without real content there is no splash", () => {
 		expect(art("Ahri").dataset.framing).toBe("default");
+	});
+
+	test("champions whose face the default cuts have their own splash focus", () => {
+		// Read off the contact sheet of every champion (user, 25-11).
+		expect(splashFocus("Ahri")).toEqual({ x: 50, y: 33 });
+		for (const id of ["Braum", "Illaoi", "Orianna"])
+			expect(splashFocus(id).y).toBeLessThan(33);
+		expect(splashFocus("Tryndamere").x).toBeGreaterThan(50);
 	});
 });
