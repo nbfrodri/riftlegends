@@ -102,6 +102,73 @@ describe("player card (U5)", () => {
 			expect(cell.textContent).toMatch(/\d+ (High|Medium|Low)/);
 	});
 
+	const kilnaraCard = async () => {
+		const user = userEvent.setup();
+		await renderWithDraftCore(<DraftScreen />);
+		await toBoard(user);
+		const blue = screen.getByRole("region", { name: "Blue side Forge" });
+		await user.click(within(blue).getByRole("button", { name: /Kilnara/ }));
+		return screen.getByRole("group", { name: /Player card/ });
+	};
+	const fillOf = (value: number) =>
+		value >= 75 ? "bg-good" : value <= 45 ? "bg-bad" : "bg-muted";
+
+	test("#558: each area is a card and each attribute has a short bar in its level color, next to its number", async () => {
+		const card = await kilnaraCard();
+		for (const area of ["Lane", "Map", "Fight", "Mental", "Team"]) {
+			const section = within(card)
+				.getByRole("heading", { name: area })
+				.closest("section");
+			expect(section?.className).toMatch(/\bborder\b/);
+		}
+		const values = within(card).getAllByRole("definition");
+		expect(values).toHaveLength(20);
+		for (const value of values) {
+			const number = Number(value.textContent?.match(/^\d+/)?.[0]);
+			const bar = value.querySelector('[data-slot="level-bar"]');
+			expect(bar?.getAttribute("aria-hidden")).toBe("true");
+			const fill = bar?.firstElementChild as HTMLElement;
+			expect(fill.style.width).toBe(`${number}%`);
+			expect(fill.className).toContain(fillOf(number));
+		}
+		const composure = within(card).getByText("Composure").nextSibling;
+		expect(composure?.textContent).toMatch(
+			new RegExp(`^${forgeMid?.attributes.composure} (High|Medium|Low)$`),
+		);
+	});
+
+	test("#558: the pool lists each group with its title, and a mastery bar and number under each portrait", async () => {
+		const card = await kilnaraCard();
+		const pool = within(card).getByRole("region", { name: "Champion pool" });
+		const group = (name: string) => within(pool).getByRole("list", { name });
+		const entries = [
+			["Mains", "Glasswake", 90],
+			["Secondary", "Rimefoil", 70],
+			["Weak", "Waxblade", 35],
+		] as const;
+		for (const [title, champion, mastery] of entries) {
+			const item = within(group(title)).getByRole("listitem", {
+				name: `${champion}, mastery ${mastery}`,
+			});
+			expect(item.querySelector(`[data-tooltip="${champion}"]`)).not.toBeNull();
+			const bar = item.querySelector('[data-slot="mastery-bar"]');
+			expect(bar?.getAttribute("aria-hidden")).toBe("true");
+			const fill = bar?.firstElementChild as HTMLElement;
+			expect(fill.style.width).toBe(`${mastery}%`);
+			expect(fill.className).toContain(fillOf(mastery));
+			expect(
+				item.querySelector('[data-slot="mastery-value"]')?.textContent,
+			).toBe(String(mastery));
+		}
+		// Weak champions are dimmed; the others are not.
+		expect(within(group("Weak")).getByRole("listitem").className).toMatch(
+			/opacity-/,
+		);
+		expect(within(group("Mains")).getByRole("listitem").className).not.toMatch(
+			/opacity-/,
+		);
+	});
+
 	test("#376: hovering or focusing a player does not change the card", async () => {
 		const user = userEvent.setup();
 		await renderWithDraftCore(<DraftScreen />);
@@ -172,5 +239,17 @@ describe("team logos (#376)", () => {
 		const red = screen.getByRole("region", { name: "Red side Shoal" });
 		expect(red.querySelector("header img")).toBeNull();
 		expect(red.querySelector("header svg")).not.toBeNull();
+	});
+});
+
+describe("player age", () => {
+	test("the card says the age is unknown when the content has no birth date", async () => {
+		const user = userEvent.setup();
+		await renderWithDraftCore(<DraftScreen />);
+		await toBoard(user);
+		const blue = screen.getByRole("region", { name: "Blue side Forge" });
+		await user.click(within(blue).getByRole("button", { name: /Kilnara/ }));
+		const card = screen.getByRole("group", { name: /Player card/ });
+		expect(within(card).getByRole("img", { name: "Age unknown" })).toBeTruthy();
 	});
 });

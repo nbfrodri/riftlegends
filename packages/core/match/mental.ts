@@ -7,6 +7,7 @@ import {
 } from "@rift-legends/contracts";
 import { indexContent } from "../ai/content-index";
 import { type Fixed, max, min, mul, SCALE } from "../math";
+import type { MatchCause, MatchCauseKey } from "./cause-keys";
 import type { Contest, Lineup, Scored } from "./profile";
 
 // Mental and series layer of plan 08 (F6-F12 and focus). Pure and without
@@ -59,8 +60,11 @@ const VARIANCE_PER_POINT = 100;
 const VARIANCE_MIN = 5_000;
 const VARIANCE_MAX = 20_000;
 
-const cause = (key: string, points: number) => ({ key, points });
-const scored = (causes: { key: string; points: number }[]): Scored => ({
+const cause = (key: MatchCauseKey, points: number): MatchCause => ({
+	key,
+	points,
+});
+const scored = (causes: MatchCause[]): Scored => ({
 	total: causes.reduce((t, c) => t + c.points, 0),
 	causes,
 });

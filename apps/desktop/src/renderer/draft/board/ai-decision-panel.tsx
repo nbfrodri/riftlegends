@@ -6,7 +6,7 @@ import {
 	type Side,
 } from "@rift-legends/contracts";
 import { Ban, Minus, Plus } from "lucide-react";
-import { memo, useId, useState } from "react";
+import { memo, useEffect, useId, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { GameRoleIcon } from "../../assets/game-role-icon";
 import { useFacts } from "../../core";
@@ -21,6 +21,7 @@ type Decision = Extract<
 type Component = Decision["components"][number];
 type Alternative = Decision["alternatives"][number];
 
+export const AI_PANEL_ID = "ai-read";
 const OPEN_PREFERENCE = "riftlegends.draft.aiPanel.open";
 // Scores are fixed point per 10,000: half a point apart is a close call.
 const CLOSE_GAP = 5_000;
@@ -33,6 +34,18 @@ function storedOpen() {
 	} catch {
 		return false;
 	}
+}
+
+export function useAiPanelOpen() {
+	const [open, setOpen] = useState(storedOpen);
+	useEffect(() => {
+		try {
+			localStorage.setItem(OPEN_PREFERENCE, String(open));
+		} catch {
+			// The panel still works if the preference cannot be saved.
+		}
+	}, [open]);
+	return [open, setOpen] as const;
 }
 
 /** Weight of a factor relative to the strongest one of its decision. */
@@ -243,6 +256,8 @@ export const AiDecisionPanel = memo(function AiDecisionPanel({
 	rival,
 	picks,
 	side,
+	open,
+	onOpenChange,
 }: {
 	game: number;
 	options: SeriesOptions;
@@ -250,9 +265,10 @@ export const AiDecisionPanel = memo(function AiDecisionPanel({
 	/** The rival's picks in player-row order: a pick's row is its player's role. */
 	picks: readonly string[];
 	side: Side | null;
+	open: boolean;
+	onOpenChange: (open: boolean) => void;
 }) {
 	const { t } = useTranslation();
-	const [open, setOpen] = useState(storedOpen);
 	const [decisions, setDecisions] = useState<Decision[]>([]);
 	useFacts((facts) => {
 		if (!rival) return;
@@ -284,18 +300,11 @@ export const AiDecisionPanel = memo(function AiDecisionPanel({
 
 	return (
 		<InspectionPanel
-			id="ai-read"
+			id={AI_PANEL_ID}
 			title={t("draft.aiPanel.title")}
 			note={decisions[0] ? teamName(options, decisions[0].team) : undefined}
 			open={open}
-			onOpenChange={(next) => {
-				setOpen(next);
-				try {
-					localStorage.setItem(OPEN_PREFERENCE, String(next));
-				} catch {
-					// The panel still works if the preference cannot be saved.
-				}
-			}}
+			onOpenChange={onOpenChange}
 			accent={side === "blue" ? "border-side-blue" : "border-side-red"}
 		>
 			{decisions.length > 0 ? (
