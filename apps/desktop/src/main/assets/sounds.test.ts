@@ -60,6 +60,7 @@ describe("official champ-select sounds (#472)", () => {
 			"lock",
 			"pick",
 			"select",
+			"swap",
 		]);
 		for (const { url, size, sha256 } of championSelectSounds) {
 			expect(url).toMatch(
@@ -69,6 +70,15 @@ describe("official champ-select sounds (#472)", () => {
 			expect(size).toBeLessThanOrEqual(256 * 1024);
 			expect(sha256).toMatch(/^[0-9a-f]{64}$/);
 		}
+	});
+
+	test("the swap sound is the client's trade-accepted notification (#512)", () => {
+		const swap = championSelectSounds.find(({ id }) => id === "swap");
+		expect(swap?.url).toBe(`${official}/sfx-cs-notif-traderequest-accepted.ogg`);
+		expect(swap?.size).toBe(52_815);
+		expect(swap?.sha256).toBe(
+			"1bc989a2f8a1bfc9f109f6015cdd46aca04907543ff3fee7e61871fbc832a052",
+		);
 	});
 
 	test("downloads each sound once, verifies it and reads it back from disk", async () => {
