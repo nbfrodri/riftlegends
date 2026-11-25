@@ -234,14 +234,14 @@ Código en `packages/core/match/attribution/`. Ámbito RNG `matchAttribution = 5
 
 Los pesos de asistencia salen muy por encima de los iniciales porque cada baja ya reparte 2–4 asistentes entre cuatro aliados: solo un peso muy alto hace que el apoyo participe en casi todas, como en el pro (KP 74 %). El oro del evento no cambia con el número de asistentes: una baja con otro jugador paga una sola bolsa y `stats.ts` la divide entre los asistentes (el primero recibe el resto).
 
-Las referencias de bajas, KP y daño salen de la tabla de competición. Para asistencias y muertes, usar el mismo snapshot y método con cifras por 30 minutos (`stat × 1800 / lengthSeconds`). El usuario aprobó los pesos de la nota el 23-11-2026. Visión, objetivos y presión son estimaciones de la simulación.
+Las referencias de bajas, KP y daño salen de la tabla de competición. Para asistencias y muertes, usar el mismo snapshot y método con cifras por 30 minutos (`stat × 1800 / lengthSeconds`). El usuario aprobó los pesos de la nota el 23-11-2026. Objetivos y presión son estimaciones de la simulación; la visión, una puntuación simulada (#499).
 
 | Rol | Peso de la nota (%) | Señal específica |
 | --- | --- | --- |
 | Top | Daño 40, presión 35, muertes 25 | Proporción de disputas de línea top ganadas y torres top tomadas sobre las disputadas. |
-| Jungla | KP 45, objetivos 35, muertes 20 | Proporción de dragones, heraldos, barones y elders obtenidos sobre los resueltos. |
+| Jungla | KP 40, objetivos 32, muertes 18, visión 10 (usuario, 25-11) | Proporción de dragones, heraldos, barones y elders obtenidos sobre los resueltos. |
 | Mid / ADC | Daño 45, bajas 30, muertes 25 | Cuotas de daño y bajas del equipo. |
-| Apoyo | KP 35, asistencias 25, muertes 20, visión 20 | Estimar visión con el atributo `vision` y la proporción de disputas en jungla y fosos ganadas. |
+| Apoyo | KP 35, asistencias 25, muertes 20, visión 20 | Puntuación de visión simulada con el atributo `vision` y las disputas de jungla y fosos ganadas (#499). |
 
 Objetivos y presión tienen anclajes de 0, 50 y 100 % de éxitos. En visión, promediar el atributo (0–100) y el porcentaje de disputas ganadas para usar los mismos anclajes. Sin disputas, la contribución de visión es neutra.
 
@@ -256,6 +256,24 @@ Código en `packages/core/match/rating.ts`; `stats.ts` le pasa las métricas. `S
 | Escala | Lineal por tramos: P10 a 0, referencia a 60, P90 a 100, acotada; en muertes el eje se invierte. Un solo redondeo (mitad a par) al final |
 | Desglose | `rate` devuelve cada parte con valor, nota (centésimas) y peso |
 | Anclajes | P10 y P90 del pro (Leaguepedia). La **referencia** (el 60) no es la media del pro: la escala es cóncava (más margen por encima que por debajo), así que con la media la nota media sale 54–56. Se fija donde la media de la simulación puntúa 60 (800 partidas, pool real y de control), y para muertes y asistencias de apoyo se parte de lo que juega la simulación |
+
+#### Visión simulada (#499, 25-11-2026)
+
+`playerStats` suma `vision` (puntuación de visión de la partida, entero) a cada línea de `match.ended`; `SIM_VERSION` 13. Sin tiradas nuevas: sale del rol, el atributo `vision`, la duración y las disputas ganadas.
+
+| Pieza | Valor |
+| --- | --- |
+| Base por 30 min | La media pro (Leaguepedia, 4.756 líneas, `VisionScore × 1800 / segundos`): top 40, jungla 54, mid 40, ADC 40, apoyo 127 |
+| Atributo | ±0,5 % por punto de `vision` sobre 66 (la media de los jugadores reales es 72; los sintéticos de test, 60). Una pendiente mayor separaba demasiado el pool de control del real en K8 |
+| Disputas | La cuota de disputas de jungla y fosos ganadas por el equipo mueve la puntuación entre −10 % y +10 % (neutra sin disputas) |
+| Nota | El apoyo pondera la visión (20 %, pesos aprobados el 23-11): usa la puntuación por 30 min con anclajes P10 103, referencia 127 (media pro) y P90 151. Sustituye a la cuota de disputas. La jungla también la pondera desde el 25-11 por decisión del usuario (pesos KP 40, objetivos 32, muertes 18, visión 10; anclajes P10 40, referencia 54 y P90 69 del pro) |
+
+| K17 (1.000 partidas, pool real) | Top | Jungla | Mid | ADC | Apoyo |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Pro, media (P10–P90) | 40,3 (28,9–52,3) | 54,2 (39,9–69,2) | 40,3 (27,8–53,3) | 40,4 (27,1–54,5) | 126,6 (103–150,5) |
+| Simulación, media | 40,6 | 55,3 | 40,4 | 40,6 | 131,5 |
+
+K17: media a 8 % o menos de la pro y P10–P90 dentro del rango pro (la simulación es más estrecha: el atributo no recoge toda la variación de un jugador entre partidas). K8 (antes 59,4–60,8 en todos los roles): apoyo control 57,0, empaquetado 57,2, campeones reales 57,3, real 61,5; jungla 58,4 / 58,4 / 58,5 / 60,3; distancia máxima 4,5 (entre 57,0 y 61,5 es en el pool real; en control 3,4).
 
 | K8 (media por rol, 1.000 partidas) | Top | Jungla | Mid | ADC | Apoyo | Distancia |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
