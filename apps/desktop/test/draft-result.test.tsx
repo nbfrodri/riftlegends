@@ -125,7 +125,7 @@ describe("game result (U9)", () => {
 	test("shows the winner and every player's stats from match.view", async () => {
 		const core = await renderResult("game1");
 		const table = await screen.findByRole("table", { name: "Map 1 stats" });
-		for (const name of ["K/D/A", "Gold", "Damage"]) {
+		for (const name of ["K/D/A", "Gold", "Damage", "Vision"]) {
 			expect(
 				within(table)
 					.getByRole("columnheader", { name })
@@ -140,6 +140,13 @@ describe("game result (U9)", () => {
 		expect(
 			screen.getByText(`Victory for ${capital(ended.winner)}`),
 		).toBeTruthy();
+		// #510: vision uses the scoreboard's eye (Lucide's without the cache).
+		expect(
+			within(table)
+				.getByRole("columnheader", { name: "Vision" })
+				.querySelector("svg")
+				?.getAttribute("class"),
+		).toMatch(/\blucide-eye\b/);
 		const rows = within(table).getAllByRole("row").slice(1);
 		expect(rows).toHaveLength(10);
 		ended.players.forEach((p, i) => {
@@ -159,6 +166,7 @@ describe("game result (U9)", () => {
 				`${p.kills}/${p.deaths}/${p.assists}`,
 				grouped(p.gold),
 				grouped(p.damage),
+				grouped(p.vision),
 				`${Math.round(p.participation / 100)} %`,
 				String(p.rating),
 			]);
