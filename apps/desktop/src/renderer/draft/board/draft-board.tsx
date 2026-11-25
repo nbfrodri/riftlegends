@@ -151,9 +151,11 @@ export function DraftBoard() {
 
 	// One handler for the whole board, none per tile (S1): a click on empty
 	// space, or Escape with nothing to close, clears the champion and the player.
+	// The player card closes with it instead of staying open and empty.
 	const clear = () => {
 		setSelected(null);
 		setPlayer(null);
+		setCardOpen(false);
 	};
 	const clearOnClick = (event: MouseEvent) => {
 		if (!inside(event.target, KEEPS_ON_CLICK)) clear();
