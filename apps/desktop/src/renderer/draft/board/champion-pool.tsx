@@ -65,6 +65,7 @@ const Tile = memo(function Tile(props: {
 			<button
 				type="button"
 				data-index={props.index}
+				data-silent-click
 				data-card-champion={id}
 				aria-keyshortcuts="I"
 				tabIndex={props.tabbable ? 0 : -1}
