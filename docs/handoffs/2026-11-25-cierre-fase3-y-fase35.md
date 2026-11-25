@@ -21,6 +21,7 @@ Decisiones en el [registro](../decisions/README.md). Reglas del usuario: respues
 | #558 ficha con barras (opción A) | PR #567, aprobado y en la cola | — |
 | #559 edad del jugador | PR #563, aprobado y en la cola | — |
 | #562 relleno y nacionalidades | PR #566, aprobado y en la cola | — |
+| #557 cuelgues de caché en Windows | subagente Sonnet, `../riftlegends-557` (fix/557-windows-cache-hang) | en curso |
 | #546 cerrar «Lectura de la IA» con clic fuera | PR #564, aprobado y en la cola | — |
 | #550 causas sin traducir | PR #565, aprobado y en la cola | — |
 
@@ -53,3 +54,4 @@ Para Codex: leer `r<N>.json`, comprobar con `tack codex-used <thread_id>` (prime
 | test Q4 lento | test/snapshot-q4-speed | fusionado (#541) |
 | #535 reglas LEC y LCK Cup | feat/535-lec-lck-cup-rules | fusionado (#543) |
 | #546, #550 | ver arriba | en curso |
+| #525 refactor (gpt-6.2-sol medium, 25-11 21:20) | refactor/525-split-modules en `../riftlegends-525` | en curso; informe `~/.cache/rift-tmp/r525.json`, eventos `e525.jsonl`, thread 01a21458-f117-75f1-a1ca-76406abf7bcc |
