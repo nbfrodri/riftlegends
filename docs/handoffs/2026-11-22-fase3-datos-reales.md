@@ -115,3 +115,10 @@ Orden acordado con el usuario (25-11): cerrar Fase 3 (#443, #253, Stryker); Fase
 - **Codex primero:** el usuario prefiere delegar en Codex hasta agotar su uso; después, subagentes de Claude (Opus medium para lo visual y Sonnet medium para el resto). Codex no tiene red: las descargas de Leaguepedia o CommunityDragon las lanza Claude.
 - **PR que tocan las mismas pantallas:** fusionarlos de uno en uno. Al rebasar, en las capturas en conflicto se toma la de `main` y se regeneran con «Visual baselines».
 - **Test de rendimiento del tablero:** si falla de forma puntual, relanzarlo. Si se repite, investigar sin relajarlo (#329).
+
+## Delegaciones en Codex (25-11)
+
+| Fecha | Tarea | Rama / worktree | Modelo | Eventos / informe | Estado |
+| --- | --- | --- | --- | --- | --- |
+| 25-11 | #426 formatos de ligas | feat/426-league-formats · ../riftlegends-426 | gpt-6.2-sol medium | ~/.cache/rift-tmp/codex/e426.jsonl / r426.json | Parado sin informe (04:31); lo termina un subagente |
+| 25-11 | #366 multikills y KDA coherente | feat/366-multikills-kda · ../riftlegends-366 | gpt-6.2-sol medium | ~/.cache/rift-tmp/codex/e366.jsonl / r366.json | En curso |
