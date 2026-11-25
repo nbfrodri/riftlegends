@@ -20,7 +20,10 @@ import {
 } from "./draft-board-kit";
 import { namedDraft, renderWithDraftCore, seedNextSeries } from "./draft-core";
 
-afterEach(cleanup);
+afterEach(() => {
+	cleanup();
+	localStorage.removeItem("riftlegends.draft.aiPanel.open");
+});
 
 // Counts the renders of each pool tile's face, by champion.
 const poolFaces = vi.hoisted(() => ({ renders: new Map<string, number>() }));
@@ -273,6 +276,55 @@ describe("draft board (U3)", () => {
 		// still catches that without failing on CI timing noise (Windows hit
 		// 0.36 × mount). The Electron E2E measures the actual S1 frame budget.
 		expect(Math.min(...samples)).toBeLessThan(mount / 2);
+	});
+});
+
+describe("#546: dismissing the AI decisions panel", () => {
+	const panel = () =>
+		screen.getByRole("group", { name: "AI decisions" }) as HTMLDetailsElement;
+	const bar = () => within(panel()).getByText("AI decisions");
+
+	test.each([
+		[
+			"a click on empty space",
+			(user: ReturnType<typeof userEvent.setup>) =>
+				user.click(screen.getByRole("region", { name: "Champions" })),
+		],
+		[
+			"a click on a champion",
+			(user: ReturnType<typeof userEvent.setup>) =>
+				user.click(tile("Cragbell")),
+		],
+		[
+			"Escape from the bar",
+			(user: ReturnType<typeof userEvent.setup>) => user.keyboard("{Escape}"),
+		],
+	])("closes on %s", async (_, dismiss) => {
+		const user = userEvent.setup();
+		await renderWithDraftCore(<DraftScreen />);
+		await toBoard(user);
+		await user.click(bar());
+		expect(panel().open).toBe(true);
+
+		await dismiss(user);
+
+		expect(panel().open).toBe(false);
+	});
+
+	test("stays open on a click inside and its bar can still toggle it", async () => {
+		const user = userEvent.setup();
+		await renderWithDraftCore(<DraftScreen />);
+		await toBoard(user);
+		await user.click(bar());
+		expect(panel().open).toBe(true);
+
+		await user.click(
+			within(panel()).getByText("The rival has not made a decision yet."),
+		);
+		expect(panel().open).toBe(true);
+
+		await user.click(bar());
+		expect(panel().open).toBe(false);
 	});
 });
 

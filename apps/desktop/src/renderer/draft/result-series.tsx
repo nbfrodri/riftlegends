@@ -180,15 +180,18 @@ function KeyMoment({ game }: { game: GameResult }) {
 	const text = t(`draft.result.event.${event.kind}`, {
 		team: teamName(options, game[event.side]),
 	});
+	// Inline flow: the text follows the time and wraps under it, whole (#536).
 	return (
-		<span className="flex min-w-0 items-center gap-1.5">
-			<time className="shrink-0 font-bold text-action">
+		<span className="block text-[13px] leading-[15px] [overflow-wrap:anywhere]">
+			<time className="mr-1.5 font-bold text-action">
 				{clock(event.minute * 60 + event.second)}
 			</time>
-			{isObjectiveKind(event.kind) && <MapIcon kind={event.kind} />}
-			<Tooltip content={text}>
-				<span className="min-w-0 truncate">{text}</span>
-			</Tooltip>
+			{isObjectiveKind(event.kind) && (
+				<span className="mr-1.5 inline-flex align-text-bottom">
+					<MapIcon kind={event.kind} size="size-4" />
+				</span>
+			)}
+			{text}
 		</span>
 	);
 }
@@ -218,10 +221,10 @@ function Recap(props: {
 			>
 				<thead className="text-left text-muted">
 					<tr>
-						<th scope="col" className={`w-14 font-normal ${cell}`}>
+						<th scope="col" className={`w-12 font-normal ${cell}`}>
 							{t("draft.result.recap.map")}
 						</th>
-						<th scope="col" className={`w-[30%] font-normal ${cell}`}>
+						<th scope="col" className={`w-[24%] font-normal ${cell}`}>
 							{t("draft.result.recap.winner")}
 						</th>
 						<th scope="col" className={`w-16 font-normal ${cell}`}>
@@ -267,7 +270,7 @@ function Recap(props: {
 									</span>
 									{winsA} – {winsB}
 								</td>
-								<td className={cell}>
+								<td className="px-1.5 py-0.5">
 									<KeyMoment game={game} />
 								</td>
 								<td className={`text-muted ${cell}`}>{clock(game.duration)}</td>
