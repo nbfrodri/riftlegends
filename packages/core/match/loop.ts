@@ -7,6 +7,7 @@ import { FIGHT_CONTEST } from "./contests/fights";
 import { LANE_CONTESTS } from "./contests/lane";
 import { OBJECTIVE_CONTESTS } from "./contests/objectives";
 import { STRUCTURE_CONTESTS } from "./contests/structures";
+import { recordMultikills } from "./multikills";
 import { trackSnapshots } from "./snapshot";
 import {
 	applyEvents,
@@ -49,7 +50,7 @@ export function playMinute(
 		blue: earnPassive(state, "blue"),
 		red: earnPassive(state, "red"),
 	};
-	const events: MatchEvent[] = contests
+	const resolved: MatchEvent[] = contests
 		.filter((contest) => contest.due(current))
 		.flatMap((contest) =>
 			contest
@@ -62,8 +63,9 @@ export function playMinute(
 		// Stable: events of the same second keep the order of the contests.
 		.sort((a, b) => a.second - b.second);
 	// Nothing happens after the nexus falls.
-	const end = events.findIndex((e) => e.kind === "nexus");
-	if (end >= 0) events.length = end + 1;
+	const end = resolved.findIndex((e) => e.kind === "nexus");
+	if (end >= 0) resolved.length = end + 1;
+	const events = resolved.map(recordMultikills);
 	return { state: applyEvents(current, events), events };
 }
 

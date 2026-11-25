@@ -49,6 +49,15 @@ describe("2026 domestic formats", () => {
 		},
 	);
 
+	it("T1 LCK keeps its rulebook order, but the tiebreaker series stays Bo3 by user decision", () => {
+		expect(readFormat("LCK")).toMatchObject({
+			tiebreak: ["seriesWins", "gameDiff", "headToHead", "tiebreakerSeries"],
+			tiebreakerBestOf: 3,
+		});
+		const reasons: string[] = readFormat("LCK").unverifiedReasons;
+		expect(reasons.join(" ")).toContain("2025 LCK rulebook");
+	});
+
 	it.each(leagues)(
 		"R1 %s matches the snapshot, accounting for documented adaptations",
 		async (id) => {

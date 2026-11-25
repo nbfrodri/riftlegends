@@ -16,6 +16,12 @@ import {
 const lckCup = "Cup";
 const lckPlayIn = "Season Play-In";
 export const lck: LeagueDefinition = {
+	tiebreakRule: {
+		criteria: ["seriesWins", "gameDiff", "headToHead", "tiebreakerSeries"],
+		bestOf: 3,
+		reason:
+			"Tiebreak order (wins, set difference, head-to-head) comes from the 2025 LCK rulebook, section 2.8 (the 2026 edition was not available). The rulebook's single-game tiebreaker is replaced by the game's Bo3 by user decision.",
+	},
 	stages: [
 		stage("cup-groups", lckCup, weeks, "roster", {
 			type: "groups",
@@ -119,7 +125,7 @@ export const lck: LeagueDefinition = {
 		["season-playoffs", 4],
 	],
 	notes: [
-		"Cup cross-group play uses Bo3 throughout; the last five series were Bo5.",
+		"Cup cross-group play uses Bo3 throughout; lolesports confirms the Super Week series are Bo5 and worth 2 group points, not modelled.",
 		"Cup advancement uses a combined table instead of winning/losing group privileges. Summer cuts use the ranked Legend/Rise stage table.",
 		"The snapshot has only one game for Dplus Kia vs Gen.G in Week 10; the scheduled series is Bo3.",
 	],
@@ -189,7 +195,7 @@ export const lcp: LeagueDefinition = {
 		["split-3-playoffs", 3],
 	],
 	notes: [
-		"Split 3 uses the generic Swiss to three wins or losses. The calendar reserves up to three series in round 5; the snapshot has one.",
+		"Split 3 Swiss rules (Bo3, Bo5 on the third win or loss, Bo5 seeding matches) match lolesports. The calendar reserves up to three series in round 5; the snapshot has one. The third Worlds place goes to the Championship Points leader (ties: Split 3 playoff placement, then Swiss result), approximated here by the playoff third place.",
 		"The split 3 seeding ladder approximates team selection from the Swiss; the bottom seeding match is for placement only.",
 	],
 };
