@@ -186,9 +186,9 @@ function Kda({ line }: { line: Line }) {
 function StatHeader({ column }: { column: (typeof columns)[number] }) {
 	const { t } = useTranslation();
 	return (
-		// Icon over label: narrow headers; tight padding keeps the row low.
-		<th scope="col" className={`py-0! ${stat}`}>
-			<span className="inline-flex flex-col items-center gap-0.5">
+		// Icon over label with a 4 px gap, centred by even padding (#509).
+		<th scope="col" className={`py-1! ${stat}`}>
+			<span className="flex flex-col items-center gap-1">
 				<StatIcon stat={column} size={18} />
 				{t(`draft.match.faceToFace.${column}`)}
 			</span>
@@ -271,11 +271,11 @@ export function FaceToFace({
 				</colgroup>
 				<thead>
 					<tr>
-						<th scope="colgroup" data-side="blue" colSpan={4} className="py-1!">
+						<th scope="colgroup" data-side="blue" colSpan={4} className="py-0.5!">
 							{names.blue}
 						</th>
 						<td />
-						<th scope="colgroup" data-side="red" colSpan={4} className="py-1!">
+						<th scope="colgroup" data-side="red" colSpan={4} className="py-0.5!">
 							{names.red}
 						</th>
 					</tr>
