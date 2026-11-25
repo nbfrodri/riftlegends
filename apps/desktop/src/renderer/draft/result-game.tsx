@@ -178,6 +178,22 @@ function Stats({
 			<p className="mt-1.5 text-[12px] text-muted">
 				{t("draft.result.stats.footnote")}
 			</p>
+			{game.multikills && game.multikills.length > 0 && (
+				<ul
+					aria-label={t("draft.result.multikills")}
+					className="mt-1.5 flex max-h-8 flex-wrap content-start gap-x-4 overflow-y-auto text-[13px] leading-4"
+				>
+					{game.multikills.map(({ killer, count }, index) => (
+						// biome-ignore lint/suspicious/noArrayIndexKey: completed streaks retain the fact's order.
+						<li key={index} className="flex gap-x-1.5">
+							<span>{playerProfile(options, killer)?.handle ?? killer}</span>
+							<strong className="text-action">
+								{t(`draft.match.multikill.${count}`)}
+							</strong>
+						</li>
+					))}
+				</ul>
+			)}
 		</section>
 	);
 }

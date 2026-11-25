@@ -12,4 +12,6 @@ export const SCOPES = {
 	matchAttribution: 5,
 	/** Competition draws: game-1 priority, Swiss, groups and the final tiebreak (plan 12). */
 	competition: 6,
+	/** Seconds between casualties inside a fight (issue #366). */
+	matchFightTiming: 7,
 } as const;

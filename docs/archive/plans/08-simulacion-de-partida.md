@@ -609,6 +609,17 @@ Primer objetivo de la partida: **un solo grupo de 3**, sin reaparición, en el f
 - **Calibración** (1.000 semillas por pool, 600 en K1): K1 0,742 / 0,740, K2 mediana 31 (P5 24, P95 39), K3 22, K4 23,7 % / 21,4 %, K5 0,533 / 0,534 (control / empaquetado). Con efectos del doble de tamaño K4 caía al 14 %. **Topes de K6 ensanchados de forma provisional** (cuota de bajas 3 a 3,5 pp; participación 5 a 6 pp y extremos P10/P90 8 a 9 pp): K6 está muy cerca de sus topes y cualquier cambio de ritmo de la partida lo mueve unas décimas; sin efecto de larvas pasa, con el efecto mínimo no.
 - Los efectos de los buffs de objetivo sobre las jugadas son del #362 y el sesgo por lado, del #363.
 
+### Rachas de bajas y KDA (#366)
+
+| Prueba | Resultado esperado |
+| --- | --- |
+| KDA por semilla | Los hechos cuadran por jugador y equipo. Nadie se mata ni asiste su propia muerte. |
+| Rachas | Ventanas inclusivas de 10 y 30 segundos. El quíntuple requiere cinco víctimas distintas en la misma pelea, sin reapariciones. |
+| Ganks | El jungla que llega a la línea aparece como autor o asistente de la baja. |
+| Registro y resultado | Ambos muestran la racha y su autor en español e inglés. |
+
+Cada pelea registra segundos relativos a su primera baja mediante el flujo `matchFightTiming`. La última baja de cada racha lleva el mayor nivel alcanzado. `match.ended` enumera las rachas junto con el índice de la pelea. El KDA se sigue contando a partir de las bajas y sus participantes. Los ganks usan el calendario actual. Las jugadas de #356 quedan pendientes.
+
 ### Troceado propuesto · Fase 3 — Pipeline de contenido real
 
 | # | Issue | Área | Issue existente | Test que lo cierra |

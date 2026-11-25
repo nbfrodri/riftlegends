@@ -1,7 +1,9 @@
 import { ROLES, type Side } from "@rift-legends/contracts";
 import { min } from "../../math";
 import { int, pick, shuffle } from "../../rng/helpers";
-import type { Rng } from "../../rng/streams";
+import { SCOPES } from "../../rng/scopes";
+import { deriveSeed } from "../../rng/seeds";
+import { createRng, type Rng } from "../../rng/streams";
 import { attribute, type Engagement } from "../attribution/attribute";
 import { type MatchState, other } from "../state";
 import { type Contest, roll } from "./contest";
@@ -64,6 +66,26 @@ function casualties(
 
 const FIGHT_ID = 30;
 
+/** Place casualties within the exchange without consuming resolution or attribution draws. */
+function timeKills(
+	state: MatchState,
+	kills: ReturnType<typeof casualties>,
+	won: number,
+) {
+	const { seed, game } = state.context;
+	const rng = createRng(
+		deriveSeed(seed, SCOPES.matchFightTiming, game, state.minute, FIGHT_ID),
+	);
+	let fightSecond = 0;
+	return kills.map((kill, index) => {
+		if (index > 0) {
+			const fifth = index === ROLES.length - 1 && won === ROLES.length;
+			fightSecond += int(rng, 1, fifth ? 32 : 12);
+		}
+		return { ...kill, fightSecond };
+	});
+}
+
 export const FIGHT_CONTEST: Contest = {
 	id: FIGHT_ID,
 	due: (state) => state.minute >= MID_GAME,
@@ -99,7 +121,7 @@ export const FIGHT_CONTEST: Contest = {
 				side: winner,
 				zone,
 				second,
-				kills,
+				kills: timeKills(state, kills, won),
 				gold:
 					winner === "blue"
 						? { blue: wonGold, red: lostGold }

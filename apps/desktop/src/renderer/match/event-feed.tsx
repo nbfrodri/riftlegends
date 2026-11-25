@@ -116,7 +116,7 @@ const EventRow = memo(function EventRow({
 					{isObjectiveKind(event.kind) && <MapIcon kind={event.kind} />}
 					{t(`draft.match.kind.${event.kind}`)}
 				</h3>
-				{event.kills.map(({ killer, victim, assists }, index) => (
+				{event.kills.map(({ killer, victim, assists, multikill }, index) => (
 					<div
 						// biome-ignore lint/suspicious/noArrayIndexKey: kills retain the order recorded in the event.
 						key={index}
@@ -126,6 +126,11 @@ const EventRow = memo(function EventRow({
 							<Participant player={players.get(killer)} id={killer} />
 							{t("draft.match.killVerb")}
 							<Participant player={players.get(victim)} id={victim} />
+							{multikill && (
+								<strong className="text-action">
+									{t(`draft.match.multikill.${multikill}`)}
+								</strong>
+							)}
 						</p>
 						{assists.length > 0 && (
 							<p
