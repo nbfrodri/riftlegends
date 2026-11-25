@@ -109,6 +109,20 @@ export interface LanePlayer {
 	championName: string;
 }
 
+/** Lanes whose vision tells the most: their rows show it next to the name (#510). */
+const visionRoles = new Set<string>(["jungle", "support"]);
+
+/** The vision score with the scoreboard's eye; screen readers hear it in words. */
+function VisionScore({ value }: { value: number }) {
+	const { t } = useTranslation();
+	return (
+		<span className="inline-flex items-center gap-1">
+			<StatIcon stat="vision" size={14} />
+			{t("draft.match.faceToFace.vision", { value })}
+		</span>
+	);
+}
+
 /**
  * Photo, champion portrait and the name block, in fixed tracks with the
  * pictures on the outer edge: a long name is cut, it never moves them (#433).
@@ -117,11 +131,19 @@ function Player({
 	id,
 	player,
 	side,
+	vision,
+	showVision,
 }: {
 	id: string;
 	player: LanePlayer | undefined;
 	side: Side;
+	/** The final vision score; unknown while the game plays. */
+	vision: number | undefined;
+	/** Show it in the row too, not only in the tooltip. */
+	showVision: boolean;
 }) {
+	const { t } = useTranslation();
+	const inRow = showVision && vision !== undefined;
 	const parts = player && [
 		<span key="photo" data-part="photo" className="flex">
 			<PlayerPortrait id={id} handle={player.handle} size="h-12 w-[38px]" />
@@ -138,7 +160,12 @@ function Player({
 				size="compact"
 			/>
 		</span>,
-		<Tooltip key="name" heading={player.handle} content={player.championName}>
+		<Tooltip
+			key="name"
+			heading={player.handle}
+			content={player.championName}
+			extra={vision === undefined ? undefined : <VisionScore value={vision} />}
+		>
 			<span
 				data-part="name"
 				className={`min-w-0 text-center ${side === "blue" ? "ml-1.5" : "mr-1.5"}`}
@@ -146,12 +173,27 @@ function Player({
 				<span className="block truncate font-bold text-[15px] text-text">
 					{player.handle}
 				</span>
+				{/* The vision score shares the champion's line: the row keeps its height (#510). */}
 				<span
 					aria-hidden="true"
-					className="block truncate text-[12px] text-muted"
+					className="flex min-w-0 items-center justify-center gap-1.5 truncate text-[12px] text-muted"
 				>
-					{player.championName}
+					<span className="truncate">{player.championName}</span>
+					{inRow && (
+						<span
+							data-vision
+							className="inline-flex shrink-0 items-center gap-0.5 font-bold text-text tabular-nums"
+						>
+							<StatIcon stat="vision" size={12} />
+							{vision}
+						</span>
+					)}
 				</span>
+				{inRow && (
+					<span className="sr-only">
+						{t("draft.match.faceToFace.vision", { value: vision })}
+					</span>
+				)}
 			</span>
 		</Tooltip>,
 	];
@@ -237,10 +279,13 @@ export function FaceToFace({
 	snapshot,
 	names,
 	lineup,
+	vision,
 }: {
 	snapshot: MapSnapshot;
 	lineup: ReadonlyMap<string, LanePlayer>;
 	names: TeamNames;
+	/** Each player's final vision score, once the game is over (`match.ended`). */
+	vision?: ReadonlyMap<string, number> | undefined;
 }) {
 	const { t } = useTranslation();
 	const format = useGoldFormat();
@@ -309,6 +354,8 @@ export function FaceToFace({
 								id={blue.player}
 								player={lineup.get(blue.player)}
 								side="blue"
+								vision={vision?.get(blue.player)}
+								showVision={visionRoles.has(role)}
 							/>
 							<Kda line={blue} />
 							<td className={figure}>{blue.cs}</td>
@@ -330,6 +377,8 @@ export function FaceToFace({
 								id={red.player}
 								player={lineup.get(red.player)}
 								side="red"
+								vision={vision?.get(red.player)}
+								showVision={visionRoles.has(role)}
 							/>
 						</tr>
 					))}
