@@ -179,6 +179,8 @@
 	"settings.cursor.on": "Sí",
 	"settings.cursor.off": "No",
 	"startup.loading": "Preparando los campeones…",
+	"startup.offline": "Faltan imágenes y sonidos oficiales. El juego usa los suyos por ahora y los descargará cuando haya conexión.",
+	"startup.continue": "Continuar",
 	"startup.connection": "Conéctate una vez para descargar los campeones. Después podrás jugar sin conexión.",
 	"settings.content.title": "Contenido",
 	"settings.content.description": "Retratos e iconos oficiales de League of Legends. Se descargan una vez y después funcionan sin conexión.",
