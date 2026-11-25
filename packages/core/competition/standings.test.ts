@@ -355,3 +355,95 @@ describe("D7 total order", () => {
 		);
 	});
 });
+
+describe("#535 LEC tiebreaks", () => {
+	// Exercise these format values against the previous engine in the red commit.
+	const criteria = [
+		"seriesWins",
+		"headToHead",
+		"priorSplitRank",
+		"strengthOfVictory",
+		"victoryTime",
+		"tiebreakerSeries",
+		"draw",
+	] as Criterion[];
+	const timed = (a: string, b: string, winnerSeconds: number) => ({
+		...w(a, b),
+		winnerSeconds,
+	});
+	const position = (
+		results: SeriesResult[],
+		extra: Partial<StandingsInput> & {
+			priorSplitRanks?: readonly ReadonlyMap<string, number>[];
+		} = {},
+	) => {
+		const { rows } = computeStandings(
+			input(["A", "B", "C", "D"], results, criteria, extra),
+		);
+		return rows.find(({ team }) => team === "A");
+	};
+
+	test("head to head beats past placement and time", () => {
+		expect(
+			position([timed("A", "B", 2000), timed("B", "C", 400)], {
+				priorSplitRanks: [
+					new Map([
+						["A", 2],
+						["B", 1],
+					]),
+				],
+			}),
+		).toMatchObject({ rank: 1, explanation: { criterion: "headToHead" } });
+	});
+
+	test("the latest prior split beats older placements and time", () => {
+		expect(
+			position([timed("A", "C", 2000), timed("B", "D", 400)], {
+				priorSplitRanks: [
+					new Map([
+						["A", 1],
+						["B", 2],
+						["D", 3],
+					]),
+					new Map([
+						["A", 3],
+						["B", 1],
+						["D", 2],
+					]),
+				],
+			}),
+		).toMatchObject({ rank: 1, explanation: { criterion: "priorSplitRank" } });
+	});
+
+	test("beating the stronger opponent outweighs faster wins", () => {
+		// D leads with two wins. A beats D, while B beats winless C.
+		const { rows } = computeStandings(
+			input(
+				["A", "B", "C", "D", "E"],
+				[timed("A", "D", 2000), timed("B", "C", 400), w("D", "E"), w("D", "C")],
+				criteria,
+			),
+		);
+		expect(rows[1]).toMatchObject({
+			team: "A",
+			explanation: { criterion: "strengthOfVictory", values: { A: 2, B: 0 } },
+		});
+	});
+
+	test("the shorter total winning time settles equal victory strength", () => {
+		expect(
+			position([timed("A", "C", 400), timed("B", "D", 2000)]),
+		).toMatchObject({
+			rank: 1,
+			explanation: { criterion: "victoryTime" },
+		});
+	});
+
+	test("equal times fall through to a series at the cut and a repeatable draw elsewhere", () => {
+		const results = [timed("A", "C", 400), timed("B", "D", 400)];
+		const atCut = input(["A", "B", "C", "D"], results, criteria, { cuts: [1] });
+		expect(computeStandings(atCut).pending).toEqual([{ a: "A", b: "B" }]);
+		expect(position(results)?.explanation.criterion).toBe("draw");
+		expect(position(results)).toEqual(position(results));
+	});
+});

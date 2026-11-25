@@ -88,6 +88,9 @@
 				"matchDays": 7,
 				"maxSeriesPerDay": 4
 			},
+			"tiebreakHistory": [
+				"versus"
+			],
 			"entrants": {
 				"kind": "fixed",
 				"teams": [
@@ -160,6 +163,10 @@
 				"matchDays": 7,
 				"maxSeriesPerDay": 4
 			},
+			"tiebreakHistory": [
+				"spring",
+				"versus"
+			],
 			"entrants": {
 				"kind": "fixed",
 				"teams": [
@@ -227,8 +234,10 @@
 	],
 	"tiebreak": [
 		"seriesWins",
-		"gameDiff",
 		"headToHead",
+		"priorSplitRank",
+		"strengthOfVictory",
+		"victoryTime",
 		"tiebreakerSeries",
 		"draw"
 	],
@@ -265,7 +274,7 @@
 		"snapshot": "lec.json"
 	},
 	"unverifiedReasons": [
-		"Official tiebreak criteria are unconfirmed; use the game defaults, including Bo3 at a cut.",
+		"Tiebreak order follows secondary reporting on the 2025 rules; the official 2026 rulebook is unavailable. Prior split rank uses regular-season tables, latest first. Victory strength sums the series wins of defeated opponents, and victory time uses the total duration of maps won in won series. A cut still uses Bo3 if the criteria leave a tie.",
 		"Fixed bracket seeds and international places use stage finishes; official seeding, points and cascade rules are unconfirmed.",
 		"Versus removes two split-only guests: 10 teams and 45 Bo1 instead of 12 teams and 66 Bo1."
 	]

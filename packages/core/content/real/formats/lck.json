@@ -33,6 +33,11 @@
 				"inner": {
 					"rounds": 1,
 					"bestOf": 3
+				},
+				"finalRound": {
+					"bestOf": 5,
+					"groupPoints": 2,
+					"week": 2
 				}
 			}
 		},
@@ -49,14 +54,16 @@
 				{
 					"kind": "standing",
 					"stage": "cup-groups",
-					"from": 6,
-					"to": 6
+					"from": 5,
+					"to": 5,
+					"group": "winner"
 				},
 				{
 					"kind": "standing",
 					"stage": "cup-groups",
-					"from": 9,
-					"to": 9
+					"from": 3,
+					"to": 3,
+					"group": "loser"
 				}
 			],
 			"play": {
@@ -80,14 +87,16 @@
 				{
 					"kind": "standing",
 					"stage": "cup-groups",
-					"from": 7,
-					"to": 7
+					"from": 4,
+					"to": 4,
+					"group": "winner"
 				},
 				{
 					"kind": "standing",
 					"stage": "cup-groups",
-					"from": 8,
-					"to": 8
+					"from": 4,
+					"to": 4,
+					"group": "loser"
 				}
 			],
 			"play": {
@@ -111,8 +120,9 @@
 				{
 					"kind": "standing",
 					"stage": "cup-groups",
-					"from": 4,
-					"to": 4
+					"from": 2,
+					"to": 2,
+					"group": "loser"
 				},
 				{
 					"kind": "bracket",
@@ -142,8 +152,9 @@
 				{
 					"kind": "standing",
 					"stage": "cup-groups",
-					"from": 5,
-					"to": 5
+					"from": 3,
+					"to": 3,
+					"group": "winner"
 				},
 				{
 					"kind": "bracket",
@@ -203,7 +214,15 @@
 					"kind": "standing",
 					"stage": "cup-groups",
 					"from": 1,
-					"to": 3
+					"to": 2,
+					"group": "winner"
+				},
+				{
+					"kind": "standing",
+					"stage": "cup-groups",
+					"from": 1,
+					"to": 1,
+					"group": "loser"
 				},
 				{
 					"kind": "bracket",
@@ -545,8 +564,8 @@
 	"unverifiedReasons": [
 		"Tiebreak order (wins, set difference, head-to-head) comes from the 2025 LCK rulebook, section 2.8 (the 2026 edition was not available). The rulebook's single-game tiebreaker is replaced by the game's Bo3 by user decision.",
 		"Fixed bracket seeds and international places use stage finishes; official seeding, points and cascade rules are unconfirmed.",
-		"Cup cross-group play uses Bo3 throughout; lolesports confirms the Super Week series are Bo5 and worth 2 group points, not modelled.",
-		"Cup advancement uses a combined table instead of winning/losing group privileges. Summer cuts use the ranked Legend/Rise stage table.",
+		"Cup group composition and Super Week pairings use game seeding. An equal group score is resolved by a seeded draw pending confirmation of the official rule. Play-in lanes are inferred from the snapshot.",
+		"Summer cuts use the ranked Legend/Rise stage table.",
 		"The snapshot has only one game for Dplus Kia vs Gen.G in Week 10; the scheduled series is Bo3."
 	]
 }
