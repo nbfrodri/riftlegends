@@ -21,7 +21,7 @@ const handleOf = (options: SeriesOptions, player: string) =>
 /** A full bar is the biggest lead of the table, and at least this much. */
 const MIN_SCALE = { rating: 10, gold: 1000 };
 /** Width of a full bar, in pixels; the amount follows its end. */
-const BAR = 28;
+const BAR = 22;
 
 /**
  * Photo (silhouette without one) with the champion as a badge on its inner
@@ -46,7 +46,7 @@ function Player(props: {
 		</span>,
 		<span
 			key="champion"
-			className={`relative flex self-end ring-2 ring-panel [&_[role=img]]:size-4 ${left ? "-ml-1.5" : "-mr-1.5"}`}
+			className={`relative flex self-end ring-2 ring-panel [&_[role=img]]:size-4 ${left ? "-ml-2" : "-mr-2"}`}
 		>
 			<ChampionPortrait
 				id={props.lane.champion}
@@ -58,7 +58,7 @@ function Player(props: {
 			<span
 				className={`min-w-0 ${left ? "ml-1 text-left" : "mr-1 text-right"}`}
 			>
-				<span className="block truncate font-bold text-[12px] leading-[14px]">
+				<span className="block truncate font-bold text-[11px] leading-[14px]">
 					{handle}
 				</span>
 				<span
@@ -71,7 +71,7 @@ function Player(props: {
 		</Tooltip>,
 	];
 	return (
-		<td className="px-1 py-0">
+		<td className="px-0.5 py-0">
 			<span
 				className={`grid items-center ${left ? "grid-cols-[auto_auto_minmax(0,1fr)]" : "grid-cols-[minmax(0,1fr)_auto_auto]"}`}
 			>
@@ -121,7 +121,7 @@ function Lead(props: {
 			<span />
 		);
 	return (
-		<span className="grid grid-cols-[minmax(0,1fr)_18px_minmax(0,1fr)] items-center gap-1 leading-[13px]">
+		<span className="grid grid-cols-[minmax(0,1fr)_16px_minmax(0,1fr)] items-center gap-1 leading-[13px]">
 			{half("blue")}
 			<span aria-hidden="true" className="flex justify-center">
 				{props.icon}
@@ -210,7 +210,7 @@ export function GapsTable(props: {
 				<colgroup>
 					<col />
 					<col className="w-9" />
-					<col className="w-[216px]" />
+					<col className="w-[194px]" />
 					<col className="w-9" />
 					<col />
 				</colgroup>

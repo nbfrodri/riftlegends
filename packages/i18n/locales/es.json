@@ -642,6 +642,7 @@
 	"draft.result.stats.damage": "Daño",
 	"draft.result.stats.vision": "Visión",
 	"draft.result.stats.share": "Participación",
+	"draft.result.stats.shareShort": "KP",
 	"draft.result.stats.rating": "Nota¹",
 	"draft.result.stats.footnote": "¹ Nota de cada jugador sobre 100.",
 	"draft.result.gaps.title": "Diferencias por rol",
