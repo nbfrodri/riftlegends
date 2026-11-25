@@ -337,6 +337,23 @@ describe("#435: the pick preview pulses until it is locked in", () => {
 		expect(row().textContent).toContain("Choosing");
 	});
 
+	test("#494: the art box spans most of the row and lets the art fade itself", async () => {
+		await renderInLocale(
+			<TeamColumn
+				side="blue"
+				first
+				team={team(["toppy"])}
+				options={options}
+				current={null}
+				onPlayer={() => {}}
+			/>,
+		);
+		const box = portrait("Toppy") as HTMLElement;
+		expect(box.className).toContain("w-[78%]");
+		// One fade only, on the art: a second mask on the box cut it short.
+		expect(box.className).not.toContain("mask-image");
+	});
+
 	test("a locked pick stops pulsing", async () => {
 		await renderInLocale(
 			<TeamColumn

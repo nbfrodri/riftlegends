@@ -24,12 +24,22 @@ describe("#438: framing a champion in the pick row", () => {
 		expect(frames[2]).toEqual(frames[0]);
 	});
 
-	test("zooms less than the cover framing: the row shows 5/8 of the tile", () => {
+	test("#494: the tile is 2.2 times the row's height, cropped 20 % from the top", () => {
 		const { container } = render(<PickArt id="Braum" label="Braum" />);
 		const art = container.querySelector("[data-framing]") as HTMLElement;
-		// The tile's side is 1.6 times the row's height, so faces near the top
-		// or off-centre stay in view.
-		expect(art.style.height).toBe("160%");
+		// Wide enough to reach towards the player's name; the row shows 1/2.2
+		// of the tile, from 24 % of the row above it, so faces stay whole.
+		expect(art.style.height).toBe("220%");
 		expect(art.style.right).toBe("0px");
+		expect(art.style.top).toBe("-24%");
+	});
+
+	test("#494: the art fades in softly over three quarters of its width", () => {
+		const { container } = render(<PickArt id="Braum" label="Braum" />);
+		const art = container.querySelector("[data-framing]") as HTMLElement;
+		// Half visible at 40 %, fully visible from 75 %: a long blend, not a block.
+		expect(art.className).toContain(
+			"[mask-image:linear-gradient(to_right,transparent,rgb(0_0_0/0.5)_40%,#000_75%)]",
+		);
 	});
 });
