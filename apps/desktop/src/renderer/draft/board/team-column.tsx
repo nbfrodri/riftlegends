@@ -5,6 +5,7 @@ import {
 	type SeriesOptions,
 	type Side,
 } from "@rift-legends/contracts";
+import { BAN_STRIKE } from "@rift-legends/ui-kit/components/champion-face";
 import { Tooltip } from "@rift-legends/ui-kit/components/tooltip";
 import { useReducedMotion } from "@rift-legends/ui-kit/lib/use-reduced-motion";
 import { Ban } from "lucide-react";
@@ -140,16 +141,24 @@ function BanSlot(props: {
 					</button>
 				</Tooltip>
 			) : state === "preview" && preview ? (
-				// Only the portrait pulses, without a border (#435, #436).
-				<span
-					data-ban-preview
-					className={`flex size-full overflow-hidden rounded-control ${reduced ? "opacity-50" : "draft-pending"}`}
-					style={reduced ? undefined : PULSE}
-				>
-					<ChampionPortrait
-						id={preview}
-						label={championLabel(props.options, preview)}
-						size="tile"
+				// Only the portrait pulses, without a border (#435, #436); the
+				// ban's line stays over it, steady (#494).
+				<span className="relative flex size-full overflow-hidden rounded-control">
+					<span
+						data-ban-preview
+						className={`flex size-full ${reduced ? "opacity-50" : "draft-pending"}`}
+						style={reduced ? undefined : PULSE}
+					>
+						<ChampionPortrait
+							id={preview}
+							label={championLabel(props.options, preview)}
+							size="tile"
+						/>
+					</span>
+					<span
+						data-ban-strike
+						aria-hidden="true"
+						className={`pointer-events-none absolute inset-0 ${BAN_STRIKE}`}
 					/>
 				</span>
 			) : (
