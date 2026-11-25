@@ -263,6 +263,16 @@ Las pruebas reales de K9, K10 y K15 quedan como `todo` hasta #320, y K12 y K13 h
 - Se aplican los mismos límites que a los logos, salvo el tamaño: las fotos admiten hasta 2 MB (`maxPlayerPhotoBytes`) y los logos 512 KB. Las rutas remotas permitidas son `static.lolesports.com/players/<archivo>` y `lolstatic-a.akamaihd.net/esports-assets/production/player/<archivo>`. [Contrato](../../packages/contracts/draft/real-photos.ts).
 - Al entrar en el modo real, main sincroniza `userData/assets/photos/` en segundo plano. El renderer recibe un mapa de id de jugador a URL local mediante `window.riftlegends.assets.playerPhotos()`. El protocolo sirve las imágenes verificadas en `rift-asset://photos/players/<slug>.<png|jpg|webp>`.
 
+## Titulares oficiales de lolesports (#568)
+
+- `getTeams` sirve de **desempate y respaldo** al elegir el titular de cada posición; atributos, estadísticas, nacionalidad y nacimiento siguen saliendo solo de Leaguepedia. La API no marca titulares, así que solo cuenta cuando decide sin adivinar. Detalle en el [README del pipeline](../../tools/data-pipeline/README.md#jugadores-y-equipos).
+
+| Prueba | Resultado esperado |
+| --- | --- |
+| Hueco que Leaguepedia no cubre | Lo cubre el jugador que lolesports lista en esa posición, emparejado por handle con su página de Leaguepedia; nunca uno ya fichado por otro equipo |
+| Varios candidatos | Gana el único que sigue en la lista de lolesports de esa posición; con varios listados o ninguno no cambia nada |
+| Sin lolesports ni Leaguepedia | El pipeline falla y nombra equipo y rol |
+
 ## Logos de ligas y torneos internacionales (#387)
 
 - `pnpm data:leagues` toma de `getLeagues` los logos de LCK, LPL, LEC, LCP, LCS, CBLOL, First Stand, MSI y Worlds. Guarda la procedencia, URL, SHA-256, tamaño y tipo por id en `content/real/leagues.json`. La app descarga las imágenes en tiempo de ejecución.

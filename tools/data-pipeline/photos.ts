@@ -18,6 +18,7 @@ import {
 	teamsUrl,
 } from "./logos.ts";
 import { groupBy } from "./normalization.ts";
+import { handleKey } from "./official-starters.ts";
 import { compare } from "./queries.ts";
 
 interface SnapshotPlayer {
@@ -27,14 +28,6 @@ interface SnapshotPlayer {
 	placeholder?: boolean;
 }
 
-/** Case, diacritics and edge or repeated spaces do not tell two handles apart. */
-const handleKey = (player: { handle: string }) =>
-	player.handle
-		.normalize("NFKD")
-		.replace(/\p{M}/gu, "")
-		.toLowerCase()
-		.replace(/\s+/g, " ")
-		.trim();
 const placeholder =
 	/^(?:\d+_)?(?:default-headshot|download|silhouette(?:_transparent)?|placeholder_?|eSports_male_NoPlayer)\./i;
 
