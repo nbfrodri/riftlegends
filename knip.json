@@ -10,6 +10,7 @@
 				"config": [
 					"vitest.config.ts",
 					"vitest.goldens.config.ts",
+					"vitest.calibration.config.ts",
 					"vitest.stryker.config.ts"
 				]
 			},
@@ -27,7 +28,7 @@
 			"entry": ["cli.ts", "summary.ts", "**/*.test.ts"]
 		},
 		"packages/core": {
-			"entry": ["test/update-goldens.script.ts"],
+			"entry": ["test/update-goldens.script.ts", "test/calibrate.script.ts"],
 			"ignoreIssues": {
 				"test/fixtures/forbidden.ts": ["unlisted"]
 			}

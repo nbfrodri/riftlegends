@@ -90,11 +90,22 @@ mise exec -- pnpm data:leagues --offline
 
 Consulta `getLeagues` y escribe `packages/core/content/real/leagues.json` con procedencia y metadatos ordenados por id. Usa las mismas opciones, caché y límites que `data:logos`. `--offline` necesita la respuesta y los metadatos de imagen ya cacheados. El comando lista las competiciones que quedan sin logo.
 
+## Torneos internacionales
+
+```sh
+mise exec -- pnpm data:internationals
+mise exec -- pnpm data:internationals --offline
+```
+
+Lee la temporada de los snapshots de las seis ligas y trae de Leaguepedia, con el mismo cliente, límite y caché que `data:snapshot`, los torneos oficiales de First Stand, MSI y Worlds (`Tournaments`) y sus series (`MatchSchedule`: equipos, marcador, Bo y fecha). Las clasificatorias regionales que Leaguepedia archiva bajo Worlds (`LPL/2026 Season/Regional Finals`) quedan fuera. Escribe `packages/core/content/real/internationals.json` (validado con [real-internationals](../../packages/contracts/draft/real-internationals.ts)) y los formatos en `packages/core/content/real/formats/`.
+
+Los formatos están curados en [international-formats.ts](international-formats.ts) (estructura) y las ventanas salen de las fechas reales. [international-check.ts](international-check.ts) reproduce cada serie real contra su formato (R1): equipos por fase, series, Bo por ronda y cruces con los cuadros del núcleo, y el Swiss por balance, revanchas y Bo de las series decisivas. Un test lo ejecuta con los datos del repo, así que si Riot cambia un formato, el PR del workflow semanal falla en `verify`. Los formatos llevan `verified: false` con sus motivos (R2) hasta que se lean los reglamentos y llegue el encadenado de fases (#424). Dos ejecuciones dan los mismos bytes.
+
 ## Actualización semanal
 
 El [workflow](../../.github/workflows/data-snapshot.yml) se ejecuta los lunes a las 05:23 UTC y también se puede lanzar desde **Actions → Real data snapshot → Run workflow** en la rama por defecto. Las respuestas crudas viven en `actions/cache` (privada del repositorio, con clave por fecha UTC): no se suben como artefacto ni se commitean, porque los desambiguadores de `Link` pueden incluir nombres reales. Un día nuevo consulta de nuevo la fuente. Si solo cambian las fechas de consulta, se conservan los bytes y la procedencia de la última versión publicada.
 
-El workflow regenera el snapshot, los jugadores, los equipos y los logos. Si cambia algún fichero, abre o actualiza el PR de `chore/data-snapshot`. El resumen compara con la rama por defecto y avisa del cambio de temporada. Incluye fichajes, equipos nuevos, campeones nuevos en las partidas y recuentos por liga. La revisión y la fusión son manuales.
+El workflow regenera el snapshot, los jugadores, los equipos, los logos y los torneos internacionales. Si cambia algún fichero, abre o actualiza el PR de `chore/data-snapshot`. El resumen compara con la rama por defecto y avisa del cambio de temporada. Incluye fichajes, equipos nuevos, campeones nuevos en las partidas y recuentos por liga. La revisión y la fusión son manuales.
 
 En **Settings → Actions → General**, el repositorio debe permitir que GitHub Actions cree pull requests. El `GITHUB_TOKEN` integrado no inicia el CI automáticamente. Si el PR muestra **Approve workflows to run**, aprueba la ejecución. Puedes volver a lanzar una ejecución existente desde Actions. Si GitHub no creó ninguna, cierra y vuelve a abrir el PR con una cuenta con permiso de escritura. [Comportamiento de `GITHUB_TOKEN`](https://docs.github.com/en/actions/concepts/security/github_token)
 
