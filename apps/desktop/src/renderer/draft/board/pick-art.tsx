@@ -44,7 +44,7 @@ const round = (value: number) => Math.round(value * 1000) / 1000;
  * default point cuts in the row (#494). Read off the 16.23 splashes.
  */
 const SPLASH_FOCUS: Readonly<Record<string, Focus>> = {
-	Braum: { x: 50, y: 20 },
+	Braum: { x: 50, y: 26 },
 	Illaoi: { x: 50, y: 22 },
 	Orianna: { x: 50, y: 24 },
 	Tryndamere: { x: 58, y: 33 },
