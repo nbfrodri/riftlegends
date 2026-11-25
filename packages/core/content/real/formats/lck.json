@@ -508,10 +508,9 @@
 		"seriesWins",
 		"gameDiff",
 		"headToHead",
-		"tiebreakerSeries",
-		"draw"
+		"tiebreakerSeries"
 	],
-	"tiebreakerBestOf": 3,
+	"tiebreakerBestOf": 1,
 	"slots": [
 		{
 			"to": "first-stand",
@@ -544,9 +543,9 @@
 		"snapshot": "lck.json"
 	},
 	"unverifiedReasons": [
-		"Official tiebreak criteria are unconfirmed; use the game defaults, including Bo3 at a cut.",
+		"Tiebreak order (wins, set difference, head-to-head) and the single-game tiebreaker come from the 2025 LCK rulebook, section 2.8; the 2026 edition was not available.",
 		"Fixed bracket seeds and international places use stage finishes; official seeding, points and cascade rules are unconfirmed.",
-		"Cup cross-group play uses Bo3 throughout; the last five series were Bo5.",
+		"Cup cross-group play uses Bo3 throughout; lolesports confirms the Super Week series are Bo5 and worth 2 group points, not modelled.",
 		"Cup advancement uses a combined table instead of winning/losing group privileges. Summer cuts use the ranked Legend/Rise stage table.",
 		"The snapshot has only one game for Dplus Kia vs Gen.G in Week 10; the scheduled series is Bo3."
 	]
