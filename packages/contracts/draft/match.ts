@@ -110,6 +110,8 @@ export const matchEndedFact = {
 			gold: position,
 			damage: position,
 			participation: share,
+			/** Simulated vision score of the game. */
+			vision: position,
 			rating: z.int().min(0).max(100),
 		}),
 	),
