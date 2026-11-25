@@ -18,7 +18,7 @@ Decisiones en el [registro](../decisions/README.md). Reglas del usuario: respues
 
 | Qué | Dónde | Estado |
 | --- | --- | --- |
-| #558 ficha: pool y atributos, **opción A** (barras) elegida | subagente · `../riftlegends-558` | implementando con TDD; traer capturas `vis-558-local/final-*` |
+| #558 ficha con barras (opción A) | PR #567, pendiente del visto bueno del usuario (capturas en `~/.cache/rift-tmp/vis-558-local/final-*`) | encolar con queue.sh si lo aprueba |
 | #559 edad del jugador | PR #563, aprobado y en la cola | — |
 | #562 relleno y nacionalidades | PR #566, aprobado y en la cola | — |
 | #546 cerrar «Lectura de la IA» con clic fuera | PR #564, aprobado y en la cola | — |
@@ -30,6 +30,10 @@ Para Codex: leer `r<N>.json`, comprobar con `tack codex-used <thread_id>` (prime
 ## Programado
 
 - **Stryker** completo sobre `packages/core` a las **05:00 del 26-11** (`systemctl --user list-timers rift-stryker-night*`, script `~/.cache/rift-tmp/stryker-night.sh`, log `~/.cache/rift-tmp/stryker.log`). Umbral 70 %. Con el resultado, PR desde `../riftlegends-stryker-fix` (sube límites de 2 tests pesados y excluye las calibraciones de Stryker) + nota en el plan 05. Cierra la Fase 3.
+
+## Pendiente de decidir
+
+- Fuente de reserva para plantillas: usar la plantilla oficial de lolesports (`getTeams`) para cubrir y desempatar titulares por posición (atributos siguen solo de Leaguepedia). El usuario preguntó; falta su sí para abrir el issue y anotarlo en el registro.
 
 ## Siguiente
 
