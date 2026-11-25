@@ -289,7 +289,11 @@ test("the level curve is the median level per role and minute in tenths", () => 
 			// Both tops: level 2 at 30 s, level 3 at 90 s; level 4 after minute 2
 			// only in half of the games.
 			levels: Array.from({ length: 10 }, (_, pid) =>
-				pid === 0 || pid === 5 ? (index % 2 ? [30, 90, 110] : [30, 90, 200]) : [60],
+				pid === 0 || pid === 5
+					? index % 2
+						? [30, 90, 110]
+						: [30, 90, 200]
+					: [60],
 			),
 		}),
 	);
