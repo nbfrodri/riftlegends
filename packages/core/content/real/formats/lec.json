@@ -1,0 +1,273 @@
+{
+	"id": "LEC",
+	"kind": "league",
+	"stages": [
+		{
+			"id": "versus",
+			"window": {
+				"startWeek": 2,
+				"weeks": 8,
+				"matchDays": 7,
+				"maxSeriesPerDay": 2
+			},
+			"entrants": {
+				"kind": "fixed",
+				"teams": [
+					"G2 Esports",
+					"Karmine Corp",
+					"Movistar KOI",
+					"Team Vitality",
+					"Natus Vincere",
+					"GIANTX",
+					"Fnatic",
+					"SK Gaming",
+					"Shifters",
+					"Team Heretics"
+				]
+			},
+			"play": {
+				"type": "roundRobin",
+				"size": 10,
+				"rounds": 1,
+				"bestOf": 1
+			}
+		},
+		{
+			"id": "versus-playoffs",
+			"window": {
+				"startWeek": 6,
+				"weeks": 4,
+				"matchDays": 7,
+				"maxSeriesPerDay": 4
+			},
+			"entrants": {
+				"kind": "standing",
+				"stage": "versus",
+				"from": 1,
+				"to": 8
+			},
+			"play": {
+				"type": "doubleElim",
+				"size": 8,
+				"upper": [
+					3,
+					3,
+					5
+				],
+				"lower": [
+					3,
+					3,
+					5,
+					5
+				],
+				"drop": [
+					[
+						0,
+						0,
+						0,
+						0
+					],
+					[
+						1,
+						1
+					],
+					[
+						3
+					]
+				],
+				"lowerSeeds": [],
+				"grandFinal": 5,
+				"reset": false
+			}
+		},
+		{
+			"id": "spring",
+			"window": {
+				"startWeek": 12,
+				"weeks": 13,
+				"matchDays": 7,
+				"maxSeriesPerDay": 2
+			},
+			"entrants": {
+				"kind": "fixed",
+				"teams": [
+					"G2 Esports",
+					"Karmine Corp",
+					"Movistar KOI",
+					"Team Vitality",
+					"Natus Vincere",
+					"GIANTX",
+					"Fnatic",
+					"SK Gaming",
+					"Shifters",
+					"Team Heretics"
+				]
+			},
+			"play": {
+				"type": "roundRobin",
+				"size": 10,
+				"rounds": 1,
+				"bestOf": 3
+			}
+		},
+		{
+			"id": "spring-playoffs",
+			"window": {
+				"startWeek": 20,
+				"weeks": 5,
+				"matchDays": 7,
+				"maxSeriesPerDay": 4
+			},
+			"entrants": {
+				"kind": "standing",
+				"stage": "spring",
+				"from": 1,
+				"to": 6
+			},
+			"play": {
+				"type": "doubleElim",
+				"size": 6,
+				"upper": [
+					5,
+					5
+				],
+				"lower": [
+					5,
+					5,
+					5
+				],
+				"drop": [
+					[
+						0,
+						0
+					],
+					[
+						2
+					]
+				],
+				"lowerSeeds": [
+					2
+				],
+				"grandFinal": 5,
+				"reset": false
+			}
+		},
+		{
+			"id": "summer",
+			"window": {
+				"startWeek": 29,
+				"weeks": 8,
+				"matchDays": 7,
+				"maxSeriesPerDay": 2
+			},
+			"entrants": {
+				"kind": "fixed",
+				"teams": [
+					"G2 Esports",
+					"Karmine Corp",
+					"Movistar KOI",
+					"Team Vitality",
+					"Natus Vincere",
+					"GIANTX",
+					"Fnatic",
+					"SK Gaming",
+					"Shifters",
+					"Team Heretics"
+				]
+			},
+			"play": {
+				"type": "roundRobin",
+				"size": 10,
+				"rounds": 1,
+				"bestOf": 3
+			}
+		},
+		{
+			"id": "summer-playoffs",
+			"window": {
+				"startWeek": 35,
+				"weeks": 5,
+				"matchDays": 7,
+				"maxSeriesPerDay": 4
+			},
+			"entrants": {
+				"kind": "standing",
+				"stage": "summer",
+				"from": 1,
+				"to": 6
+			},
+			"play": {
+				"type": "doubleElim",
+				"size": 6,
+				"upper": [
+					5,
+					5
+				],
+				"lower": [
+					5,
+					5,
+					5
+				],
+				"drop": [
+					[
+						0,
+						0
+					],
+					[
+						2
+					]
+				],
+				"lowerSeeds": [
+					2
+				],
+				"grandFinal": 5,
+				"reset": false
+			}
+		}
+	],
+	"tiebreak": [
+		"seriesWins",
+		"gameDiff",
+		"headToHead",
+		"tiebreakerSeries",
+		"draw"
+	],
+	"tiebreakerBestOf": 3,
+	"slots": [
+		{
+			"to": "first-stand",
+			"rule": "standing",
+			"stage": "versus-playoffs",
+			"count": 1,
+			"cascade": "next"
+		},
+		{
+			"to": "msi",
+			"rule": "standing",
+			"stage": "spring-playoffs",
+			"count": 2,
+			"cascade": "next"
+		},
+		{
+			"to": "worlds",
+			"rule": "standing",
+			"stage": "summer-playoffs",
+			"count": 3,
+			"cascade": "next"
+		}
+	],
+	"verified": false,
+	"provenance": {
+		"source": "Leaguepedia",
+		"licence": "CC BY-SA 3.0",
+		"attribution": "Datos normalizados de los colaboradores de Leaguepedia (https://lol.fandom.com/wiki/Leaguepedia), CC BY-SA 3.0 Unported.",
+		"retrievedAt": "2026-11-22T12:15:53.772Z",
+		"snapshot": "lec.json"
+	},
+	"unverifiedReasons": [
+		"Official tiebreak criteria are unconfirmed; use the game defaults, including Bo3 at a cut.",
+		"Fixed bracket seeds and international places use stage finishes; official seeding, points and cascade rules are unconfirmed.",
+		"The global four-series cap requires wider domestic windows than the snapshot; some starts move by more than seven days.",
+		"Versus removes two split-only guests: 10 teams and 45 Bo1 instead of 12 teams and 66 Bo1."
+	]
+}

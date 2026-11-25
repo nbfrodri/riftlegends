@@ -1,0 +1,554 @@
+{
+	"id": "LCK",
+	"kind": "league",
+	"stages": [
+		{
+			"id": "cup-groups",
+			"window": {
+				"startWeek": 0,
+				"weeks": 10,
+				"matchDays": 7,
+				"maxSeriesPerDay": 2
+			},
+			"entrants": {
+				"kind": "fixed",
+				"teams": [
+					"Gen.G",
+					"T1",
+					"Hanwha Life Esports",
+					"Dplus Kia",
+					"KT Rolster",
+					"BNK FEARX",
+					"HANJIN BRION",
+					"Nongshim RedForce",
+					"Kiwoom DRX",
+					"DN SOOPers"
+				]
+			},
+			"play": {
+				"type": "groups",
+				"size": 10,
+				"count": 2,
+				"seeding": "cross",
+				"inner": {
+					"rounds": 1,
+					"bestOf": 3
+				}
+			}
+		},
+		{
+			"id": "cup-playin-r1-1",
+			"window": {
+				"startWeek": 5,
+				"weeks": 5,
+				"matchDays": 7,
+				"maxSeriesPerDay": 4
+			},
+			"parallelGroup": "cup-playin-r1",
+			"entrants": [
+				{
+					"kind": "standing",
+					"stage": "cup-groups",
+					"from": 6,
+					"to": 6
+				},
+				{
+					"kind": "standing",
+					"stage": "cup-groups",
+					"from": 9,
+					"to": 9
+				}
+			],
+			"play": {
+				"type": "singleElim",
+				"size": 2,
+				"bestOf": [
+					3
+				]
+			}
+		},
+		{
+			"id": "cup-playin-r1-2",
+			"window": {
+				"startWeek": 5,
+				"weeks": 5,
+				"matchDays": 7,
+				"maxSeriesPerDay": 4
+			},
+			"parallelGroup": "cup-playin-r1",
+			"entrants": [
+				{
+					"kind": "standing",
+					"stage": "cup-groups",
+					"from": 7,
+					"to": 7
+				},
+				{
+					"kind": "standing",
+					"stage": "cup-groups",
+					"from": 8,
+					"to": 8
+				}
+			],
+			"play": {
+				"type": "singleElim",
+				"size": 2,
+				"bestOf": [
+					3
+				]
+			}
+		},
+		{
+			"id": "cup-playin-r2-1",
+			"window": {
+				"startWeek": 5,
+				"weeks": 5,
+				"matchDays": 7,
+				"maxSeriesPerDay": 4
+			},
+			"parallelGroup": "cup-playin-r2",
+			"entrants": [
+				{
+					"kind": "standing",
+					"stage": "cup-groups",
+					"from": 4,
+					"to": 4
+				},
+				{
+					"kind": "bracket",
+					"stage": "cup-playin-r1-1",
+					"match": "U1-1",
+					"result": "winner"
+				}
+			],
+			"play": {
+				"type": "singleElim",
+				"size": 2,
+				"bestOf": [
+					3
+				]
+			}
+		},
+		{
+			"id": "cup-playin-r2-2",
+			"window": {
+				"startWeek": 5,
+				"weeks": 5,
+				"matchDays": 7,
+				"maxSeriesPerDay": 4
+			},
+			"parallelGroup": "cup-playin-r2",
+			"entrants": [
+				{
+					"kind": "standing",
+					"stage": "cup-groups",
+					"from": 5,
+					"to": 5
+				},
+				{
+					"kind": "bracket",
+					"stage": "cup-playin-r1-2",
+					"match": "U1-1",
+					"result": "winner"
+				}
+			],
+			"play": {
+				"type": "singleElim",
+				"size": 2,
+				"bestOf": [
+					3
+				]
+			}
+		},
+		{
+			"id": "cup-playin-r3",
+			"window": {
+				"startWeek": 5,
+				"weeks": 5,
+				"matchDays": 7,
+				"maxSeriesPerDay": 4
+			},
+			"entrants": [
+				{
+					"kind": "bracket",
+					"stage": "cup-playin-r2-1",
+					"match": "U1-1",
+					"result": "loser"
+				},
+				{
+					"kind": "bracket",
+					"stage": "cup-playin-r2-2",
+					"match": "U1-1",
+					"result": "loser"
+				}
+			],
+			"play": {
+				"type": "singleElim",
+				"size": 2,
+				"bestOf": [
+					5
+				]
+			}
+		},
+		{
+			"id": "cup-playoffs",
+			"window": {
+				"startWeek": 6,
+				"weeks": 4,
+				"matchDays": 7,
+				"maxSeriesPerDay": 4
+			},
+			"entrants": [
+				{
+					"kind": "standing",
+					"stage": "cup-groups",
+					"from": 1,
+					"to": 3
+				},
+				{
+					"kind": "bracket",
+					"stage": "cup-playin-r2-1",
+					"match": "U1-1",
+					"result": "winner"
+				},
+				{
+					"kind": "bracket",
+					"stage": "cup-playin-r2-2",
+					"match": "U1-1",
+					"result": "winner"
+				},
+				{
+					"kind": "bracket",
+					"stage": "cup-playin-r3",
+					"match": "U1-1",
+					"result": "winner"
+				}
+			],
+			"play": {
+				"type": "doubleElim",
+				"size": 6,
+				"upper": [
+					5,
+					5,
+					5
+				],
+				"lower": [
+					5,
+					5,
+					5,
+					5
+				],
+				"drop": [
+					[
+						0,
+						0
+					],
+					[
+						1,
+						2
+					],
+					[
+						3
+					]
+				],
+				"lowerSeeds": [],
+				"grandFinal": 5,
+				"reset": false
+			}
+		},
+		{
+			"id": "rounds-1-2",
+			"window": {
+				"startWeek": 12,
+				"weeks": 13,
+				"matchDays": 7,
+				"maxSeriesPerDay": 2
+			},
+			"entrants": {
+				"kind": "fixed",
+				"teams": [
+					"Gen.G",
+					"T1",
+					"Hanwha Life Esports",
+					"Dplus Kia",
+					"KT Rolster",
+					"BNK FEARX",
+					"HANJIN BRION",
+					"Nongshim RedForce",
+					"Kiwoom DRX",
+					"DN SOOPers"
+				]
+			},
+			"play": {
+				"type": "roundRobin",
+				"size": 10,
+				"rounds": 2,
+				"bestOf": 3
+			}
+		},
+		{
+			"id": "road-to-msi",
+			"window": {
+				"startWeek": 22,
+				"weeks": 3,
+				"matchDays": 7,
+				"maxSeriesPerDay": 4
+			},
+			"entrants": {
+				"kind": "standing",
+				"stage": "rounds-1-2",
+				"from": 1,
+				"to": 6
+			},
+			"play": {
+				"type": "doubleElim",
+				"size": 6,
+				"upper": [
+					5
+				],
+				"lower": [
+					5,
+					5,
+					5,
+					5
+				],
+				"drop": [
+					[
+						3
+					]
+				],
+				"lowerSeeds": [
+					2,
+					1,
+					1
+				],
+				"grandFinal": null,
+				"reset": false
+			}
+		},
+		{
+			"id": "rounds-3-4",
+			"window": {
+				"startWeek": 29,
+				"weeks": 7,
+				"matchDays": 7,
+				"maxSeriesPerDay": 2
+			},
+			"entrants": {
+				"kind": "standing",
+				"stage": "rounds-1-2",
+				"from": 1,
+				"to": 10
+			},
+			"play": {
+				"type": "groups",
+				"size": 10,
+				"count": 2,
+				"seeding": "ranked",
+				"inner": {
+					"rounds": 2,
+					"bestOf": 3
+				}
+			}
+		},
+		{
+			"id": "season-playin-r1-1",
+			"window": {
+				"startWeek": 33,
+				"weeks": 3,
+				"matchDays": 7,
+				"maxSeriesPerDay": 4
+			},
+			"parallelGroup": "season-playin-r1",
+			"entrants": [
+				{
+					"kind": "standing",
+					"stage": "rounds-3-4",
+					"from": 5,
+					"to": 5
+				},
+				{
+					"kind": "standing",
+					"stage": "rounds-3-4",
+					"from": 8,
+					"to": 8
+				}
+			],
+			"play": {
+				"type": "singleElim",
+				"size": 2,
+				"bestOf": [
+					5
+				]
+			}
+		},
+		{
+			"id": "season-playin-r1-2",
+			"window": {
+				"startWeek": 34,
+				"weeks": 3,
+				"matchDays": 7,
+				"maxSeriesPerDay": 4
+			},
+			"parallelGroup": "season-playin-r1",
+			"entrants": [
+				{
+					"kind": "standing",
+					"stage": "rounds-3-4",
+					"from": 6,
+					"to": 6
+				},
+				{
+					"kind": "standing",
+					"stage": "rounds-3-4",
+					"from": 7,
+					"to": 7
+				}
+			],
+			"play": {
+				"type": "singleElim",
+				"size": 2,
+				"bestOf": [
+					5
+				]
+			}
+		},
+		{
+			"id": "season-playin-r2",
+			"window": {
+				"startWeek": 34,
+				"weeks": 3,
+				"matchDays": 7,
+				"maxSeriesPerDay": 4
+			},
+			"entrants": [
+				{
+					"kind": "bracket",
+					"stage": "season-playin-r1-1",
+					"match": "U1-1",
+					"result": "loser"
+				},
+				{
+					"kind": "bracket",
+					"stage": "season-playin-r1-2",
+					"match": "U1-1",
+					"result": "winner"
+				}
+			],
+			"play": {
+				"type": "singleElim",
+				"size": 2,
+				"bestOf": [
+					5
+				]
+			}
+		},
+		{
+			"id": "season-playoffs",
+			"window": {
+				"startWeek": 34,
+				"weeks": 5,
+				"matchDays": 7,
+				"maxSeriesPerDay": 4
+			},
+			"entrants": [
+				{
+					"kind": "standing",
+					"stage": "rounds-3-4",
+					"from": 1,
+					"to": 4
+				},
+				{
+					"kind": "bracket",
+					"stage": "season-playin-r1-1",
+					"match": "U1-1",
+					"result": "winner"
+				},
+				{
+					"kind": "bracket",
+					"stage": "season-playin-r2",
+					"match": "U1-1",
+					"result": "winner"
+				}
+			],
+			"play": {
+				"type": "doubleElim",
+				"size": 6,
+				"upper": [
+					5,
+					5,
+					5
+				],
+				"lower": [
+					5,
+					5,
+					5,
+					5
+				],
+				"drop": [
+					[
+						0,
+						0
+					],
+					[
+						1,
+						2
+					],
+					[
+						3
+					]
+				],
+				"lowerSeeds": [],
+				"grandFinal": 5,
+				"reset": false
+			}
+		}
+	],
+	"tiebreak": [
+		"seriesWins",
+		"gameDiff",
+		"headToHead",
+		"tiebreakerSeries",
+		"draw"
+	],
+	"tiebreakerBestOf": 3,
+	"slots": [
+		{
+			"to": "first-stand",
+			"rule": "standing",
+			"stage": "cup-playoffs",
+			"count": 2,
+			"cascade": "next"
+		},
+		{
+			"to": "msi",
+			"rule": "standing",
+			"stage": "road-to-msi",
+			"count": 2,
+			"cascade": "next"
+		},
+		{
+			"to": "worlds",
+			"rule": "standing",
+			"stage": "season-playoffs",
+			"count": 4,
+			"cascade": "next"
+		}
+	],
+	"verified": false,
+	"provenance": {
+		"source": "Leaguepedia",
+		"licence": "CC BY-SA 3.0",
+		"attribution": "Datos normalizados de los colaboradores de Leaguepedia (https://lol.fandom.com/wiki/Leaguepedia), CC BY-SA 3.0 Unported.",
+		"retrievedAt": "2026-11-22T12:15:53.772Z",
+		"snapshot": "lck.json"
+	},
+	"unverifiedReasons": [
+		"Official tiebreak criteria are unconfirmed; use the game defaults, including Bo3 at a cut.",
+		"Fixed bracket seeds and international places use stage finishes; official seeding, points and cascade rules are unconfirmed.",
+		"The global four-series cap requires wider domestic windows than the snapshot; some starts move by more than seven days.",
+		"Cup cross-group play uses Bo3 throughout; the last five series were Bo5.",
+		"Cup advancement uses a combined table instead of winning/losing group privileges. Summer cuts use the ranked Legend/Rise stage table.",
+		"The snapshot has only one game for Dplus Kia vs Gen.G in Week 10; the scheduled series is Bo3."
+	]
+}

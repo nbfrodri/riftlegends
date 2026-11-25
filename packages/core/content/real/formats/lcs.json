@@ -1,0 +1,302 @@
+{
+	"id": "LCS",
+	"kind": "league",
+	"stages": [
+		{
+			"id": "lock-in-swiss",
+			"window": {
+				"startWeek": 3,
+				"weeks": 7,
+				"matchDays": 7,
+				"maxSeriesPerDay": 4
+			},
+			"entrants": {
+				"kind": "fixed",
+				"teams": [
+					"LYON (2024 American Team)",
+					"Team Liquid",
+					"Cloud9",
+					"FlyQuest",
+					"Sentinels",
+					"Shopify Rebellion",
+					"Disguised",
+					"Dignitas"
+				]
+			},
+			"play": {
+				"type": "swiss",
+				"size": 8,
+				"wins": 3,
+				"losses": 3,
+				"maxRounds": 3,
+				"bestOf": 3,
+				"decisiveBestOf": 3,
+				"round1": "pots",
+				"avoid": [
+					"rematch"
+				]
+			}
+		},
+		{
+			"id": "lock-in-last-chance",
+			"window": {
+				"startWeek": 5,
+				"weeks": 5,
+				"matchDays": 7,
+				"maxSeriesPerDay": 4
+			},
+			"entrants": {
+				"kind": "standing",
+				"stage": "lock-in-swiss",
+				"from": 6,
+				"to": 7
+			},
+			"play": {
+				"type": "singleElim",
+				"size": 2,
+				"bestOf": [
+					1
+				]
+			}
+		},
+		{
+			"id": "lock-in-playoffs",
+			"window": {
+				"startWeek": 6,
+				"weeks": 4,
+				"matchDays": 7,
+				"maxSeriesPerDay": 4
+			},
+			"entrants": [
+				{
+					"kind": "standing",
+					"stage": "lock-in-swiss",
+					"from": 1,
+					"to": 5
+				},
+				{
+					"kind": "bracket",
+					"stage": "lock-in-last-chance",
+					"match": "U1-1",
+					"result": "winner"
+				}
+			],
+			"play": {
+				"type": "doubleElim",
+				"size": 6,
+				"upper": [
+					5,
+					5
+				],
+				"lower": [
+					5,
+					5,
+					5
+				],
+				"drop": [
+					[
+						0,
+						0
+					],
+					[
+						2
+					]
+				],
+				"lowerSeeds": [
+					2
+				],
+				"grandFinal": 5,
+				"reset": false
+			}
+		},
+		{
+			"id": "spring",
+			"window": {
+				"startWeek": 12,
+				"weeks": 13,
+				"matchDays": 7,
+				"maxSeriesPerDay": 2
+			},
+			"entrants": {
+				"kind": "fixed",
+				"teams": [
+					"LYON (2024 American Team)",
+					"Team Liquid",
+					"Cloud9",
+					"FlyQuest",
+					"Sentinels",
+					"Shopify Rebellion",
+					"Disguised",
+					"Dignitas"
+				]
+			},
+			"play": {
+				"type": "roundRobin",
+				"size": 8,
+				"rounds": 1,
+				"bestOf": 3
+			}
+		},
+		{
+			"id": "spring-playoffs",
+			"window": {
+				"startWeek": 20,
+				"weeks": 5,
+				"matchDays": 7,
+				"maxSeriesPerDay": 4
+			},
+			"entrants": {
+				"kind": "standing",
+				"stage": "spring",
+				"from": 1,
+				"to": 6
+			},
+			"play": {
+				"type": "doubleElim",
+				"size": 6,
+				"upper": [
+					5,
+					5
+				],
+				"lower": [
+					5,
+					5,
+					5
+				],
+				"drop": [
+					[
+						0,
+						0
+					],
+					[
+						2
+					]
+				],
+				"lowerSeeds": [
+					2
+				],
+				"grandFinal": 5,
+				"reset": false
+			}
+		},
+		{
+			"id": "summer",
+			"window": {
+				"startWeek": 29,
+				"weeks": 9,
+				"matchDays": 7,
+				"maxSeriesPerDay": 2
+			},
+			"entrants": {
+				"kind": "fixed",
+				"teams": [
+					"LYON (2024 American Team)",
+					"Team Liquid",
+					"Cloud9",
+					"FlyQuest",
+					"Sentinels",
+					"Shopify Rebellion",
+					"Disguised",
+					"Dignitas"
+				]
+			},
+			"play": {
+				"type": "roundRobin",
+				"size": 8,
+				"rounds": 1,
+				"bestOf": 3
+			}
+		},
+		{
+			"id": "summer-playoffs",
+			"window": {
+				"startWeek": 36,
+				"weeks": 5,
+				"matchDays": 7,
+				"maxSeriesPerDay": 4
+			},
+			"entrants": {
+				"kind": "standing",
+				"stage": "summer",
+				"from": 1,
+				"to": 6
+			},
+			"play": {
+				"type": "doubleElim",
+				"size": 6,
+				"upper": [
+					5,
+					5,
+					5
+				],
+				"lower": [
+					5,
+					5,
+					5,
+					5
+				],
+				"drop": [
+					[
+						0,
+						0
+					],
+					[
+						1,
+						2
+					],
+					[
+						3
+					]
+				],
+				"lowerSeeds": [],
+				"grandFinal": 5,
+				"reset": false
+			}
+		}
+	],
+	"tiebreak": [
+		"seriesWins",
+		"gameDiff",
+		"headToHead",
+		"tiebreakerSeries",
+		"draw"
+	],
+	"tiebreakerBestOf": 3,
+	"slots": [
+		{
+			"to": "first-stand",
+			"rule": "standing",
+			"stage": "lock-in-playoffs",
+			"count": 1,
+			"cascade": "next"
+		},
+		{
+			"to": "msi",
+			"rule": "standing",
+			"stage": "spring-playoffs",
+			"count": 2,
+			"cascade": "next"
+		},
+		{
+			"to": "worlds",
+			"rule": "standing",
+			"stage": "summer-playoffs",
+			"count": 3,
+			"cascade": "next"
+		}
+	],
+	"verified": false,
+	"provenance": {
+		"source": "Leaguepedia",
+		"licence": "CC BY-SA 3.0",
+		"attribution": "Datos normalizados de los colaboradores de Leaguepedia (https://lol.fandom.com/wiki/Leaguepedia), CC BY-SA 3.0 Unported.",
+		"retrievedAt": "2026-11-22T12:15:53.772Z",
+		"snapshot": "lcs.json"
+	},
+	"unverifiedReasons": [
+		"Official tiebreak criteria are unconfirmed; use the game defaults, including Bo3 at a cut.",
+		"Fixed bracket seeds and international places use stage finishes; official seeding, points and cascade rules are unconfirmed.",
+		"The global four-series cap requires wider domestic windows than the snapshot; some starts move by more than seven days.",
+		"Lock-In Last Chance uses places 6 and 7 of the game's three-round Swiss table."
+	]
+}

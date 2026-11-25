@@ -6,6 +6,7 @@ import { parseArgs } from "node:util";
 import { Client } from "./client.ts";
 import { history } from "./history.ts";
 import { internationals } from "./internationals.ts";
+import { writeLeagueFormats } from "./league-formats.ts";
 import { writeLeagueLogos } from "./league-logos.ts";
 import { writeLogos } from "./logos.ts";
 import { nationalities } from "./nationality.ts";
@@ -39,8 +40,10 @@ try {
 	});
 	if (values.help) {
 		console.log(
-			"pnpm data:(snapshot|logos|photos|leagues|internationals) [--offline] [--cache-dir <path>] [--max-attempts <n>]",
+			"pnpm data:(snapshot|logos|photos|leagues|league-formats|internationals) [--offline] [--cache-dir <path>] [--max-attempts <n>]",
 		);
+	} else if (positionals[0] === "league-formats") {
+		writeLeagueFormats();
 	} else {
 		const cacheDir = resolve(
 			values["cache-dir"] ??
