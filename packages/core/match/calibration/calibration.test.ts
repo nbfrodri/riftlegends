@@ -108,24 +108,21 @@ describe.each(["control", "packaged", "real-champions", "real"] as const)(
 			expect(kills).toBeLessThanOrEqual(30);
 		});
 
-		if (pool === "real") {
-			// https://github.com/nbfrodri/riftlegends/issues/348 — role-aware rating on a common scale.
-			test.fails("K8 · role rating means are 56–64 and at most 5 points apart", () => {
-				const teams = even.flatMap((g) => g.teams);
-				const means = ROLES.map((role) => {
-					const mean =
-						teams.reduce((sum, team) => sum + team.line[role].rating, 0) /
-						teams.length;
-					expect.soft(mean, role).toBeGreaterThanOrEqual(56);
-					expect.soft(mean, role).toBeLessThanOrEqual(64);
-					return mean;
-				});
-				const ordered = sorted(means);
-				expect(gap(ordered.at(-1) ?? 0, ordered[0] ?? 0)).toBeLessThanOrEqual(
-					5,
-				);
+		it("K8 · role rating means are 56–64 and at most 5 points apart", () => {
+			const teams = even.flatMap((g) => g.teams);
+			const means = ROLES.map((role) => {
+				const mean =
+					teams.reduce((sum, team) => sum + team.line[role].rating, 0) /
+					teams.length;
+				expect.soft(mean, role).toBeGreaterThanOrEqual(56);
+				expect.soft(mean, role).toBeLessThanOrEqual(64);
+				return mean;
 			});
+			const ordered = sorted(means);
+			expect(gap(ordered.at(-1) ?? 0, ordered[0] ?? 0)).toBeLessThanOrEqual(5);
+		});
 
+		if (pool === "real") {
 			// https://github.com/nbfrodri/riftlegends/issues/357 — calibrate the play mix and game totals.
 			test.fails("K11 · a game has 8–15 towers at the median", () => {
 				const towers = at(
