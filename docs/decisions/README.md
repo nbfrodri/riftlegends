@@ -116,6 +116,7 @@ Resumen de las decisiones **vigentes**, para empezar cualquier sesión sin volve
 | Fecha | Decisión | Fuente |
 | --- | --- | --- |
 | 2026-11-25 | A4 se da por hecho en la Fase 3. K8 (nota, #348, resuelta el 25-11) y las torres de K11 (#357) pasan a la Fase 3.5 como fallos esperados con contenido real. | [Plan 11 § App](../plans/11-datos-reales.md#app) |
+| 2026-11-25 | **Nada de jugadores de relleno en los datos reales** (#562): si un equipo se queda sin nadie en un rol porque su titular fichó por otro tras el último split, el snapshot toma a un jugador real de su plantilla actual de Leaguepedia (marcado `noGames`); si no hay nadie, el pipeline falla. Los enlaces que la wiki redirige a otra página (`Van (Kim Seung-hoo)` a `Van1`) son la misma persona, y la nacionalidad se cruza también por esa página de destino. Un guard sobre los datos publicados exige cinco titulares reales por equipo y nacionalidad en todos | [pipeline](../../tools/data-pipeline/README.md#nacionalidad), #562 |
 
 ## Fase 4 · Competición
 

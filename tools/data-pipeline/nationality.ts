@@ -58,6 +58,7 @@ export function countryCode(name: string | null | undefined) {
 
 const cacheRow = (row: CargoRow) => ({
 	Link: row.Link ? person(row.Link).id : null,
+	Page: row.Page ? person(row.Page).id : null,
 	Country: row.Country ?? null,
 	NationalityPrimary: row.NationalityPrimary ?? null,
 });
@@ -65,35 +66,55 @@ const quote = (values: readonly string[]) =>
 	values.map((value) => `'${value.replaceAll("'", "''")}'`).join(",");
 
 /**
- * Country of each player seen in the given tournaments: two queries that join
- * the Players table by page, one row per player.
+ * Country of each player seen in the given tournaments: joins to the Players
+ * table by page, one row per player. A link can also be a wiki redirect
+ * (`Ahn (An Shan-Ye)` for the page `Ahn`), which the direct join misses, so
+ * every table is read a second time through `PlayerRedirects`.
  */
 export async function acquireNationalities(
 	client: Client,
 	pages: readonly string[],
+	/** Teams whose players were added from their current roster, with no games. */
+	teams: readonly string[] = [],
 ) {
 	const fields = (alias: string) =>
-		`${alias}.Link=Link,P.Country=Country,P.NationalityPrimary=NationalityPrimary`;
+		`${alias}.Link=Link,P.OverviewPage=Page,P.Country=Country,P.NationalityPrimary=NationalityPrimary`;
 	const where = (alias: string) => `${alias}.OverviewPage IN (${quote(pages)})`;
 	const rows: CargoRow[] = [];
 	for (const [table, alias] of [
 		["ScoreboardPlayers=SP", "SP"],
 		["TournamentPlayers=TP", "TP"],
 	] as const) {
+		for (const redirected of [false, true]) {
+			rows.push(
+				...(await client.cargo(
+					redirected
+						? `${table},PlayerRedirects=PR,Players=P`
+						: `${table},Players=P`,
+					fields(alias),
+					where(alias),
+					`${alias}.Link`,
+					{
+						join_on: redirected
+							? `${alias}.Link=PR.AllName,PR.OverviewPage=P.OverviewPage`
+							: `${alias}.Link=P.OverviewPage`,
+						group_by: `${alias}.Link`,
+						cacheRow,
+					},
+				)),
+			);
+		}
+	}
+	if (teams.length)
 		rows.push(
 			...(await client.cargo(
-				`${table},Players=P`,
-				fields(alias),
-				where(alias),
-				`${alias}.Link`,
-				{
-					join_on: `${alias}.Link=P.OverviewPage`,
-					group_by: `${alias}.Link`,
-					cacheRow,
-				},
+				"Players=P",
+				"P.OverviewPage=Link,P.OverviewPage=Page,P.Country=Country,P.NationalityPrimary=NationalityPrimary",
+				`P.Team IN (${quote(teams)})`,
+				"P.OverviewPage",
+				{ cacheRow },
 			)),
 		);
-	}
 	return rows;
 }
 
@@ -115,7 +136,11 @@ export function buildNationalities(
 	const found = new Map<string, { country: string; primary: boolean }>();
 	const unmapped = new Set<string>();
 	for (const row of rows) {
-		const id = row.Link ? resolve(row.Link) : undefined;
+		// The player's id comes from the link the games use, or from the page
+		// that link redirects to (the snapshot keeps whichever had more games).
+		const id =
+			(row.Link ? resolve(row.Link) : undefined) ??
+			(row.Page ? resolve(row.Page) : undefined);
 		if (!id) continue;
 		const primary = countryCode(row.NationalityPrimary);
 		const country = primary ?? countryCode(row.Country);
@@ -134,6 +159,24 @@ export function buildNationalities(
 			.sort((a, b) => compare(a.id, b.id)),
 		unmapped: [...unmapped].sort(compare),
 	};
+}
+
+/**
+ * Keeps the published country of a player the wiki momentarily has no data
+ * for (a reverted edit leaves its Cargo row empty for hours). Only ids still
+ * in the snapshot survive, and a fresh answer always wins.
+ */
+export function keepPublished(
+	fresh: readonly PlayerNationality[],
+	published: readonly PlayerNationality[],
+	ids: Iterable<string>,
+) {
+	const current = new Set(ids);
+	const known = new Set(fresh.map(({ id }) => id));
+	return [
+		...fresh,
+		...published.filter(({ id }) => current.has(id) && !known.has(id)),
+	].sort((a, b) => compare(a.id, b.id));
 }
 
 export interface NationalitiesFile {
@@ -224,8 +267,21 @@ export async function nationalities(
 	const rows = await acquireNationalities(
 		client,
 		snapshots.flatMap((snapshot) => snapshot.tournaments.map(({ id }) => id)),
+		snapshots.flatMap((snapshot) =>
+			snapshot.teams
+				.filter(({ id }) =>
+					snapshot.seasonPlayers.some((row) => row.team === id && row.noGames),
+				)
+				.map(({ name }) => name),
+		),
 	);
-	const { players, unmapped } = buildNationalities(rows, ids);
+	const found = buildNationalities(rows, ids);
+	const path = join(options.outputDir, "nationalities.json");
+	const published = await readFile(path, "utf8")
+		.then((text) => parseNationalities(text).players)
+		.catch(() => []);
+	const players = keepPublished(found.players, published, ids);
+	const { unmapped } = found;
 	const file: NationalitiesFile = {
 		provenance: {
 			source: "Leaguepedia",
@@ -240,7 +296,6 @@ export async function nationalities(
 		},
 		players,
 	};
-	const path = join(options.outputDir, "nationalities.json");
 	const body = await preserveNationalities(path, file);
 	await mkdir(dirname(path), { recursive: true });
 	await writeFile(path, body);

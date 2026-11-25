@@ -7,6 +7,7 @@ import {
 	acquireNationalities,
 	buildNationalities,
 	countryCode,
+	keepPublished,
 	parseNationalities,
 	preserveNationalities,
 	serializeNationalities,
@@ -114,7 +115,7 @@ test("cargo queries join the players table by page, and answers are cached", asy
 		expect(searchParams.get("limit")).toBe("500");
 	}
 	expect(urls[0]?.searchParams.get("tables")).toContain("ScoreboardPlayers=SP");
-	expect(urls[1]?.searchParams.get("tables")).toContain("TournamentPlayers=TP");
+	expect(urls[2]?.searchParams.get("tables")).toContain("TournamentPlayers=TP");
 	// Links with a disambiguator are never kept in the rows or in the cache.
 	expect(rows.map((row) => row.Link)).toContain(
 		person("Synthetic Dual (Disambiguator)").id,
@@ -179,4 +180,69 @@ test("a malformed file or a bad country code is rejected", () => {
 	expect(() => parseNationalities(serializeNationalities(file("VD")))).toThrow(
 		/country/i,
 	);
+});
+
+test("a redirected link resolves through the page it points to", () => {
+	// The games say `Bao (Jeong Hyeon-woo)`, the snapshot kept the id of the
+	// page `BAO (Jeong Hyeon-woo)`: only the page matches.
+	const page = person("Synthetic Page (Real Name)").id;
+	const result = buildNationalities(
+		[
+			{
+				Link: person("synthetic page (Real Name)").id,
+				Page: page,
+				Country: "South Korea",
+				NationalityPrimary: "",
+			},
+		],
+		[page],
+	);
+	expect(result.players).toEqual([{ id: page, country: "KR" }]);
+});
+
+test("players added from a current roster are read by team, without names in the cache", async () => {
+	const fetch = vi.fn<typeof globalThis.fetch>(async (input) => {
+		const url = new URL(String(input));
+		const rows =
+			url.searchParams.get("tables") === "Players=P"
+				? [
+						{
+							Link: "Synthetic Reserve (Real Name)",
+							Page: "Synthetic Reserve (Real Name)",
+							Country: "China",
+							NationalityPrimary: "",
+						},
+					]
+				: [];
+		expect(url.searchParams.get("where") ?? "").toBeTruthy();
+		return Response.json({ cargoquery: rows.map((title) => ({ title })) });
+	});
+	const client = new Client({ cacheDir: dir, fetch, sleep: async () => {} });
+	const rows = await acquireNationalities(
+		client,
+		["LPL/2026 Season/Split 2"],
+		["Ultra Prime"],
+	);
+	const id = person("Synthetic Reserve (Real Name)").id;
+	expect(buildNationalities(rows, [id]).players).toEqual([
+		{ id, country: "CN" },
+	]);
+	expect(JSON.stringify(rows)).not.toContain("Real Name");
+	const teamQuery = fetch.mock.calls
+		.map(([input]) => new URL(String(input)))
+		.find((url) => url.searchParams.get("tables") === "Players=P");
+	expect(teamQuery?.searchParams.get("where")).toContain("'Ultra Prime'");
+});
+
+test("a country already published survives a momentary gap in the wiki", () => {
+	const fresh = [{ id: "Faker", country: "KR" }];
+	const published = [
+		{ id: "Faker", country: "DK" },
+		{ id: "Zeus", country: "KR" },
+		{ id: "Gone", country: "FR" },
+	];
+	expect(keepPublished(fresh, published, ["Faker", "Zeus"])).toEqual([
+		{ id: "Faker", country: "KR" },
+		{ id: "Zeus", country: "KR" },
+	]);
 });

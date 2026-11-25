@@ -86,7 +86,7 @@ test("a player already on another team is not borrowed", () => {
 });
 
 test("with nobody to fill a role the pipeline fails and names the team", () => {
-	expect(() => fillRoleGaps([source()], [])).toThrow(/Alpha Esports.*support/s);
+	expect(() => fillRoleGaps([source()], [])).toThrow(/support.*Alpha Esports/s);
 });
 
 test("closing the gaps queries the Players table once, only for teams with gaps", async () => {

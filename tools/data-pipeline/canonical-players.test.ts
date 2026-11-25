@@ -244,7 +244,7 @@ test("a redirect alias merges two ids whose handles differ", () => {
 		],
 	};
 	const [plain] = mergeSamePlayers([source]);
-	expect(plain?.seasonPlayers.map((p) => p.id)).toEqual([alias, "Van1"]);
+	expect(plain?.seasonPlayers.map((p) => p.id)).toEqual(["Van1", alias]);
 	const [merged] = mergeSamePlayers([source], new Map([[alias, "Van1"]]));
 	expect(merged?.seasonPlayers.map((p) => p.id)).toEqual(["Van1"]);
 	expect(merged?.games.flatMap((g) => g.lines.map((l) => l.player))).toEqual([
