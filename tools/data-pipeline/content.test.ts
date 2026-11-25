@@ -46,9 +46,9 @@ test("career history improves ratings and leaves players without history unchang
 	expect(
 		players
 			.filter(({ id }) => !careers.has(id))
-			.map(({ nationality: _nationality, ...player }) => player),
+			.map(({ nationality: _n, birthDate: _b, ...player }) => player),
 	).toEqual(
-		withoutHistory.map(({ nationality: _nationality, ...player }) => player),
+		withoutHistory.map(({ nationality: _n, birthDate: _b, ...player }) => player),
 	);
 });
 
