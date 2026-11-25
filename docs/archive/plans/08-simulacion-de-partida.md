@@ -803,15 +803,15 @@ Sin bucle por segundo: las muertes son marcas de tiempo y se consultan al resolv
 | 5 | **Fuerza por rol:** causa `numbers` más atributos de los vivos sumados por peso de rol; los factores de draft no cambian. |
 | 6 | **Sin resurrecciones ni estasis** por ahora. |
 
-### Troceado propuesto
+### Troceado (milestone «Fase 3.5 — Simulación por composiciones»; paraguas #523)
 
 | # | Issue | Área | Test que lo cierra | Depende de |
 | --- | --- | --- | --- | --- |
-| 1 | `data:timelines`: bandas K19–K22 y curva de nivel por rol y minuto desde las timelines | `area:data` | Bandas y curva reproducibles desde la caché; sin datos de partida en el repo | — |
-| 2 | Estado por jugador, fórmula de muerte, víctimas vivas, oro perdido al morir y resolución secuencial por segundo | `area:core` | D1–D4, D9, D10 y K22; `SIM_VERSION` | 1 (curva) y #525 (refactor de `state.ts`) |
-| 3 | Las disputas cuentan solo a los vivos por peso de rol | `area:core` | D5, D6 y K19; regresión K1–K18 | 2 |
-| 4 | Ventana de conversión tras pelea y cierre tras ace; retirar `fightPushAt` | `area:core` | D7, D8, K20 y K21; `SIM_VERSION` | 3 |
-| 5 | Cara a cara: muerto en gris con cuenta atrás | `area:ui` | D11 (componente y E2E) | 2; junto a #358 |
-| 6 | Rendimiento del año IA contra IA | `area:core` | D12 | 4 |
+| 1 | #527 `data:timelines`: bandas K19–K22 y curva de nivel por rol y minuto desde las timelines; Créditos | `area:data-pipeline` | Bandas y curva reproducibles desde la caché; sin datos de partida en el repo | — |
+| 2 | #528 Estado por jugador, fórmula de muerte, víctimas vivas, oro perdido al morir y resolución secuencial por segundo | `area:core` | D1–D4, D9, D10 y K22; `SIM_VERSION` | #527 (curva) y #525 (refactor de `state.ts`) |
+| 3 | #529 Las disputas cuentan solo a los vivos por peso de rol | `area:core` | D5, D6 y K19; regresión K1–K18 | #528 |
+| 4 | #530 Ventana de conversión tras pelea y cierre tras ace; retirar `fightPushAt` | `area:core` | D7, D8, K20 y K21; `SIM_VERSION` | #529 |
+| 5 | #531 Cara a cara: muerto en gris con cuenta atrás | `area:ui` | D11 (componente y E2E) | #528; junto a #358 |
+| 6 | #532 Rendimiento del año IA contra IA | `area:core` | D12 | #530 |
 
-#339 y #374 mantienen sus issues y pasan a construirse sobre el estado del issue 2 (se actualiza su nota de dependencias).
+#339 y #374 mantienen sus issues y se construyen sobre el estado de #528.
