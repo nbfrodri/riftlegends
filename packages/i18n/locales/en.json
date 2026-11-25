@@ -230,7 +230,7 @@
 	"errors.invalid-stage-ref": "Stage \"{{stage}}\" is fed by a stage that does not exist or does not come before it.",
 	"errors.slots-mismatch": "Slots into \"{{competition}}\" add up to {{actual}} and must add up to {{expected}}.",
 	"errors.format-locked": "The format cannot change once the season has started; the change applies to the next one.",
-	"errors.format-too-long": "\"{{competition}}\" needs {{needed}} match days and the window only has {{available}}. Lower the Bo or remove a round.",
+	"errors.format-too-long": "\"{{competition}}\" needs at least {{needed}} match days and the window only has {{available}}. Remove a round or reduce the number of teams.",
 	"draft.placeholder": "This screen is coming soon.",
 	"draft.loading": "Loading",
 	"draft.crumb.label": "You are here",

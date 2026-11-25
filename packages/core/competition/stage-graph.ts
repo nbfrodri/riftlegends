@@ -189,8 +189,10 @@ function collectEdges(
 	return undefined;
 }
 
-function validateEdges(graph: StageGraph): CoreError | undefined {
-	const deps = new Map<string, Set<string>>();
+function validateEdges(
+	graph: StageGraph,
+	deps: Map<string, ReadonlySet<string>>,
+): CoreError | undefined {
 	const covered = new Set<IncomingPlace>();
 	for (const [key, node] of graph.nodes) {
 		const edges: Edges = { keys: new Set(), ownPlaces: new Set() };
@@ -272,7 +274,14 @@ export function buildStageGraph(
 	const leagues = new Set(
 		competitions.filter((c) => c.kind === "league").map((c) => c.id),
 	);
-	const graph: StageGraph = { ...allocations, nodes, teams: teamById, leagues };
-	const error = validateEdges(graph);
+	const dependencies = new Map<string, ReadonlySet<string>>();
+	const graph: StageGraph = {
+		...allocations,
+		nodes,
+		dependencies,
+		teams: teamById,
+		leagues,
+	};
+	const error = validateEdges(graph, dependencies);
 	return error ? { ok: false, error } : { ok: true, graph };
 }
