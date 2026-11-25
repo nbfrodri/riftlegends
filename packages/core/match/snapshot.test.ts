@@ -53,7 +53,12 @@ describe("map snapshots (Q4)", () => {
 	});
 
 	it("ends with the same player ids, K/D/A and gold as match.ended", () => {
-		const seeds = Array.from({ length: 400 }, (_, index) => index + 1);
+		// These extra seeds end on an exact minute and exercise the final tick of passive gold.
+		const boundarySeeds = [66, 168, 236];
+		const seeds = [
+			...Array.from({ length: 64 }, (_, index) => index + 1),
+			...boundarySeeds,
+		];
 		let endsOnMinuteBoundary = false;
 		for (const seed of seeds) {
 			const { snapshots, facts } = playGame(matchSetup({ seed }));
@@ -77,7 +82,10 @@ describe("map snapshots (Q4)", () => {
 				})),
 			);
 		}
-		expect(endsOnMinuteBoundary).toBe(true);
+		expect(
+			endsOnMinuteBoundary,
+			"expected a game to end on an exact minute",
+		).toBe(true);
 	});
 
 	it("never decreases any player's K/D/A, gold or CS", () => {
