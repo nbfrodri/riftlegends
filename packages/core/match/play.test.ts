@@ -42,3 +42,33 @@ describe("playGame", () => {
 		}
 	});
 });
+
+it("reports timed multikills from the simulated fights in match.ended", () => {
+	const games = Array.from({ length: 24 }, (_, seed) =>
+		playGame(matchSetup({ seed })),
+	);
+	const expected = games.map(({ events }) =>
+		events.flatMap((event, index) =>
+			event.kills.flatMap((kill) =>
+				"multikill" in kill
+					? [{ event: index, killer: kill.killer, count: kill.multikill }]
+					: [],
+			),
+		),
+	);
+	expect(expected.flat().length).toBeGreaterThan(0);
+	expect(games.map(({ facts }) => facts.at(-1))).toEqual(
+		expected.map((multikills) => expect.objectContaining({ multikills })),
+	);
+	for (const { events } of games) {
+		for (const event of events.filter((e) => e.kind === "fight")) {
+			const times = event.kills.map((kill) =>
+				"fightSecond" in kill ? kill.fightSecond : undefined,
+			);
+			expect(times[0]).toBe(0);
+			for (let i = 1; i < times.length; i++) {
+				expect(times[i]).toBeGreaterThan(times[i - 1] as number);
+			}
+		}
+	}
+});
