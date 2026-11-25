@@ -1,13 +1,11 @@
 import { validateFormat } from "@rift-legends/contracts";
 import fc from "fast-check";
 import { describe, expect, it } from "vitest";
-import * as core from "../index";
+import { buildStageGraph, resolveStage, stageKey } from "../index";
 import { buildSingleElim, type SingleElim } from "./bracket";
 import { resolveBracket } from "./bracket-state";
 import type { StageOutcome } from "./qualification";
 import { computeStandings } from "./standings";
-
-const api = core as typeof import("./season");
 
 const window = { startWeek: 1, weeks: 1, matchDays: 2 };
 const leaguePlay = { type: "roundRobin", size: 6, rounds: 1, bestOf: 3 };
@@ -65,7 +63,7 @@ const roster = (ids: string[], competition: string) =>
 		rank: index + 1,
 	}));
 const build = (formats: unknown[], allTeams = roster(teams, "LCK")) => {
-	const result = api.buildStageGraph?.(formats, allTeams);
+	const result = buildStageGraph(formats, allTeams);
 	expect(result, "stage graph should validate").toMatchObject({ ok: true });
 	if (!result?.ok) throw new Error("Invalid test graph");
 	return result.graph;
@@ -74,14 +72,14 @@ const resolve = (
 	graph: ReturnType<typeof build>,
 	competition: string,
 	stage: string,
-	outcomes: Parameters<typeof api.resolveStage>[2] = new Map(),
+	outcomes: Parameters<typeof resolveStage>[2] = new Map(),
 	seed = 42,
-) => api.resolveStage(graph, { competition, stage }, outcomes, seed, 2026);
+) => resolveStage(graph, { competition, stage }, outcomes, seed, 2026);
 
 describe("stage graph", () => {
 	it("rejects an odd Swiss field before its first pairing", () => {
 		expect(
-			api.buildStageGraph?.(
+			buildStageGraph(
 				[
 					format("LCK", [
 						stage("swiss", fixed("a", "b", "c"), {
@@ -121,7 +119,7 @@ describe("stage graph", () => {
 			status: "pending",
 		});
 		const standings = table(teams);
-		const key = api.stageKey({ competition: "LCK", stage: "league" });
+		const key = stageKey({ competition: "LCK", stage: "league" });
 		const pending = [{ a: "a", b: "b", bestOf: 3 }];
 		expect(
 			resolve(
@@ -183,14 +181,14 @@ describe("stage graph", () => {
 		const bracket = buildSingleElim(bracketPlay);
 		const outcomes = new Map<string, StageOutcome>([
 			[
-				api.stageKey({ competition: "LCK", stage: "r1" }),
+				stageKey({ competition: "LCK", stage: "r1" }),
 				{ bracket: resolveBracket(bracket, ["a", "b"], { "U1-1": "a" }) },
 			],
 		]);
 		expect(resolve(graph, "LCK", "r3", outcomes)).toMatchObject({
 			status: "pending",
 		});
-		outcomes.set(api.stageKey({ competition: "LCK", stage: "r2" }), {
+		outcomes.set(stageKey({ competition: "LCK", stage: "r2" }), {
 			bracket: resolveBracket(bracket, ["c", "d"], { "U1-1": "d" }),
 		});
 		expect(resolve(graph, "LCK", "r3", outcomes)).toMatchObject({
@@ -208,7 +206,7 @@ describe("stage graph", () => {
 				},
 			],
 		});
-		outcomes.set(api.stageKey({ competition: "LCK", stage: "r3" }), {
+		outcomes.set(stageKey({ competition: "LCK", stage: "r3" }), {
 			bracket: resolveBracket(bracket, ["b", "d"], { "U1-1": "d" }),
 		});
 		expect(resolve(graph, "LCK", "main", outcomes)).toMatchObject({
@@ -231,7 +229,7 @@ describe("stage graph", () => {
 		[[standing("origin", 1, 1), standing("origin", 1, 1)], "invalid-format"],
 	])("V3–V4 rejects an invalid source %j with %s", (source, code) => {
 		expect(
-			api.buildStageGraph?.(
+			buildStageGraph(
 				[
 					format("LCK", [
 						stage("origin", fixed(...teams)),
@@ -246,7 +244,7 @@ describe("stage graph", () => {
 
 	it("V4 rejects cycles across competitions", () => {
 		expect(
-			api.buildStageGraph?.(
+			buildStageGraph(
 				[
 					format("LCK", [stage("a", standing("b", 1, 2, "LEC"), bracketPlay)]),
 					format("LEC", [stage("b", standing("a", 1, 2, "LCK"), bracketPlay)]),
@@ -274,9 +272,7 @@ describe("stage graph", () => {
 			graph,
 			"LCK",
 			"playoffs",
-			new Map([
-				[api.stageKey({ competition: "LCK", stage: "road" }), { bracket }],
-			]),
+			new Map([[stageKey({ competition: "LCK", stage: "road" }), { bracket }]]),
 		);
 		expect(result).toMatchObject({
 			status: "error",
@@ -316,13 +312,13 @@ describe("international slots and pots", () => {
 		const bracket = buildSingleElim(bracketPlay);
 		const outcomes = new Map<string, StageOutcome>([
 			[
-				api.stageKey({ competition: "LCK", stage: "split" }),
+				stageKey({ competition: "LCK", stage: "split" }),
 				{
 					bracket: resolveBracket(bracket, ["a", "b"], { "U1-1": "a" }),
 				},
 			],
 			[
-				api.stageKey({ competition: "LCK", stage: "road" }),
+				stageKey({ competition: "LCK", stage: "road" }),
 				{
 					bracket: resolveBracket(bracket, ["a", "c"], { "U1-1": "a" }),
 				},
@@ -339,7 +335,7 @@ describe("international slots and pots", () => {
 			new Map([
 				...outcomes,
 				[
-					api.stageKey({ competition: "LCK", stage: "league" }),
+					stageKey({ competition: "LCK", stage: "league" }),
 					{
 						points: new Map([
 							["a", 20],
@@ -413,7 +409,7 @@ describe("international slots and pots", () => {
 				"main",
 				new Map([
 					[
-						api.stageKey({ competition: "LCK", stage: "league" }),
+						stageKey({ competition: "LCK", stage: "league" }),
 						{ standings: table(teams) },
 					],
 				]),
@@ -426,7 +422,7 @@ describe("international slots and pots", () => {
 
 	it("V5 rejects mismatched international allocations", () => {
 		expect(
-			api.buildStageGraph?.(
+			buildStageGraph(
 				[
 					format("LCK", [league], [slot("msi", "standing", "league")]),
 					format("msi", [stage("main", qualified("msi"), bracketPlay)]),
@@ -481,11 +477,11 @@ describe("international slots and pots", () => {
 			const standingsB = table(b);
 			const outcomes = new Map<string, StageOutcome>([
 				[
-					api.stageKey({ competition: "LCK", stage: "split" }),
+					stageKey({ competition: "LCK", stage: "split" }),
 					{ standings: standingsA },
 				],
 				[
-					api.stageKey({ competition: "LEC", stage: "split" }),
+					stageKey({ competition: "LEC", stage: "split" }),
 					{ standings: standingsB },
 				],
 			]);

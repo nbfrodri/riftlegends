@@ -1,11 +1,10 @@
 import { validateFormat } from "@rift-legends/contracts";
 import { describe, expect, it } from "vitest";
-import * as core from "../index";
+import { buildStageGraph, resolveStage, stageKey } from "../index";
 import { buildDoubleElim } from "./bracket";
 import { resolveBracket } from "./bracket-state";
 import { pairSwissRound } from "./swiss";
 
-const api = core as typeof import("./season");
 const files = import.meta.glob("../content/real/formats/*.json", {
 	eager: true,
 	import: "default",
@@ -84,20 +83,17 @@ describe("chained 2026 international formats", () => {
 					},
 				],
 			}));
-			const built = api.buildStageGraph([...domestic, event], teams);
+			const built = buildStageGraph([...domestic, event], teams);
 			expect(built).toMatchObject({ ok: true });
 			if (!built.ok) throw new Error("Invalid season graph");
 			const outcomes = new Map<
 				string,
-				Parameters<typeof api.resolveStage>[2] extends ReadonlyMap<
-					string,
-					infer V
-				>
+				Parameters<typeof resolveStage>[2] extends ReadonlyMap<string, infer V>
 					? V
 					: never
 			>();
 			for (const league of leagues) {
-				outcomes.set(api.stageKey({ competition: league, stage: "split" }), {
+				outcomes.set(stageKey({ competition: league, stage: "split" }), {
 					standings: {
 						pending: [],
 						rows: teams
@@ -115,7 +111,7 @@ describe("chained 2026 international formats", () => {
 				});
 			}
 			const resolve = (stage: string) =>
-				api.resolveStage(
+				resolveStage(
 					built.graph,
 					{ competition: id, stage },
 					outcomes,
@@ -154,7 +150,7 @@ describe("chained 2026 international formats", () => {
 						bracket.matches.find((m) => m.id === "U2-1")?.winner,
 					);
 				}
-				outcomes.set(api.stageKey({ competition: id, stage }), { bracket });
+				outcomes.set(stageKey({ competition: id, stage }), { bracket });
 			}
 			const ready = resolve(next);
 			expect(ready.status).toBe("ready");
