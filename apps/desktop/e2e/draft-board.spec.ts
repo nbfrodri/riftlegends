@@ -258,6 +258,11 @@ test("each open panel drops below its bar without scrolling the page", async ({
 			expect(panel.y).toBeLessThan(openBoard.y + openBoard.height);
 			expect(panel.y + panel.height).toBeLessThanOrEqual(viewport.height);
 			expect(openBoard).toEqual(closedBoard);
+			// #558: the player card, bars and pool included, needs no scroll.
+			if (name === "Player card")
+				expect(
+					await body.evaluate((el) => el.scrollHeight - el.clientHeight),
+				).toBeLessThanOrEqual(0);
 			expect(
 				await appWindow.evaluate(() => {
 					const main = document.querySelector("main");

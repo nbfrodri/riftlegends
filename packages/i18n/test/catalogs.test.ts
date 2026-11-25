@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { MATCH_CAUSE_KEYS } from "../../core/match/cause-keys";
 import en from "../locales/en.json" with { type: "json" };
 import es from "../locales/es.json" with { type: "json" };
 
@@ -23,6 +24,19 @@ describe("catalogs", () => {
 		expect(labels(en)).toEqual(["Top", "Jungle", "Mid", "ADC", "Support"]);
 	});
 });
+
+const causeCatalogs: Record<"es" | "en", Record<string, string>> = { es, en };
+
+it.each(["es", "en"] as const)(
+	"translates every match cause in the %s event feed",
+	(locale) => {
+		const catalog = causeCatalogs[locale];
+		const missing = MATCH_CAUSE_KEYS.filter(
+			(key) => !catalog[`draft.match.cause.${key}`]?.trim(),
+		);
+		expect(missing).toEqual([]);
+	},
+);
 
 it("phrase every match cause in the game result too", () => {
 	// The live feed lists every cause the simulation gives; the result's
