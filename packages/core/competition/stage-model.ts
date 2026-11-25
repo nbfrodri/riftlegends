@@ -41,6 +41,7 @@ export interface IncomingPlace {
 
 export interface StageGraph {
 	readonly nodes: ReadonlyMap<string, StageNode>;
+	readonly dependencies: ReadonlyMap<string, ReadonlySet<string>>;
 	readonly teams: ReadonlyMap<string, SeasonTeam>;
 	readonly leagues: ReadonlySet<string>;
 	readonly awards: ReadonlyMap<
