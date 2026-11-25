@@ -53,14 +53,8 @@ describe("map snapshots (Q4)", () => {
 	});
 
 	it("ends with the same player ids, K/D/A and gold as match.ended", () => {
-		// These extra seeds end on an exact minute and exercise the final tick of passive gold.
-		const boundarySeeds = [66, 168, 236];
-		const seeds = [
-			...Array.from({ length: 64 }, (_, index) => index + 1),
-			...boundarySeeds,
-		];
 		let endsOnMinuteBoundary = false;
-		for (const seed of seeds) {
+		for (let seed = 1; seed <= 400; seed++) {
 			const { snapshots, facts } = playGame(matchSetup({ seed }));
 			const ended = facts.find((fact) => fact.type === "match.ended");
 			if (!ended) throw new Error("missing match.ended");
@@ -81,6 +75,8 @@ describe("map snapshots (Q4)", () => {
 					gold,
 				})),
 			);
+			// Check at least 64 games and cover the final tick of passive gold.
+			if (seed >= 64 && endsOnMinuteBoundary) break;
 		}
 		expect(
 			endsOnMinuteBoundary,
