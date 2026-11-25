@@ -100,14 +100,22 @@ const fourTeams = (grandFinal: 5 | null): Stage["play"] => ({
 	reset: false,
 });
 
-const unverified = [
-	"Tiebreak criteria, seeding and slots are not read from the rulebook yet.",
-];
+const unverified = {
+	"first-stand": [
+		"Two GSL groups and Bo5 everywhere match lolesports coverage; the group seeding, the 2-slot LCK and LPL routes and the tiebreakers are not in a published 2026 rulebook we could read.",
+	],
+	msi: [
+		"lolesports confirms 11 play-in teams (2 each from LCK, LCS, LCP, LEC and LPL, 1 from CBLOL), a Bo5 four-team double-elimination play-in and an eight-team bracket. Which second seeds bypass depends on First Stand results (LPL 2 is assumed), and the seeding is unpublished.",
+	],
+	worlds: [
+		"lolesports confirms 19 teams (3 each from LCK, LCS, LCP, LEC and LPL, 2 from CBLOL, the MSI champion and one from the MSI runner-up region) and a Bo5 four-team play-in. The Swiss and knockout best-of formats, the seeding by MSI results and the tiebreakers are not published.",
+	],
+};
 
 export const internationalDefinitions: Record<EventId, Definition> = {
 	"first-stand": {
 		tiebreak: [],
-		unverified,
+		unverified: unverified["first-stand"],
 		stages: [
 			{
 				id: "groupA",
@@ -150,7 +158,7 @@ export const internationalDefinitions: Record<EventId, Definition> = {
 	},
 	msi: {
 		tiebreak: [],
-		unverified,
+		unverified: unverified.msi,
 		stages: [
 			{
 				id: "playin",
@@ -189,7 +197,7 @@ export const internationalDefinitions: Record<EventId, Definition> = {
 			"tiebreakerSeries",
 			"draw",
 		],
-		unverified,
+		unverified: unverified.worlds,
 		stages: [
 			{
 				id: "playin",

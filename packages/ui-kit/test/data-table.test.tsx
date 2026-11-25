@@ -322,3 +322,50 @@ describe("with a short scrolling region", () => {
 		}
 	});
 });
+
+function Activatable({ onActivate }: { onActivate: (row: Player) => void }) {
+	return (
+		<DataTable
+			label="Players"
+			data={players}
+			columns={columns}
+			getRowId={(row) => row.id}
+			filterLabel="Filter players"
+			filterPlaceholder="Player or team"
+			emptyText="No player matches the filter"
+			countLabel={(shown, total) => `${shown} of ${total} players`}
+			onRowActivate={onActivate}
+			rowActionLabel={(row) => `Open ${row.name}`}
+		/>
+	);
+}
+
+describe("row activation (#443)", () => {
+	test("a click, Enter or Space on a row activates it", async () => {
+		const opened: string[] = [];
+		render(<Activatable onActivate={(row) => opened.push(row.id)} />);
+		const user = userEvent.setup();
+		const [first, second] = rows();
+		await user.click(
+			within(first as HTMLElement).getAllByRole("cell")[1] as HTMLElement,
+		);
+		(second as HTMLElement).focus();
+		await user.keyboard("{Enter}");
+		await user.keyboard(" ");
+		expect(opened).toEqual(["p0", "p1", "p1"]);
+	});
+
+	test("activatable rows show the hand cursor and name their action", () => {
+		render(<Activatable onActivate={() => {}} />);
+		const [first] = rows();
+		expect(first?.className).toContain("cursor-pointer");
+		expect(first?.getAttribute("aria-description")).toBe("Open Nadir 1");
+	});
+
+	test("rows without an action stay plain", async () => {
+		render(<Table />);
+		const [first] = rows();
+		expect(first?.className).not.toContain("cursor-pointer");
+		expect(first?.hasAttribute("aria-description")).toBe(false);
+	});
+});

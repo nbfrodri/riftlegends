@@ -44,6 +44,7 @@ Las letras agrupan por módulo. Cada fila es un test (o varios) que se escribe a
 | G1 | El reparto en grupos sigue el sembrado en serpiente | 10 equipos en 2 grupos; 14 en grupos de 8 y 6 |
 | G2 | En internacionales, dos equipos de la misma región no caen en el mismo grupo si hay alternativa | Una región con más equipos que grupos: se reparte lo menos posible |
 | G3 | Cruce entre grupos (LCK Cup): cada equipo juega solo contra el otro grupo | |
+| G4 | La Super Week pone una serie Bo5 por equipo al final de los cruces y da dos puntos al grupo que gana cada serie | Los puntos pueden cambiar qué grupo gana aunque pierda más series |
 
 ### Clasificación y desempates (`core/competition/standings.ts`, `tiebreak.ts`)
 
@@ -56,6 +57,7 @@ Las letras agrupan por módulo. Cada fila es un test (o varios) que se escribe a
 | D5 | Último recurso: sorteo con el RNG de la competición | Misma semilla, mismo orden |
 | D6 | Cada posición lleva su explicación: criterio decisivo y valores | «Empate a 6-3; gana G2 por enfrentamiento directo (2-0)» |
 | D7 | Propiedad: la clasificación es un orden total y una permutación de los participantes | Con cualquier resultado |
+| D8 | LEC desempata en el orden documentado en la tabla de reglamentos | Primer split sin historial, victorias de distinto peso y duración, Bo3 en el corte y sorteo |
 
 ### Swiss propio (`core/competition/swiss.ts`)
 
@@ -90,6 +92,7 @@ Las letras agrupan por módulo. Cada fila es un test (o varios) que se escribe a
 | Q3 | Si un equipo ya tiene plaza por otra vía, la plaza pasa al siguiente según la regla de cascada | El campeón de split 1 también gana split 2 |
 | Q4 | El sembrado internacional usa bombos por región y posición | Plazas personalizadas: los bombos se recalculan |
 | Q5 | Una fase con equipos pendientes («ganador de R1-S2») se resuelve al terminar la fase anterior | |
+| Q6 | LCK Cup da tres plazas directas según las tablas de grupo | Los dos primeros del ganador y el primero del perdedor, aunque la tabla conjunta dé otro orden |
 
 ### Calendario (`core/competition/calendar.ts`)
 
@@ -253,7 +256,7 @@ No se implementan aquí (plan 24), pero el esquema ya los cubre: la serie de pro
 
 | Liga | Splits | Fases y Bo | Adaptación o regla provisional |
 | --- | --- | --- | --- |
-| LCK · 10 | Cup, Rounds 1–2 y 3–4 | Cup: grupos cruzados Bo3 → play-in Bo3/Bo3/Bo5 → doble de 6 Bo5. Rounds 1–2: doble vuelta Bo3 → Road to MSI en escalera Bo5. Rounds 3–4: Legend/Rise a doble vuelta Bo3 → play-in y doble de 6 Bo5. | Los cinco Bo5 de grupos de la Cup pasan a Bo3. El corte de la Cup usa la tabla conjunta y el de verano la tabla de Legend/Rise. El snapshot solo conserva un game de Dplus Kia–Gen.G en la semana 10. Se trata como Bo3. |
+| LCK · 10 | Cup, Rounds 1–2 y 3–4 | Cup: grupos cruzados → play-in Bo3/Bo3/Bo5 → doble de 6 Bo5. Rounds 1–2: doble vuelta Bo3 → Road to MSI en escalera Bo5. Rounds 3–4: Legend/Rise a doble vuelta Bo3 → play-in y doble de 6 Bo5. | El corte de verano usa la tabla de Legend/Rise. El snapshot solo conserva un game de Dplus Kia–Gen.G en la semana 10. Se trata como Bo3. |
 | LPL · 14 | Splits 1–3 y Grand Finals | Split 1: grupos 6/4/4 a doble vuelta Bo3 → dos escaleras Bo5 → doble de 8 Bo5. Split 2: grupos 8/6 a dos y una vuelta Bo3 → cuatro cruces y doble de 8 Bo5. Split 3: grupos 8/4 a doble vuelta Bo3 → Knight’s Road y doble de 8 Bo5. | Grupos iniciales históricos. El split 2 usa puestos del split 1. El split 3 usa los ocho del cuadro anterior y los cuatro perdedores del play-in. Los cruces de ascenso y las semillas de escalera son provisionales. El desempate observado queda sujeto al corte. El cuarto puesto de Grand Finals sustituye la cuarta vía a Worlds, que dio plaza a TES en el snapshot. |
 | LEC · 10 | Versus, Spring y Summer | Versus: una vuelta Bo1 y doble de 8 con Bo3 en las primeras dos rondas de ambos cuadros y Bo5 después. Spring y Summer: una vuelta Bo3 y doble de 6 Bo5, con dos equipos que entran por abajo. | Versus pasa de 66 a 45 series al quitar a Karmine Corp Blue y Los Ratones. |
 | LCP · 8 | Splits 1–3 | Splits 1 y 2: una vuelta Bo3 y doble de 6 Bo5. Split 3: Swiss Bo3, con Bo5 en series decisivas → tres cruces de sembrado Bo5 → doble de 4 Bo5. | Swiss genérico a 3 victorias o derrotas. Reserva hasta tres series en ronda 5 para una observada. La selección para los cruces se aproxima con la tabla Swiss. El cruce inferior ordena puestos fuera de playoffs. |
@@ -261,6 +264,21 @@ No se implementan aquí (plan 24), pero el esquema ya los cubre: la serie de pro
 | CBLOL · 8 | Cup, splits 1 y 2 | Cup: una vuelta Bo1 → play-in Bo3 y Last Chance Bo5 → doble de 6, primeras dos rondas superiores Bo3 y resto Bo5. Splits 1 y 2: una vuelta Bo3 → doble de 6 Bo5. | El primer billete del play-in se asigna al ganador de 5.º contra 6.º. |
 
 Se conservan los cupos del #424 en orden LCK, LPL, LEC, LCP, LCS y CBLOL. First Stand usa 2/2/1/1/1/1, MSI 2/2/2/2/2/1 y Worlds 4/4/3/3/3/2. Las plazas bajan por la clasificación de la fase que las decide. Se aplica el desempate Bo3 en cortes y el cuadro fijo por sembrado. Los desempates, el sembrado exacto y las vías oficiales que dependen de puntos siguen pendientes. Los JSON los marcan con `verified: false` y guardan los motivos.
+
+**Verificación contra los reglamentos (25-11-2026, #427 R2).** Los reglamentos oficiales de 2026 de casi todas las ligas no se pudieron leer (están en sitios dinámicos o en documentos no publicados). Solo el LCK tiene reglamento oficial accesible, y es el de 2025. Ningún formato pasa a `verified: true`.
+
+| Competición | Regla confirmada | Fuente | Qué cambió |
+| --- | --- | --- | --- |
+| LCK | Orden: victorias, diferencia de sets, enfrentamiento directo; si sigue el empate, el reglamento juega **un solo game** (Bo1). Reglamento de 2025, no el de 2026 | [Reglamento LCK 2025, §2.8](https://cdn.sanity.io/files/dsfx7636/news/9636bd54a1e986ee7f617fad68a680c5cee2d4d4.docx) | `lck.json`: se codifica el orden y se quita el sorteo final. **El usuario decidió (25-11) mantener el Bo3** en lugar del Bo1 del reglamento (`tiebreakerBestOf` 3) |
+| LCK Cup | Super Week en Bo5, con 2 puntos de grupo. El resto se juega en Bo3 y vale un punto. Directos a playoffs: 1.º y 2.º del grupo ganador y 1.º del perdedor | [Formato LCK 2026](https://lolesports.com/ko-KR/news/2026-lck-format-explainer) | Implementado en #535. R1 compara los cinco Bo5 con la Week 3 del snapshot. El juego siembra los cruces y usa un sorteo si los grupos igualan en puntos. El play-in sigue los cruces observados. |
+| LCP | Swiss de split 3: Bo3 y Bo5 en la tercera victoria o derrota; seeding Bo5; clasifican los 2 primeros de playoffs y el líder de puntos (desempate: playoffs, luego Swiss) | [LCP split 3](https://lolesports.com/en-SG/news/lcp-2026-split-3-everything-you-need-to-know) | Ya coincidía. Se anota que el tercer cupo de Worlds es por puntos y se aproxima con el tercero de playoffs |
+| MSI | 11 equipos en el play-in (2 de LCK, LCS, LCP, LEC y LPL; 1 de CBLOL), play-in Bo5 de 4 en doble eliminación, cuadro de 8. Los byes dependen de First Stand | [MSI y Worlds](https://lolesports.com/en-US/news/msi-and-worlds-updates) | Ya coincidía. El motivo ahora dice qué falta (sembrado, quién salta el play-in) |
+| Worlds | 19 equipos (3 de LCK, LCS, LCP, LEC y LPL; 2 de CBLOL; campeón de MSI y una plaza de la región subcampeona) y play-in Bo5 de 4 | [MSI y Worlds](https://lolesports.com/en-US/news/msi-and-worlds-updates) | Ya coincidía (4/4/3/3/3/2). Faltan los Bo del Swiss y de los cuartos, el sembrado y los desempates |
+| First Stand | Dos grupos de doble eliminación y Bo5 en todo | [Cobertura de Dot Esports](https://dotesports.com/league-of-legends/news/league-of-legends-esports-first-stand-2026-format-changes-first-selection) (secundaria) | Motivo más concreto |
+| LEC | Tras igualar en victorias, enfrentamiento directo, puestos de splits anteriores, fuerza de victoria, tiempo de victoria y sorteo | [Bo3.gg](https://bo3.gg/lol/news/riot-games-changed-the-rules-of-the-lec-summer-split-right-in-the-middle-of-the-season) (secundaria, 2025) | Implementado en #535. Se usan las tablas de fase regular, de la más reciente a la más antigua. La fuerza suma las series ganadas por los rivales vencidos. El tiempo suma los segundos de los mapas ganados en series ganadas y se omite si faltan duraciones. En un corte, si los criterios dejan un empate, se juega Bo3 antes del sorteo. |
+| LPL, LCS, CBLOL | Reglamentos oficiales de 2026 pendientes | — | Se conservan los criterios provisionales. |
+
+Los detalles de cálculo de LEC y el desempate entre grupos de la LCK Cup quedan provisionales hasta confirmarlos en el reglamento.
 
 **Calendario.** Con el tope de 4 series diarias por competición, cada fase empieza en su semana real de 2026. El test C3 exige una diferencia de 7 días como máximo entre el primer día de cada fase y el real. Los mayores desvíos medidos son 6 días en LCK, 6 en LPL, 4 en LEC, 2 en LCP, 4 en LCS y 4 en CBLOL.
 

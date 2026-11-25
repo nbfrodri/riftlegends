@@ -94,11 +94,6 @@ export function checkLeagueFormat(id: LeagueId, format: Competition): string[] {
 				"versus: expected 66 historical series from 12 teams before removing guests",
 			);
 		}
-		if (id === "LCK" && stage.id === "cup-groups") {
-			const lastWeek = rows.filter((row) => row.tab === "Week 3");
-			if (bos(lastWeek.map((row) => row.bestOf)) !== "5,5,5,5,5")
-				issues.push("cup-groups: expected five Bo5 in Week 3");
-		}
 		const teams = new Set(sample.flatMap((row) => [...row.teams]));
 		if (teams.size !== node.stage.play.size)
 			issues.push(`${stage.id}: snapshot has ${teams.size} teams`);
@@ -174,6 +169,27 @@ export function checkLeagueFormat(id: LeagueId, format: Competition): string[] {
 					issues.push(`${stage.id}: ${tab} best of or series count differs`);
 				}
 			}
+		} else if (
+			id === "LCK" &&
+			stage.id === "cup-groups" &&
+			play.type === "groups"
+		) {
+			for (const special of [false, true]) {
+				const actual = sample.filter(
+					({ tab }) => (tab === "Week 3") === special,
+				);
+				const planned = generated.fixtures.filter(
+					({ earliestWeek }) => (earliestWeek === 2) === special,
+				);
+				if (
+					bos(actual.map(({ bestOf }) => bestOf)) !==
+					bos(planned.map(({ bestOf }) => bestOf ?? play.inner.bestOf))
+				) {
+					issues.push(
+						`cup-groups: ${special ? "Week 3" : "Weeks 1–2"} best of or series count differs`,
+					);
+				}
+			}
 		} else {
 			const bestOf =
 				play.type === "groups"
@@ -182,7 +198,7 @@ export function checkLeagueFormat(id: LeagueId, format: Competition): string[] {
 						? play.bestOf
 						: undefined;
 			for (const row of sample) {
-				if (normalizedBestOf(id, stage.id, row) !== bestOf)
+				if (normalizedBestOf(id, row) !== bestOf)
 					issues.push(`${row.id}: best of differs`);
 			}
 		}
@@ -205,12 +221,12 @@ export function checkLeagueFormat(id: LeagueId, format: Competition): string[] {
 	return issues;
 }
 
-function normalizedBestOf(id: LeagueId, stage: string, row: LeagueSeries) {
-	if (id === "LCK") {
-		if (stage === "cup-groups" && row.tab === "Week 3" && row.bestOf === 5)
-			return 3;
-		if (row.id === "LCK/2026 Season/Rounds 3-4_Week 10_8" && row.bestOf === 1)
-			return 3;
-	}
+function normalizedBestOf(id: LeagueId, row: LeagueSeries) {
+	if (
+		id === "LCK" &&
+		row.id === "LCK/2026 Season/Rounds 3-4_Week 10_8" &&
+		row.bestOf === 1
+	)
+		return 3;
 	return row.bestOf;
 }

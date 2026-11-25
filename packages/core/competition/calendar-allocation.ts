@@ -17,6 +17,8 @@ export interface CalendarSeries {
 	readonly id: string;
 	readonly teams: FixtureSlot["teams"];
 	readonly day: number;
+	readonly bestOf?: FixtureSlot["bestOf"];
+	readonly groupPoints?: FixtureSlot["groupPoints"];
 	readonly explanation: {
 		readonly rule: "first-available";
 		readonly earliestDay: number;
@@ -105,7 +107,7 @@ export function allocate(
 		const { stage, fixture, after } = job;
 		const earliestDay = after.reduce(
 			(day, prior) => max(day, (placed[prior]?.day as number) + 1),
-			stage.startDay,
+			stage.startDay + (fixture.earliestWeek ?? 0) * DAYS_PER_WEEK,
 		);
 		const skipped = new Map<Delay, number>();
 		const weeks = stageWeeks.get(stage) as number[];
@@ -131,6 +133,10 @@ export function allocate(
 				]),
 				teams: fixture.teams,
 				day,
+				...(fixture.bestOf === undefined ? {} : { bestOf: fixture.bestOf }),
+				...(fixture.groupPoints === undefined
+					? {}
+					: { groupPoints: fixture.groupPoints }),
 				explanation: {
 					rule: "first-available",
 					earliestDay,

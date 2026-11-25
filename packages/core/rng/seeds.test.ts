@@ -82,6 +82,7 @@ describe("SCOPES", () => {
 			ai: 3,
 			side: 4,
 			matchAttribution: 5,
+			matchFightTiming: 7,
 			competition: 6,
 		});
 	});

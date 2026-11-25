@@ -49,6 +49,15 @@ describe("2026 domestic formats", () => {
 		},
 	);
 
+	it("T1 LCK keeps its rulebook order, but the tiebreaker series stays Bo3 by user decision", () => {
+		expect(readFormat("LCK")).toMatchObject({
+			tiebreak: ["seriesWins", "gameDiff", "headToHead", "tiebreakerSeries"],
+			tiebreakerBestOf: 3,
+		});
+		const reasons: string[] = readFormat("LCK").unverifiedReasons;
+		expect(reasons.join(" ")).toContain("2025 LCK rulebook");
+	});
+
 	it.each(leagues)(
 		"R1 %s matches the snapshot, accounting for documented adaptations",
 		async (id) => {
@@ -119,5 +128,38 @@ describe("2026 domestic formats", () => {
 				).toBeLessThanOrEqual(7);
 			}
 		}
+	});
+});
+
+describe("#535 real rules", () => {
+	it("generates LEC with the documented order and a Bo3 at cuts", () => {
+		const format = competitionSchema.parse(readFormat("LEC"));
+		expect(format.tiebreak.join(",")).toBe(
+			"seriesWins,headToHead,priorSplitRank,strengthOfVictory,victoryTime,tiebreakerSeries,draw",
+		);
+		expect(format.tiebreakerBestOf).toBe(3);
+		expect(format.stages.find(({ id }) => id === "spring")).toHaveProperty(
+			"tiebreakHistory",
+			["versus"],
+		);
+		expect(format.stages.find(({ id }) => id === "summer")).toHaveProperty(
+			"tiebreakHistory",
+			["spring", "versus"],
+		);
+	});
+
+	it("R1 catches replacing the snapshot's Bo5 Cup week with Bo3", async () => {
+		const { checkLeagueFormat } = await import("./league-format-check.ts");
+		const format = competitionSchema.parse(readFormat("LCK"));
+		const cup = format.stages.find(({ id }) => id === "cup-groups");
+		if (cup?.play.type !== "groups") throw new Error("Expected Cup groups");
+		const play = cup.play as typeof cup.play & {
+			finalRound?: { bestOf: 1 | 3 | 5; groupPoints: number; week: number };
+		};
+		expect(checkLeagueFormat("LCK", format)).toEqual([]);
+		delete play.finalRound;
+		expect(checkLeagueFormat("LCK", format)).toContain(
+			"cup-groups: Week 3 best of or series count differs",
+		);
 	});
 });

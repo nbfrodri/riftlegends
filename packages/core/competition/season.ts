@@ -29,6 +29,7 @@ type EntrantSource =
 			kind: "standing";
 			stage: StageRef;
 			rank: number;
+			group?: "winner" | "loser";
 			explanation: Explanation;
 	  }
 	| {
@@ -72,14 +73,22 @@ function completedEntries(
 	outcome: StageOutcome,
 ): Entry[] | undefined {
 	if (source.kind === "standing") {
-		const standings = outcome.standings;
+		const standings = source.group
+			? outcome.groups?.[source.group]
+			: outcome.standings;
 		if (!standings || standings.pending.length) return undefined;
 		return standings.rows
 			.filter((row) => row.rank >= source.from && row.rank <= source.to)
 			.sort((a, b) => a.rank - b.rank)
 			.map(({ team, rank, explanation }) => ({
 				team,
-				source: { kind: "standing", stage, rank, explanation },
+				source: {
+					kind: "standing",
+					stage,
+					rank,
+					explanation,
+					...(source.group && { group: source.group }),
+				},
 			}));
 	}
 	const match = outcome.bracket?.matches.find(

@@ -15,6 +15,20 @@ import {
 } from "./league-format-definitions.ts";
 
 export const lec: LeagueDefinition = {
+	tiebreakRule: {
+		criteria: [
+			"seriesWins",
+			"headToHead",
+			"priorSplitRank",
+			"strengthOfVictory",
+			"victoryTime",
+			"tiebreakerSeries",
+			"draw",
+		],
+		bestOf: 3,
+		reason:
+			"Tiebreak order follows secondary reporting on the 2025 rules; the official 2026 rulebook is unavailable. Prior split rank uses regular-season tables, latest first. Victory strength sums the series wins of defeated opponents, and victory time uses the total duration of maps won in won series. A cut still uses Bo3 if the criteria leave a tie.",
+	},
 	stages: [
 		stage("versus", "Versus Season", weeks, "roster", rr(10, 1, 1)),
 		stage(
@@ -24,7 +38,9 @@ export const lec: LeagueDefinition = {
 			standing("versus", 1, 8),
 			eight(3),
 		),
-		stage("spring", "Spring Season", weeks, "roster", rr(10)),
+		stage("spring", "Spring Season", weeks, "roster", rr(10), {
+			tiebreakHistory: ["versus"],
+		}),
 		stage(
 			"spring-playoffs",
 			"Spring Playoffs",
@@ -32,7 +48,9 @@ export const lec: LeagueDefinition = {
 			standing("spring", 1, 6),
 			lowerEntrySix(),
 		),
-		stage("summer", "Summer Season", weeks, "roster", rr(10)),
+		stage("summer", "Summer Season", weeks, "roster", rr(10), {
+			tiebreakHistory: ["spring", "versus"],
+		}),
 		stage(
 			"summer-playoffs",
 			"Summer Playoffs",

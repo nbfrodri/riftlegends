@@ -7,7 +7,10 @@ import {
 	within,
 } from "@testing-library/react";
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
+import { readGame } from "../src/renderer/draft/result-data";
+import { GameReport } from "../src/renderer/draft/result-game";
 import { draftStages } from "../src/renderer/draft/stages";
+import { EventFeed } from "../src/renderer/match/event-feed";
 import { teamMap } from "../src/renderer/match/team-map";
 import { TeamPanel } from "../src/renderer/match/team-panel";
 import { renderInLocale } from "./render-in-locale";
@@ -217,6 +220,145 @@ const click = (name: string) =>
 	fireEvent.click(screen.getByRole("button", { name }));
 const clock = () => screen.getByRole("timer").textContent;
 const Match = draftStages.match;
+
+const multikillView = () => {
+	const finishingKill = {
+		killer: "b-top",
+		victim: "r-top",
+		assists: [],
+		fightSecond: 7,
+		multikill: 2 as const,
+	};
+	const fight = {
+		...event,
+		kind: "fight" as const,
+		causes: [...event.causes],
+		kills: [
+			{ killer: "b-top", victim: "r-mid", assists: [], fightSecond: 0 },
+			finishingKill,
+		],
+	};
+	const ended = match.facts.find((fact) => fact.type === "match.ended");
+	if (!ended) throw new Error("missing result fixture");
+	const result = {
+		...ended,
+		multikills: [{ event: 0, killer: "b-top", count: 2 as const }],
+	};
+	return {
+		...match,
+		facts: [match.facts[0] as (typeof match.facts)[number], fight, result],
+	};
+};
+
+test.each([
+	["en-US", "Double kill"],
+	["es-ES", "Asesinato doble"],
+])(
+	"the %s event log labels the kill that completes the streak",
+	async (locale, label) => {
+		const teams = { blue: "Forge", red: "Shoal" };
+		await renderInLocale(
+			<EventFeed
+				facts={multikillView().facts}
+				second={12}
+				names={teams}
+				ids={teams}
+				players={new Map()}
+				ended
+			/>,
+			locale,
+		);
+		const finishingKill = screen.getByText(label).closest("[data-kill]");
+		expect(finishingKill?.textContent).toContain("r-top");
+	},
+);
+
+test.each([
+	["en-US", "Double kill", "Double ×2, Triple"],
+	["es-ES", "Asesinato doble", "Doble ×2, Triple"],
+])(
+	"the %s result badges the player's row with the best streak and lists them all in words",
+	async (locale, label, summary) => {
+		const view = multikillView();
+		const result = view.facts[2] as { multikills?: unknown[] };
+		result.multikills = [
+			{ event: 0, killer: "b-top", count: 2 },
+			{ event: 0, killer: "b-top", count: 3 },
+			{ event: 0, killer: "b-top", count: 2 },
+		];
+		const game = readGame(view);
+		if (!game) throw new Error("missing game result");
+		await renderInLocale(
+			<GameReport game={game} summary={undefined} showWinner />,
+			locale,
+		);
+		expect(
+			screen.queryByRole("list", { name: /ultikill|múltiples/ }),
+		).toBeNull();
+		const row = screen.getByText("Bluetop").closest("tr");
+		const badge = within(row as HTMLElement).getByLabelText(
+			new RegExp(summary.split(",")[0] as string),
+		);
+		expect(badge.getAttribute("aria-label")).toContain(
+			summary.split(", ")[1] as string,
+		);
+		expect(badge.getAttribute("data-badge")).toBe("3");
+		expect(label).toBeTruthy();
+		const other = screen.getAllByRole("row").filter((r) => r !== row);
+		for (const r of other)
+			expect(within(r).queryByLabelText(/Triple/)).toBeNull();
+	},
+);
+
+test("a repeated best streak shows its count in the chip", async () => {
+	const view = multikillView();
+	const result = view.facts[2] as { multikills?: unknown[] };
+	result.multikills = [2, 2, 2].map((count) => ({
+		event: 0,
+		killer: "b-top",
+		count,
+	}));
+	const game = readGame(view);
+	if (!game) throw new Error("missing game result");
+	await renderInLocale(
+		<GameReport game={game} summary={undefined} showWinner />,
+	);
+	const row = screen.getByText("Bluetop").closest("tr") as HTMLElement;
+	const badge = within(row).getByLabelText(/Double ×3/);
+	expect(badge.getAttribute("data-badge")).toBe("2 ×3");
+});
+
+test("assisters stay on one line as icons, with their names only in words", async () => {
+	const teams = { blue: "Forge", red: "Shoal" };
+	const facts = [
+		{
+			...event,
+			kind: "fight" as const,
+			causes: [...event.causes],
+			kills: [
+				{
+					killer: "b-top",
+					victim: "r-top",
+					assists: ["b-mid", "b-bot", "b-support"],
+				},
+			],
+		},
+	];
+	await renderInLocale(
+		<EventFeed
+			facts={facts as never}
+			second={12}
+			names={teams}
+			ids={teams}
+			players={new Map()}
+			ended
+		/>,
+	);
+	const row = document.querySelector("[data-assists]") as HTMLElement;
+	expect(row.className).toContain("flex-nowrap");
+	expect(row.className).not.toMatch(/(^|\s)flex-wrap/);
+	expect(row.querySelectorAll("[data-assister]")).toHaveLength(3);
+});
 
 test("one minute takes five seconds at normal speed, with pause and both faster speeds", async () => {
 	await renderInLocale(<Match />);
