@@ -325,3 +325,59 @@ test("Q6: a game that the series did not play is game-not-played", () => {
 		{ ok: false, error: { code: "game-not-played" } },
 	);
 });
+
+test("Q3: the bracket gives each series its teams, origin and result as it is played", () => {
+	const core = client();
+	accepted(
+		core.send("season.create", {
+			...season,
+			competitions: [
+				{
+					...league,
+					stages: [
+						{
+							...league.stages[0],
+							play: { type: "singleElim", size: 4, bestOf: [1, 1] },
+						},
+					],
+				},
+			],
+		}),
+	);
+	type Match = {
+		id: string;
+		round: number;
+		teamA: string | null;
+		teamB: string | null;
+		status: string;
+		winner: string | null;
+		from: { kind: string; rank?: number; match?: string }[];
+	};
+	const bracket = () =>
+		view(core, "competition.bracket", {
+			competition: "league",
+			stage: "split",
+		}) as { matches: Match[]; champion: string | null };
+	const before = bracket();
+	const [first, second, final] = before.matches;
+	expect(before.matches).toHaveLength(3);
+	expect(first?.from).toEqual([
+		{ kind: "seed", rank: 1 },
+		{ kind: "seed", rank: 4 },
+	]);
+	expect(final).toMatchObject({
+		status: "waiting",
+		teamA: null,
+		teamB: null,
+		from: [
+			{ kind: "winner", match: first?.id },
+			{ kind: "winner", match: second?.id },
+		],
+	});
+	playAll(core);
+	const after = bracket();
+	const [semi, , decider] = after.matches;
+	expect(semi?.status).toBe("done");
+	expect(after.champion).toBe(decider?.winner);
+	expect([decider?.teamA, decider?.teamB]).toContain(semi?.winner);
+});
