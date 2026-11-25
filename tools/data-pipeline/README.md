@@ -119,7 +119,7 @@ Lee las timelines de Riot que Leaguepedia guarda por partida (`PostgameJsonMetad
 
 - **Caché:** `~/.cache/rift-legends/data-pipeline/timelines` (`RIFT_LEGENDS_TIMELINES_CACHE`), fuera del repo. Cada página (unos 700 KB) se reduce a unos kilobytes de segundos y se guarda con clave estable: una partida terminada no se vuelve a pedir. La lista de partidas lleva el día UTC (`--through`, hoy por defecto), así que cambia a diario.
 - **Cortesía:** una página cada 2 s, el mismo agente genérico y `maxlag`. La primera ejecución completa tarda cerca de una hora; las siguientes solo piden las partidas nuevas. No está en el workflow semanal.
-- **Medidas:** vivos al tomar barón, inhibidor y torre (K19); conversión de una pelea en objetivo en 60 s según el margen de bajas, con peleas de bajas separadas por 15 s como máximo (K20); peleas desde el 25:00 con 4 o más bajas que cierran la partida en 60 s y perdedor con 3 o más muertos al caer el nexo (K21); tiempos de muerte P10, P50 y P90 con la fórmula de la wiki y el nivel de cada jugador al morir (K22). La curva es la mediana de nivel en décimas mientras queden 30 partidas.
+- **Medidas:** vivos al tomar barón, inhibidor y torre (K19); conversión de una pelea en objetivo en 60 s según el margen de bajas, con peleas de bajas separadas por 15 s como máximo (K20); peleas desde el 25:00 con 4 o más bajas que cierran la partida en 60 s y perdedor con 3 o más muertos al caer el nexo (K21); tiempos de muerte P10, P50 y P90 con la fórmula de la wiki y el nivel de cada jugador al morir (K22). La curva es la mediana de nivel en décimas mientras queden 30 partidas; en 2026 el nivel llega a 20, y la fórmula de muerte usa el valor del nivel 18 para 19 y 20 (la tabla de la wiki acaba ahí).
 
 ## Actualización semanal
 

@@ -20,7 +20,7 @@ const margin = z.strictObject({
 	bp,
 });
 
-const minuteLevels = z.array(z.number().int().min(10).max(180));
+const minuteLevels = z.array(z.number().int().min(10).max(200));
 
 /**
  * Aggregates of Riot match timelines hosted by Leaguepedia. Only figures that
