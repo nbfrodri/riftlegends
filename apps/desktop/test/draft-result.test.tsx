@@ -140,13 +140,17 @@ describe("game result (U9)", () => {
 		expect(
 			screen.getByText(`Victory for ${capital(ended.winner)}`),
 		).toBeTruthy();
-		// #510: vision uses the scoreboard's eye (Lucide's without the cache).
+		// #510: vision uses the scoreboard's eye (Lucide's without the cache);
+		// its header is the icon alone, named and in the Caja tooltip, so the
+		// champion keeps its room at 1280×720.
+		const vision = within(table).getByRole("columnheader", { name: "Vision" });
+		expect(vision.querySelector("svg")?.getAttribute("class")).toMatch(
+			/\blucide-eye\b/,
+		);
+		expect(within(vision).getByText("Vision").className).toMatch(/\bsr-only\b/);
 		expect(
-			within(table)
-				.getByRole("columnheader", { name: "Vision" })
-				.querySelector("svg")
-				?.getAttribute("class"),
-		).toMatch(/\blucide-eye\b/);
+			vision.querySelector<HTMLElement>("[data-tooltip]")?.dataset.tooltip,
+		).toBe("Vision");
 		const rows = within(table).getAllByRole("row").slice(1);
 		expect(rows).toHaveLength(10);
 		ended.players.forEach((p, i) => {
