@@ -5,27 +5,27 @@
 	"leagues": [
 		{
 			"id": "CBLOL",
-			"retrievedAt": "2026-11-22T12:15:53.772Z"
+			"retrievedAt": "2026-11-25T17:31:19.365Z"
 		},
 		{
 			"id": "LCK",
-			"retrievedAt": "2026-11-22T12:15:53.772Z"
+			"retrievedAt": "2026-11-25T17:31:19.365Z"
 		},
 		{
 			"id": "LCP",
-			"retrievedAt": "2026-11-22T12:15:53.772Z"
+			"retrievedAt": "2026-11-25T17:31:19.365Z"
 		},
 		{
 			"id": "LCS",
-			"retrievedAt": "2026-11-22T12:15:53.772Z"
+			"retrievedAt": "2026-11-25T17:31:19.365Z"
 		},
 		{
 			"id": "LEC",
-			"retrievedAt": "2026-11-22T12:15:53.772Z"
+			"retrievedAt": "2026-11-25T17:31:19.365Z"
 		},
 		{
 			"id": "LPL",
-			"retrievedAt": "2026-11-22T12:15:53.772Z"
+			"retrievedAt": "2026-11-25T17:31:19.365Z"
 		}
 	]
 }
