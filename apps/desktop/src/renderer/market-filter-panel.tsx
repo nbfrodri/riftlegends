@@ -103,7 +103,7 @@ export function MarketFilterPanel(props: {
 	return (
 		<aside
 			aria-labelledby={headingId}
-			className="flex w-[264px] shrink-0 flex-col gap-3 overflow-y-auto bg-panel px-3.5 py-3 text-table"
+			className="flex w-[264px] shrink-0 flex-col gap-3 scroll-edge bg-panel py-3 pr-1.5 pl-3.5 text-table"
 		>
 			<h2
 				id={headingId}

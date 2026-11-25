@@ -110,6 +110,8 @@ export const matchEndedFact = {
 			gold: position,
 			damage: position,
 			participation: share,
+			/** Simulated vision score of the game. */
+			vision: position,
 			rating: z.int().min(0).max(100),
 		}),
 	),
@@ -189,10 +191,14 @@ export const matchContent = z
 				baron: position,
 				elder: position,
 			}),
-			/** How much gold counts from each minute on; it falls as games go on. */
-			goldWeight: z
-				.array(z.strictObject({ minute: position, weight: share }))
-				.min(1),
+			/** Gold of a full build per player: above it gold helps little (G3). */
+			fullBuildGold: z.int().min(1),
+			/** Share of the gold above the full build that still counts, per 10,000. */
+			goldOverflow: share,
+			/** Points of a full relative gold lead, in fixed-point points (G2). */
+			goldLeadPoints: points,
+			/** Cap of the gold cause, in fixed-point points. */
+			goldMaxPoints: z.int().min(0),
 			/** Edge of the blue side, in fixed-point points (30,000 = 3 points). */
 			blueSide: points,
 		}),

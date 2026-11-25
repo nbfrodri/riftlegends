@@ -23,34 +23,20 @@
 	},
 	"inhibitorRespawn": 300,
 	"economy": {
-		"passive": 2000,
-		"kill": 300,
-		"assist": 150,
-		"tower": 550,
-		"inhibitor": 50,
+		"passive": 1000,
+		"kill": 100,
+		"assist": 50,
+		"tower": 1900,
+		"inhibitor": 950,
 		"grub": 150,
-		"dragon": 200,
-		"herald": 300,
+		"dragon": 400,
+		"herald": 500,
 		"baron": 1500,
-		"elder": 250
+		"elder": 400
 	},
-	"goldWeight": [
-		{
-			"minute": 0,
-			"weight": 10000
-		},
-		{
-			"minute": 15,
-			"weight": 8500
-		},
-		{
-			"minute": 25,
-			"weight": 7000
-		},
-		{
-			"minute": 35,
-			"weight": 5500
-		}
-	],
-	"blueSide": 60000
+	"fullBuildGold": 17000,
+	"goldOverflow": 1000,
+	"goldLeadPoints": 300000,
+	"goldMaxPoints": 250000,
+	"blueSide": 45000
 }

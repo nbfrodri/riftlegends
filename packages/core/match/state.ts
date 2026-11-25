@@ -13,6 +13,7 @@ import { SCOPES } from "../rng/scopes";
 import { deriveSeed } from "../rng/seeds";
 import { createRng } from "../rng/streams";
 import { roleWeights } from "./attribution/weights";
+import { farmed, paidByRole, type Slot } from "./economy";
 import type { MentalEdge } from "./mental";
 import { type Lineup, type Profile, profiles } from "./profile";
 
@@ -46,6 +47,8 @@ interface SideContext {
 	readonly mental: MentalEdge | null;
 	/** Player id in each role. */
 	readonly players: Readonly<Record<Role, string>>;
+	/** The `vision` attribute of each role's player (issue #499). */
+	readonly vision: Readonly<Record<Role, number>>;
 	/** Weight of each role to score and to assist a kill (issue #346). */
 	readonly attribution: Readonly<
 		Record<Role, { kill: number; assist: number }>
@@ -59,6 +62,8 @@ interface MatchContext {
 	readonly rules: MatchContent["rules"];
 	readonly blue: SideContext;
 	readonly red: SideContext;
+	/** Side and role of each player, to pay the gold of an event. */
+	readonly slots: ReadonlyMap<string, Slot>;
 }
 
 export type Lane = "top" | "mid" | "bot";
@@ -73,6 +78,8 @@ export const GRUBS = 3;
 
 interface SideState {
 	readonly gold: number;
+	/** Gold each player earned, by role: events and passive income. */
+	readonly paid: readonly number[];
 	readonly kills: number;
 	readonly dragons: number;
 	/** Void grubs this side has taken; the stacks never wear off. */
@@ -106,6 +113,18 @@ export interface MatchState {
 /** The minute in which `seconds` falls: an objective at 5:00 is up in minute 5. */
 export const minuteOf = (seconds: number) =>
 	(seconds + 59 - ((seconds + 59) % 60)) / 60;
+
+/** Adds one minute of passive income to a side, by role. */
+export function earnPassive(state: MatchState, side: Side): SideState {
+	const own = state[side];
+	const income = state.context.rules.economy.passive;
+	const farm = farmed(income);
+	return {
+		...own,
+		gold: own.gold + income,
+		paid: own.paid.map((gold, i) => gold + (farm[i] as number)),
+	};
+}
 
 export const inhibitorDown = (side: SideState, minute: number) =>
 	LANES.some((lane) => side.inhibitors[lane] > minute);
@@ -169,6 +188,12 @@ export function createMatch(setup: MatchSetup): MatchState {
 			strategy: strategy(setup.match, lineup.team),
 			profile,
 			players: ids,
+			vision: Object.fromEntries(
+				ROLES.map((role, i) => [
+					role,
+					(roster[i] as { vision: number }).vision,
+				]),
+			) as SideContext["vision"],
 			attribution: Object.fromEntries(
 				ROLES.map((role, i) => [
 					role,
@@ -185,6 +210,7 @@ export function createMatch(setup: MatchSetup): MatchState {
 	};
 	const start: SideState = {
 		gold: 0,
+		paid: ROLES.map(() => 0),
 		kills: 0,
 		dragons: 0,
 		grubs: 0,
@@ -198,13 +224,25 @@ export function createMatch(setup: MatchSetup): MatchState {
 		buffs: { herald: 0, baron: 0, elder: 0 },
 	};
 	const { objectives } = setup.match.rules;
+	const blue = side(setup.blue, us, "blue");
+	const red = side(setup.red, them, "red");
+	const slots = new Map<string, Slot>();
+	for (const [which, team] of [
+		["blue", blue],
+		["red", red],
+	] as const) {
+		ROLES.forEach((role, index) => {
+			slots.set(team.players[role], { side: which, index });
+		});
+	}
 	return {
 		context: {
 			seed: setup.seed,
 			game: setup.game,
 			rules: setup.match.rules,
-			blue: side(setup.blue, us, "blue"),
-			red: side(setup.red, them, "red"),
+			blue,
+			red,
+			slots,
 		},
 		minute: 0,
 		blue: start,
@@ -235,14 +273,19 @@ function mark(state: MatchState, e: MatchEvent): MatchState {
 			loserPlayers.includes(kill.killer),
 		).length;
 	}
+	const paid = paidByRole(e, state.context.slots, rules.economy);
+	const earned = (own: SideState, side: Side) =>
+		own.paid.map((gold, i) => gold + (paid[side][i] as number));
 	let won: SideState = {
 		...winner,
 		gold: winner.gold + e.gold[e.side],
+		paid: earned(winner, e.side),
 		kills: winner.kills + e.kills.length - loserKills,
 	};
 	let lost: SideState = {
 		...loser,
 		gold: loser.gold + e.gold[loserSide],
+		paid: earned(loser, loserSide),
 		kills: loser.kills + loserKills,
 	};
 	let objectives = state.objectives;

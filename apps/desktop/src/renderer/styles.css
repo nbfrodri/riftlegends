@@ -9,6 +9,12 @@
 	opacity: 0;
 }
 
+/* The stamp layers end hidden, so without animation the ban is already final. */
+.draft-ban-colour,
+.draft-ban-mark {
+	opacity: 0;
+}
+
 @media (prefers-reduced-motion: no-preference) {
 	.startup-screen {
 		transition:
@@ -20,6 +26,62 @@
 	}
 	.startup-progress {
 		animation: startup-scan 1.2s ease-in-out infinite alternate;
+	}
+	/* What is still being chosen on the draft board (#435, #436). */
+	.draft-pending {
+		animation: draft-pending 1.2s ease-in-out infinite;
+	}
+	@keyframes draft-pending {
+		50% {
+			opacity: 0.45;
+		}
+	}
+	/* A new ban (#436): enters, greys out and is stamped; timing in pacing.ts. */
+	.draft-ban-enter {
+		animation: draft-ban-enter var(--ban-ms) cubic-bezier(0.23, 1, 0.32, 1) both;
+	}
+	.draft-ban-colour {
+		animation: draft-ban-colour var(--ban-ms) ease-out both;
+	}
+	.draft-ban-mark {
+		animation: draft-ban-mark var(--ban-ms) ease-out both;
+	}
+	@keyframes draft-ban-enter {
+		from {
+			opacity: 0;
+			transform: scale(1.18);
+		}
+		35% {
+			opacity: 1;
+			transform: scale(1);
+		}
+	}
+	@keyframes draft-ban-colour {
+		0%,
+		35% {
+			opacity: 1;
+		}
+		100% {
+			opacity: 0;
+		}
+	}
+	@keyframes draft-ban-mark {
+		0%,
+		40% {
+			opacity: 0;
+			transform: scale(1.8);
+		}
+		65% {
+			opacity: 1;
+			transform: scale(1);
+		}
+		85% {
+			opacity: 1;
+		}
+		100% {
+			opacity: 0;
+			transform: scale(1);
+		}
 	}
 	@keyframes startup-scan {
 		to {

@@ -4,8 +4,10 @@ import {
 	type Role,
 	type Side,
 } from "@rift-legends/contracts";
+import { indexContent } from "../../ai/content-index";
 import { packagedDraftContent, packagedMatchContent } from "../../content";
 import { loadRealContent } from "../../content/real";
+import { clamp } from "../../math/int";
 import { shuffle } from "../../rng/helpers";
 import { SCOPES } from "../../rng/scopes";
 import { deriveSeed } from "../../rng/seeds";
@@ -28,7 +30,7 @@ const lineup = (team: string, champions: readonly (string | undefined)[]) => ({
 		}),
 	) as MatchSetup["blue"]["roles"],
 });
-type Pool = "control" | "packaged" | "real";
+type Pool = "control" | "packaged" | "real-champions" | "real";
 const primaryPools = (draft: typeof packagedDraftContent) =>
 	ROLES.map((role) =>
 		draft.champions
@@ -36,12 +38,90 @@ const primaryPools = (draft: typeof packagedDraftContent) =>
 			.map((champion) => champion.id),
 	);
 
-/** Two average teams; `edge` adds to every attribute of team "a". */
-function scenario(edge: number, seed: number, pool: Pool): MatchSetup {
+const opening = {
+	game: 1,
+	decisive: false,
+	stage: "regular",
+	results: [],
+} as const;
+
+function setup(
+	seed: number,
+	draft: MatchSetup["draft"],
+	match: MatchContent,
+	blue: MatchSetup["blue"],
+	red: MatchSetup["red"],
+): MatchSetup {
+	return {
+		seed,
+		game: 1,
+		draft,
+		match,
+		blue,
+		red,
+		mental: {
+			blue: mentalEdge(draft, match, blue, "blue", opening),
+			red: mentalEdge(draft, match, red, "red", opening),
+		},
+	};
+}
+
+function realScenario(edge: number, seed: number): MatchSetup {
+	const { draft, match } = loadRealContent();
+	const { rosters } = indexContent(draft);
+	const teams = match.teams.filter(
+		({ id }) => rosters.get(id)?.size === ROLES.length,
+	);
+	// Play each pairing in both side assignments, with distinct match streams.
+	const side = seed % 2;
+	const rng = createRng(deriveSeed((seed - side) / 2, SCOPES.draft));
+	const [first, second] = shuffle(rng, teams);
+	if (!first || !second) throw new Error("Real calibration needs two rosters");
+	const pairs = primaryPools(draft).map((choices) => shuffle(rng, choices));
+	const lineups = [
+		lineup(
+			first.id,
+			pairs.map(([champion]) => champion),
+		),
+		lineup(
+			second.id,
+			pairs.map(([, champion]) => champion),
+		),
+	] as const;
+	const blue = lineups[side === 0 ? 0 : 1];
+	const red = lineups[side === 0 ? 1 : 0];
+	const boostedIds = new Set(
+		Array.from(rosters.get(blue.team)?.values() ?? [], ({ id }) => id),
+	);
+	const boosted =
+		edge === 0
+			? match
+			: {
+					...match,
+					players: match.players.map((player) =>
+						boostedIds.has(player.id)
+							? {
+									...player,
+									attributes: Object.fromEntries(
+										Object.entries(player.attributes).map(([key, value]) => [
+											key,
+											clamp(value + edge, 0, 100),
+										]),
+									) as typeof player.attributes,
+								}
+							: player,
+					),
+				};
+	return setup(seed, draft, boosted, blue, red);
+}
+
+/** With an edge, add attribute points to the blue lineup. */
+export function scenario(edge: number, seed: number, pool: Pool): MatchSetup {
+	if (pool === "real") return realScenario(edge, seed);
 	const { draft: control, match } = syntheticContent(POOL, ["a", "b"]);
 	const packaged = pool !== "control";
 	const source =
-		pool === "real"
+		pool === "real-champions"
 			? loadRealContent()
 			: { draft: packagedDraftContent, match: packagedMatchContent };
 	// Hold player strength and team strategy constant while sampling the real
@@ -80,24 +160,7 @@ function scenario(edge: number, seed: number, pool: Pool): MatchSetup {
 		"b",
 		pairs.map(([, second]) => second),
 	);
-	const opening = {
-		game: 1,
-		decisive: false,
-		stage: "regular",
-		results: [],
-	} as const;
-	return {
-		seed,
-		game: 1,
-		draft,
-		match: boosted,
-		blue,
-		red,
-		mental: {
-			blue: mentalEdge(draft, boosted, blue, "blue", opening),
-			red: mentalEdge(draft, boosted, red, "red", opening),
-		},
-	};
+	return setup(seed, draft, boosted, blue, red);
 }
 
 /** Many games of a scenario, with what the calibration bands read. */
@@ -110,6 +173,15 @@ export function sample(games: number, edge: number, pool: Pool) {
 			if (e.minute <= 20)
 				for (const s of ["blue", "red"] as const) at20[s] += e.gold[s];
 		}
+		const stats = playerStats(
+			events.map((e, i) => ({ ...e, position: i + 1 })),
+			{
+				blue: { ...state.context.blue, champions: setup.blue.roles },
+				red: { ...state.context.red, champions: setup.red.roles },
+			},
+			state.context.rules,
+			matchDuration(events.at(-1)),
+		);
 		const teams = (["blue", "red"] as const).map((side) => {
 			const roleOf = new Map(
 				ROLES.map((role) => [state.context[side].players[role], role]),
@@ -117,7 +189,14 @@ export function sample(games: number, edge: number, pool: Pool) {
 			const line = Object.fromEntries(
 				ROLES.map((role) => [
 					role,
-					{ kills: 0, assists: 0, goldShare: 0, damageShare: 0 },
+					{
+						kills: 0,
+						assists: 0,
+						goldShare: 0,
+						damageShare: 0,
+						rating: 0,
+						vision: 0,
+					},
 				]),
 			) as Record<
 				Role,
@@ -126,6 +205,9 @@ export function sample(games: number, edge: number, pool: Pool) {
 					assists: number;
 					goldShare: number;
 					damageShare: number;
+					rating: number;
+					/** Vision score per 30 minutes. */
+					vision: number;
 				}
 			>;
 			let kills = 0;
@@ -140,24 +222,20 @@ export function sample(games: number, edge: number, pool: Pool) {
 				}
 			}
 			// Gold and damage by role, as a share of the team (plan 08, K7).
-			const stats = playerStats(
-				events.map((e, i) => ({ ...e, position: i + 1 })),
-				{
-					blue: {
-						...state.context.blue,
-						champions: state.context.blue.players,
-					},
-					red: { ...state.context.red, champions: state.context.red.players },
-				},
-				state.context.rules,
-				matchDuration(events.at(-1)),
-			).filter((p) => p.team === state.context[side].team);
-			const gold = stats.reduce((sum, p) => sum + p.gold, 0);
-			const damage = stats.reduce((sum, p) => sum + p.damage, 0);
+			const teamStats = stats.filter(
+				(p) => p.team === state.context[side].team,
+			);
+			const gold = teamStats.reduce((sum, p) => sum + p.gold, 0);
+			const damage = teamStats.reduce((sum, p) => sum + p.damage, 0);
 			for (const role of ROLES) {
-				const mine = stats[ROLES.indexOf(role)];
-				line[role].goldShare = ((mine?.gold ?? 0) / gold) * 100;
-				line[role].damageShare = ((mine?.damage ?? 0) / damage) * 100;
+				const mine = teamStats.find(
+					(p) => p.player === state.context[side].players[role],
+				);
+				if (!mine) throw new Error(`Missing calibration stats for ${role}`);
+				line[role].goldShare = (mine.gold / gold) * 100;
+				line[role].damageShare = (mine.damage / damage) * 100;
+				line[role].rating = mine.rating;
+				line[role].vision = (mine.vision * 1800) / matchDuration(events.at(-1));
 			}
 			return { kills, line };
 		});
@@ -166,7 +244,10 @@ export function sample(games: number, edge: number, pool: Pool) {
 			winner: state.winner as Side,
 			minutes: state.minute,
 			kills: state.blue.kills + state.red.kills,
+			towers: events.filter((event) => event.kind === "tower").length,
+			dragons: state.blue.dragons + state.red.dragons,
 			goldAt20: at20,
+			finalGold: { blue: state.blue.gold, red: state.red.gold },
 		};
 	});
 }

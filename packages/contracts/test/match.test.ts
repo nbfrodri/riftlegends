@@ -185,6 +185,7 @@ describe("match.ended", () => {
 		gold: 14200,
 		damage: 28500,
 		participation: 8125,
+		vision: 40,
 		rating: 84,
 	};
 	const fact = {
@@ -282,10 +283,10 @@ describe("MatchContent", () => {
 				baron: 1500,
 				elder: 300,
 			},
-			goldWeight: [
-				{ minute: 0, weight: 10000 },
-				{ minute: 30, weight: 6000 },
-			],
+			fullBuildGold: 17000,
+			goldOverflow: 1000,
+			goldLeadPoints: 3400000,
+			goldMaxPoints: 250000,
 			blueSide: 300,
 		},
 	};
@@ -340,11 +341,15 @@ describe("MatchContent", () => {
 			{ ...content, champions: [{ ...content.champions[0], cc: 11 }] },
 		],
 		[
-			"a gold weight above 100 %",
+			"a gold overflow above 100 %",
 			{
 				...content,
-				rules: { ...content.rules, goldWeight: [{ minute: 0, weight: 10001 }] },
+				rules: { ...content.rules, goldOverflow: 10001 },
 			},
+		],
+		[
+			"a zero full build",
+			{ ...content, rules: { ...content.rules, fullBuildGold: 0 } },
 		],
 	])("rejects %s", (_, bad) => {
 		expect(matchContent.safeParse(bad).success).toBe(false);

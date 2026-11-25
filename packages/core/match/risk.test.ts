@@ -2,8 +2,8 @@ import type { MatchContent, Side } from "@rift-legends/contracts";
 import { expect, it } from "vitest";
 import { edge } from "./contests/edge";
 import { matchSetup } from "./fixtures/setup";
-import { MATCH_CONTESTS, playMatch } from "./loop";
-import { createMatch, other } from "./state";
+import { MATCH_CONTESTS, playMinute } from "./loop";
+import { createMatch, type MatchSetup, other } from "./state";
 
 const SEEDS = 1200;
 const CHECKPOINT = 20;
@@ -26,25 +26,41 @@ function withRisk(blue: Risk, red: Risk) {
 	};
 }
 
+/**
+ * Plays only what the metric reads: the gold gap through the checkpoint, and
+ * the rest of the game only for the games that were already decided by gold.
+ * Same events and winners as `playMatch`, without snapshots or the tail of
+ * the games that do not count.
+ */
+function playUntilDecided(setup: MatchSetup) {
+	let state = createMatch(setup);
+	let gap = 0;
+	while (state.winner === null && state.minute < CHECKPOINT) {
+		const next = playMinute(state, MATCH_CONTESTS);
+		for (const event of next.events) {
+			if (event.minute <= CHECKPOINT) gap += event.gold.blue - event.gold.red;
+		}
+		state = next.state;
+	}
+	const decided = state.minute >= CHECKPOINT && (gap >= LEAD || gap <= -LEAD);
+	if (decided) {
+		while (state.winner === null) {
+			state = playMinute(state, MATCH_CONTESTS).state;
+		}
+	}
+	return { gap, state, counted: decided };
+}
+
 function measure(match: MatchContent, side?: Side) {
 	let trailed = 0;
 	let led = 0;
 	let comebacks = 0;
 	let throws = 0;
 	for (let seed = 0; seed < SEEDS; seed++) {
-		const { state, events } = playMatch(
+		const { gap, state, counted } = playUntilDecided(
 			matchSetup({ seed, match }),
-			MATCH_CONTESTS,
 		);
-		if (state.minute < CHECKPOINT) continue;
-		const gap = events.reduce(
-			(sum, event) =>
-				event.minute <= CHECKPOINT
-					? sum + event.gold.blue - event.gold.red
-					: sum,
-			0,
-		);
-		if (gap < LEAD && gap > -LEAD) continue;
+		if (!counted) continue;
 		const leader = gap > 0 ? "blue" : "red";
 		if (side === undefined || side === other(leader)) {
 			trailed++;
@@ -88,7 +104,7 @@ it("scales either team's edge symmetrically and explains the adjustment", () => 
 	const state = {
 		...initial,
 		minute: 20,
-		blue: { ...initial.blue, gold: 3000 },
+		blue: { ...initial.blue, paid: [600, 600, 600, 600, 600] },
 	};
 	const context = (risk: Risk) => ({
 		...state.context,

@@ -1,63 +1,128 @@
 import type { SeriesOptions } from "@rift-legends/contracts";
 import { cleanup, screen, within } from "@testing-library/react";
 import { afterEach, expect, test } from "vitest";
+import type { RoleGap } from "../src/renderer/draft/result-data";
 import { GapsTable } from "../src/renderer/draft/result-gaps";
 import { renderInLocale } from "./render-in-locale";
 
 afterEach(cleanup);
 
+const handles: Record<string, string> = {
+	"f-top": "Kelpo",
+	"s-top": "Slagwick",
+	"f-mid": "Brask",
+	"s-mid": "Orrin",
+	"f-bot": "Tamsel",
+	"s-bot": "Vey",
+};
+const roster = (team: string, prefix: string) => ({
+	id: team,
+	name: team,
+	players: ["top", "mid", "bot"].map((role) => ({
+		id: `${prefix}-${role}`,
+		handle: handles[`${prefix}-${role}`],
+	})),
+});
 const options = {
 	champions: [],
-	teams: [
-		{ id: "forge", name: "Forge", players: [] },
-		{ id: "shoal", name: "Shoal", players: [] },
-	],
+	teams: [roster("forge", "f"), roster("shoal", "s")],
 } as unknown as SeriesOptions;
-const players = (role: string) =>
+const players = (role: string, forge: number, shoal: number) =>
 	[
-		{ player: `f-${role}`, team: "forge", champion: "c1" },
-		{ player: `s-${role}`, team: "shoal", champion: "c2" },
+		{ player: `f-${role}`, team: "forge", champion: "c1", rating: forge },
+		{ player: `s-${role}`, team: "shoal", champion: "c2", rating: shoal },
 	] as const;
 
-test("shows gold differences with a sign and rating differences in words", async () => {
+const gaps: RoleGap[] = [
+	{
+		role: "top",
+		team: "forge",
+		points: 14.8,
+		// Forge leads the rating, Shoal the gold.
+		gold: -300,
+		gap: false,
+		players: players("top", 62.4, 47.6),
+	},
+	{
+		role: "mid",
+		team: "shoal",
+		points: 18,
+		gold: 1550,
+		gap: true,
+		players: players("mid", 41, 59),
+	},
+	{
+		role: "bot",
+		team: null,
+		points: 0,
+		gold: 0,
+		gap: false,
+		players: players("bot", 50, 50),
+	},
+];
+
+/** Renders the table in Spanish and returns a way to find a role's row. */
+async function renderGaps() {
 	await renderInLocale(
 		<GapsTable
 			name="Diferencias por rol"
 			options={options}
 			sideOf={(team) => (team === "forge" ? "blue" : "red")}
-			gaps={[
-				{
-					role: "top",
-					team: "forge",
-					points: 4,
-					gold: 300,
-					gap: false,
-					players: players("top"),
-				},
-				{
-					role: "mid",
-					team: "shoal",
-					points: 18,
-					gold: -1550,
-					gap: true,
-					players: players("mid"),
-				},
-				{
-					role: "bot",
-					team: null,
-					points: 0,
-					gold: 0,
-					gap: false,
-					players: players("bot"),
-				},
-			]}
+			gaps={gaps}
 		/>,
 		"es-ES",
 	);
-	const row = (name: string) =>
-		within(screen.getByRole("row", { name: new RegExp(name) }));
-	expect(row("Top").getByText("+300 oro")).toBeTruthy();
-	expect(row("Top").getByText("4 puntos más")).toBeTruthy();
-	expect(row("Mid").getByText("−1.550 oro")).toBeTruthy();
-	expect(row("ADC").getAllByText("Igualados")).toHaveLength(2);
+	const table = screen.getByRole("table", { name: "Diferencias por rol" });
+	return (role: string) => {
+		const row = table.querySelector<HTMLElement>(`tr[data-role=${role}]`);
+		if (!row) throw new Error(`no row for ${role}`);
+		return row;
+	};
+}
+
+test("says in words who is ahead in each role and by how much", async () => {
+	const row = await renderGaps();
+	const top = within(row("top"));
+	expect(
+		top.getByText("Kelpo, 14,8 puntos por encima de Slagwick"),
+	).toBeTruthy();
+	expect(top.getByText("Slagwick, 300 de oro más que Kelpo")).toBeTruthy();
+	const mid = within(row("mid"));
+	expect(mid.getByText("Orrin, 18 puntos por encima de Brask")).toBeTruthy();
+	expect(mid.getByText("Orrin, 1.550 de oro más que Brask")).toBeTruthy();
+});
+
+test("shows each player's rating and the differences without signs", async () => {
+	const row = await renderGaps();
+	const top = within(row("top"));
+	expect(top.getByText("62,4")).toBeTruthy();
+	expect(top.getByText("47,6")).toBeTruthy();
+	expect(top.getByText("14,8 pts")).toBeTruthy();
+	expect(top.getByText("300 oro")).toBeTruthy();
+	for (const role of ["top", "mid", "bot"])
+		expect(row(role).textContent).not.toMatch(/[+−-]\s?\d/);
+});
+
+test("grows each bar towards the side ahead", async () => {
+	const row = await renderGaps();
+	const bar = (role: string, metric: string) =>
+		row(role).querySelector(`[data-bar=${metric}]`)?.getAttribute("data-side");
+	expect(bar("top", "rating")).toBe("blue");
+	expect(bar("top", "gold")).toBe("red");
+	expect(bar("mid", "rating")).toBe("red");
+	expect(bar("mid", "gold")).toBe("red");
+});
+
+test("a tie has no bar and reads as even", async () => {
+	const row = await renderGaps();
+	const bot = row("bot");
+	expect(bot.querySelector("[data-bar]")).toBeNull();
+	expect(within(bot).getAllByText("Igualados")).toHaveLength(2);
+});
+
+test("highlights only the role with the biggest gap", async () => {
+	const row = await renderGaps();
+	expect(row("mid").getAttribute("data-biggest")).toBe("true");
+	expect(row("top").hasAttribute("data-biggest")).toBe(false);
+	expect(row("bot").hasAttribute("data-biggest")).toBe(false);
 });

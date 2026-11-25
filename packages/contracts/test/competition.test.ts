@@ -215,7 +215,7 @@ describe("validateFormat, more rules", () => {
 		size: 8,
 		upper: [3, 5, 5],
 		lower: [3, 3, 5, 5],
-		drop: [0, 1, 3],
+		drop: [[0, 0, 0, 0], [1, 1], [3]],
 		grandFinal: 5,
 		reset: false,
 	};
@@ -227,8 +227,78 @@ describe("validateFormat, more rules", () => {
 			"stages.1.play.upper",
 		);
 		invalidAt(
-			withStage({ play: { ...double, drop: [0, 1] } }),
+			withStage({
+				play: {
+					...double,
+					drop: [
+						[0, 0, 0, 0],
+						[1, 1],
+					],
+				},
+			}),
 			"stages.1.play.drop",
+		);
+	});
+
+	it("accepts a double elimination without grand final (GSL) and keeps it required", () => {
+		expect(
+			validateFormat(withStage({ play: { ...double, grandFinal: null } })).ok,
+		).toBe(true);
+		const { grandFinal: _, ...missing } = double;
+		invalidAt(withStage({ play: missing }), "stages.1.play.grandFinal");
+		invalidAt(
+			withStage({ play: { ...double, grandFinal: 2 } }),
+			"stages.1.play.grandFinal",
+		);
+	});
+
+	it("needs one drop per series of each upper round (null = eliminated)", () => {
+		invalidAt(
+			withStage({ play: { ...double, drop: [[0, 0, 0], [1, 1], [3]] } }),
+			"stages.1.play.drop",
+		);
+		const lcp = {
+			type: "doubleElim",
+			size: 6,
+			upper: [5, 5, 5],
+			lower: [5, 5],
+			drop: [[null, null], [0, 0], [1]],
+			grandFinal: 5,
+			reset: false,
+		};
+		expect(validateFormat(withStage({ play: lcp })).ok).toBe(true);
+	});
+
+	it("rejects a drop to a lower round that does not exist", () => {
+		invalidAt(
+			withStage({ play: { ...double, drop: [[0, 0, 0, 0], [1, 1], [4]] } }),
+			"stages.1.play.drop",
+		);
+	});
+
+	it("counts the lower entrants in size and keeps the upper bracket in step", () => {
+		const lec = {
+			type: "doubleElim",
+			size: 6,
+			upper: [3, 5],
+			lower: [3, 5, 5],
+			drop: [[0, 0], [2]],
+			lowerSeeds: [2, 0, 0],
+			grandFinal: 5,
+			reset: false,
+		};
+		expect(validateFormat(withStage({ play: lec })).ok).toBe(true);
+		invalidAt(
+			withStage({ play: { ...lec, upper: [3, 5, 5] } }),
+			"stages.1.play.upper",
+		);
+		invalidAt(
+			withStage({ play: { ...lec, lowerSeeds: [2, 0, 0, 0] } }),
+			"stages.1.play.lowerSeeds",
+		);
+		invalidAt(
+			withStage({ play: { ...lec, lowerSeeds: [5, 0, 0] } }),
+			"stages.1.play.lowerSeeds",
 		);
 	});
 

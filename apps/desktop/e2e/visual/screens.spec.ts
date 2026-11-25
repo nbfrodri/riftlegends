@@ -1,6 +1,6 @@
 import type { Page } from "@playwright/test";
 import { expect, test } from "../fixtures";
-import { playQuickDraftBo5 } from "../quick-draft-flow";
+import { playQuickDraftBo5, seedNextSeries } from "../quick-draft-flow";
 import { captureScreen } from "./capture";
 
 test.skip(
@@ -193,6 +193,35 @@ test("Créditos", async ({ appWindow }) => {
 test.describe("Quick draft", () => {
 	test.use({ appEnv: { RIFT_E2E_CORE: "1" } });
 
+	test("#419: the turn timer as a bar on the draft board", async ({
+		electronApp,
+		appWindow,
+	}) => {
+		await appWindow.emulateMedia({ reducedMotion: "reduce" });
+		await seedNextSeries(electronApp, 198);
+		await appWindow.getByRole("radio", { name: "Activado" }).check({
+			force: true,
+		});
+		await appWindow.getByRole("button", { name: "Empezar serie" }).click();
+		// Wait for the side screen: the setup has radio groups of its own.
+		await expect(
+			appWindow.getByRole("heading", { level: 1, name: "Lado y orden" }),
+		).toBeVisible();
+		const choices = appWindow.getByRole("radiogroup").getByRole("radio");
+		await expect(choices.first()).toBeVisible();
+		await choices.last().check({ force: true });
+		await appWindow.getByRole("button", { name: "Confirmar decisión" }).click();
+		// Freeze the clock the countdown reads so the bar stays full (30 s left).
+		await appWindow.evaluate(() => {
+			const now = performance.now();
+			performance.now = () => now;
+		});
+		await appWindow.getByRole("button", { name: "Ir al draft" }).click();
+		await expect(appWindow.getByRole("timer")).toContainText("00:30");
+		await appWindow.mouse.move(0, 0);
+		await captureScreen(appWindow, "quick-draft-timer.png");
+	});
+
 	test("E2: captures the screens of a seeded Bo5", async ({
 		electronApp,
 		appWindow,
@@ -225,8 +254,11 @@ test.describe("Quick draft", () => {
 				).toBeVisible();
 				await captureScreen(appWindow, "quick-draft-champion-card.png");
 				await appWindow.keyboard.press("Escape");
-				const blue = appWindow.getByRole("region", { name: /^Lado azul/ });
-				await blue.getByRole("button", { name: /Tidewren/ }).click();
+				// Tidewren sits on either side depending on the seeded side choice.
+				await appWindow
+					.getByRole("region", { name: /^Lado (azul|rojo)/ })
+					.getByRole("button", { name: /Tidewren/ })
+					.click();
 				const playerCard = appWindow.getByRole("group", {
 					name: /Ficha de jugador/,
 				});
@@ -236,10 +268,10 @@ test.describe("Quick draft", () => {
 				if (!wasOpen) await playerCard.locator("summary").click();
 				await expect(playerCard.getByText("Mecánicas")).toBeVisible();
 				await appWindow.mouse.move(0, 0);
-				// The whole window: the open card rises over the board (#396).
+				// The whole window: the open card drops over the board (#430).
 				await captureScreen(appWindow, "quick-draft-player-card.png");
 				if (!wasOpen) await playerCard.locator("summary").click();
-				// #407: the AI read, latest decision first, rising over the board.
+				// #407: the AI read, latest decision first, dropping over the board.
 				// Selecting the player opens the card; close it so only the AI read shows.
 				if (await playerCard.evaluate((e) => (e as HTMLDetailsElement).open))
 					await playerCard.locator("summary").first().click();
@@ -256,6 +288,18 @@ test.describe("Quick draft", () => {
 				await appWindow.mouse.move(0, 0);
 				await captureScreen(appWindow, "quick-draft-ai-read.png");
 				if (!aiWasOpen) await aiRead.locator("summary").first().click();
+				// #435: a selected champion previews in the picking row until it is
+				// confirmed; with reduced motion it is marked instead of pulsing.
+				await appWindow
+					.getByRole("group", { name: "Campeones", exact: true })
+					.getByRole("button", { disabled: false })
+					.first()
+					.click();
+				await expect(appWindow.locator("[data-pending]")).toContainText(
+					"Eligiendo",
+				);
+				await appWindow.mouse.move(0, 0);
+				await captureScreen(appWindow, "quick-draft-pick-preview.png");
 			}
 			if (screen === "match") {
 				const panel = appWindow.getByRole("radiogroup", { name: "Panel" });

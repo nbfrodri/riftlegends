@@ -1,8 +1,9 @@
 import { ROLES, type Role } from "@rift-legends/contracts";
-import { describe, expect, it } from "vitest";
-import { sample } from "./scenarios";
+import { describe, expect, it, test } from "vitest";
+import { loadRealContent } from "../../content/real";
+import { sample, scenario } from "./scenarios";
 
-// Monte Carlo bands of plan 08 (K1–K5). Seeds are fixed, so each run is the
+// Monte Carlo bands of plan 08. Seeds are fixed, so each run is the
 // same sample: a failure means a change moved the balance, never bad luck.
 
 const sorted = (values: number[]) => [...values].sort((a, b) => a - b);
@@ -45,12 +46,58 @@ const PARTICIPATION: Record<Role, readonly [number, number, number]> = {
 	support: [73.99, 50, 94.44],
 };
 
-describe.each(["control", "packaged", "real"] as const)(
+/**
+ * Pro vision score per 30 minutes (plan 08, K17): Leaguepedia, 4,756 lines of
+ * six leagues, `VisionScore × 1800 / lengthSeconds`. [mean, P10, P90].
+ */
+const VISION_30: Record<Role, readonly [number, number, number]> = {
+	top: [40.3, 28.9, 52.3],
+	jungle: [54.2, 39.9, 69.2],
+	mid: [40.3, 27.8, 53.3],
+	bot: [40.4, 27.1, 54.5],
+	support: [126.6, 103, 150.5],
+};
+
+/**
+ * Pro gold at the end of a game (plan 08, K16): Leaguepedia, 2,378 games of six
+ * leagues; the 781 that last 30–34 min give the total and the winner's lead.
+ * [P10, P50, P90]; the share of winners that end behind in gold was 0.8 %.
+ */
+const PRO_GOLD = {
+	total: [115_698, 123_359, 131_639],
+	lead: [5896, 10_557, 14_954],
+} as const;
+
+it("A4 · uses real teams, players and champions", () => {
+	const { draft, match, blue, red } = scenario(0, 253, "real");
+	const real = loadRealContent();
+	expect(blue.team).not.toBe(red.team);
+	for (const lineup of [blue, red]) {
+		expect(real.match.teams.map(({ id }) => id)).toContain(lineup.team);
+		expect(match.teams.find(({ id }) => id === lineup.team)).toEqual(
+			real.match.teams.find(({ id }) => id === lineup.team),
+		);
+		for (const role of ROLES) {
+			const player = draft.players.find(
+				(p) => p.team === lineup.team && p.role === role,
+			);
+			expect(real.draft.players).toContainEqual(player);
+			expect(match.players.find((p) => p.id === player?.id)).toEqual(
+				real.match.players.find((p) => p.id === player?.id),
+			);
+			expect(real.draft.champions).toContainEqual(
+				draft.champions.find((c) => c.id === lineup.roles[role]),
+			);
+		}
+	}
+});
+
+describe.each(["control", "packaged", "real-champions", "real"] as const)(
 	"C6: calibration with the %s pool",
 	(pool) => {
 		const even = sample(1000, 0, pool);
 
-		it("K5 · with equal teams, blue wins 50–54 %", () => {
+		it("K5 · with balanced sides, blue wins 50–54 %", () => {
 			const blue = rate(even, (g) => g.winner === "blue");
 			expect(blue).toBeGreaterThanOrEqual(0.5);
 			expect(blue).toBeLessThanOrEqual(0.54);
@@ -72,6 +119,64 @@ describe.each(["control", "packaged", "real"] as const)(
 			expect(kills).toBeGreaterThanOrEqual(15);
 			expect(kills).toBeLessThanOrEqual(30);
 		});
+
+		it("K8 · role rating means are 56–64 and at most 5 points apart", () => {
+			const teams = even.flatMap((g) => g.teams);
+			const means = ROLES.map((role) => {
+				const mean =
+					teams.reduce((sum, team) => sum + team.line[role].rating, 0) /
+					teams.length;
+				expect.soft(mean, role).toBeGreaterThanOrEqual(56);
+				expect.soft(mean, role).toBeLessThanOrEqual(64);
+				return mean;
+			});
+			const ordered = sorted(means);
+			expect(gap(ordered.at(-1) ?? 0, ordered[0] ?? 0)).toBeLessThanOrEqual(5);
+		});
+
+		it("K17 · vision score per 30 min: mean within 8 % of the pro one, P10–P90 inside the pro range", () => {
+			const teams = even.flatMap((g) => g.teams);
+			for (const role of ROLES) {
+				const [mean, p10, p90] = VISION_30[role];
+				const scores = teams.map((team) => team.line[role].vision);
+				const got = scores.reduce((a, b) => a + b, 0) / scores.length;
+				expect
+					.soft(gap(got, mean) / mean, `${role} mean`)
+					.toBeLessThanOrEqual(0.08);
+				expect.soft(at(scores, 0.1), `${role} P10`).toBeGreaterThanOrEqual(p10);
+				expect.soft(at(scores, 0.9), `${role} P90`).toBeLessThanOrEqual(p90);
+			}
+		});
+
+		if (pool === "real") {
+			// https://github.com/nbfrodri/riftlegends/issues/357 — calibrate the play mix and game totals.
+			test.fails("K11 · a game has 8–15 towers at the median", () => {
+				const towers = at(
+					even.map((g) => g.towers),
+					0.5,
+				);
+				expect(towers).toBeGreaterThanOrEqual(8);
+				expect(towers).toBeLessThanOrEqual(15);
+			});
+
+			it("K11 · a game has 3–6 dragons at the median", () => {
+				const dragons = at(
+					even.map((g) => g.dragons),
+					0.5,
+				);
+				expect(dragons).toBeGreaterThanOrEqual(3);
+				expect(dragons).toBeLessThanOrEqual(6);
+			});
+
+			// https://github.com/nbfrodri/riftlegends/issues/320
+			test.todo("K9 · advantages from composition matchups");
+			test.todo("K10 · play mix by composition");
+			test.todo("K15 · power curves and early fade");
+
+			// https://github.com/nbfrodri/riftlegends/issues/339
+			test.todo("K12 · contest advantage with an ultimate ready");
+			test.todo("K13 · opportunities after the enemy uses an ultimate");
+		}
 
 		it("K4 · 3,000 gold behind at minute 20, a team wins 15–30 %", () => {
 			const behind = even.filter(
@@ -164,7 +269,46 @@ describe.each(["control", "packaged", "real"] as const)(
 			});
 		});
 
-		it("K1 · a clear favourite (+10 on every attribute) wins 60–75 %", () => {
+		describe("K16 · gold lead at the end of the game", () => {
+			const long = even.filter((g) => g.minutes >= 30 && g.minutes <= 34);
+			const leads = even.map(
+				(g) =>
+					g.finalGold[g.winner] -
+					g.finalGold[g.winner === "blue" ? "red" : "blue"],
+			);
+			const longLeads = long.map(
+				(g) =>
+					g.finalGold[g.winner] -
+					g.finalGold[g.winner === "blue" ? "red" : "blue"],
+			);
+
+			it("the total gold at 30–34 min is within 10 % of the pros", () => {
+				const total = at(
+					long.map((g) => g.finalGold.blue + g.finalGold.red),
+					0.5,
+				);
+				expect(long.length).toBeGreaterThan(200);
+				expect(total).toBeGreaterThanOrEqual(PRO_GOLD.total[1] * 0.9);
+				expect(total).toBeLessThanOrEqual(PRO_GOLD.total[1] * 1.1);
+			});
+
+			it("the winner's median lead at 30–34 min is 7,500–13,000", () => {
+				const median = at(longLeads, 0.5);
+				expect(median).toBeGreaterThanOrEqual(7500);
+				expect(median).toBeLessThanOrEqual(13_000);
+			});
+
+			it("the winner's P90 lead stays under 20,000 and its P10 at least +2,000", () => {
+				expect(at(longLeads, 0.9)).toBeLessThanOrEqual(20_000);
+				expect(at(longLeads, 0.1)).toBeGreaterThanOrEqual(2000);
+			});
+
+			it("at most 5 % of the winners end behind in gold", () => {
+				expect(rate(leads, (lead) => lead < 0)).toBeLessThanOrEqual(0.05);
+			});
+		});
+
+		it("K1 · the boosted side (+10 up to 100) wins 60–75 %", () => {
 			const favourite = rate(sample(600, 10, pool), (g) => g.winner === "blue");
 			expect(favourite).toBeGreaterThanOrEqual(0.6);
 			expect(favourite).toBeLessThanOrEqual(0.75);

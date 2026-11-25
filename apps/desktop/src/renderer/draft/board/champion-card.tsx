@@ -144,7 +144,7 @@ export function ChampionCard({
 				</button>
 			</header>
 			<div
-				className="min-h-0 overflow-y-auto overscroll-contain"
+				className="min-h-0 scroll-edge overscroll-contain"
 				// biome-ignore lint/a11y/noNoninteractiveTabindex: the card's body scrolls by keyboard.
 				tabIndex={0}
 			>

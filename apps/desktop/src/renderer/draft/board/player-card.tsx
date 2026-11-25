@@ -62,8 +62,8 @@ const AREAS = [
 ] as const satisfies readonly (readonly [string, readonly PlayerAttribute[]])[];
 
 /**
- * A collapsible panel under the board, as in the mockup. Open, its content
- * rises over the lower board and scrolls inside, so the page never grows (#396).
+ * A collapsible bar above the board. Open, its content drops over the board
+ * and scrolls inside, so neither the board nor the page moves (#430).
  */
 export function InspectionPanel(props: {
 	id: string;
@@ -101,7 +101,7 @@ export function InspectionPanel(props: {
 			</summary>
 			<div
 				data-slot="panel-body"
-				className={`absolute inset-x-0 bottom-full z-30 max-h-[min(62vh,440px)] overflow-y-auto overscroll-contain border-t-2 bg-panel px-[15px] pb-3 shadow-[0_-12px_32px_rgb(0_0_0/0.45)] ${props.accent}`}
+				className={`absolute inset-x-0 top-full z-30 max-h-[min(62vh,440px)] scroll-edge overscroll-contain border-t-2 bg-panel pr-[7px] pb-3 pl-[15px] shadow-[0_12px_32px_rgb(0_0_0/0.45)] ${props.accent}`}
 				// biome-ignore lint/a11y/noNoninteractiveTabindex: the panel's body scrolls by keyboard.
 				tabIndex={0}
 			>

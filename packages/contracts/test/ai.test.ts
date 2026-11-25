@@ -165,6 +165,47 @@ describe("AiContent", () => {
 		expect(aiContent.parse(explained)).toEqual(explained);
 	});
 
+	const withFirst = (champion: object) => [
+		champion,
+		...content.champions.slice(1),
+	];
+
+	it("publishes kit traits, CC kinds, damage split and their provenance (#448)", () => {
+		const known = {
+			...content.champions[0],
+			kit: ["siege", "aoe"],
+			ccKinds: ["targeted", "knockup"],
+			split: [70, 30, 0],
+			traitSources: { ccKinds: "rule", split: "rule", kit: "estimated" },
+		};
+		const parsed = aiContent.parse({ ...content, champions: withFirst(known) });
+		expect(parsed.champions[0]).toEqual(known);
+	});
+
+	it("tells an unknown kit from a known kit without traits (#448)", () => {
+		const [base] = content.champions;
+		const unknown = aiContent.parse(content);
+		const empty = aiContent.parse({
+			...content,
+			champions: withFirst({ ...base, kit: [], ccKinds: [] }),
+		});
+		expect(unknown.champions[0]).not.toHaveProperty("kit");
+		expect(empty.champions[0]).toHaveProperty("kit", []);
+		expect(empty.champions[0]).toHaveProperty("ccKinds", []);
+	});
+
+	it.each([
+		["an unknown kit trait", { kit: ["magic"] }],
+		["a duplicated kit trait", { kit: ["siege", "siege"] }],
+		["an unknown CC kind", { ccKinds: ["slow"] }],
+		["a split that does not add up to 100", { split: [50, 30, 0] }],
+		["a negative split share", { split: [110, -10, 0] }],
+		["an unknown trait source", { traitSources: { kit: "guess" } }],
+	])("rejects %s", (_, extra) => {
+		const champions = withFirst({ ...content.champions[0], ...extra });
+		expect(aiContent.safeParse({ ...content, champions }).success).toBe(false);
+	});
+
 	it.each([
 		[
 			"an unknown tier",

@@ -244,7 +244,8 @@ export function DataTable<Row extends RowData>({
 					ref: setViewport,
 					role: "region",
 					"aria-label": label,
-					className: "scroll-pt-8",
+					// #471: the overlay bar keeps a grid gap from the rows.
+					className: "scroll-pt-8 pr-4",
 				}}
 			>
 				<table

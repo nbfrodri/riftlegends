@@ -11,8 +11,8 @@ const competitionId = id;
 /** Best-of lengths a series can have: 1, 3 or 5. */
 const bestOf = z.union([z.literal(1), z.literal(3), z.literal(5)]);
 
-/** Most series a team may play in a match day (decision 4 of plan 12). */
-const MAX_SERIES_PER_DAY = 4;
+/** Season-wide cap on series per match day (decision 4 of plan 12). */
+export const MAX_SERIES_PER_DAY = 4;
 
 /** Whole days from the season start are counted by the core; weeks only here. */
 const window = z.strictObject({
@@ -40,7 +40,7 @@ const groups = z.strictObject({
 	size: teamCount,
 	count: z.int().min(1).max(16),
 	/** `cross`: each team plays only the other groups (LCK Cup). */
-	seeding: z.enum(["snake", "cross"]),
+	seeding: z.enum(["snake", "cross", "ranked"]),
 	inner: z.strictObject({
 		rounds: z.union([z.literal(1), z.literal(2)]),
 		bestOf,
@@ -69,12 +69,22 @@ const singleElim = z.strictObject({
 
 const doubleElim = z.strictObject({
 	type: z.literal("doubleElim"),
+	/** Every team, including the ones that enter the lower bracket directly. */
 	size: teamCount,
 	upper: z.array(bestOf).min(1).max(5),
 	lower: z.array(bestOf).min(1).max(8),
-	/** Lower-bracket slot each upper round's losers drop to. */
-	drop: z.array(z.int().min(0).max(7)).min(1).max(5),
-	grandFinal: bestOf,
+	/**
+	 * Lower round (0-based) each series' loser drops to, per upper round and
+	 * per series; `null` means the loser is out.
+	 */
+	drop: z
+		.array(z.array(z.int().min(0).max(7).nullable()).min(1).max(16))
+		.min(1)
+		.max(5),
+	/** Seeds that enter the lower bracket directly in each lower round (worst seeds first). */
+	lowerSeeds: z.array(z.int().min(0).max(8)).max(8).default([]),
+	/** `null`: no grand final (GSL groups); the upper and lower finals decide the ranking. */
+	grandFinal: bestOf.nullable(),
 	/** Extra final when the lower bracket wins (off in LoL). */
 	reset: z.boolean(),
 });
@@ -90,17 +100,39 @@ const play = z.discriminatedUnion("type", [
 const source = z.discriminatedUnion("kind", [
 	z.strictObject({
 		kind: z.literal("fixed"),
-		teams: z.array(teamId).min(2).max(32),
+		teams: z.array(teamId).min(1).max(32),
 	}),
 	/** Teams ranked `from` to `to` (1-based) in an earlier stage. */
 	z.strictObject({
 		kind: z.literal("standing"),
 		stage: stageId,
+		competition: competitionId.optional(),
 		from: z.int().min(1),
 		to: z.int().min(1),
 	}),
+	z.strictObject({
+		kind: z.literal("bracket"),
+		stage: stageId,
+		competition: competitionId.optional(),
+		match: id,
+		result: z.enum(["winner", "loser"]),
+	}),
 	/** The teams that other competitions qualified into this one. */
-	z.strictObject({ kind: z.literal("qualified"), competition: competitionId }),
+	z.strictObject({
+		kind: z.literal("qualified"),
+		competition: competitionId,
+		/** Optional 1-based places from specific leagues, in seed order. */
+		places: z
+			.array(
+				z.strictObject({
+					league: competitionId,
+					place: z.int().min(1).max(32),
+				}),
+			)
+			.min(1)
+			.max(32)
+			.optional(),
+	}),
 	/** Qualified teams of these competitions, drawn from `pots` pots by region and place. */
 	z.strictObject({
 		kind: z.literal("pots"),
@@ -109,7 +141,19 @@ const source = z.discriminatedUnion("kind", [
 	}),
 ]);
 
-const stage = z.strictObject({ id: stageId, window, entrants: source, play });
+const stage = z.strictObject({
+	id: stageId,
+	window,
+	/** Multiple sources fill the seed list in declaration order. */
+	entrants: z.union([source, z.array(source).min(1).max(32)]),
+	play,
+	draw: z
+		.strictObject({
+			pots: z.int().min(1).max(8),
+			avoidSameLeague: z.boolean().optional(),
+		})
+		.optional(),
+});
 
 const CRITERIA = [
 	"seriesWins",
@@ -132,6 +176,15 @@ const slot = z.strictObject({
 });
 
 const rounds = (size: number) => Math.ceil(Math.log2(size));
+
+/** Series played in each upper round of `size` teams (byes play none). */
+const upperSeries = (size: number): number[] => {
+	const count = rounds(size);
+	const full = 2 ** count;
+	return Array.from({ length: count }, (_, r) =>
+		r === 0 ? size - full / 2 : full / 2 ** (r + 1),
+	);
+};
 
 const issue = (
 	ctx: z.RefinementCtx,
@@ -174,14 +227,34 @@ export const competitionSchema = z
 				issue(ctx, [...p, "bestOf"], "one Bo per round");
 			}
 			if (play.type === "doubleElim") {
-				if (play.upper.length !== rounds(play.size))
-					issue(ctx, [...p, "upper"], "one Bo per upper round");
-				if (play.drop.length !== play.upper.length)
-					issue(ctx, [...p, "drop"], "one drop per upper round");
+				if (play.grandFinal === null && play.reset) {
+					issue(ctx, [...p, "reset"], "a reset needs a grand final");
+				}
+				const seeds = play.lowerSeeds;
+				const entering = seeds.reduce((a, b) => a + b, 0);
+				const upperSize = play.size - entering;
+				if (seeds.length > play.lower.length || upperSize < 2) {
+					issue(ctx, [...p, "lowerSeeds"], "lower entrants do not fit");
+				} else {
+					const series = upperSeries(upperSize);
+					if (play.upper.length !== series.length)
+						issue(ctx, [...p, "upper"], "one Bo per upper round");
+					const fits =
+						play.drop.length === series.length &&
+						play.drop.every((d, r) => d.length === series[r]) &&
+						play.drop.every((d) =>
+							d.every((k) => k === null || k < play.lower.length),
+						);
+					if (!fits) issue(ctx, [...p, "drop"], "one drop per upper series");
+				}
 			}
-			if (s.entrants.kind === "standing" && s.entrants.to < s.entrants.from) {
-				issue(ctx, ["stages", i, "entrants", "to"], "empty range");
-			}
+			const sources = Array.isArray(s.entrants) ? s.entrants : [s.entrants];
+			sources.forEach((entry, index) => {
+				if (entry.kind !== "standing" || entry.to >= entry.from) return;
+				const path: (string | number)[] = ["stages", i, "entrants"];
+				if (Array.isArray(s.entrants)) path.push(index);
+				issue(ctx, [...path, "to"], "empty range");
+			});
 		});
 		if (new Set(c.tiebreak).size !== c.tiebreak.length) {
 			issue(ctx, ["tiebreak"], "repeated criterion");
