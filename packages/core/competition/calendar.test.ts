@@ -4,8 +4,8 @@ import firstStand from "../content/real/formats/first-stand.json";
 import msi from "../content/real/formats/msi.json";
 import worlds from "../content/real/formats/worlds.json";
 import internationals from "../content/real/internationals.json";
+import { buildCalendar } from "../index";
 import { abs } from "../math/int";
-import { buildCalendar } from "./calendar";
 import type { StageOutcomes } from "./qualification";
 import { type Fixture, roundRobin } from "./round-robin";
 import { buildStageGraph } from "./stage-graph";
@@ -285,7 +285,7 @@ describe("calendar properties", () => {
 				expect(series.length).toBeGreaterThan(0);
 				if (property === "determinism") {
 					expect(
-						buildCalendar(graph(formats, teams.toReversed()), options),
+						buildCalendar(graph(formats, [...teams].reverse()), options),
 					).toEqual({
 						ok: true,
 						stages,
@@ -306,7 +306,12 @@ describe("calendar properties", () => {
 					).toEqual(expected.sort());
 					expect(new Set(series.map(({ id }) => id)).size).toBe(series.length);
 				} else {
-					const byDay = Map.groupBy(series, ({ day }) => day);
+					const byDay = new Map<number, typeof series>();
+					for (const match of series) {
+						const day = byDay.get(match.day) ?? [];
+						day.push(match);
+						byDay.set(match.day, day);
+					}
 					for (const day of byDay.values()) {
 						if (property === "daily capacity")
 							expect(day.length).toBeLessThanOrEqual(4);
