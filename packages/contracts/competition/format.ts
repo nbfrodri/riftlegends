@@ -11,8 +11,8 @@ const competitionId = id;
 /** Best-of lengths a series can have: 1, 3 or 5. */
 const bestOf = z.union([z.literal(1), z.literal(3), z.literal(5)]);
 
-/** Most series a team may play in a match day (decision 4 of plan 12). */
-const MAX_SERIES_PER_DAY = 4;
+/** Season-wide cap on series per match day (decision 4 of plan 12). */
+export const MAX_SERIES_PER_DAY = 4;
 
 /** Whole days from the season start are counted by the core; weeks only here. */
 const window = z.strictObject({
