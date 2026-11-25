@@ -6,6 +6,7 @@ import {
 	ExternalLink,
 	Images,
 	type LucideIcon,
+	MousePointer2,
 	Scale,
 	Trophy,
 } from "lucide-react";
@@ -23,6 +24,7 @@ const ICONS: Record<Source["id"], LucideIcon> = {
 	leaguepedia: BookOpenText,
 	communityDragon: Images,
 	lolesports: Trophy,
+	kenney: MousePointer2,
 };
 
 const gutter = "px-[clamp(14px,1.35vw,28px)]";

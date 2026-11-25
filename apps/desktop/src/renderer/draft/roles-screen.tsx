@@ -11,6 +11,7 @@ import { animate } from "motion/mini";
 import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { GameRoleIcon } from "../assets/game-role-icon";
+import { playSound } from "../sound";
 import { PlayerPortrait } from "./board/player-card";
 import { ChampionPortrait } from "./champion-portrait";
 import { CountryFlag } from "./country-flag";
@@ -179,6 +180,7 @@ function LineupEditor({ view, side }: { view: DraftView; side: Side }) {
 		const a = ROLES.indexOf(pending);
 		const b = ROLES.indexOf(role);
 		setSwapped([pending, role]);
+		playSound("swap");
 		setPicks((current) => {
 			const next = [...current];
 			[next[a], next[b]] = [current[b] as string, current[a] as string];
