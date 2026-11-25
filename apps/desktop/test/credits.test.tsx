@@ -61,12 +61,24 @@ describe("credits view", () => {
 			"Leaguepedia",
 			"CommunityDragon",
 			"lolesports.com",
+			"Kenney",
 		]);
-		const [leaguepedia, communityDragon, lolesports] = cards as [
+		const [leaguepedia, communityDragon, lolesports, kenney] = cards as [
+			HTMLElement,
 			HTMLElement,
 			HTMLElement,
 			HTMLElement,
 		];
+		expect(
+			within(kenney)
+				.getByRole("link", { name: "CC0 1.0" })
+				.getAttribute("href"),
+		).toBe("https://creativecommons.org/publicdomain/zero/1.0/");
+		expect(
+			within(kenney)
+				.getByRole("link", { name: "Open the Kenney site" })
+				.getAttribute("href"),
+		).toBe("https://kenney.nl/assets/cursor-pack");
 		expect(
 			within(leaguepedia)
 				.getByRole("link", { name: "Open the Leaguepedia site" })
