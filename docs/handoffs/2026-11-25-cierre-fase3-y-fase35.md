@@ -57,3 +57,4 @@ Para Codex: leer `r<N>.json`, comprobar con `tack codex-used <thread_id>` (prime
 | #535 reglas LEC y LCK Cup | feat/535-lec-lck-cup-rules | fusionado (#543) |
 | #546, #550 | ver arriba | en curso |
 | #525 refactor (gpt-6.2-sol medium, 25-11 21:20) | refactor/525-split-modules en `../riftlegends-525` | en curso; informe `~/.cache/rift-tmp/r525.json`, eventos `e525.jsonl`, thread 01a21458-f117-75f1-a1ca-76406abf7bcc |
+| #428 temporada en el dispatcher (gpt-6.2-sol medium, adelantada con permiso del usuario) | feat/428-season-dispatcher en `../riftlegends-428` | en curso; `r428.json`, `e428.jsonl`, thread 01a21463-a3a5-7e93-aedd-4fdae0ea751e |
