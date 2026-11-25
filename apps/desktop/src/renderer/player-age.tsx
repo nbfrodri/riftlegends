@@ -19,7 +19,7 @@ export function PlayerAge({
 	birthDate,
 	withUnit = false,
 }: {
-	birthDate?: string;
+	birthDate?: string | undefined;
 	/** «31 years» instead of «31». */
 	withUnit?: boolean;
 }) {
