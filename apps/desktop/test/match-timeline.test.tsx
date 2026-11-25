@@ -274,22 +274,73 @@ test.each([
 );
 
 test.each([
-	["en-US", "Multikills", "Double kill"],
-	["es-ES", "Asesinatos múltiples", "Asesinato doble"],
+	["en-US", "Double kill", "Double ×2, Triple"],
+	["es-ES", "Asesinato doble", "Doble ×2, Triple"],
 ])(
-	"the %s result names the multikill author even outside decisive disputes",
-	async (locale, title, label) => {
-		const game = readGame(multikillView());
+	"the %s result badges the player's row with the best streak and lists them all in words",
+	async (locale, label, summary) => {
+		const view = multikillView();
+		const result = view.facts[2] as { multikills?: unknown[] };
+		result.multikills = [
+			{ event: 0, killer: "b-top", count: 2 },
+			{ event: 0, killer: "b-top", count: 3 },
+			{ event: 0, killer: "b-top", count: 2 },
+		];
+		const game = readGame(view);
 		if (!game) throw new Error("missing game result");
 		await renderInLocale(
 			<GameReport game={game} summary={undefined} showWinner />,
 			locale,
 		);
-		const list = screen.getByRole("list", { name: title });
-		expect(list.textContent).toContain("Bluetop");
-		expect(list.textContent).toContain(label);
+		expect(
+			screen.queryByRole("list", { name: /ultikill|múltiples/ }),
+		).toBeNull();
+		const row = screen.getByText("Bluetop").closest("tr");
+		const badge = within(row as HTMLElement).getByLabelText(
+			new RegExp(summary.split(",")[0] as string),
+		);
+		expect(badge.getAttribute("aria-label")).toContain(
+			summary.split(", ")[1] as string,
+		);
+		expect(badge.textContent).toMatch(/Triple|Triple/);
+		expect(label).toBeTruthy();
+		const other = screen.getAllByRole("row").filter((r) => r !== row);
+		for (const r of other)
+			expect(within(r).queryByLabelText(/Triple/)).toBeNull();
 	},
 );
+
+test("assisters stay on one line as icons, with their names only in words", async () => {
+	const teams = { blue: "Forge", red: "Shoal" };
+	const facts = [
+		{
+			...event,
+			kind: "fight" as const,
+			causes: [...event.causes],
+			kills: [
+				{
+					killer: "b-top",
+					victim: "r-top",
+					assists: ["b-mid", "b-bot", "b-support"],
+				},
+			],
+		},
+	];
+	await renderInLocale(
+		<EventFeed
+			facts={facts as never}
+			second={12}
+			names={teams}
+			ids={teams}
+			players={new Map()}
+			ended
+		/>,
+	);
+	const row = document.querySelector("[data-assists]") as HTMLElement;
+	expect(row.className).toContain("flex-nowrap");
+	expect(row.className).not.toMatch(/(^|\s)flex-wrap/);
+	expect(row.querySelectorAll("[data-assister]")).toHaveLength(3);
+});
 
 test("one minute takes five seconds at normal speed, with pause and both faster speeds", async () => {
 	await renderInLocale(<Match />);
