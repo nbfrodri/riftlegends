@@ -1,7 +1,8 @@
 import { validateFormat } from "@rift-legends/contracts";
 import { describe, expect, it } from "vitest";
 import * as core from "../index";
-import { buildDoubleElim, resolveBracket } from "./bracket";
+import { buildDoubleElim } from "./bracket";
+import { resolveBracket } from "./bracket-state";
 import { pairSwissRound } from "./swiss";
 
 const api = core as typeof import("./season");
@@ -36,12 +37,19 @@ function replayBracket(
 
 describe("chained 2026 international formats", () => {
 	it.each([
-		["first-stand", [2, 2, 1, 1, 1, 1]],
-		["msi", [2, 2, 2, 2, 1, 1]],
-		["worlds", [4, 4, 3, 3, 3, 1]],
+		[
+			"first-stand",
+			[2, 2, 1, 1, 1, 1],
+			[
+				["LPL-1", "LCK-2", "LEC-1", "LCP-1"],
+				["LCK-1", "LPL-2", "LCS-1", "CBLOL-1"],
+			],
+		],
+		["msi", [2, 2, 2, 2, 2, 1], [["LCK-2", "LCS-2", "LEC-2", "LCP-2"]]],
+		["worlds", [4, 4, 3, 3, 3, 2], [["LCS-3", "LEC-3", "CBLOL-2", "LCP-3"]]],
 	] as const)(
 		"%s validates and uses earlier results for its next stage",
-		(id, counts) => {
+		(id, counts, participants) => {
 			const parsed = validateFormat(
 				files[`../content/real/formats/${id}.json`],
 			);
@@ -119,20 +127,29 @@ describe("chained 2026 international formats", () => {
 				id === "first-stand" ? "knockout" : id === "msi" ? "bracket" : "swiss";
 			const openingTeams = new Set<string>();
 			expect(resolve(next)).toMatchObject({ status: "pending" });
-			for (const stage of initial) {
+			for (const [index, stage] of initial.entries()) {
 				const ready = resolve(stage);
 				expect(ready.status).toBe("ready");
 				const play = event.stages.find((s) => s.id === stage)?.play;
 				if (ready.status !== "ready" || play?.type !== "doubleElim")
 					throw new Error("Missing opening bracket");
 				const entrants = ready.entrants.map((e) => e.team);
+				expect([...entrants].sort()).toEqual(
+					[...(participants[index] ?? [])].sort(),
+				);
 				for (const team of entrants) {
 					expect(openingTeams.has(team)).toBe(false);
 					openingTeams.add(team);
 				}
 				const bracket = replayBracket(buildDoubleElim(play), entrants);
 				if (id === "first-stand") {
-					expect(bracket.matches).toHaveLength(4);
+					expect(bracket.matches.map((m) => m.id)).toEqual([
+						"U1-1",
+						"U1-2",
+						"U2-1",
+						"L1-1",
+						"L2-1",
+					]);
 					expect(bracket.champion).toBe(
 						bracket.matches.find((m) => m.id === "U2-1")?.winner,
 					);
@@ -147,7 +164,7 @@ describe("chained 2026 international formats", () => {
 			);
 			expect(
 				ready.entrants.filter((e) => e.source.kind === "bracket"),
-			).toHaveLength(id === "first-stand" ? 4 : 2);
+			).toHaveLength(id === "first-stand" ? 4 : 1);
 			if (id === "worlds") {
 				expect(
 					[1, 2, 3, 4].map(
@@ -155,7 +172,7 @@ describe("chained 2026 international formats", () => {
 					),
 				).toEqual([4, 4, 4, 4]);
 				const swiss = event.stages.find((s) => s.play.type === "swiss")?.play;
-				if (!swiss) throw new Error("Missing Swiss");
+				if (swiss?.type !== "swiss") throw new Error("Missing Swiss");
 				const round = pairSwissRound(
 					ready.entrants.map(({ team, region }) => ({ id: team, region })),
 					[],

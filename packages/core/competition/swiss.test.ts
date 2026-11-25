@@ -85,6 +85,24 @@ const pot = (id: string) =>
 	(Number(id.slice(1)) - 1 - ((Number(id.slice(1)) - 1) % 4)) / 4;
 
 describe("pairSwissRound round 1", () => {
+	test("Q4: separates teams of one league even when their regions differ", () => {
+		const teams = teamsOf(8, (index) => `region-${index}`).map(
+			(team, index) => ({
+				...team,
+				league: index % 2 === 0 ? "A" : "B",
+			}),
+		);
+		const leagueOf = new Map(teams.map(({ id, league }) => [id, league]));
+		for (const seed of [1, 2, 3, 4]) {
+			const round = pairSwissRound(teams, [], RULES, seed, SCOPE);
+			expect(round?.relaxed).toEqual([]);
+			expect(round?.pairings).toHaveLength(4);
+			for (const { a, b } of round?.pairings ?? []) {
+				expect(leagueOf.get(a)).not.toBe(leagueOf.get(b));
+			}
+		}
+	});
+
 	test("S3: pots meet 1 v 4 and 2 v 3", () => {
 		const round = pairSwissRound(
 			teamsOf(16, () => undefined),

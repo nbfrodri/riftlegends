@@ -1,8 +1,9 @@
 import { validateFormat } from "@rift-legends/contracts";
 import fc from "fast-check";
 import { describe, expect, it } from "vitest";
-import { buildSingleElim, resolveBracket } from "./bracket";
 import * as core from "../index";
+import { buildSingleElim } from "./bracket";
+import { resolveBracket } from "./bracket-state";
 import { computeStandings } from "./standings";
 
 const api = core as typeof import("./season");
@@ -52,7 +53,6 @@ const table = (ids: string[]) =>
 		results: [],
 		cuts: [],
 		criteria: [],
-		bestOf: 3,
 		rootSeed: 17,
 		scope: { competition: 0, season: 0, stage: 0 },
 	});
