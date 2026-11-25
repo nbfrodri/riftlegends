@@ -6,6 +6,7 @@ import {
 	type Side,
 } from "@rift-legends/contracts";
 import { SCALE } from "../math";
+import type { MatchState } from "./state";
 
 /** Integer division of non-negative numbers, rounding down. */
 const div = (n: number, d: number) => (n - (n % d)) / d;
@@ -162,4 +163,52 @@ export function splitDamage(own: readonly number[]): number[] {
 				PERFORMANCE_PART * SCALE * (own[i] as number),
 		),
 	);
+}
+
+export interface SideEconomy {
+	readonly gold: number;
+	/** Gold each player earned, by role: events and passive income. */
+	readonly paid: readonly number[];
+	readonly kills: number;
+}
+
+/** Adds one minute of passive income to a side, by role. */
+export function earnPassive(state: MatchState, side: Side): MatchState[Side] {
+	const own = state[side];
+	const income = state.context.rules.economy.passive;
+	const farm = farmed(income);
+	return {
+		...own,
+		gold: own.gold + income,
+		paid: own.paid.map((gold, i) => gold + (farm[i] as number)),
+	};
+}
+
+/** Credits both sides with their gold and kills from one event. */
+export function markEconomy(state: MatchState, e: MatchEvent, loserSide: Side) {
+	const winner = state[e.side];
+	const loser = state[loserSide];
+	let loserKills = 0;
+	if (e.kind === "fight") {
+		const loserPlayers = Object.values(state.context[loserSide].players);
+		loserKills = e.kills.filter((kill) =>
+			loserPlayers.includes(kill.killer),
+		).length;
+	}
+	const paid = paidByRole(e, state.context.slots, state.context.rules.economy);
+	const earned = (own: SideEconomy, side: Side) =>
+		own.paid.map((gold, i) => gold + (paid[side][i] as number));
+	const won = {
+		...winner,
+		gold: winner.gold + e.gold[e.side],
+		paid: earned(winner, e.side),
+		kills: winner.kills + e.kills.length - loserKills,
+	};
+	const lost = {
+		...loser,
+		gold: loser.gold + e.gold[loserSide],
+		paid: earned(loser, loserSide),
+		kills: loser.kills + loserKills,
+	};
+	return { won, lost };
 }
