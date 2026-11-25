@@ -53,7 +53,7 @@ const table = (ids: string[]) =>
 		cuts: [],
 		criteria: [],
 		bestOf: 3,
-		seed: 17,
+		rootSeed: 17,
 		scope: { competition: 0, season: 0, stage: 0 },
 	});
 const roster = (ids: string[], competition: string) =>
