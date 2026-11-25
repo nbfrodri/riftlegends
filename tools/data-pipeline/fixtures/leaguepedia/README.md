@@ -1,6 +1,6 @@
 # Capturas de Leaguepedia
 
-Respuestas del 22-11-2026. El sangrado de dos espacios conserva los valores y el orden de claves entregados por la API.
+Respuestas del 22-11-2026 (las dos de torneos internacionales, del 24-11-2026). El sangrado de dos espacios conserva los valores y el orden de claves entregados por la API.
 
 Datos de Leaguepedia (lol.fandom.com), CC BY-SA 3.0
 
@@ -18,6 +18,8 @@ Consulta [LICENSE](LICENSE) para la licencia, la atribución y el alcance de los
 | [draft.json](draft.json) | Orden de selección de las mismas partidas. | [Consulta](<https://lol.fandom.com/api.php?format=json&maxlag=5&action=cargoquery&tables=PicksAndBansS7&fields=OverviewPage%2CGameId%2CMatchId%2CTeam1%2CTeam2%2CTeam1Pick1%2CTeam1Pick2%2CTeam1Pick3%2CTeam1Pick4%2CTeam1Pick5%2CTeam2Pick1%2CTeam2Pick2%2CTeam2Pick3%2CTeam2Pick4%2CTeam2Pick5%2CSwitchedSides&where=GameId+IN+%28%27LCK%2F2026+Season%2FRounds+1-2_Week+1_1_1%27%2C%27LCK%2F2026+Season%2FRounds+1-2_Week+1_1_2%27%2C%27LCK%2F2026+Season%2FRounds+1-2_Week+1_2_1%27%29&order_by=GameId&limit=5>) |
 | [logo-imageinfo.json](logo-imageinfo.json) | Metadatos y URL del logo de T1. | [Consulta](<https://lol.fandom.com/api.php?format=json&maxlag=5&action=query&titles=File%3AT1logo+profile.png&prop=imageinfo&iiprop=url%7Cmime%7Cextmetadata&iiextmetadatafilter=LicenseShortName%7CUsageTerms%7CRestrictions&redirects=1>) |
 | [ratelimited.json](ratelimited.json) | Error `ratelimited` observado con HTTP 200. | [Consulta](<https://lol.fandom.com/api.php?format=json&maxlag=5&action=cargoquery&tables=ScoreboardGames&fields=OverviewPage%2CGameId%2CTeam1%2CTeam2%2CWinner&order_by=DateTime_UTC+DESC%2CGameId&limit=3>) |
+| [international-tournaments.json](international-tournaments.json) | Torneos de 2026 de First Stand, MSI y Worlds (24-11-2026), con las clasificatorias regionales que hay que descartar. | [Consulta](<https://lol.fandom.com/api.php?format=json&maxlag=5&action=cargoquery&tables=Tournaments&fields=OverviewPage%2CName%2CLeague%2CYear%2CDateStart%2CDate%2CTournamentLevel%2CIsQualifier%2CIsOfficial&where=Year%3D%272026%27+AND+League+IN+%28%27First+Stand%27%2C%27Mid-Season+Invitational%27%2C%27World+Championship%27%29&order_by=OverviewPage&limit=500&offset=0>) |
+| [international-matches.json](international-matches.json) | Las 79 series de First Stand, MSI y Worlds 2026 (24-11-2026): equipos, marcador, Bo y fecha. | [Consulta](<https://lol.fandom.com/api.php?format=json&maxlag=5&action=cargoquery&tables=MatchSchedule&fields=OverviewPage%2CMatchId%2CTab%2CRound%2CN_MatchInTab%2CN_MatchInPage%2CTeam1%2CTeam2%2CWinner%2CTeam1Score%2CTeam2Score%2CBestOf%2CDateTime_UTC&where=OverviewPage+IN+%28%272026+First+Stand%27%2C%272026+Mid-Season+Invitational%27%2C%272026+Season+World+Championship%2FMain+Event%27%2C%272026+Season+World+Championship%2FPlay-In%27%29&order_by=OverviewPage%2CDateTime_UTC%2CMatchId&limit=500&offset=0>) |
 
 ## Nacionalidades
 

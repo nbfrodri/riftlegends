@@ -63,6 +63,7 @@ jobs:
           pnpm data:snapshot
           pnpm data:content
           pnpm data:logos
+          pnpm data:internationals
           after=$(find "$RIFT_LEGENDS_HISTORY_CACHE" -type f 2>/dev/null | wc -l || true)
           if [[ "$before" != "$after" ]]; then
             echo "history-changed=true" >> "$GITHUB_OUTPUT"

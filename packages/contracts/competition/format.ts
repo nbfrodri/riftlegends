@@ -83,7 +83,8 @@ const doubleElim = z.strictObject({
 		.max(5),
 	/** Seeds that enter the lower bracket directly in each lower round (worst seeds first). */
 	lowerSeeds: z.array(z.int().min(0).max(8)).max(8).default([]),
-	grandFinal: bestOf,
+	/** `null`: no grand final (GSL groups); the upper and lower finals decide the ranking. */
+	grandFinal: bestOf.nullable(),
 	/** Extra final when the lower bracket wins (off in LoL). */
 	reset: z.boolean(),
 });
