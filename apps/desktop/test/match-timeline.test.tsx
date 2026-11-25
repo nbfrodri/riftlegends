@@ -302,13 +302,31 @@ test.each([
 		expect(badge.getAttribute("aria-label")).toContain(
 			summary.split(", ")[1] as string,
 		);
-		expect(badge.getAttribute("data-badge")).toBe("Triple");
+		expect(badge.getAttribute("data-badge")).toBe("3");
 		expect(label).toBeTruthy();
 		const other = screen.getAllByRole("row").filter((r) => r !== row);
 		for (const r of other)
 			expect(within(r).queryByLabelText(/Triple/)).toBeNull();
 	},
 );
+
+test("a repeated best streak shows its count in the chip", async () => {
+	const view = multikillView();
+	const result = view.facts[2] as { multikills?: unknown[] };
+	result.multikills = [2, 2, 2].map((count) => ({
+		event: 0,
+		killer: "b-top",
+		count,
+	}));
+	const game = readGame(view);
+	if (!game) throw new Error("missing game result");
+	await renderInLocale(
+		<GameReport game={game} summary={undefined} showWinner />,
+	);
+	const row = screen.getByText("Bluetop").closest("tr") as HTMLElement;
+	const badge = within(row).getByLabelText(/Double ×3/);
+	expect(badge.getAttribute("data-badge")).toBe("2 ×3");
+});
 
 test("assisters stay on one line as icons, with their names only in words", async () => {
 	const teams = { blue: "Forge", red: "Shoal" };

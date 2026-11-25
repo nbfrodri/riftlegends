@@ -30,6 +30,18 @@ async function expectGapsToFit(page: Page) {
 	expect(clipped).toBe(0);
 }
 
+/** #366: no name, champion or badge in the stats table is cut short. */
+async function expectNoTruncation(page: Page) {
+	const cut = await page
+		.getByRole("table", { name: /^Estadísticas/ })
+		.evaluate((table) =>
+			[...table.querySelectorAll("td, th, td *, th *")]
+				.filter((el) => el.scrollWidth > el.clientWidth + 1)
+				.map((el) => `${el.tagName}:${el.textContent}`),
+		);
+	expect(cut).toEqual([]);
+}
+
 test("#259 #310: the setup, match and results fit the default window", async ({
 	electronApp,
 	appWindow,
@@ -65,6 +77,7 @@ test("#259 #310: the setup, match and results fit the default window", async ({
 					await appWindow.setViewportSize(size);
 					await expectToFit(appWindow);
 					await expectGapsToFit(appWindow);
+					await expectNoTruncation(appWindow);
 					// #380: the right column spans exactly the stats table's height.
 					const edges = await appWindow.evaluate(() => {
 						const heading = [...document.querySelectorAll("h2")].find((h) =>
