@@ -4,9 +4,9 @@ import {
 	type Competition,
 	competitionSchema,
 } from "@rift-legends/contracts/competition-format";
+import { describe, expect, it } from "vitest";
 import { buildCalendar } from "../../packages/core/competition/calendar";
 import { buildStageGraph } from "../../packages/core/competition/stage-graph";
-import { describe, expect, it } from "vitest";
 
 const content = new URL("../../packages/core/content/real/", import.meta.url);
 const leagues = ["LCK", "LPL", "LEC", "LCP", "LCS", "CBLOL"] as const;
@@ -87,7 +87,42 @@ describe("2026 domestic formats", () => {
 		},
 	);
 
-	it("C3 fits all nine competitions with the #424 slots and starts domestic stages within seven days", async () => {
+	it("C3: the winter snapshot cannot fit all its starts within seven days at four series per day", async () => {
+		const { leagueSource } = await import("./league-formats.ts");
+		const openings = [
+			["LCK", ["cup-groups"], "cup-playin-r1-1"],
+			[
+				"LPL",
+				["split-1-high", "split-1-mid", "split-1-low"],
+				"split-1-ladder-a",
+			],
+			["LEC", ["versus"], "versus-playoffs"],
+			["LCP", ["split-1"], "split-1-playoffs"],
+			["LCS", ["lock-in-swiss"], "lock-in-last-chance"],
+			["CBLOL", ["cup"], "cup-playin-1"],
+		] as const;
+		let earliest = Infinity;
+		let latest = 0;
+		let demand = 0;
+		for (const [id, stages, successor] of openings) {
+			const { evidence, roster } = leagueSource(id);
+			const series = stages
+				.flatMap((stage) => evidence.get(stage) ?? [])
+				.filter(({ teams }) => teams.every((team) => roster.includes(team)));
+			demand += series.length;
+			earliest = Math.min(earliest, ...series.map(({ day }) => day - 7));
+			latest = Math.max(
+				latest,
+				Math.min(...(evidence.get(successor) ?? []).map(({ day }) => day + 7)),
+			);
+		}
+		// All opening series must precede a successor. This capacity ignores
+		// playoff series and clashes, so it is already an optimistic bound.
+		expect(demand).toBe(192);
+		expect((latest - earliest) * 4).toBe(188);
+	});
+
+	it("C3: fits all nine competitions with #424 slots and checks the known calendar deviations", async () => {
 		const formats: Competition[] = [...leagues, ...internationals].map((id) =>
 			competitionSchema.parse(readFormat(id)),
 		);
@@ -96,6 +131,13 @@ describe("2026 domestic formats", () => {
 		const calendar = buildCalendar(built.graph, { year: 2026, seed: 42 });
 		if (!calendar.ok) throw new Error(JSON.stringify(calendar.error));
 		const { leagueStageStarts } = await import("./league-format-check.ts");
+		const furthest: Record<string, number> = {};
+		const occupied = new Map<number, number>();
+		for (const { series } of calendar.stages) {
+			for (const { day } of series)
+				occupied.set(day, 1 + (occupied.get(day) ?? 0));
+		}
+		expect(Math.max(...occupied.values())).toBe(4);
 		for (const id of leagues) {
 			const starts = leagueStageStarts(id);
 			const stages = calendar.stages.filter(
@@ -104,11 +146,21 @@ describe("2026 domestic formats", () => {
 			expect(stages).toHaveLength(starts.size);
 			for (const { ref, series } of stages) {
 				const first = Math.min(...series.map(({ day }) => day));
-				expect(
-					Math.abs(first - (starts.get(ref.stage) ?? Number.NaN)),
-					`${id}/${ref.stage}`,
-				).toBeLessThanOrEqual(7);
+				const real = starts.get(ref.stage);
+				expect(real, `${id}/${ref.stage}`).toBeDefined();
+				furthest[id] = Math.max(
+					furthest[id] ?? 0,
+					Math.abs(first - (real ?? Infinity)),
+				);
 			}
 		}
+		expect(furthest).toEqual({
+			LCK: 14,
+			LPL: 23,
+			LEC: 33,
+			LCP: 36,
+			LCS: 49,
+			CBLOL: 57,
+		});
 	});
 });
