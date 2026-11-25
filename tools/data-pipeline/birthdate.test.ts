@@ -32,3 +32,42 @@ test("each snapshot player gets one date; the most precise one wins across rows"
 		{ id: "Faker", birthDate: "1996-05-07" },
 	]);
 });
+
+import { mkdtemp, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import {
+	parseBirthDates,
+	preserveBirthDates,
+	serializeBirthDates,
+} from "./birthdate.ts";
+
+const file = (birthDate: string, retrievedAt = "2026-11-25") => ({
+	provenance: {
+		source: "Leaguepedia",
+		domain: "lol.fandom.com",
+		retrievedAt,
+		licence: "CC BY-SA 3.0",
+		attribution: "x",
+		queries: [{ url: "https://x", retrievedAt }],
+	},
+	players: [{ id: "Faker", birthDate }],
+});
+
+test("the file round-trips, rejects bad dates and ignores only retrieval dates", async () => {
+	const body = serializeBirthDates(file("1996-05-07"));
+	expect(parseBirthDates(body)).toEqual(file("1996-05-07"));
+	expect(() => parseBirthDates(serializeBirthDates(file("1996-5-7")))).toThrow();
+	const dir = await mkdtemp(join(tmpdir(), "rift-birthdates-"));
+	try {
+		const path = join(dir, "birthdates.json");
+		const { writeFile } = await import("node:fs/promises");
+		await writeFile(path, body);
+		expect(await preserveBirthDates(path, file("1996-05-07", "2026-12-01"))).toBe(body);
+		expect(await preserveBirthDates(path, file("1996"))).toBe(
+			serializeBirthDates(file("1996")),
+		);
+	} finally {
+		await rm(dir, { recursive: true, force: true });
+	}
+});

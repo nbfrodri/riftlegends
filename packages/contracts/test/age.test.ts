@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { ageOn, BIRTH_DATE } from "../age";
+import { ageOn, BIRTH_DATE, isBirthDate } from "../age";
 
 test("the age counts whole years up to the game date", () => {
 	expect(ageOn("1996-05-07", "2027-06-18")).toBe(31);
@@ -34,6 +34,8 @@ test("no birth date, or one after the game date, gives no age", () => {
 
 test("the birth date contract accepts a full date or a year and nothing else", () => {
 	for (const ok of ["1996-05-07", "1999"]) expect(BIRTH_DATE.test(ok)).toBe(true);
-	for (const bad of ["", "96", "1996-5-7", "1996-13-01", "1996-02-30", "1996-05"])
+	for (const bad of ["", "96", "1996-5-7", "1996-13-01", "1996-05"])
 		expect(BIRTH_DATE.test(bad), bad).toBe(false);
+	expect(isBirthDate("1996-02-30")).toBe(false);
+	expect(isBirthDate("2000-02-29")).toBe(true);
 });
