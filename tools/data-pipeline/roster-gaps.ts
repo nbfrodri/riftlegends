@@ -62,10 +62,7 @@ const cacheRow = (row: CargoRow) => ({
 const playerFields = "OverviewPage=Link,ID=Player,Team,Role,IsRetired=Retired";
 
 /** The current roster of each team on its Leaguepedia player pages. */
-export function acquireCurrentRoster(
-	client: Client,
-	teamNames: readonly string[],
-) {
+function acquireCurrentRoster(client: Client, teamNames: readonly string[]) {
 	return client.cargo(
 		"Players",
 		playerFields,
@@ -76,7 +73,7 @@ export function acquireCurrentRoster(
 }
 
 /** Leaguepedia player pages by handle: where lolesports' starters are found. */
-export function acquireByHandle(client: Client, handles: readonly string[]) {
+function acquireByHandle(client: Client, handles: readonly string[]) {
 	return client.cargo(
 		"Players",
 		playerFields,

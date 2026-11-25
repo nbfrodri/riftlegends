@@ -48,7 +48,7 @@ export interface ApiTeam {
 	players: ApiPlayer[];
 }
 
-export interface ApiPlayer {
+interface ApiPlayer {
 	handle: string;
 	image: string | null;
 	/** lolesports position: top, jungle, mid, bottom, support or none (bench). */

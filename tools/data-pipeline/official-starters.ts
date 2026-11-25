@@ -48,7 +48,7 @@ export function officialStarters(
 	};
 }
 
-export const snapshotTeam = (
+const snapshotTeam = (
 	snapshot: RealSnapshot,
 	team: RealSnapshot["teams"][number],
 ): SnapshotTeam => ({
