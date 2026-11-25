@@ -30,7 +30,13 @@ it("starts fights in the mid game and credits and pays both teams' kills", () =>
 			for (const event of next.events) {
 				const earned = { blue: 0, red: 0 };
 				const kills = { blue: 0, red: 0 };
-				for (const { killer, victim, assists } of event.kills) {
+				for (const {
+					killer,
+					victim,
+					assists,
+					firstBlood,
+					shutdown,
+				} of event.kills) {
 					const side: Side = players.blue.includes(killer) ? "blue" : "red";
 					expect(players[side]).toContain(killer);
 					expect(players[other(side)]).toContain(victim);
@@ -39,7 +45,12 @@ it("starts fights in the mid game and credits and pays both teams' kills", () =>
 					credited[side]++;
 					if (event.kind === "fight")
 						expect(assists.length).toBeGreaterThanOrEqual(1);
-					earned[side] += economy.kill + economy.assist;
+					earned[side] +=
+						economy.kill +
+						economy.assist +
+						(firstBlood?.killerGold ?? 0) +
+						(firstBlood?.assistGold ?? 0) +
+						(shutdown ?? 0);
 				}
 				if (event.kind !== "fight") continue;
 				fights++;

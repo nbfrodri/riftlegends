@@ -62,6 +62,42 @@ const AREAS = [
 ] as const satisfies readonly (readonly [string, readonly PlayerAttribute[]])[];
 
 /**
+ * Type and spacing of the card's sections: `panel` for the draft's compact
+ * panel, `dialog` for the large Database card, which scales with the window
+ * (#544).
+ */
+type CardSize = "panel" | "dialog";
+const CARD = {
+	panel: {
+		note: "mt-1 text-[13px]",
+		grid: "mt-[9px] gap-3",
+		heading: "mb-1 text-[13px]",
+		rows: "text-[12px] leading-[1.47]",
+		pool: "mt-3",
+		groups: "gap-x-4 gap-y-1.5",
+		label: "text-[12px]",
+		list: "gap-1.5",
+		item: "gap-1",
+		mastery: "text-[12px]",
+		portrait: "compact",
+	},
+	dialog: {
+		note: "text-[clamp(13px,1.9vh,16px)]",
+		grid: "mt-[clamp(10px,2vh,22px)] gap-x-[clamp(16px,2.2vw,40px)]",
+		heading:
+			"mb-[clamp(4px,0.9vh,10px)] border-line border-b pb-1 text-[clamp(15px,2.5vh,21px)]",
+		rows: "text-[clamp(14px,2.3vh,19px)] leading-[1.9]",
+		pool: "",
+		groups: "gap-x-[clamp(18px,2.4vw,40px)] gap-y-2",
+		label: "text-[clamp(14px,2.2vh,18px)]",
+		list: "gap-[clamp(6px,1vw,12px)]",
+		item: "gap-1.5",
+		mastery: "text-[clamp(14px,2.3vh,19px)]",
+		portrait: "card",
+	},
+} as const satisfies Record<CardSize, Record<string, string>>;
+
+/**
  * A collapsible bar above the board. Open, its content drops over the board
  * and scrolls inside, so neither the board nor the page moves (#430).
  */
@@ -120,26 +156,31 @@ export function PlayerAttributes({
 	attributes,
 	role,
 	estimated = [],
+	size = "panel",
 }: {
 	attributes: Attributes;
 	role: Role;
 	estimated?: readonly PlayerAttribute[] | undefined;
+	size?: CardSize;
 }) {
 	const { t } = useTranslation();
+	const style = CARD[size];
 	const guessed = new Set(estimated);
 	const minor = new Set<PlayerAttribute>(LOW_RELEVANCE[role]);
 	return (
 		<>
-			<p className="mt-1 text-[13px] text-muted">
+			<p className={`${style.note} text-muted`}>
 				{t("draft.board.attributeScale")}
 			</p>
-			<div className="mt-[9px] grid grid-cols-[1fr_1.2fr_1.06fr_1.16fr_1.22fr] gap-3">
+			<div
+				className={`${style.grid} grid grid-cols-[1fr_1.2fr_1.06fr_1.16fr_1.22fr]`}
+			>
 				{AREAS.map(([area, keys]) => (
 					<section key={area}>
-						<h3 className="mb-1 font-bold text-[13px] text-action">
+						<h3 className={`${style.heading} font-bold text-action`}>
 							{t(`draft.board.area.${area}`)}
 						</h3>
-						<dl className="text-[12px] leading-[1.47]">
+						<dl className={style.rows}>
 							{keys.map((key) => (
 								<div
 									key={key}
@@ -200,42 +241,45 @@ type Pool = SeriesOptions["teams"][number]["players"][number]["pool"];
 export function PlayerPool({
 	pool,
 	names,
+	size = "panel",
 }: {
 	pool: Pool;
 	names: ReadonlyMap<string, string>;
+	size?: CardSize;
 }) {
 	const { t } = useTranslation();
+	const style = CARD[size];
 	if (pool.length === 0) return null;
 	return (
-		<section aria-label={t("draft.board.pool.title")} className="mt-3">
-			<h3 className="mb-1 font-bold text-[13px] text-action">
+		<section aria-label={t("draft.board.pool.title")} className={style.pool}>
+			<h3 className={`${style.heading} font-bold text-action`}>
 				{t("draft.board.pool.title")}
 			</h3>
-			<div className="flex flex-wrap gap-x-4 gap-y-1.5">
+			<div className={`flex flex-wrap ${style.groups}`}>
 				{(["main", "secondary", "weak"] as const).map((kind) => {
 					const rows = pool.filter((entry) => entry.kind === kind);
 					return (
 						rows.length > 0 && (
-							<div key={kind} className="flex items-center gap-1.5">
-								<span className="text-[12px] text-muted">
+							<div key={kind} className={`flex items-center ${style.list}`}>
+								<span className={`${style.label} text-muted`}>
 									{t(`draft.board.pool.${kind}`)}
 								</span>
-								<ul className="flex gap-1.5">
+								<ul className={`flex ${style.list}`}>
 									{rows.map(({ champion, mastery }) => {
 										const name = names.get(champion) ?? champion;
 										return (
 											<li
 												key={champion}
-												className="flex items-center gap-1"
+												className={`flex items-center ${style.item}`}
 												aria-label={t("draft.board.pool.mastery", {
 													champion: name,
 													value: mastery,
 												})}
 											>
-												<ChampionPortrait id={champion} size="compact" />
+												<ChampionPortrait id={champion} size={style.portrait} />
 												<span
 													aria-hidden="true"
-													className="font-semibold text-[12px] tabular-nums"
+													className={`${style.mastery} font-semibold tabular-nums`}
 												>
 													{mastery}
 												</span>

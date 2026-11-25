@@ -1,6 +1,8 @@
 import { abs, max } from "../math/int";
 import { type Fixture, type Matchday, roundRobin } from "./round-robin";
 
+export { computeGroupStandings } from "./group-standings";
+
 export interface GroupTeam {
 	readonly id: string;
 	/** Teams of one region avoid sharing a group when there is an alternative. */
@@ -166,4 +168,18 @@ export function crossGroupSchedule(
 	return roundRobin(groups.flat(), rounds)
 		.map((day) => ({ fixtures: day.fixtures.filter(keep), byes: [] }))
 		.filter((day) => day.fixtures.length > 0);
+}
+
+/** One complete matching per round for two equal groups. */
+export function balancedCrossSchedule(
+	left: readonly string[],
+	right: readonly string[],
+): Matchday[] {
+	return left.map((_, round) => ({
+		fixtures: left.map((a, i) => ({
+			a,
+			b: right[(i + round) % right.length] as string,
+		})),
+		byes: [],
+	}));
 }

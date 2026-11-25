@@ -78,6 +78,34 @@ function Assister({
 }
 
 const when = (e: MatchEvent) => (e.minute - 1) * 60 + e.second;
+const wording = (second: number) => (second % 2 === 0 ? 0 : 1);
+
+function PlayLabels({
+	kill,
+	variant,
+}: {
+	kill: MatchEvent["kills"][number];
+	variant: 0 | 1;
+}) {
+	const { t } = useTranslation();
+	return (
+		<>
+			{kill.firstBlood && <strong>{t("draft.match.play.firstBlood")}</strong>}
+			{kill.soloKill && (
+				<strong>{t(`draft.match.play.soloKill.${variant}`)}</strong>
+			)}
+			{kill.spree && (
+				<strong>{t(`draft.match.play.spree.${kill.spree}`)}</strong>
+			)}
+			{kill.shutdown && (
+				<strong>
+					{t(`draft.match.play.shutdown.${variant}`, { gold: kill.shutdown })}
+				</strong>
+			)}
+			{kill.ace && <strong>{t("draft.match.play.ace")}</strong>}
+		</>
+	);
+}
 
 const EventRow = memo(function EventRow({
 	event,
@@ -103,9 +131,10 @@ const EventRow = memo(function EventRow({
 		);
 		return () => entrance.complete();
 	}, [animate]);
-	const causes = [...event.causes].sort(
-		(a, b) => Math.abs(b.points) - Math.abs(a.points),
-	);
+	const variant = wording(when(event));
+	const causes = event.causes
+		.filter(({ points }) => points !== 0)
+		.sort((a, b) => Math.abs(b.points) - Math.abs(a.points));
 	const list = new Intl.ListFormat(i18n.language);
 	const explain = (items: MatchEvent["causes"]) => {
 		const groups: { favored: string[]; against: string[] } = {
@@ -149,41 +178,60 @@ const EventRow = memo(function EventRow({
 					{isObjectiveKind(event.kind) && <MapIcon kind={event.kind} />}
 					{t(`draft.match.kind.${event.kind}`)}
 				</h3>
-				{event.kills.map(({ killer, victim, assists, multikill }, index) => (
-					<div
-						// biome-ignore lint/suspicious/noArrayIndexKey: kills retain the order recorded in the event.
-						key={index}
-						data-kill
-					>
-						<p className="flex flex-wrap items-center gap-x-1.5 gap-y-1">
-							<Participant player={players.get(killer)} id={killer} />
-							{t("draft.match.killVerb")}
-							<Participant player={players.get(victim)} id={victim} />
-							{multikill && (
-								<strong className="text-action">
-									{t(`draft.match.multikill.${multikill}`)}
-								</strong>
-							)}
-						</p>
-						{assists.length > 0 && (
-							<p
-								data-assists
-								className="flex flex-nowrap items-center gap-x-1.5 text-[12px]"
-							>
-								<span className="shrink-0 text-muted">
-									{t("draft.match.assistedBy")}
-								</span>
-								{assists.map((player) => (
-									<Assister
-										key={player}
-										player={players.get(player)}
-										id={player}
-									/>
-								))}
-							</p>
+				{event.steal && (
+					<p className="font-bold text-action">
+						{t(
+							`draft.match.play.steal.${event.steal.opposingSmite ? variant : 2}`,
+							{
+								player:
+									players.get(event.steal.jungler)?.handle ??
+									event.steal.jungler,
+							},
 						)}
-					</div>
-				))}
+					</p>
+				)}
+				{event.kills.map((kill, index) => {
+					const { killer, victim, assists, multikill } = kill;
+					return (
+						<div
+							// biome-ignore lint/suspicious/noArrayIndexKey: kills retain the order recorded in the event.
+							key={index}
+							data-kill
+						>
+							<p className="flex flex-wrap items-center gap-x-1.5 gap-y-1">
+								<Participant player={players.get(killer)} id={killer} />
+								{t("draft.match.killVerb")}
+								<Participant player={players.get(victim)} id={victim} />
+								{multikill && (
+									<strong className="text-action">
+										{t(`draft.match.multikill.${multikill}`)}
+									</strong>
+								)}
+								<PlayLabels
+									kill={kill}
+									variant={wording(variant + (kill.fightSecond ?? 0))}
+								/>
+							</p>
+							{assists.length > 0 && (
+								<p
+									data-assists
+									className="flex flex-nowrap items-center gap-x-1.5 text-[12px]"
+								>
+									<span className="shrink-0 text-muted">
+										{t("draft.match.assistedBy")}
+									</span>
+									{assists.map((player) => (
+										<Assister
+											key={player}
+											player={players.get(player)}
+											id={player}
+										/>
+									))}
+								</p>
+							)}
+						</div>
+					);
+				})}
 				{causes.length > 2 ? (
 					<details className="text-muted">
 						<summary className="cursor-pointer">{summary}</summary>
@@ -191,6 +239,9 @@ const EventRow = memo(function EventRow({
 					</details>
 				) : (
 					<p className="text-muted">{summary}</p>
+				)}
+				{event.causes.some(({ key }) => key === "ace") && (
+					<p className="text-muted">{t("draft.match.cause.ace")}</p>
 				)}
 			</div>
 		</li>
