@@ -8,6 +8,7 @@ import {
 import { StartupGate } from "./assets/startup-gate";
 import { ChampionsScreen } from "./champions-screen";
 import { CreditsScreen } from "./credits/credits-screen";
+import { DatabaseScreen } from "./database/database-screen";
 import { DraftScreen, MarketScreen, SettingsScreen } from "./screens";
 import { Shell } from "./shell";
 
@@ -42,6 +43,12 @@ const championsRoute = createRoute({
 	component: ChampionsScreen,
 });
 
+const databaseRoute = createRoute({
+	getParentRoute: () => rootRoute,
+	path: "base-de-datos",
+	component: DatabaseScreen,
+});
+
 const marketRoute = createRoute({
 	getParentRoute: () => rootRoute,
 	path: "mercado",
@@ -64,6 +71,7 @@ const routeTree = rootRoute.addChildren([
 	indexRoute,
 	draftRoute,
 	championsRoute,
+	databaseRoute,
 	marketRoute,
 	settingsRoute,
 	creditsRoute,

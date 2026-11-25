@@ -2,6 +2,7 @@ import type { ElectronApplication, Page } from "@playwright/test";
 import type { SeriesOptions } from "@rift-legends/contracts";
 import type { CoreBridge } from "../src/main/core-bridge";
 import { expect, test } from "./fixtures";
+import { flagBaselineOffset } from "./flag-baseline";
 import { playQuickDraftBo5 } from "./quick-draft-flow";
 
 test.use({ systemLocale: "es-ES", appEnv: { RIFT_E2E_CORE: "1" } });
@@ -157,6 +158,11 @@ test("#259 #310 #524: the setup, match and results fit the supported test sizes"
 				checked++;
 			}
 			if (screen !== "series-result") return;
+			// #443: the MVP's flag stands on the baseline of the big name.
+			const mvp = appWindow
+				.getByRole("region", { name: "MVP de la serie" })
+				.getByRole("heading", { level: 2 });
+			expect(Math.abs(await flagBaselineOffset(mvp))).toBeLessThanOrEqual(1.5);
 			for (const size of sizes) {
 				await appWindow.setViewportSize(size);
 				await expectToFit(appWindow);
