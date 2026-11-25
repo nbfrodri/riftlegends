@@ -2,15 +2,16 @@ import { validateFormat } from "@rift-legends/contracts";
 import fc from "fast-check";
 import { describe, expect, it } from "vitest";
 import * as core from "../index";
-import { buildSingleElim } from "./bracket";
+import { buildSingleElim, type SingleElim } from "./bracket";
 import { resolveBracket } from "./bracket-state";
+import type { StageOutcome } from "./qualification";
 import { computeStandings } from "./standings";
 
 const api = core as typeof import("./season");
 
 const window = { startWeek: 1, weeks: 1, matchDays: 2 };
 const leaguePlay = { type: "roundRobin", size: 6, rounds: 1, bestOf: 3 };
-const bracketPlay = { type: "singleElim", size: 2, bestOf: [3] } as const;
+const bracketPlay: SingleElim = { type: "singleElim", size: 2, bestOf: [3] };
 const stage = (
 	id: string,
 	entrants: unknown,
@@ -78,6 +79,31 @@ const resolve = (
 ) => api.resolveStage(graph, { competition, stage }, outcomes, seed, 2026);
 
 describe("stage graph", () => {
+	it("rejects an odd Swiss field before its first pairing", () => {
+		expect(
+			api.buildStageGraph?.(
+				[
+					format("LCK", [
+						stage("swiss", fixed("a", "b", "c"), {
+							type: "swiss",
+							size: 3,
+							wins: 1,
+							losses: 1,
+							bestOf: 1,
+							decisiveBestOf: 3,
+							round1: "pots",
+							avoid: [],
+						}),
+					]),
+				],
+				roster(teams, "LCK"),
+			),
+		).toMatchObject({
+			ok: false,
+			error: { code: "invalid-format", params: { path: "play.size" } },
+		});
+	});
+
 	it("Q1 seeds ranked Legend and Rise groups from a final table and explains the source rank", () => {
 		const graph = build([
 			format("LCK", [
@@ -155,7 +181,7 @@ describe("stage graph", () => {
 			]),
 		]);
 		const bracket = buildSingleElim(bracketPlay);
-		const outcomes = new Map([
+		const outcomes = new Map<string, StageOutcome>([
 			[
 				api.stageKey({ competition: "LCK", stage: "r1" }),
 				{ bracket: resolveBracket(bracket, ["a", "b"], { "U1-1": "a" }) },
@@ -288,7 +314,7 @@ describe("international slots and pots", () => {
 			]),
 		]);
 		const bracket = buildSingleElim(bracketPlay);
-		const outcomes = new Map([
+		const outcomes = new Map<string, StageOutcome>([
 			[
 				api.stageKey({ competition: "LCK", stage: "split" }),
 				{
@@ -302,8 +328,9 @@ describe("international slots and pots", () => {
 				},
 			],
 		]);
-		expect(resolve(graph, "msi", "main", outcomes)).toMatchObject({
+		expect(resolve(graph, "msi", "main", outcomes)).toEqual({
 			status: "pending",
+			waitingFor: [{ competition: "LCK", stage: "league" }],
 		});
 		const result = resolve(
 			graph,
@@ -406,7 +433,13 @@ describe("international slots and pots", () => {
 				],
 				roster(teams, "LCK"),
 			),
-		).toMatchObject({ ok: false, error: { code: "slots-mismatch" } });
+		).toMatchObject({
+			ok: false,
+			error: {
+				code: "slots-mismatch",
+				params: { competition: "msi", actual: 1, expected: 2 },
+			},
+		});
 	});
 
 	it("Q4 recalculates pots by regional place and draws groups without regional clashes", () => {
@@ -444,7 +477,7 @@ describe("international slots and pots", () => {
 			);
 			const standingsA = table(a);
 			const standingsB = table(b);
-			const outcomes = new Map([
+			const outcomes = new Map<string, StageOutcome>([
 				[
 					api.stageKey({ competition: "LCK", stage: "split" }),
 					{ standings: standingsA },
