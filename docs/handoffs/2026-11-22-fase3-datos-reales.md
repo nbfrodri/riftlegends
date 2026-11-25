@@ -123,3 +123,4 @@ Orden acordado con el usuario (25-11): cerrar Fase 3 (#443, #253, Stryker); Fase
 | 25-11 | #426 formatos de ligas | feat/426-league-formats · ../riftlegends-426 | gpt-6.2-sol medium | ~/.cache/rift-tmp/codex/e426.jsonl / r426.json | Parado sin informe (04:31); lo termina un subagente |
 | 25-11 | #366 multikills y KDA coherente | feat/366-multikills-kda · ../riftlegends-366 | gpt-6.2-sol medium | ~/.cache/rift-tmp/codex/e366.jsonl / r366.json | Hecho; verificado y ampliado por un subagente (PR #520) |
 | 25-11 | #524 nombres recortados en diferencias por rol | fix/524-role-gaps-fit · ../riftlegends-524 | gpt-6.2-sol medium | ~/.cache/rift-tmp/codex/e524.jsonl / r524.json | En curso |
+| 25-11 | #508 eventos funcionales (primera sangre, rachas, shutdown, ace, robos, solo kill) | feat/508-match-events · ../riftlegends-508 (sobre #520) | gpt-6.2-sol medium | ~/.cache/rift-tmp/codex/e508.jsonl / r508.json | En curso |
