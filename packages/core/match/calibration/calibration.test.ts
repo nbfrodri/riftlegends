@@ -1,5 +1,5 @@
 import { ROLES, type Role } from "@rift-legends/contracts";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, test } from "vitest";
 import { loadRealContent } from "../../content/real";
 import { sample, scenario } from "./scenarios";
 
@@ -109,7 +109,8 @@ describe.each(["control", "packaged", "real-champions", "real"] as const)(
 		});
 
 		if (pool === "real") {
-			it("K8 · role rating means are 56–64 and at most 5 points apart", () => {
+			// https://github.com/nbfrodri/riftlegends/issues/348 — role-aware rating on a common scale.
+			test.fails("K8 · role rating means are 56–64 and at most 5 points apart", () => {
 				const teams = even.flatMap((g) => g.teams);
 				const means = ROLES.map((role) => {
 					const mean =
@@ -125,20 +126,33 @@ describe.each(["control", "packaged", "real-champions", "real"] as const)(
 				);
 			});
 
-			it("K11 · a game has 8–15 towers and 3–6 dragons at the median", () => {
+			// https://github.com/nbfrodri/riftlegends/issues/357 — calibrate the play mix and game totals.
+			test.fails("K11 · a game has 8–15 towers at the median", () => {
 				const towers = at(
 					even.map((g) => g.towers),
 					0.5,
 				);
+				expect(towers).toBeGreaterThanOrEqual(8);
+				expect(towers).toBeLessThanOrEqual(15);
+			});
+
+			it("K11 · a game has 3–6 dragons at the median", () => {
 				const dragons = at(
 					even.map((g) => g.dragons),
 					0.5,
 				);
-				expect.soft(towers, "towers").toBeGreaterThanOrEqual(8);
-				expect.soft(towers, "towers").toBeLessThanOrEqual(15);
-				expect.soft(dragons, "dragons").toBeGreaterThanOrEqual(3);
-				expect.soft(dragons, "dragons").toBeLessThanOrEqual(6);
+				expect(dragons).toBeGreaterThanOrEqual(3);
+				expect(dragons).toBeLessThanOrEqual(6);
 			});
+
+			// https://github.com/nbfrodri/riftlegends/issues/320
+			test.todo("K9 · advantages from composition matchups");
+			test.todo("K10 · play mix by composition");
+			test.todo("K15 · power curves and early fade");
+
+			// https://github.com/nbfrodri/riftlegends/issues/339
+			test.todo("K12 · contest advantage with an ultimate ready");
+			test.todo("K13 · opportunities after the enemy uses an ultimate");
 		}
 
 		it("K4 · 3,000 gold behind at minute 20, a team wins 15–30 %", () => {

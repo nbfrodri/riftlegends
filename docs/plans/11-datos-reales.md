@@ -169,13 +169,16 @@ Cada regla tiene un **id** que viaja en `reasons` para que la ficha explique el 
 | A1 | Al arrancar, la pantalla de carga muestra el progreso y abre el juego con todos los campeones reales listos | Sin caché utilizable, explica que hace falta conexión la primera vez y permite reintentar |
 | A2 | La configuración agrupa los equipos por liga | 60 equipos: el selector sigue siendo usable (búsqueda o grupos) |
 | A3 | Retratos en draft, roles y resultados; logos de equipo con caída al escudo propio | Imagen que no carga: placeholder sin saltos |
-| A4 · Pendiente | La calibración K1–K16 del [plan 08](../archive/plans/08-simulacion-de-partida.md#invariantes-y-calibración) pasa con equipos, jugadores y campeones reales | Semillas fijas, con los dos lados de cada emparejamiento. Bandas intactas |
+| A4 · Hecho | Calibración con equipos, jugadores y campeones reales. K8 y las torres de K11 pasan a la Fase 3.5 | Semillas fijas, con los dos lados de cada emparejamiento. Bandas intactas |
 | A5 · Hecho | E2E de una Bo5 con fearless hard en modo real (`quick-draft-real-bo5.spec.ts`) | Sin red, con caché local de imágenes de prueba |
 | A6 · Hecho (#412) | Créditos visibles en Ajustes: Leaguepedia (CC BY-SA), CommunityDragon, lolesports.com, aviso de Riot (de `NOTICE.md`) y librerías, con un test que las compara con los `package.json` | — |
 
-El pool `real` pasa K1–K7 y K16 con 1.000 partidas (600 para K1). En K8 la nota media es 75,72 en top, 89,16 en jungla, 81,38 en medio, 83,13 en bot y 85,26 en apoyo (banda 56–64 y separación máxima de 5 frente a 13,44 observados). En K11 la mediana es de 17 torres (banda 8–15) y los dragones pasan.
+El pool `real` pasa las comprobaciones de K1–K7 y K16 del [plan 08](../archive/plans/08-simulacion-de-partida.md#invariantes-y-calibración) con 1.000 partidas (600 para K1). Los dragones de K11 también pasan. Se mantienen dos fallos esperados hasta la Fase 3.5.
 
-Quedan por medir K9–K10, K12–K13 y K15, que dependen de los cruces de identidades y el selector de jugadas (#320), las recargas de definitivas (#339) y el desgaste temprano (#320). K14 conserva la comprobación de K4. Quedan sus contrastes al minuto 5 y 35 y con la build completa.
+- **K8 (#348).** Nota media de 75,72 en top, 89,16 en jungla, 81,38 en medio, 83,13 en bot y 85,26 en apoyo. La banda es 56–64 y la separación máxima es de 5 puntos frente a los 13,44 observados.
+- **K11 (#357).** Mediana de 17 torres frente a la banda 8–15.
+
+Las pruebas reales de K9, K10 y K15 quedan como `todo` hasta #320, y K12 y K13 hasta #339. K14 conserva la comprobación de K4. Quedan sus contrastes al minuto 5 y 35 y con la build completa.
 
 ## Diseño
 

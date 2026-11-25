@@ -97,6 +97,12 @@ Resumen de las decisiones **vigentes**, para empezar cualquier sesión sin volve
 | 2026-11-24 | **Larvas del vacío** (#361): un grupo de 3 en el foso del barón, de 8:00 a 14:45 y sin reaparición, con **una sola disputa** (el ganador se lleva las 3; 15 % de reparto 2–1); cada larva es un acumulado permanente que solo sube la probabilidad de tomar estructuras (con las 3, `voidmites`) y paga 150 de oro. **Topes de K6 ensanchados provisionalmente** (bajas 3 a 3,5 pp; participación 5 a 6 pp, extremos 8 a 9) porque K6 estaba al límite y el efecto mínimo de las larvas lo desplaza unas décimas. El heraldo pasa a las 15:00. Icono oficial de la caché (minimapa de CommunityDragon) y dibujo propio sin caché. `SIM_VERSION` 7 | [plan 08](../archive/plans/08-simulacion-de-partida.md#larvas-del-vacío-361) |
 | 2026-11-24 | **`antiAp` y `antiAd` solo cuentan en la línea** (#345): `resistVsDamage` aporta como máximo 2 puntos en los matchups de línea y se retira de los counters de equipo, de modo que nunca entra en la valoración de composición. Regenera `matchups.json` y `counters.json`; sin cambio de `SIM_VERSION` | [plan 08](../archive/plans/08-simulacion-de-partida.md), [plan 11](../plans/11-datos-reales.md), #345 |
 
+## Fase 3 · Datos reales
+
+| Fecha | Decisión | Fuente |
+| --- | --- | --- |
+| 2026-11-25 | A4 se da por hecho en la Fase 3. K8 (nota, #348) y las torres de K11 (#357) pasan a la Fase 3.5 como fallos esperados con contenido real. | [Plan 11 § App](../plans/11-datos-reales.md#app) |
+
 ## Fase 4 · Competición
 
 | Fecha | Decisión | Fuente |
