@@ -38,4 +38,14 @@ describe("#438, #494: framing a champion on its face in the pick row", () => {
 		expect(art.style.width).toBe("");
 		expect(screen.getByRole("img", { name: "Ahri" })).toBeTruthy();
 	});
+
+	test("#494: Aatrox and Caitlyn are framed on their faces too", () => {
+		// Read off the real tiles (user, 25-11): their faces fell in the fade.
+		for (const id of ["Aatrox", "Caitlyn"]) {
+			const { container } = render(<PickArt id={id} label={id} />);
+			const art = container.querySelector("[data-framing]") as HTMLElement;
+			expect(art.dataset.framing).toBe("focus");
+			cleanup();
+		}
+	});
 });
