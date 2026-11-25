@@ -308,9 +308,12 @@ describe("#469: a click on empty space clears the selection", () => {
 		expect(within(first).queryByRole("img", { name })).toBeNull();
 		expect(confirm().hasAttribute("disabled")).toBe(true);
 		expect(pressedRows()).toEqual([]);
+		// The player card closes with the selection instead of staying open
+		// and empty (user, 25-11).
 		expect(
-			screen.getByText("Click a player to see their attributes."),
-		).toBeTruthy();
+			(screen.getByRole("group", { name: /^Player card/ }) as HTMLDetailsElement)
+				.open,
+		).toBe(false);
 
 		// Clicks on a champion or a player still select, as before.
 		await user.click(free);
