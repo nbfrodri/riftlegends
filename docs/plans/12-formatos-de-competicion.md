@@ -194,7 +194,7 @@ Reglas del núcleo: sin reloj ni `Math.random`, solo enteros, módulos de unas 3
 - **Byes:** el cuadro se completa hasta la potencia de dos; los sembrados que faltan dan el paso directo a sus rivales (con 6, pasan el 1 y el 2; con 10, del 1 al 6).
 - **Caídas (decisión 24-11-2026):** `drop[r][m]` es la ronda inferior (desde 0) a la que cae el perdedor de la serie `m` de la ronda superior `r`; `null` = eliminado. `lowerSeeds[k]` es cuántos sembrados entran directos en la ronda inferior `k` (los peores en las primeras rondas); `size` cuenta todos los equipos y el cuadro superior usa los demás. Cada ronda inferior junta supervivientes, caídos y entrantes. Si hay grupos mezclados (o caídos de varias rondas), se cruzan el primero con el último (sin revanchas inmediatas); un solo grupo se empareja por orden. Con un número impar, el primero pasa sin jugar. Una ronda inferior sin partidos, un `drop` a una ronda que no existe o un cuadro inferior que no termina con un solo equipo es un formato inválido.
 - Ejemplos de `drop`: 4 → `[[0,0],[1]]`; 8 → `[[0,0,0,0],[1,1],[3]]`; LCK, LCS Summer y CBLOL (6, los perdedores de la ronda 2 caen a rondas distintas) → `[[0,0],[1,2],[3]]`; LCP (6, la ronda 1 queda eliminada) → `[[null,null],[0,0],[1]]`; LEC Spring/Summer y LCS Spring (4 arriba, sembrados 5-6 abajo) → `[[0,0],[2]]` con `lowerSeeds [2,0,0]`; LPL Grand Finals (6 + 2 de Knight's Road) → `[[0,0],[1,1],[3]]` con `[2,0,0,0]`; LCK Road to MSI → `[[3]]` con `[2,1,1,0]`. Un test por cada uno comprueba que construye y termina con un campeón.
-- **Final:** sin reset, el ganador de la final es el campeón; con `reset`, si gana el del cuadro inferior se juega una segunda final (`RS`), y si no, se omite.
+- **Final:** `grandFinal: null` la omite (grupos GSL): el ganador del cuadro superior es primero y el del inferior, segundo. Sin reset, el ganador de la final es el campeón; con `reset`, si gana el del cuadro inferior se juega una segunda final (`RS`), y si no, se omite.
 
 #### Estudio de los cuadros reales (24-11-2026)
 
@@ -232,7 +232,15 @@ No se implementan aquí (plan 24), pero el esquema ya los cubre: la serie de pro
 
 1. **Formatos curados a mano** en `packages/core/content/real/formats/<liga>.json`, escritos a partir de las páginas de Leaguepedia y los reglamentos oficiales, con su procedencia.
 2. **Comprobación automática (R1):** un test del pipeline compara cada formato curado con el snapshot (equipos, series por fase, Bo por ronda deducido de las victorias máximas). Si Riot cambia el formato, el workflow semanal lo detecta.
-3. **Internacionales:** el snapshot actual no los incluye. El pipeline se amplía para traer sus páginas de Leaguepedia (misma fuente y licencia) y se comprueban igual que las ligas (R1).
+3. **Internacionales (#427):** `pnpm data:internationals` trae de Leaguepedia los torneos y las series de First Stand, MSI y Worlds 2026 (`internationals.json`) y genera sus formatos en `content/real/formats/`. Se comprueban como las ligas (R1) reproduciendo cada serie real contra el formato. Estructura (todo Bo5 salvo el Swiss):
+
+   | Evento | Fases |
+   | --- | --- |
+   | First Stand | 2 grupos de 4 en doble eliminación GSL (`grandFinal: null`: 5 series, sin final) → semifinales y final |
+   | MSI | Play-in de 4 en doble eliminación con final → cuadro de 8 en doble eliminación (7 directos + el ganador del play-in), `drop [[0,0,0,0],[1,1],[3]]`, sin reset |
+   | Worlds | Play-in de 4 en doble eliminación (pasa 1) → Swiss de 16 a 3 victorias o 3 derrotas (Bo1; Bo3 si la serie clasifica o elimina) → cuartos, semis y final de 8 |
+
+   Pendiente: la plaza de cada liga y las fases con equipos de dos fases previas necesitan el encadenado (#424); los bombos de Worlds (Q4) se comprueban allí.
 
 Inferido del snapshot (22-11-2026). Lo marcado con **(?)** hay que verificarlo en el reglamento.
 

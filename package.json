@@ -12,6 +12,7 @@
 		"data:logos": "node tools/data-pipeline/cli.ts logos",
 		"data:photos": "node tools/data-pipeline/cli.ts photos",
 		"data:leagues": "node tools/data-pipeline/cli.ts leagues",
+		"data:internationals": "node tools/data-pipeline/cli.ts internationals",
 		"e2e": "pnpm --filter @rift-legends/desktop build && pnpm --filter @rift-legends/desktop e2e",
 		"e2e:visual": "pnpm --filter @rift-legends/desktop build && pnpm --filter @rift-legends/desktop e2e:visual",
 		"lint": "biome check .",
