@@ -27,6 +27,7 @@ export interface GameResult {
 	lines: PlayerLine[];
 	kills: { blue: number; red: number };
 	disputes: Event[];
+	multikills?: Ended["multikills"];
 }
 
 /** `match.ended` lists blue's five in role order, then red's. */
@@ -52,6 +53,7 @@ export function readGame(view: MatchView): GameResult | null {
 		duration: ended.duration,
 		lines,
 		kills: { blue: killsOf("blue"), red: killsOf("red") },
+		multikills: ended.multikills,
 		disputes: ended.decisive.flatMap(({ event }) => {
 			const found = events[event];
 			return found ? [found] : [];

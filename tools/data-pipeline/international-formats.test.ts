@@ -135,6 +135,21 @@ describe("R2 unconfirmed data is marked and listed", () => {
 		}
 	});
 
+	it("says which slot counts lolesports confirmed and what is still pending", () => {
+		const byId = Object.fromEntries(
+			unverifiedFormats(formats).map(({ id, reasons }) => [
+				id,
+				reasons.join(" "),
+			]),
+		);
+		expect(byId.msi).toMatch(/11 play-in teams/);
+		expect(byId.worlds).toMatch(/19 teams/);
+		expect(byId.worlds).toMatch(/Swiss/);
+		expect(byId["first-stand"]).toMatch(/seeding/);
+		for (const text of Object.values(byId))
+			expect(text).not.toMatch(/not read from the rulebook yet/);
+	});
+
 	it("lists a format only while it is not verified", () => {
 		const verified = {
 			...clone(formats.msi),

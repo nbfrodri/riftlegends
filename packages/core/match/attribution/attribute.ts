@@ -99,12 +99,17 @@ export function attribute(
 	);
 	const counts = COUNTS[engagement.kind];
 	const asked = counts.first + weighted(rng, [...counts.weights]);
+	// A gank always brings the jungler into that lane. Reserve their assist
+	// when the normal draw would omit them, keeping the size of the assist bag.
 	const assists: Role[] = [];
 	let rest = author.rest;
 	while (assists.length < asked && rest.length > 0) {
 		const next = draw(rng, rest, (role) => weights[role].assist);
 		assists.push(next.role);
 		rest = next.rest;
+	}
+	if (gank && author.role !== "jungle" && !assists.includes("jungle")) {
+		assists[assists.length - 1] = "jungle";
 	}
 	return { killer: author.role, assists };
 }

@@ -2,6 +2,7 @@ import type { MatchEvent, Side } from "@rift-legends/contracts";
 import type { Emitted } from "../server/dispatcher";
 import { decisive } from "./explain";
 import { MATCH_CONTESTS, matchDuration, playMatch } from "./loop";
+import { multikillsOf } from "./multikills";
 import { type Contest, summarize } from "./profile";
 import { createMatch, type MatchSetup } from "./state";
 import { playerStats } from "./stats";
@@ -71,6 +72,7 @@ export function playGame(setup: MatchSetup) {
 			duration,
 			players: playerStats(indexed, teams, setup.match.rules, duration),
 			decisive: swings,
+			multikills: multikillsOf(events),
 		},
 	];
 	/** Where the winner gained the most: what the loser's coach adapts to. */
