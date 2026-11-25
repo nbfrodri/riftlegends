@@ -33,7 +33,7 @@ Para Codex: leer `r<N>.json`, comprobar con `tack codex-used <thread_id>` (prime
 
 ## Pendiente de decidir
 
-- Fuente de reserva para plantillas: usar la plantilla oficial de lolesports (`getTeams`) para cubrir y desempatar titulares por posición (atributos siguen solo de Leaguepedia). El usuario preguntó; falta su sí para abrir el issue y anotarlo en el registro.
+- Ninguno. (El usuario aprobó usar la plantilla de lolesports como reserva y desempate de titulares: issue **#568**, después de #566; anotarlo en el registro en ese PR.)
 
 ## Siguiente
 
