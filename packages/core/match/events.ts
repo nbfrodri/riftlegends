@@ -1,5 +1,6 @@
 import { type MatchEvent, ROLES } from "@rift-legends/contracts";
 import { min } from "../math";
+import type { MatchCause } from "./cause-keys";
 import type { Lane, MatchState } from "./state";
 
 type Kill = MatchEvent["kills"][number];
@@ -90,7 +91,7 @@ export function recordPlays(current: MatchState, resolved: MatchEvent[]) {
 				return recorded;
 			});
 		const causes = ace
-			? [...event.causes, { key: "ace", points: 0 }]
+			? [...event.causes, { key: "ace", points: 0 } satisfies MatchCause]
 			: event.causes;
 		return { ...event, kills, gold, causes };
 	});

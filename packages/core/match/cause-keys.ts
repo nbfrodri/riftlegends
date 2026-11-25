@@ -52,3 +52,10 @@ export const MATCH_CAUSE_KEYS = [
 	"vision",
 	"waves",
 ] as const;
+
+export type MatchCauseKey = (typeof MATCH_CAUSE_KEYS)[number];
+
+export interface MatchCause {
+	readonly key: MatchCauseKey;
+	readonly points: number;
+}

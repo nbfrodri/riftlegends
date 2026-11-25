@@ -5,6 +5,7 @@ import { int, shuffle } from "../../rng/helpers";
 import { SCOPES } from "../../rng/scopes";
 import { deriveSeed } from "../../rng/seeds";
 import { createRng } from "../../rng/streams";
+import type { MatchCause } from "../cause-keys";
 import { type MatchState, other } from "../state";
 import { roll } from "./contest";
 
@@ -34,7 +35,7 @@ export function trySteal(
 		defender.vision.support;
 	// The terms are in basis points. Defenders screen access, while the
 	// defending jungler can also secure the objective with their own Smite.
-	const reasons = [
+	const reasons: MatchCause[] = [
 		{ key: "stealOpening", points: 205 },
 		{ key: "stealSmite", points: smite * 2 },
 		{ key: "stealVision", points: vision * 2 },
