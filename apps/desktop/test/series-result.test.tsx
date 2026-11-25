@@ -83,6 +83,7 @@ const game = (n: number, winner: string, mid: string): GameResult => {
 			gold: 0,
 			damage: 0,
 			participation: 0,
+			vision: 40,
 			rating: role === "mid" && team === "forge" && n === 2 ? 90 : 50,
 		})),
 	);
@@ -127,6 +128,7 @@ const summary: SeriesSummary = {
 		deaths: 2,
 		assists: 14,
 		participation: 6500,
+		vision: 40,
 		games: 3,
 	},
 	// Forge's mid leads by 20 in every game, whichever side Forge is on.

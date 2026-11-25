@@ -369,7 +369,6 @@ describe("fights where both sides score", () => {
 	});
 });
 
-
 describe("V1 · vision score (#499)", () => {
 	const line = (stats: ReturnType<typeof playerStats>, player: string) =>
 		stats.find((p) => p.player === player) as (typeof stats)[number];
@@ -426,8 +425,12 @@ describe("V1 · vision score (#499)", () => {
 	});
 
 	it("winning the contests of the jungle and pits adds vision score", () => {
-		const won = [event({ kind: "gank", side: "blue", zone: "jungle-blue-top" })];
-		const lost = [event({ kind: "gank", side: "red", zone: "jungle-blue-top" })];
+		const won = [
+			event({ kind: "gank", side: "blue", zone: "jungle-blue-top" }),
+		];
+		const lost = [
+			event({ kind: "gank", side: "red", zone: "jungle-blue-top" }),
+		];
 		const a = playerStats(won, teams, rules, 1800);
 		const b = playerStats(lost, teams, rules, 1800);
 		expect(line(a, "b-support").vision).toBeGreaterThan(

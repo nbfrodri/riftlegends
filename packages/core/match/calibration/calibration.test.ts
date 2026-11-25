@@ -47,6 +47,18 @@ const PARTICIPATION: Record<Role, readonly [number, number, number]> = {
 };
 
 /**
+ * Pro vision score per 30 minutes (plan 08, K17): Leaguepedia, 4,756 lines of
+ * six leagues, `VisionScore × 1800 / lengthSeconds`. [mean, P10, P90].
+ */
+const VISION_30: Record<Role, readonly [number, number, number]> = {
+	top: [40.3, 28.9, 52.3],
+	jungle: [54.2, 39.9, 69.2],
+	mid: [40.3, 27.8, 53.3],
+	bot: [40.4, 27.1, 54.5],
+	support: [126.6, 103, 150.5],
+};
+
+/**
  * Pro gold at the end of a game (plan 08, K16): Leaguepedia, 2,378 games of six
  * leagues; the 781 that last 30–34 min give the total and the winner's lead.
  * [P10, P50, P90]; the share of winners that end behind in gold was 0.8 %.
@@ -120,6 +132,20 @@ describe.each(["control", "packaged", "real-champions", "real"] as const)(
 			});
 			const ordered = sorted(means);
 			expect(gap(ordered.at(-1) ?? 0, ordered[0] ?? 0)).toBeLessThanOrEqual(5);
+		});
+
+		it("K17 · vision score per 30 min: mean within 8 % of the pro one, P10–P90 inside the pro range", () => {
+			const teams = even.flatMap((g) => g.teams);
+			for (const role of ROLES) {
+				const [mean, p10, p90] = VISION_30[role];
+				const scores = teams.map((team) => team.line[role].vision);
+				const got = scores.reduce((a, b) => a + b, 0) / scores.length;
+				expect
+					.soft(gap(got, mean) / mean, `${role} mean`)
+					.toBeLessThanOrEqual(0.08);
+				expect.soft(at(scores, 0.1), `${role} P10`).toBeGreaterThanOrEqual(p10);
+				expect.soft(at(scores, 0.9), `${role} P90`).toBeLessThanOrEqual(p90);
+			}
 		});
 
 		if (pool === "real") {

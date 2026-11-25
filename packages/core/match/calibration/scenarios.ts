@@ -189,7 +189,14 @@ export function sample(games: number, edge: number, pool: Pool) {
 			const line = Object.fromEntries(
 				ROLES.map((role) => [
 					role,
-					{ kills: 0, assists: 0, goldShare: 0, damageShare: 0, rating: 0 },
+					{
+						kills: 0,
+						assists: 0,
+						goldShare: 0,
+						damageShare: 0,
+						rating: 0,
+						vision: 0,
+					},
 				]),
 			) as Record<
 				Role,
@@ -199,6 +206,8 @@ export function sample(games: number, edge: number, pool: Pool) {
 					goldShare: number;
 					damageShare: number;
 					rating: number;
+					/** Vision score per 30 minutes. */
+					vision: number;
 				}
 			>;
 			let kills = 0;
@@ -226,6 +235,7 @@ export function sample(games: number, edge: number, pool: Pool) {
 				line[role].goldShare = (mine.gold / gold) * 100;
 				line[role].damageShare = (mine.damage / damage) * 100;
 				line[role].rating = mine.rating;
+				line[role].vision = (mine.vision * 1800) / matchDuration(events.at(-1));
 			}
 			return { kills, line };
 		});
