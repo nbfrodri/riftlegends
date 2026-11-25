@@ -118,15 +118,21 @@ export async function syncSounds(
 	root: string,
 	sources: readonly SoundSource[],
 	transport: AssetTransport,
+	/** Called with the sounds finished so far out of those missing at the start. */
+	progress?: (completed: number, total: number) => void,
 ): Promise<{ failed: SoundId[] }> {
 	const failed: SoundId[] = [];
+	const present = await readSounds(root, sources);
+	const total = sources.filter(({ id }) => !present[id]).length;
+	let completed = 0;
+	progress?.(completed, total);
 	for (const source of sources) {
 		const file = soundFile(source);
 		if (!file) {
 			failed.push(source.id);
 			continue;
 		}
-		if (await readSound(root, source).catch(() => undefined)) continue;
+		if (present[source.id]) continue;
 		try {
 			const destination = await cachePath(root, file.path, true);
 			for (const stale of [
@@ -136,6 +142,7 @@ export async function syncSounds(
 			])
 				await rm(stale, { force: true });
 			await downloadFile(root, file, transport);
+			progress?.(++completed, total);
 		} catch (error) {
 			if (error instanceof NetworkUnavailable) break;
 			failed.push(source.id);
