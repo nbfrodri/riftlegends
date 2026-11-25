@@ -1,14 +1,8 @@
 import { ROLES, type Role } from "@rift-legends/contracts";
 import fc from "fast-check";
 import { describe, expect, it } from "vitest";
-import {
-	ANCHORS,
-	type Metric,
-	per30,
-	rate,
-	share,
-	WEIGHTS,
-} from "./rating";
+import { abs } from "../math";
+import { ANCHORS, type Metric, per30, rate, share, WEIGHTS } from "./rating";
 
 // R3 of plan 08 (#348): a common 0–100 rating where 60 is the role reference.
 
@@ -27,13 +21,11 @@ const valueFor = (role: Role, metric: Metric, score: number) => {
 		score <= 60
 			? low + ((mid - low) * score) / 60
 			: mid + ((high - mid) * (score - 60)) / 40;
-	return Math.round(value);
+	return Number(value.toFixed(0));
 };
 
 const performance = (role: Role, score: number): Values =>
-	Object.fromEntries(
-		metricsOf(role).map((m) => [m, valueFor(role, m, score)]),
-	);
+	Object.fromEntries(metricsOf(role).map((m) => [m, valueFor(role, m, score)]));
 
 describe("R3 · common rating scale", () => {
 	it("the weights of every role add up to 100", () => {
@@ -106,9 +98,7 @@ describe("R3 · common rating scale", () => {
 			fc.property(fc.integer({ min: 0, max: 100 }), (score) => {
 				for (const role of ROLES) {
 					const got = rate(role, performance(role, score)).rating;
-					expect(Math.abs(got - score), `${role} @ ${score}`).toBeLessThanOrEqual(
-						1,
-					);
+					expect(abs(got - score), `${role} @ ${score}`).toBeLessThanOrEqual(1);
 				}
 			}),
 		);
@@ -160,9 +150,9 @@ describe("R3 · common rating scale", () => {
 
 	it("objectives and pressure only count for the roles that weigh them", () => {
 		const base = performance("jungle", 60);
-		expect(rate("jungle", { ...base, objectives: 10_000 }).rating).toBeGreaterThan(
-			60,
-		);
+		expect(
+			rate("jungle", { ...base, objectives: 10_000 }).rating,
+		).toBeGreaterThan(60);
 		expect(
 			rate("mid", { ...performance("mid", 60), objectives: 10_000 }).rating,
 		).toBe(60);
@@ -186,7 +176,7 @@ describe("R3 · common rating scale", () => {
 			["assists", "deaths", "kp", "vision"].sort(),
 		);
 		const total = parts.reduce((sum, p) => sum + p.score * p.weight, 0);
-		expect(Math.abs(rating - total / 10_000)).toBeLessThanOrEqual(0.5);
+		expect(abs(rating - total / 10_000)).toBeLessThanOrEqual(0.5);
 		for (const p of parts) expect(p.weight).toBe(WEIGHTS.support[p.metric]);
 	});
 });
