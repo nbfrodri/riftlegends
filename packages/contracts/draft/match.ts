@@ -95,6 +95,28 @@ export const matchEventFact = {
 			fightSecond: position.optional(),
 			/** Highest tier of the chain, on the kill that completed it. */
 			multikill: multikillCount.optional(),
+			firstBlood: z
+				.strictObject({
+					killerGold: position,
+					assistGold: position,
+				})
+				.optional(),
+			/** Consecutive kills without dying, recorded at each tier reached. */
+			spree: z
+				.union([
+					z.literal(3),
+					z.literal(4),
+					z.literal(5),
+					z.literal(6),
+					z.literal(7),
+					z.literal(8),
+				])
+				.optional(),
+			/** Additional gold paid to the killer for ending the victim's spree. */
+			shutdown: z.int().positive().optional(),
+			soloKill: z.literal(true).optional(),
+			/** The casualty that left all five opponents down in this fight. */
+			ace: z.literal(true).optional(),
 		}),
 	),
 	/** Gold each side earned from the event. */
@@ -106,6 +128,15 @@ export const matchEventFact = {
 	tier: z.int().min(1).max(4).optional(),
 	/** Void grubs: how many each side took of the group of three. */
 	grubs: perSide(z.int().nonnegative()).optional(),
+	/** The opposing jungler took the objective from the side controlling the pit. */
+	steal: z
+		.strictObject({
+			jungler: id,
+			controllingSide: side,
+			defenders: z.int().min(2).max(5),
+			opposingSmite: z.boolean(),
+		})
+		.optional(),
 };
 
 export const matchEndedFact = {

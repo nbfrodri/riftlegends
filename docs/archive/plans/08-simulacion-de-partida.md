@@ -624,6 +624,20 @@ Mecanismo: en una pelea ganada 4–0 o 5–0 hay una **racha** con probabilidad 
 
 Cada pelea registra segundos relativos a su primera baja mediante el flujo `matchFightTiming`. La última baja de cada racha lleva el mayor nivel alcanzado. `match.ended` enumera las rachas junto con el índice de la pelea. El KDA se sigue contando a partir de las bajas y sus participantes. Los ganks usan el calendario actual. Las jugadas de #356 quedan pendientes.
 
+### Jugadas especiales (#508)
+
+| Jugada | Regla |
+| --- | --- |
+| Primera sangre | La primera baja paga 100 de oro extra al autor y una bolsa extra de 50 si hubo asistentes. Se reparte con la bolsa habitual. |
+| Racha sin morir | Se anuncia al alcanzar cada nivel de 3 a 8 bajas. Los participantes en racha pesan más en las disputas y el riesgo de ceder su recompensa reduce esa ventaja. La muerte corta la racha y paga 150, 300, 400, 500, 600 o 700 de oro extra al autor, según el nivel. |
+| Exterminio | Los segundos de una pelea permiten identificar la baja que deja a los cinco rivales caídos a la vez. Solo añade un aviso y su explicación. La ventana posterior queda en #530. |
+| Robo | El equipo que gana el control del foso inicia dragón, heraldo o barón. El jungla rival puede robárselo. Influyen sus mecánicas, el control de objetivos, la visión de jungla y apoyo, y la presencia de defensores y de su jungla. El ámbito `matchSteal` sortea esa resolución. El oro y la mejora son para el equipo que se lleva el objetivo. |
+| Baja en solitario | El duelo de top o mid paga 50 de oro extra y suma 60 de experiencia a la ventaja de esa línea. Cada punto de experiencia modifica en 20 unidades de punto fijo las disputas posteriores de la misma línea. |
+
+El registro usa variantes de texto en español e inglés. Los hechos anteriores se pueden seguir leyendo. `SIM_VERSION` 15.
+
+**TODO de calibración pro.** Completar las bandas observadas de primera sangre con asistencia, bajas en solitario, rachas y recompensas por partida, exterminios y robos por tipo de objetivo. El repositorio aún no tiene cifras de referencia para esas bandas.
+
 ### Troceado propuesto · Fase 3 — Pipeline de contenido real
 
 | # | Issue | Área | Issue existente | Test que lo cierra |
