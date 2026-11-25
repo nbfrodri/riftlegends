@@ -9,12 +9,14 @@ interface Focus {
 
 /**
  * Where the face sits in the base skin tile, for champions whose face the
- * default framing leaves in the faded half of the row (#438). CommunityDragon
+ * default framing leaves in the faded half of the row (#438, #494). CommunityDragon
  * has no focal point, so these were read off the tiles of patch 16.23.
  */
 const FOCUS: Readonly<Record<string, Focus>> = {
+	Aatrox: { x: 48, y: 60 },
 	Akshan: { x: 45, y: 45 },
-	Braum: { x: 40, y: 22 },
+	Braum: { x: 50, y: 27 },
+	Caitlyn: { x: 49, y: 40 },
 	Corki: { x: 40, y: 32 },
 	Ezreal: { x: 38, y: 35 },
 	Gangplank: { x: 45, y: 35 },
@@ -24,7 +26,7 @@ const FOCUS: Readonly<Record<string, Focus>> = {
 	Kayle: { x: 55, y: 22 },
 	Kindred: { x: 68, y: 45 },
 	Sett: { x: 45, y: 20 },
-	Teemo: { x: 52, y: 50 },
+	Teemo: { x: 60, y: 44 },
 	Urgot: { x: 50, y: 25 },
 };
 
