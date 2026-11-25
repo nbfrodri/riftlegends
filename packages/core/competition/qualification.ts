@@ -39,7 +39,7 @@ interface Candidate {
 	readonly leagueSeed?: number;
 }
 
-function bracketOrder(bracket: BracketState): string[] | undefined {
+export function bracketOrder(bracket: BracketState): string[] | undefined {
 	if (bracket.champion === null) return undefined;
 	const matches = bracket.matches.filter((m) => m.status === "done").reverse();
 	const teams = [bracket.champion];
