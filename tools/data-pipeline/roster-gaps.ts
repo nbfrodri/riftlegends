@@ -6,6 +6,12 @@ import {
 	leagueTeamIds,
 } from "./league-members.ts";
 import { groupBy, person, roleOf } from "./normalization.ts";
+import {
+	handleKey,
+	noOfficialStarters,
+	type OfficialStarters,
+	snapshotTeamById,
+} from "./official-starters.ts";
 import { compare, inList } from "./queries.ts";
 
 type Role = NonNullable<RealSnapshot["seasonPlayers"][number]["role"]>;
@@ -53,6 +59,8 @@ const cacheRow = (row: CargoRow) => ({
 	Retired: row.Retired ?? null,
 });
 
+const playerFields = "OverviewPage=Link,ID=Player,Team,Role,IsRetired=Retired";
+
 /** The current roster of each team on its Leaguepedia player pages. */
 export function acquireCurrentRoster(
 	client: Client,
@@ -60,23 +68,38 @@ export function acquireCurrentRoster(
 ) {
 	return client.cargo(
 		"Players",
-		"OverviewPage=Link,ID=Player,Team,Role,IsRetired=Retired",
+		playerFields,
 		inList("Team", teamNames),
 		"OverviewPage",
 		{ cacheRow },
 	);
 }
 
+/** Leaguepedia player pages by handle: where lolesports' starters are found. */
+export function acquireByHandle(client: Client, handles: readonly string[]) {
+	return client.cargo(
+		"Players",
+		playerFields,
+		inList("ID", handles),
+		"OverviewPage",
+		{ cacheRow },
+	);
+}
+
 /**
- * Fills every role gap with a real player: the first (by id) of the team's
- * current Leaguepedia roster for that role who is not retired and does not
- * already play for another team. Fails when nobody qualifies; an invented
- * player is never published.
+ * Fills every role gap with a real player, in this order: the team's current
+ * Leaguepedia roster candidate that lolesports lists as starter; the player
+ * lolesports lists as starter, matched by handle to a Leaguepedia page (the
+ * one on the team's roster if several share the handle, none if still
+ * ambiguous); the first (by id) of the team's current roster for the role.
+ * Retired players and players of another team never qualify. Fails when
+ * nobody does; an invented player is never published.
  */
 export function fillRoleGaps(
 	snapshots: readonly RealSnapshot[],
 	current: readonly CargoRow[],
 	exceptions: LeagueMemberExceptions = leagueMemberExceptions,
+	official: OfficialStarters = noOfficialStarters,
 ) {
 	const taken = new Set(
 		snapshots.flatMap((snapshot) => snapshot.seasonPlayers.map(({ id }) => id)),
@@ -84,17 +107,32 @@ export function fillRoleGaps(
 	return snapshots.map((snapshot) => {
 		const added: RealSnapshot["seasonPlayers"] = [];
 		for (const gap of roleGaps(snapshot, exceptions)) {
-			const found = current
-				.filter(
-					(row) =>
-						row.Team === gap.name &&
-						row.Retired !== "1" &&
-						roleOf(row.Role ?? undefined) === gap.role &&
-						row.Link,
-				)
-				.map((row) => ({ id: person(row.Link ?? "").id, name: row.Player }))
-				.filter(({ id }) => !taken.has(id))
-				.sort((a, b) => compare(a.id, b.id))[0];
+			const starters = official(snapshotTeamById(snapshot, gap.team), gap.role);
+			const free = current
+				.filter((row) => row.Retired !== "1" && row.Link)
+				.map((row) => ({
+					id: person(row.Link ?? "").id,
+					name: row.Player,
+					team: row.Team,
+					role: roleOf(row.Role ?? undefined),
+				}))
+				.filter(({ id }) => !taken.has(id));
+			const roster = free
+				.filter((row) => row.team === gap.name && row.role === gap.role)
+				.sort((a, b) => compare(a.id, b.id));
+			const named = (handle: string) =>
+				free.filter(
+					(row) => handleKey(row.name ?? row.id) === handleKey(handle),
+				);
+			const listed = starters.flatMap((handle) => {
+				const same = named(handle);
+				const mine = same.filter((row) => row.team === gap.name);
+				return mine.length === 1 ? mine : same.length === 1 ? same : [];
+			});
+			const found =
+				roster.find((row) => listed.some(({ id }) => id === row.id)) ??
+				listed[0] ??
+				roster[0];
 			if (!found)
 				throw new Error(
 					`No real ${gap.role} found for ${gap.name} (${snapshot.league.id}): neither its games nor its current Leaguepedia roster has one`,
@@ -120,23 +158,34 @@ export function fillRoleGaps(
 	});
 }
 
-/** Looks the gaps up (one query, only when there are any) and fills them. */
+/**
+ * Looks the gaps up (the rosters of the teams with gaps and, for the
+ * official starters, their handles; only when there are gaps) and fills them.
+ */
 export async function closeRoleGaps(
 	client: Client,
 	snapshots: readonly RealSnapshot[],
 	exceptions: LeagueMemberExceptions = leagueMemberExceptions,
+	official: OfficialStarters = noOfficialStarters,
 ) {
-	const names = [
-		...new Set(
-			snapshots.flatMap((snapshot) =>
-				roleGaps(snapshot, exceptions).map(({ name }) => name),
-			),
-		),
-	].sort(compare);
+	const gaps = snapshots.flatMap((snapshot) =>
+		roleGaps(snapshot, exceptions).map((gap) => ({
+			...gap,
+			starters: official(snapshotTeamById(snapshot, gap.team), gap.role),
+		})),
+	);
+	const names = [...new Set(gaps.map(({ name }) => name))].sort(compare);
 	if (!names.length) return [...snapshots];
+	const handles = [...new Set(gaps.flatMap(({ starters }) => starters))].sort(
+		compare,
+	);
 	return fillRoleGaps(
 		snapshots,
-		await acquireCurrentRoster(client, names),
+		[
+			...(await acquireCurrentRoster(client, names)),
+			...(handles.length ? await acquireByHandle(client, handles) : []),
+		],
 		exceptions,
+		official,
 	);
 }

@@ -85,8 +85,8 @@ test("lolesports roles map to positions and keep their listed order", () => {
 		short: "AE",
 		league: "LCK",
 	};
-	expect(official(alpha, "support")).toEqual(["zed"]);
-	expect(official(alpha, "bot")).toEqual(["abe"]);
+	expect(official(alpha, "support")).toEqual(["Zed"]);
+	expect(official(alpha, "bot")).toEqual(["Abe"]);
 	expect(official(alpha, "top")).toEqual([]);
 	expect(official({ ...alpha, league: "LEC" }, "support")).toEqual([]);
 });
