@@ -12,13 +12,13 @@ Decisiones en el [registro](../decisions/README.md). Reglas del usuario: respues
 
 ## Cola de fusión (aprobados por el usuario), en orden
 
-#542 (timelines, K19–K22) → #556 (pantalla de carga espera a toda la caché) → #561 (logo CBLOL) → #534 (nombres largos y tabla centrada) → #563 (edad del jugador) → #564 (cerrar lectura de la IA) → #565 (causas traducidas) → #566 (jugadores de relleno y nacionalidades; puede chocar con #563 en las consultas de nacionalidad y `players.json`: si sale CONFLICTS, resolver a mano, regenerar el snapshot con el pipeline y volver a encolar). Comprobar el CI de `main` tras cada uno.
+#542 (timelines, K19–K22) → #556 (pantalla de carga espera a toda la caché) → #561 (logo CBLOL) → #534 (nombres largos y tabla centrada) → #563 (edad del jugador) → #564 (cerrar lectura de la IA) → #565 (causas traducidas) → #566 (jugadores de relleno y nacionalidades; puede chocar con #563 en las consultas de nacionalidad y `players.json`: si sale CONFLICTS, resolver a mano, regenerar el snapshot con el pipeline y volver a encolar) → #567 (ficha con barras). Comprobar el CI de `main` tras cada uno.
 
 ## Trabajo en marcha
 
 | Qué | Dónde | Estado |
 | --- | --- | --- |
-| #558 ficha con barras (opción A) | PR #567, pendiente del visto bueno del usuario (capturas en `~/.cache/rift-tmp/vis-558-local/final-*`) | encolar con queue.sh si lo aprueba |
+| #558 ficha con barras (opción A) | PR #567, aprobado y en la cola | — |
 | #559 edad del jugador | PR #563, aprobado y en la cola | — |
 | #562 relleno y nacionalidades | PR #566, aprobado y en la cola | — |
 | #546 cerrar «Lectura de la IA» con clic fuera | PR #564, aprobado y en la cola | — |
