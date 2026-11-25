@@ -849,7 +849,7 @@
 	"credits.sources.title": "Data sources",
 	"credits.sources.leaguepedia": "Esports teams, rosters and results, plus aggregate figures from Riot match timelines (deaths, objectives and levels). Derived data are shared under the same licence.",
 	"credits.sources.communityDragon": "Champion portraits, icons, champ select sounds and game data.",
-	"credits.sources.lolesports": "Team and league logos and player photos.",
+	"credits.sources.lolesports": "Team and league logos, player photos and the official roster that picks starters.",
 	"credits.sources.kenney": "Cursors of the game (Cursor Pack by Kenney).",
 	"credits.legal.title": "Legal notice",
 	"credits.legal.assets": "The names, art and icons of League of Legends belong to Riot Games. The game downloads them at run time; this repository and its binaries do not include them.",

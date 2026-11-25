@@ -1,6 +1,7 @@
 import type { RealSnapshot } from "@rift-legends/contracts/real-snapshot";
 import { expect, test } from "vitest";
 import {
+	fillers,
 	type Game,
 	game,
 	line,
@@ -33,13 +34,7 @@ function splits() {
 		})),
 		rosters: [],
 		seasonPlayers: [
-			{
-				id: "Starter",
-				name: "Starter",
-				team: "Alpha",
-				role: "bot" as const,
-				sub: false,
-			},
+			...source.seasonPlayers,
 			{
 				id: "Visitor",
 				name: "Visitor",
@@ -47,6 +42,7 @@ function splits() {
 				role: "top" as const,
 				sub: false,
 			},
+			...fillers("Guest", ["jungle", "mid", "bot", "support"]),
 		],
 		games: [
 			played("spring", 1, "Alpha", "Guest"),
