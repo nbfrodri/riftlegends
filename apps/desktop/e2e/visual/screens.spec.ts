@@ -213,8 +213,11 @@ test.describe("Quick draft", () => {
 				).toBeVisible();
 				await captureScreen(appWindow, "quick-draft-champion-card.png");
 				await appWindow.keyboard.press("Escape");
-				const blue = appWindow.getByRole("region", { name: /^Lado azul/ });
-				await blue.getByRole("button", { name: /Tidewren/ }).click();
+				// Tidewren sits on either side depending on the seeded side choice.
+				await appWindow
+					.getByRole("region", { name: /^Lado (azul|rojo)/ })
+					.getByRole("button", { name: /Tidewren/ })
+					.click();
 				const playerCard = appWindow.getByRole("group", {
 					name: /Ficha de jugador/,
 				});
