@@ -14,7 +14,11 @@ import { playSound } from "../../sound";
 import { CountryFlag } from "../country-flag";
 import { teamName, useDraftSession } from "../session";
 import { TurnTimer } from "../turn-controls";
-import { AiDecisionPanel } from "./ai-decision-panel";
+import {
+	AI_PANEL_ID,
+	AiDecisionPanel,
+	useAiPanelOpen,
+} from "./ai-decision-panel";
 import { ChampionInspection } from "./champion-inspection";
 import { ChampionPool, type PoolChampion } from "./champion-pool";
 import {
@@ -51,7 +55,7 @@ function usePool(view: DraftView, options: SeriesOptions) {
 /** Clicks here keep the selection: champions, players, controls and open panels (#469). */
 const KEEPS_ON_CLICK =
 	"button, a, input, select, textarea, label, details, [data-champion-card], [data-keep-selection]";
-/** Escape here belongs to the control: search, inspection bars and the champion card. */
+/** Escape here keeps the selection: search, inspection bars and the champion card. */
 const KEEPS_ON_ESCAPE =
 	"input, select, textarea, details, [data-champion-card]";
 const inside = (target: EventTarget, selector: string) =>
@@ -131,6 +135,7 @@ export function DraftBoard() {
 	// `undefined` shows the user's mid until a click; `null` is a cleared card.
 	const [player, setPlayer] = useState<PlayerRef | null | undefined>();
 	const [cardOpen, setCardOpen] = useState(false);
+	const [aiOpen, setAiOpen] = useAiPanelOpen();
 	const myMid = useMemo<PlayerRef | null>(
 		() => (mine ? { team: mine, role: "mid" } : null),
 		[mine],
@@ -149,24 +154,24 @@ export function DraftBoard() {
 
 	const shown = player === undefined ? myMid : player;
 
-	// One handler for the whole board, none per tile (S1): a click on empty
-	// space, or Escape with nothing to close, clears the champion and the player.
-	// The player card closes with it instead of staying open and empty.
+	// The board handles dismissal and selection clearing for all tiles (S1).
 	const clear = () => {
 		setSelected(null);
 		setPlayer(null);
 		setCardOpen(false);
 	};
 	const clearOnClick = (event: MouseEvent) => {
+		if (aiOpen && !inside(event.target, `#${AI_PANEL_ID}`)) setAiOpen(false);
 		if (!inside(event.target, KEEPS_ON_CLICK)) clear();
 	};
 	const clearOnEscape = (event: KeyboardEvent<HTMLDivElement>) => {
 		if (
-			event.key === "Escape" &&
-			!inside(event.target, KEEPS_ON_ESCAPE) &&
-			!event.currentTarget.querySelector("[data-champion-card]")
+			event.key !== "Escape" ||
+			event.currentTarget.querySelector("[data-champion-card]")
 		)
-			clear();
+			return;
+		if (aiOpen) setAiOpen(false);
+		else if (!inside(event.target, KEEPS_ON_ESCAPE)) clear();
 	};
 	const turn = draftTurn(view);
 	const myTurn = turn !== null && turn.team === mine;
@@ -218,6 +223,8 @@ export function DraftBoard() {
 				options={options}
 				cardOpen={cardOpen}
 				onCardOpen={setCardOpen}
+				aiOpen={aiOpen}
+				onAiOpen={setAiOpen}
 			/>
 			<ChampionInspection>
 				<TurnTimer />
@@ -258,6 +265,8 @@ const Inspection = memo(function Inspection(props: {
 	options: SeriesOptions;
 	cardOpen: boolean;
 	onCardOpen: (open: boolean) => void;
+	aiOpen: boolean;
+	onAiOpen: (open: boolean) => void;
 }) {
 	const { t } = useTranslation();
 	const { options, player } = props;
@@ -320,6 +329,8 @@ const Inspection = memo(function Inspection(props: {
 				rival={props.rivalSide ? props.rival : null}
 				picks={props.rivalPicks}
 				side={props.rivalSide}
+				open={props.aiOpen}
+				onOpenChange={props.onAiOpen}
 			/>
 		</div>
 	);
