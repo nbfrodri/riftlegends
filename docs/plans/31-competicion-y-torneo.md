@@ -1,6 +1,6 @@
 # Plan 31 — Sección «Competición» y modo Torneo
 
-- **Estado:** propuesta (25-11-2026), pendiente de las [preguntas abiertas](#5-preguntas-abiertas).
+- **Estado:** aprobado (25-11-2026) con las [decisiones del usuario](#5-decisiones-del-usuario-25-11-2026).
 - **Fase:** 4 · Competición ([plan general](00-plan-general.md#fase-4--competición)). Issue #431.
 - **Depende de:** [plan 12](12-formatos-de-competicion.md), sobre todo el entregable 10 (#428: temporada en el despachador y consultas) y el 9 (#427: formatos internacionales).
 
@@ -179,13 +179,13 @@ El torneo vive en memoria; salir de la pantalla lo conserva mientras la app est�
 
 1 y 2 dependen de #428; 3 de 1; 4–8 de 3 y van en paralelo; 9 de 1 (los presets, también de #427); 10 de 2 y 9; 11 cierra el plan.
 
-## 5. Preguntas abiertas
+## 5. Decisiones del usuario (25-11-2026)
 
-| # | Pregunta | Opciones | Recomendación |
-| --- | --- | --- | --- |
-| 1 | ¿De dónde sale la temporada que muestra «Competición» antes de la carrera (plan 14)? | A) Una **temporada de exhibición** IA contra IA que se crea al entrar, con los controles de avance. B) La sección queda vacía hasta la carrera; solo se usa en el Torneo | **A**: es la salida de la Fase 4 (un año IA contra IA) y deja probar todas las pantallas ya |
-| 2 | ¿Dónde se entra al modo Torneo? | A) Entrada propia «Torneo» en la barra lateral, junto a «Draft». B) Dentro de la configuración del draft rápido («Serie · Torneo») | **A**: es un modo distinto (IDEA §6) y el draft rápido sigue siendo simple |
-| 3 | ¿Cuánto editor de formato tiene el torneo personalizado? | A) **Editor simple**: hasta dos fases con los bloques del plan 12 (liga, grupos, Swiss → eliminación simple o doble), tamaño y Bo. B) Editor completo del esquema (el mismo de crear carrera). C) Solo presets | **A**: cubre los torneos habituales; el editor completo llega con el plan 14 y lo puede sustituir |
-| 4 | ¿Qué equipos entran en un preset? | A) **Plazas por región rellenadas con los mejores sembrados**, editables. B) Los clasificados reales de 2026 del snapshot. C) Elección libre desde cero | **A**: funciona sin datos internacionales completos y deja cambiar equipos |
-| 5 | ¿Qué abarca la página de equipo ahora? | A) **Solo la temporada actual** (plantilla, forma, racha, series y estadísticas). B) Además, historial de temporadas y palmarés | **A**: el historial es del plan 27 y necesita la persistencia del plan 13 |
-| 6 | ¿Cómo se ve el Swiss? | A) **Columnas por balance** (como la retransmisión de Worlds). B) Tabla de clasificación con el balance | **A**: se lee de un vistazo quién está a una victoria de pasar |
+| # | Tema | Decisión |
+| --- | --- | --- |
+| 1 | Temporada antes de la carrera (plan 14) | **Temporada de exhibición** IA contra IA que se crea al entrar en «Competición», con «Jugar día», «Hasta fin de fase» y «Toda la temporada» |
+| 2 | Entrada al modo Torneo | **Entrada propia** «Torneo» en la barra lateral, junto a «Draft» |
+| 3 | Editor del torneo personalizado | **Editor simple**: hasta dos fases con los bloques del plan 12 (liga, grupos, Swiss → eliminación simple o doble), tamaño y Bo. El editor completo llega con el plan 14 |
+| 4 | Equipos de un preset | **Plazas por región rellenadas con los mejores sembrados** de cada liga, editables |
+| 5 | Página de equipo | **Solo la temporada actual** (plantilla, forma, racha, series y estadísticas). El historial es del plan 27 |
+| 6 | Vista Swiss | **Columnas por balance**, como la retransmisión de Worlds |

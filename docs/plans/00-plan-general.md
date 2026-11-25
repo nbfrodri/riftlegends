@@ -202,7 +202,7 @@ Cada plan se crea al empezar su fase con `to-spec` o `dev-workflow`, y se trocea
 | 28 | Gestor de carreras: múltiples partidas, autoguardado, ironman, backups y export/import | 5 |
 | 29 | Staff: contratación, roles y draft delegado | 6 |
 | 30 | Finanzas: ingresos, gastos, contratos y buyouts | 6 |
-| 31 | [Sección «Competición» y modo Torneo](31-competicion-y-torneo.md) (propuesta) | 4 |
+| 31 | [Sección «Competición» y modo Torneo](31-competicion-y-torneo.md) | 4 |
 
 ## Riesgos y dependencias clave
 
