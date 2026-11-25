@@ -360,7 +360,7 @@ describe("#435: the pick preview pulses until it is locked in", () => {
 		expect(row().textContent).toContain("Choosing");
 	});
 
-	test("#494: the art covers the right 3/5 of the row and fades into the player", async () => {
+	test("#494: the art covers most of the row and melts into the player", async () => {
 		await renderInLocale(
 			<TeamColumn
 				side="blue"
@@ -372,13 +372,14 @@ describe("#435: the pick preview pulses until it is locked in", () => {
 			/>,
 		);
 		const box = portrait("Toppy") as HTMLElement;
-		// The original blend (user, 25-11): the tile fills the box, which
-		// fades in over its left half; focal framings size against the box.
-		expect(box.className).toContain("w-3/5");
+		expect(box.className).toContain("w-[85%]");
 		expect(box.className).toContain("[container-type:size]");
+		// A long eased fade: transparent on the player's side, solid on the right.
 		expect(box.className).toContain(
-			"[mask-image:linear-gradient(to_right,transparent,#000_55%)]",
+			"[mask-image:linear-gradient(to_right,transparent,rgb(0_0_0/0.15)_20%,rgb(0_0_0/0.45)_40%,rgb(0_0_0/0.8)_60%,#000_78%)]",
 		);
+		// The name stays readable over the art.
+		expect(row().querySelector("strong")?.className).toContain("[text-shadow:");
 	});
 
 	test("a locked pick stops pulsing", async () => {
