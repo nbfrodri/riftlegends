@@ -12,7 +12,25 @@
 			},
 			"entrants": {
 				"kind": "qualified",
-				"competition": "msi"
+				"competition": "msi",
+				"places": [
+					{
+						"league": "LCK",
+						"place": 2
+					},
+					{
+						"league": "LEC",
+						"place": 2
+					},
+					{
+						"league": "LCP",
+						"place": 2
+					},
+					{
+						"league": "LCS",
+						"place": 2
+					}
+				]
 			},
 			"play": {
 				"type": "doubleElim",
@@ -47,10 +65,48 @@
 				"matchDays": 5,
 				"maxSeriesPerDay": 4
 			},
-			"entrants": {
-				"kind": "qualified",
-				"competition": "msi"
-			},
+			"entrants": [
+				{
+					"kind": "qualified",
+					"competition": "msi",
+					"places": [
+						{
+							"league": "LCK",
+							"place": 1
+						},
+						{
+							"league": "LPL",
+							"place": 1
+						},
+						{
+							"league": "LEC",
+							"place": 1
+						},
+						{
+							"league": "LCP",
+							"place": 1
+						},
+						{
+							"league": "LCS",
+							"place": 1
+						},
+						{
+							"league": "CBLOL",
+							"place": 1
+						},
+						{
+							"league": "LPL",
+							"place": 2
+						}
+					]
+				},
+				{
+					"kind": "bracket",
+					"stage": "playin",
+					"match": "GF",
+					"result": "winner"
+				}
+			],
 			"play": {
 				"type": "doubleElim",
 				"size": 8,

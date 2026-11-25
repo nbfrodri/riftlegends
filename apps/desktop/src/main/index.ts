@@ -15,6 +15,7 @@ import { pingChannel } from "../shared/bridge";
 import { createAssetCache } from "./assets/cache";
 import { registerAssetIpc } from "./assets/ipc";
 import { assetScheme, serveAsset } from "./assets/protocol";
+import { championSelectSounds } from "./assets/sounds";
 import { type CoreProcess, createCoreBridge } from "./core-bridge";
 import { registerCoreIpc } from "./core-ipc";
 import { registerSystemLocale } from "./system-locale";
@@ -32,6 +33,7 @@ async function start() {
 		logos: teamLogos.logos,
 		photos: Array.isArray(playerPhotos.photos) ? playerPhotos.photos : [],
 		leagueLogos: leagueLogos.leagues,
+		sounds: championSelectSounds,
 		...(process.env.RIFT_E2E_OFFLINE === "1" && {
 			transport: async () => {
 				throw Object.assign(new Error("Asset network unavailable"), {

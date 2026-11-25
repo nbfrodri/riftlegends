@@ -32,6 +32,8 @@ export function createAssetCache(
 		getLeagueLogos: optional.getLeagueLogos,
 		subscribeTeamLogos: optional.subscribeTeamLogos,
 		getPlayerPhotos: optional.getPlayerPhotos,
+		syncSounds: optional.syncSounds,
+		getSounds: optional.getSounds,
 		subscribePlayerPhotos: optional.subscribePlayerPhotos,
 		getStatus: (): CacheStatus => status,
 		getChampions: (): ChampionCatalog | null => champions,

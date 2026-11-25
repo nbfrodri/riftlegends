@@ -5,6 +5,7 @@ import type {
 	CoreError,
 	Response,
 } from "@rift-legends/contracts";
+import type { CachedSounds } from "./sounds";
 
 export const pingChannel = "riftlegends:ping";
 export const systemLocaleChannel = "app:system-locale";
@@ -24,6 +25,7 @@ export const assetChannels = {
 	teamLogos: "assets:teamLogos",
 	playerPhotos: "assets:playerPhotos",
 	leagueLogos: "assets:leagueLogos",
+	sounds: "assets:sounds",
 	progress: "assets:progress",
 	teamLogosChanged: "assets:teamLogosChanged",
 	playerPhotosChanged: "assets:playerPhotosChanged",
@@ -40,6 +42,8 @@ export interface AssetsApi {
 	playerPhotos(): Promise<Record<string, string>>;
 	/** League or event id to the URL of its verified logo on disk. */
 	leagueLogos(): Promise<Record<string, string>>;
+	/** Bytes of each verified official draft sound; missing ones use the fallback. */
+	sounds(): Promise<CachedSounds>;
 	subscribe(listener: (progress: AssetProgress) => void): () => void;
 	/** Main finished a team or league logo sync: read both logo maps again. */
 	subscribeTeamLogos(listener: () => void): () => void;

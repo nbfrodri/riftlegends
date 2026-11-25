@@ -49,6 +49,8 @@ test("validates the sender and rejects any arguments before handling asset IPC",
 		subscribeTeamLogos: vi.fn(() => () => {}),
 		syncPlayerPhotos: vi.fn(async () => {}),
 		subscribePlayerPhotos: vi.fn(() => () => {}),
+		syncSounds: vi.fn(async () => {}),
+		getSounds: vi.fn(async () => ({ lock: new Uint8Array([79, 103]) })),
 	};
 	registerAssetIpc(window as never, ipc as never, cache);
 	for (const channel of [
@@ -58,6 +60,7 @@ test("validates the sender and rejects any arguments before handling asset IPC",
 		"assets:teamLogos",
 		"assets:playerPhotos",
 		"assets:leagueLogos",
+		"assets:sounds",
 	]) {
 		const handle = handlers.get(channel);
 		expect(handle).toBeDefined();
@@ -95,4 +98,7 @@ test("validates the sender and rejects any arguments before handling asset IPC",
 	await expect(bridge.leagueLogos()).resolves.toEqual(
 		await cache.getLeagueLogos(),
 	);
+	await expect(bridge.sounds()).resolves.toEqual({
+		lock: new Uint8Array([79, 103]),
+	});
 });

@@ -6,6 +6,7 @@ import {
 } from "@playwright/test";
 
 import { withLaunchRetry } from "./launch-retry";
+import { installTestCache } from "./test-cache";
 
 export { expect } from "@playwright/test";
 
@@ -44,16 +45,24 @@ export function launchApp(
 export const test = base.extend<{
 	systemLocale: string;
 	appEnv: Record<string, string> | undefined;
+	seedAssetCache: boolean;
 	electronApp: ElectronApplication;
 	appWindow: Page;
 }>({
 	systemLocale: ["en-US", { option: true }],
 	appEnv: [undefined, { option: true }],
-	electronApp: async ({ playwright, systemLocale, appEnv }, use, testInfo) => {
+	seedAssetCache: [false, { option: true }],
+	electronApp: async (
+		{ playwright, systemLocale, appEnv, seedAssetCache },
+		use,
+		testInfo,
+	) => {
+		const profileDir = testInfo.outputPath("profile");
+		if (seedAssetCache) await installTestCache(profileDir);
 		const app = await launchApp(
 			{ playwright },
 			{
-				profileDir: testInfo.outputPath("profile"),
+				profileDir,
 				systemLocale,
 				...(appEnv && { env: appEnv }),
 			},
