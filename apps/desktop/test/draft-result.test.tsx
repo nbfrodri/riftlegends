@@ -131,8 +131,13 @@ describe("game result (U9)", () => {
 					.getByRole("columnheader", { name })
 					.querySelector("svg")
 					?.getAttribute("width"),
-			).toBe("18");
+			).toBe("16");
 		}
+		// #524: "KP" on screen; screen readers keep the full name.
+		expect(
+			within(table).getByRole("columnheader", { name: "Participation" })
+				.textContent,
+		).toContain("KP");
 		const match = await ask<MatchView>(core, "match.view", { game: 1 });
 		const ended = match.facts.find((f) => f.type === "match.ended");
 		if (ended?.type !== "match.ended") throw new Error("no match.ended");

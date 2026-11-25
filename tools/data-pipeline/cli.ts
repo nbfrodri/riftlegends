@@ -13,6 +13,7 @@ import { nationalities } from "./nationality.ts";
 import { writePhotos } from "./photos.ts";
 import { seasonOf } from "./season.ts";
 import { snapshot } from "./snapshot.ts";
+import { writeTimelines } from "./timelines.ts";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
 
@@ -35,12 +36,13 @@ try {
 			"cache-dir": { type: "string" },
 			"max-attempts": { type: "string" },
 			offline: { type: "boolean", default: false },
+			through: { type: "string" },
 			help: { type: "boolean", short: "h" },
 		},
 	});
 	if (values.help) {
 		console.log(
-			"pnpm data:(snapshot|logos|photos|leagues|league-formats|internationals) [--offline] [--cache-dir <path>] [--max-attempts <n>]",
+			"pnpm data:(snapshot|logos|photos|leagues|league-formats|internationals|timelines) [--offline] [--cache-dir <path>] [--max-attempts <n>]",
 		);
 	} else if (positionals[0] === "league-formats") {
 		writeLeagueFormats();
@@ -57,7 +59,10 @@ try {
 		const historyDir = resolve(
 			process.env.RIFT_LEGENDS_HISTORY_CACHE ?? join(cacheDir, "history"),
 		);
-		for (const dir of [cacheDir, historyDir]) {
+		const timelinesDir = resolve(
+			process.env.RIFT_LEGENDS_TIMELINES_CACHE ?? join(cacheDir, "timelines"),
+		);
+		for (const dir of [cacheDir, historyDir, timelinesDir]) {
 			const fromRoot = relative(root, dir);
 			if (
 				!isAbsolute(fromRoot) &&
@@ -85,6 +90,27 @@ try {
 			console.log(`${result.photos} of ${result.players} player photos`);
 			for (const miss of result.unmatched)
 				console.log(`unmatched ${miss.player}: ${miss.reason}`);
+		} else if (positionals[0] === "timelines") {
+			const season = await snapshotSeason(outputDir);
+			const through = values.through ?? new Date().toISOString().slice(0, 10);
+			if (!/^\d{4}-\d{2}-\d{2}$/.test(through))
+				throw new Error("--through must be a UTC day (YYYY-MM-DD)");
+			let fetched = 0;
+			const result = await writeTimelines(
+				imageOptions,
+				season,
+				through,
+				new Client({
+					...imageOptions,
+					cacheDir: timelinesDir,
+					fetch: (input, init) => {
+						if (++fetched % 50 === 1)
+							console.error(`Fetching timeline ${fetched}`);
+						return fetch(input, init);
+					},
+				}),
+			);
+			console.log(`${result.games} games`, result.counts);
 		} else if (positionals[0] === "internationals") {
 			const season = await snapshotSeason(outputDir);
 			const result = await internationals(

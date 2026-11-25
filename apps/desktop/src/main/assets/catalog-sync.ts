@@ -23,6 +23,8 @@ type CatalogSync = {
 	userData: string;
 	transport: AssetTransport;
 	startup: boolean;
+	/** Official sounds missing on disk (#555): holds the startup gate too. */
+	soundsMissing?: boolean;
 	/** Called as soon as the installed or the new catalog is known. */
 	setChampions: (catalog: ChampionCatalog | null) => void;
 	reportProgress: (progress: AssetProgress) => void;
@@ -33,6 +35,7 @@ export async function synchronizeCatalog({
 	userData,
 	transport,
 	startup,
+	soundsMissing = false,
 	setChampions,
 	reportProgress,
 }: CatalogSync): Promise<CacheStatus> {
@@ -45,34 +48,37 @@ export async function synchronizeCatalog({
 		release = await acquireSyncLock(dirname(root));
 		const active = await activeCatalog(root);
 		setChampions(active?.catalog ?? null);
+		// A cache made before tiles or splashes (#367, #494) lacks art the app uses.
+		const artMissing = !!active && (!active.tiles || !active.splashes);
+		// While anything is missing the loading screen waits (#555); otherwise
+		// the installed catalog opens the app during the background update check.
+		const gate = (): Partial<AssetProgress> =>
+			!startup || !active
+				? {}
+				: artMissing || soundsMissing
+					? { incomplete: true }
+					: { cachedVersion: active.version };
 		if (active) {
-			fallback = { state: "ready", version: active.version };
-			if (startup)
-				reportProgress({
-					completed: 0,
-					total: 0,
-					cachedVersion: active.version,
-				});
+			fallback = {
+				state: "ready",
+				version: active.version,
+				...(artMissing && { incomplete: true as const }),
+			};
+			if (startup) reportProgress({ completed: 0, total: 0, ...gate() });
 		}
 
-		for (const version of await candidatePatches(transport)) {
-			// A cache made before tiles or splashes is fetched again on its own patch.
-			const refresh =
-				active &&
-				(!active.tiles || !active.splashes) &&
-				version === active.version;
-			if (active && !newer(version, active.version) && !refresh)
-				return fallback;
+		const candidates = await candidatePatches(transport);
+		// An incomplete cache is completed even if its patch is no longer offered.
+		if (active && artMissing && !candidates.includes(active.version))
+			candidates.push(active.version);
+		for (const version of candidates) {
+			const refresh = artMissing && version === active?.version;
+			if (active && !newer(version, active.version) && !refresh) continue;
 			const catalog = await prepareVersion(
 				root,
 				version,
 				transport,
-				(completed, total) =>
-					reportProgress({
-						completed,
-						total,
-						...(startup && active && { cachedVersion: active.version }),
-					}),
+				(completed, total) => reportProgress({ completed, total, ...gate() }),
 			);
 			// Both summaries must exist on the same numbered patch.
 			if (!catalog) continue;
