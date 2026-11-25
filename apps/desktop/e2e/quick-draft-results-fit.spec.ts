@@ -18,6 +18,18 @@ async function expectToFit(page: Page) {
 	expect(await overflow(page)).toEqual({ page: 0, main: 0 });
 }
 
+/** #507: the five mirrored rows of the differences by role, whole and unclipped. */
+async function expectGapsToFit(page: Page) {
+	const gaps = page.getByRole("table", { name: "Diferencias por rol" });
+	await expect(gaps.locator("tr[data-role]")).toHaveCount(5);
+	await expect(gaps).toBeInViewport({ ratio: 1 });
+	const clipped = await gaps.evaluate((table) => {
+		const section = table.closest("section");
+		return section ? section.scrollHeight - section.clientHeight : -1;
+	});
+	expect(clipped).toBe(0);
+}
+
 test("#259 #310: the setup, match and results fit the default window", async ({
 	electronApp,
 	appWindow,
@@ -52,6 +64,7 @@ test("#259 #310: the setup, match and results fit the default window", async ({
 				]) {
 					await appWindow.setViewportSize(size);
 					await expectToFit(appWindow);
+					await expectGapsToFit(appWindow);
 					// #380: the right column spans exactly the stats table's height.
 					const edges = await appWindow.evaluate(() => {
 						const heading = [...document.querySelectorAll("h2")].find((h) =>
@@ -75,11 +88,13 @@ test("#259 #310: the setup, match and results fit the default window", async ({
 			}
 			if (screen !== "series-result") return;
 			await expectToFit(appWindow);
+			await expectGapsToFit(appWindow);
 			const maps = appWindow.getByRole("tab", { name: /^Mapa \d$/ });
 			for (const map of await maps.all()) {
 				await map.click();
 				await expect(map).toHaveAttribute("aria-selected", "true");
 				await expectToFit(appWindow);
+				await expectGapsToFit(appWindow);
 			}
 			checked++;
 		},
