@@ -113,6 +113,7 @@ Resumen de las decisiones **vigentes**, para empezar cualquier sesión sin volve
 | 2026-11-24 | **La gran final de la doble eliminación es opcional** (`grandFinal: null`): sin ella (grupos GSL de First Stand) terminan las finales superior e inferior, el ganador del superior es primero y el del inferior segundo. Los formatos con final no cambian | [plan 12](../plans/12-formatos-de-competicion.md#cuadros-bracket-ts-423), #427 |
 | 2026-11-24 | Prioridad del game 1: el mejor sembrado en eliminatorias y sorteo en liga y Swiss | [plan 12](../plans/12-formatos-de-competicion.md#5-decisiones-del-usuario-24-11-2026) |
 | 2026-11-24 | Doble eliminación: **`drop` por serie** (`null` = eliminado) y **`lowerSeeds`** para los sembrados que entran directos al cuadro inferior; cubre los cuadros reales de 2026 (LCK, LCP, LEC, LCS, CBLOL, LPL Grand Finals, King of the Hill). Los play-in en escalera de LPL y LCK Cup van aparte (#424) | [plan 12](../plans/12-formatos-de-competicion.md), #423 |
+| 2026-11-25 | Las fases combinan fuentes en orden de sembrado. Los play-in en escalera se componen de fases de una serie. Las plazas por liga siguen el orden de sus reglas y los bombos del campo completo se recalculan al cambiar los cupos | [plan 12](../plans/12-formatos-de-competicion.md#3-diseño), #424 |
 
 ## Estilo visual
 

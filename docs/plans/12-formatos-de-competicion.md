@@ -151,6 +151,10 @@ Slot       = { to: CompetitionId, rule: "stageWinner" | "standing" | "points", c
 - **Personalización al crear la carrera:** el usuario edita estos mismos campos (splits, vueltas, Bo por fase, grupos o Swiss, simple o doble eliminación, plazas por región). La pantalla es del plan 14; este plan valida el resultado.
 - **Swiss implementado (#422)** en `swiss.ts` (`pairSwissRound`, `swissStandings`): exige un número par de equipos. Ronda 1: cuatro bombos iguales por sembrado (1 contra 4, 2 contra 3; si el número no es múltiplo de 4, mitad superior contra inferior), sorteo y sin la misma región. Después, sorteo dentro de cada grupo de igual balance, sin revanchas (como el Swiss de Worlds). El sorteo usa un flujo propio del ámbito `competition`: se baraja y una búsqueda con vuelta atrás completa el emparejamiento. Si no hay emparejamiento se relaja, por este orden, la región (solo cuenta en la ronda 1), la revancha y, como último recurso, el balance; `relaxed` registra lo que rompe el resultado. Con 16 equipos a 3-3 los grupos son siempre pares, así que el balance nunca se cruza y pasan exactamente 8. Cada serie lleva su Bo, la prioridad del game 1 (sorteo) y el motivo (`pots`, `same-record`, `cross-record`).
 - **Clasificación implementada (#421)** en `standings.ts` (`computeStandings`) y `tiebreak.ts` (`orderTies`). Cada criterio separa a los empatados; si solo separa a parte, cada grupo restante vuelve al primer criterio (la minitable de `headToHead` se recalcula solo con ellos). `tiebreakerSeries` solo actúa si el grupo cruza un corte (`cuts` = equipos que pasan): devuelve en `pending` las series entre todas las parejas del grupo que faltan y deja a los empatados en orden de sembrado con explicación `none`; cuando están jugadas (`tiebreakerResults`) decide por series ganadas entre ellos. El sorteo final (`draw`, siempre al final aunque la lista no lo nombre) usa el ámbito `competition` con una ronda reservada (`0xfffffffe`) y la posición del grupo. Cada fila lleva `explanation` con el criterio, los empatados y sus valores.
+- **Encadenado (#424).** `buildStageGraph` comprueba tamaños, referencias, ciclos y que cada plaza declarada se use una vez. `resolveStage` devuelve las fases cuyos resultados faltan o los equipos en orden de sembrado. Una fase puede combinar equipos directos, puestos de una tabla final, ganadores o perdedores de una serie y plazas internacionales. Los play-in en escalera se componen de fases de una serie. `ranked` reparte la tabla por tramos contiguos para Legend y Rise.
+- **Plazas (#424).** Cada liga declara las reglas por torneo en orden de prioridad: ganador de fase, clasificación o puntos acumulados hasta una fase. El núcleo explica qué regla y puesto asignaron cada plaza y qué equipos ya se habían clasificado. Los empates a puntos se ordenan por sembrado de liga e identificador. `next` baja por la tabla y `vacant` conserva el hueco. Los formatos pueden usar todas las plazas o seleccionar puestos concretos de cada liga.
+- **Bombos (#424).** Para el campo completo, se ordenan las plazas por puesto en su liga y después por orden de ligas en la temporada. Cambiar los cupos recompone los bombos. Una fase que mezcla plazas y resultados puede declarar su propio orden. Se baraja dentro de cada bombo y se devuelve el origen, orden previo, bombo y sembrado de cada equipo. Los grupos con `avoidSameLeague` conservan el reparto de bombos y buscan una distribución sin cruces de liga o región. Si no existe, registran que se relajó la restricción. El Swiss aplica la restricción en la ronda 1 cuando `avoid` incluye `region`.
+- **Internacionales 2026 (#424).** La composición de grupos y play-in se infiere del snapshot local. First Stand cruza el ganador de cada grupo GSL contra el segundo del otro. El ganador del play-in se suma a siete plazas directas en MSI y a quince en Worlds. Los ocho primeros del Swiss pasan a los cuartos. Los formatos conservan `verified: false` hasta comprobar las reglas de sembrado con los reglamentos.
 - **Bloqueo:** el formato se copia en el hecho `season.created`. Solo se puede cambiar el de la temporada siguiente (V6, P4).
 
 ### Módulos del núcleo (`packages/core/competition/`)
@@ -162,9 +166,11 @@ Slot       = { to: CompetitionId, rule: "stageWinner" | "standing" | "points", c
 | `swiss.ts` | Emparejamiento por balance con restricciones y búsqueda con vuelta atrás |
 | `bracket.ts` | Cuadros simple y doble, byes y caída al cuadro inferior |
 | `standings.ts` y `tiebreak.ts` | Clasificación, criterios y explicación |
+| `stage-graph.ts` | Valida dependencias, tamaños y plazas declaradas |
 | `qualification.ts` | Plazas internacionales y cascada |
+| `stage-draw.ts` | Bombos y reparto en grupos |
 | `calendar.ts` | Días de cada serie dentro de la ventana de su fase |
-| `season.ts` | Encadena las fases y decide qué series tocan cada día |
+| `season.ts` | Resuelve los equipos de cada fase desde los resultados y las plazas |
 | `handlers.ts` | Comandos, hechos y consultas en el despachador |
 
 Reglas del núcleo: sin reloj ni `Math.random`, solo enteros, módulos de unas 300 líneas como máximo.
@@ -179,7 +185,7 @@ Reglas del núcleo: sin reloj ni `Math.random`, solo enteros, módulos de unas 3
 - **Consultas:** `competition.standings`, `competition.bracket`, `competition.schedule` y `competition.qualified`. Son proyecciones de los hechos; el plan 13 las guardará.
 - **Idempotencia:** por `expectedPosition`, como el resto de comandos.
 - **Partidas de otros equipos:** draft de la IA de cada coach y `match.play`, sin animación (decisión del 22-11-2026). La serie del usuario sigue el flujo del draft rápido.
-- **RNG:** dos ámbitos nuevos, `competition` (sorteos de Swiss, grupos y desempate final) y `schedule` (reparto en días), con id por competición, temporada, fase y ronda. Los ids de texto se convierten en el índice de la competición dentro de la temporada, no en un hash. `competition = 6` ya está en el registro (#420). La prioridad del game 1 en liga usa una semilla por serie (competición, temporada, fase, jornada y posición de la serie), sin depender de las demás series del día. El reparto en grupos no sortea nada: serpiente y, después, permutas entre grupos solo para separar regiones.
+- **RNG:** dos ámbitos nuevos, `competition` (sorteos de Swiss, bombos y desempate final) y `schedule` (reparto en días), con id por competición, temporada, fase y ronda. Los ids de texto se convierten en el índice de la competición dentro de la temporada, no en un hash. `competition = 6` ya está en el registro (#420). La prioridad del game 1 en liga usa su propia semilla por serie. Los bombos usan la ronda reservada `0xfffffffd`. Sin bombos, los grupos se reparten según el sembrado.
 
 ### Calendario
 
@@ -214,7 +220,7 @@ Fuente: partidas de Leaguepedia (Cargo `MatchSchedule`) de 2026, reconstruyendo 
 
 Ningún cuadro de 2026 usa reset. Las 4 versiones de 6 equipos (LCK, LCP, LEC, LCS) son distintas entre sí.
 
-**Resultado:** el modelo adoptado (`drop` por serie y `lowerSeeds`) cubre todas las filas salvo los play-in en escalera de LPL y LCK Cup, que no son cuadros: pasan a #424 como un tipo de fase aparte (los ganadores de la ronda 1 pasan directos al cuadro principal y los perdedores se cruzan con los ganadores de la 2).
+**Resultado:** el modelo adoptado (`drop` por serie y `lowerSeeds`) cubre los cuadros. El encadenado de #424 permite componer los play-in en escalera de LPL y LCK Cup con fases de una serie.
 
 Pendiente al verificar reglamentos: el cruce exacto en cada ronda inferior (primero con último o por orden) y quién cae adónde dentro de una ronda.
 
