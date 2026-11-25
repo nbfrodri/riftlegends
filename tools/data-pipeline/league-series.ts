@@ -11,7 +11,7 @@ export interface LeagueSeries {
 	bestOf: number;
 }
 
-export const seasonDay = (date: string) =>
+const seasonDay = (date: string) =>
 	Math.floor((Date.parse(date) - Date.UTC(2026, 0, 1)) / 86_400_000);
 
 export function leagueSeries(snapshot: RealSnapshot): LeagueSeries[] {
