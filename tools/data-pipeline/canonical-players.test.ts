@@ -164,25 +164,56 @@ test("the committed snapshot has no duplicated players left", () => {
 	expect(mergeSamePlayers(snapshots)).toEqual(snapshots);
 });
 
-test("no two players of a team share a normalized handle in the committed snapshot", () => {
+test("no player is duplicated anywhere in the committed content", () => {
 	const dir = new URL("../../packages/core/content/real/", import.meta.url);
+	const read = (file: string) =>
+		JSON.parse(readFileSync(fileURLToPath(new URL(file, dir)), "utf8"));
 	const normalized = (id: string) =>
 		(id.split("~")[0] ?? id)
 			.replace(/I/g, "l")
 			.toLowerCase()
-			.replace(/0/g, "o");
+			.replace(/0/g, "o")
+			.replace(/[^a-z0-9]/g, "");
 	const clashes: string[] = [];
-	for (const league of ["lck", "lpl", "lec", "lcp", "lcs", "cblol"]) {
-		const snapshot = JSON.parse(
-			readFileSync(fileURLToPath(new URL(`${league}.json`, dir)), "utf8"),
-		) as Snapshot;
+	const unique = (
+		kind: string,
+		values: string[],
+		label: (v: string) => string,
+	) => {
 		const seen = new Map<string, string>();
-		for (const { id, team } of snapshot.seasonPlayers) {
-			const key = `${league}|${team}|${normalized(id)}`;
+		for (const value of values) {
+			const key = label(value);
 			const other = seen.get(key);
-			if (other !== undefined) clashes.push(`${team}: ${other} / ${id}`);
-			seen.set(key, id);
+			if (other !== undefined) clashes.push(`${kind}: ${other} / ${value}`);
+			else seen.set(key, value);
 		}
+	};
+	const players = read("players.json") as { id: string }[];
+	unique(
+		"id",
+		players.map((p) => p.id),
+		(id) => id,
+	);
+	unique(
+		"handle",
+		players.map((p) => p.id),
+		normalized,
+	);
+	const photos = (
+		read("photos.json") as { photos: { player: string; url: string }[] }
+	).photos;
+	unique(
+		"photo",
+		photos.map((p) => p.url),
+		(url) => url,
+	);
+	for (const league of ["lck", "lpl", "lec", "lcp", "lcs", "cblol"]) {
+		const snapshot = read(`${league}.json`) as Snapshot;
+		unique(
+			"season id",
+			snapshot.seasonPlayers.map((p) => p.id),
+			(id) => id,
+		);
 	}
 	expect(clashes).toEqual([]);
 });
