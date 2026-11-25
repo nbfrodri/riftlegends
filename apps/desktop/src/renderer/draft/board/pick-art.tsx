@@ -131,7 +131,19 @@ export function PickArt(props: { id: string; label: string }) {
 	return <TileArt {...props} />;
 }
 
+/**
+ * The tile fallback in its own box, 3/5 of the row (70.6 % of the splash
+ * box): the square tile is framed for that width (#438).
+ */
 function TileArt(props: { id: string; label: string }) {
+	return (
+		<span className="absolute inset-y-0 right-0 flex w-[70.6%] overflow-hidden [container-type:size]">
+			<TileFraming {...props} />
+		</span>
+	);
+}
+
+function TileFraming(props: { id: string; label: string }) {
 	const focus = FOCUS[props.id];
 	if (!focus)
 		return (
