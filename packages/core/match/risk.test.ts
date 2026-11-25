@@ -6,8 +6,6 @@ import { MATCH_CONTESTS, playMinute } from "./loop";
 import { createMatch, type MatchSetup, other } from "./state";
 
 const SEEDS = 1200;
-/** F13 compares two arms; 1,000 seeds keep both gaps open (see #480). */
-const F13_SEEDS = 1000;
 const CHECKPOINT = 20;
 const LEAD = 3000;
 type Risk = ReturnType<
@@ -53,12 +51,12 @@ function playUntilDecided(setup: MatchSetup) {
 	return { gap, state, counted: decided };
 }
 
-function measure(match: MatchContent, side?: Side, seeds = SEEDS) {
+function measure(match: MatchContent, side?: Side) {
 	let trailed = 0;
 	let led = 0;
 	let comebacks = 0;
 	let throws = 0;
-	for (let seed = 0; seed < seeds; seed++) {
+	for (let seed = 0; seed < SEEDS; seed++) {
 		const { gap, state, counted } = playUntilDecided(
 			matchSetup({ seed, match }),
 		);
@@ -77,8 +75,8 @@ function measure(match: MatchContent, side?: Side, seeds = SEEDS) {
 }
 
 it("F13 · a risky team comes back and throws more often than the same safe team", () => {
-	const safe = measure(withRisk("safe", "balanced"), "blue", F13_SEEDS);
-	const risky = measure(withRisk("risky", "balanced"), "blue", F13_SEEDS);
+	const safe = measure(withRisk("safe", "balanced"), "blue");
+	const risky = measure(withRisk("risky", "balanced"), "blue");
 	const rates = (sample: typeof safe) => ({
 		comeback: sample.comebacks / sample.trailed,
 		throw: sample.throws / sample.led,
