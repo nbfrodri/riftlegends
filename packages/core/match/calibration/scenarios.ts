@@ -264,7 +264,10 @@ export function sample(games: number, edge: number, pool: Pool) {
 				shutdowns: allKills.filter((k) => k.shutdown).length,
 				shutdownGold: allKills.reduce((sum, k) => sum + (k.shutdown ?? 0), 0),
 				aces: allKills.filter((k) => k.ace).length,
-				topSpree: allKills.reduce((top, k) => Math.max(top, k.spree ?? 0), 0),
+				topSpree: allKills.reduce(
+					(top, k) => ((k.spree ?? 0) > top ? (k.spree ?? 0) : top),
+					0,
+				),
 				steals: objectives.length,
 			},
 			teams,
