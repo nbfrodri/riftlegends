@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isBirthDate } from "../age";
 import { COUNTRY_CODES } from "../country-codes";
 import { position } from "../envelope";
 import { checkChampionReference, checkDuplicates } from "./content-validation";
@@ -285,6 +286,11 @@ export const aiContent = z
 				nationality: z
 					.string()
 					.refine((code) => COUNTRY_CODES.has(code))
+					.optional(),
+				/** `YYYY-MM-DD`, or `YYYY` when only the year is known. */
+				birthDate: z
+					.string()
+					.refine((value) => isBirthDate(value))
 					.optional(),
 				sub: z.boolean().optional(),
 				estimated: z.array(z.enum(PLAYER_ATTRIBUTES)).optional(),

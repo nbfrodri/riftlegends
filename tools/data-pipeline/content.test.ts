@@ -3,6 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { aiContent, matchContent } from "@rift-legends/contracts";
+import { isBirthDate } from "@rift-legends/contracts/age";
 import { realSnapshotSchema } from "@rift-legends/contracts/real-snapshot";
 import { expect, test } from "vitest";
 import { buildContent } from "./content.ts";
@@ -45,9 +46,11 @@ test("career history improves ratings and leaves players without history unchang
 	expect(
 		players
 			.filter(({ id }) => !careers.has(id))
-			.map(({ nationality: _nationality, ...player }) => player),
+			.map(({ nationality: _n, birthDate: _b, ...player }) => player),
 	).toEqual(
-		withoutHistory.map(({ nationality: _nationality, ...player }) => player),
+		withoutHistory.map(
+			({ nationality: _n, birthDate: _b, ...player }) => player,
+		),
 	);
 });
 
@@ -83,6 +86,21 @@ test("the cached Leaguepedia nationality reaches real player content", async () 
 	).toHaveProperty("nationality", "KR");
 });
 
+test("the cached Leaguepedia birth date reaches real player content", async () => {
+	const players = JSON.parse((await buildContent())["players.json"]);
+	expect(
+		players.find(({ id }: { id: string }) => id === "Faker"),
+	).toHaveProperty("birthDate", "1996-05-07");
+});
+
+test("most real players have a birth date, and every one is valid", async () => {
+	const players: { birthDate?: string }[] = await read("players.json");
+	const known = players.filter((player) => player.birthDate);
+	expect(known.length / players.length).toBeGreaterThanOrEqual(0.9);
+	for (const { birthDate } of known)
+		expect(isBirthDate(birthDate ?? ""), birthDate).toBe(true);
+});
+
 test("older snapshots without nationality data still produce player content", async () => {
 	const legacy = await mkdtemp(join(tmpdir(), "rift-legacy-content-"));
 	try {
@@ -96,6 +114,7 @@ test("older snapshots without nationality data still produce player content", as
 		const content = await buildContent(legacy);
 		expect(content["players.json"]).toContain('"id":"Faker"');
 		expect(content["players.json"]).not.toContain('"nationality"');
+		expect(content["players.json"]).not.toContain('"birthDate"');
 	} finally {
 		await rm(legacy, { recursive: true, force: true });
 	}
