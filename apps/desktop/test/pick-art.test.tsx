@@ -128,4 +128,11 @@ describe("#494: the landscape splash fills the pick row", () => {
 			expect(splashFocus(id).y).toBeLessThan(33);
 		expect(splashFocus("Tryndamere").x).toBeGreaterThan(50);
 	});
+
+	test("Tryndamere's face lands on the right of the row, clear of the fade", () => {
+		// His face sits at 62 % of his splash width (user, 25-11).
+		const framing = splashFraming(splashFocus("Tryndamere"));
+		const face = Number.parseFloat(framing.left) / 100 + 0.62 * 1.5;
+		expect(face).toBeGreaterThanOrEqual(0.75);
+	});
 });
