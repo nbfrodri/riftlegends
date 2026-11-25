@@ -3,6 +3,7 @@ import { int } from "../../rng/helpers";
 import { GRUBS, type MatchState, minuteOf, SOUL } from "../state";
 import { type Contest, paid, roll } from "./contest";
 import { edge, outcome } from "./edge";
+import { trySteal } from "./steal";
 
 type Objective = "dragon" | "herald" | "baron" | "elder";
 
@@ -27,7 +28,7 @@ const FAVOURED_BY: Record<Objective, "dragon" | "baron"> = {
 	baron: "baron",
 };
 
-/** Both teams fight over an objective as soon as it is up. */
+/** The opening contest decides who controls the pit and starts the objective. */
 const objective = (kind: Objective, id: number): Contest => ({
 	id,
 	due: (state) =>
@@ -41,17 +42,23 @@ const objective = (kind: Objective, id: number): Contest => ({
 			blue: priority("blue"),
 			red: priority("red"),
 		});
-		const winner: Side = roll(rng, result.blue) ? "blue" : "red";
+		const controlling: Side = roll(rng, result.blue) ? "blue" : "red";
+		const second = int(rng, 0, 59);
+		const stolen =
+			kind === "elder" ? undefined : trySteal(state, controlling, id);
+		const award = stolen ?? {
+			side: controlling,
+			...outcome(result, controlling),
+		};
 		return [
 			{
 				kind,
-				side: winner,
 				zone:
 					kind === "dragon" || kind === "elder" ? "dragon-pit" : "baron-pit",
-				second: int(rng, 0, 59),
+				second,
 				kills: [],
-				gold: paid(winner, state.context.rules.economy[kind]),
-				...outcome(result, winner),
+				gold: paid(award.side, state.context.rules.economy[kind]),
+				...award,
 			},
 		];
 	},

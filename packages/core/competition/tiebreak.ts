@@ -1,15 +1,10 @@
+import type { Competition } from "@rift-legends/contracts";
 import { shuffle } from "../rng/helpers";
 import { SCOPES } from "../rng/scopes";
 import { deriveSeed } from "../rng/seeds";
 import { createRng } from "../rng/streams";
 
-export type Criterion =
-	| "seriesWins"
-	| "gameDiff"
-	| "headToHead"
-	| "gameWins"
-	| "tiebreakerSeries"
-	| "draw";
+export type Criterion = Competition["tiebreak"][number];
 
 /** A finished series by team id and games won by each side. Order carries no meaning. */
 export interface SeriesResult {
@@ -17,6 +12,8 @@ export interface SeriesResult {
 	readonly b: string;
 	readonly winsA: number;
 	readonly winsB: number;
+	/** Total duration of maps won by the series winner, when recorded. */
+	readonly winnerSeconds?: number;
 }
 
 /**
@@ -39,6 +36,7 @@ export interface TiebreakContext {
 	readonly results: readonly SeriesResult[];
 	readonly tiebreakerResults: readonly SeriesResult[];
 	readonly criteria: readonly Criterion[];
+	readonly priorSplitRanks?: readonly ReadonlyMap<string, number>[];
 	/** Number of teams that pass each cut: a cut of 2 splits places 2 and 3. */
 	readonly cuts: readonly number[];
 	readonly rootSeed: number;
@@ -52,7 +50,7 @@ export interface TiebreakContext {
 /** Round index of the final draw, apart from the rounds Swiss and fixtures use. */
 const DRAW_ROUND = 0xfffffffe;
 
-const winnerOf = (series: SeriesResult) =>
+export const winnerOf = (series: SeriesResult) =>
 	series.winsA > series.winsB ? series.a : series.b;
 
 /** Series won inside the group (everything when `group` is omitted), per team. */
@@ -105,6 +103,17 @@ export function orderTies(
 	);
 	const pending: Fixture[] = [];
 	const total = games(ctx.results, teams);
+	const wins = seriesWins(ctx.results, teams);
+	const strength = new Map<string, number>();
+	const time = new Map<string, number>();
+	const incompleteTime = new Set<string>();
+	for (const result of ctx.results) {
+		const winner = winnerOf(result);
+		const loser = winner === result.a ? result.b : result.a;
+		strength.set(winner, (strength.get(winner) ?? 0) + (wins.get(loser) ?? 0));
+		if (result.winnerSeconds === undefined) incompleteTime.add(winner);
+		else time.set(winner, (time.get(winner) ?? 0) + result.winnerSeconds);
+	}
 
 	const straddlesCut = (start: number, size: number) =>
 		ctx.cuts.some((cut) => start < cut && cut < start + size);
@@ -128,9 +137,10 @@ export function orderTies(
 		group: readonly string[],
 		criterion: Criterion,
 		values: ReadonlyMap<string, number>,
+		direction = -1,
 	): string[][] | null => {
 		const distinct = [...new Set(group.map((id) => values.get(id) ?? 0))].sort(
-			(x, y) => y - x,
+			(x, y) => direction * (x - y),
 		);
 		if (distinct.length === 1) return null;
 		const parts = distinct.map((value) =>
@@ -165,6 +175,7 @@ export function orderTies(
 		const members = new Set(group);
 		for (const criterion of ctx.criteria) {
 			let values: ReadonlyMap<string, number>;
+			let direction = -1;
 			if (criterion === "draw") {
 				return draw(group, start);
 			}
@@ -192,7 +203,22 @@ export function orderTies(
 			} else if (criterion === "headToHead") {
 				values = seriesWins(ctx.results, group, members);
 			} else if (criterion === "seriesWins") {
-				values = seriesWins(ctx.results, teams);
+				values = wins;
+			} else if (criterion === "priorSplitRank") {
+				const ranks = ctx.priorSplitRanks?.find(
+					(table) =>
+						group.every((team) => table.has(team)) &&
+						new Set(group.map((team) => table.get(team))).size > 1,
+				);
+				if (!ranks) continue;
+				values = ranks;
+				direction = 1;
+			} else if (criterion === "strengthOfVictory") {
+				values = strength;
+			} else if (criterion === "victoryTime") {
+				if (group.some((team) => incompleteTime.has(team))) continue;
+				values = time;
+				direction = 1;
 			} else if (criterion === "gameWins") {
 				values = total.won;
 			} else {
@@ -203,7 +229,7 @@ export function orderTies(
 					]),
 				);
 			}
-			const parts = split(group, criterion, values);
+			const parts = split(group, criterion, values, direction);
 			if (parts === null) continue;
 			// A partial split sends each remaining tie back to the first criterion.
 			let offset = start;

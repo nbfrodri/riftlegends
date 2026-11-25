@@ -1,7 +1,8 @@
-import type { Side } from "@rift-legends/contracts";
+import { ROLES, type Side } from "@rift-legends/contracts";
 import { type Fixed, mul } from "../../math";
+import { spreeBounty } from "../events";
 import type { CONTESTS, Scored } from "../profile";
-import { LANES, type MatchState, SOUL } from "../state";
+import { LANES, type Lane, type MatchState, SOUL } from "../state";
 import { chance } from "./chance";
 import { goldLead } from "./gold";
 
@@ -29,13 +30,20 @@ const EDGE_SCALE = 1600 as Fixed;
 const RISK_SCALE = { safe: 18_000, balanced: 10_000, risky: 2000 } as const;
 const AGGRESSION_SCALE = 28;
 const FIGHT_PUSH_POINTS = 500_000;
+const SPREE_POINTS = 500;
+const XP_POINTS = 20;
 export const MID_GAME = 14;
 const LATE_GAME = 26;
 
 const phaseOf = (minute: number) =>
 	minute < MID_GAME ? "early" : minute < LATE_GAME ? "mid" : "late";
 
-function strength(state: MatchState, side: Side, contest: Contest) {
+function strength(
+	state: MatchState,
+	side: Side,
+	contest: Contest,
+	lane?: Lane,
+) {
 	const { profile } = state.context[side];
 	const parts: Scored[] = [
 		profile.contests[contest],
@@ -51,6 +59,23 @@ function strength(state: MatchState, side: Side, contest: Contest) {
 	add("form", form);
 	for (const scored of [mental?.general, mental?.byContest[contest]]) {
 		for (const { key, points } of scored?.causes ?? []) add(key, points);
+	}
+	const players = state.context[side].players;
+	const involved =
+		contest === "lane" && lane
+			? lane === "bot"
+				? (["bot", "support"] as const)
+				: [lane]
+			: contest === "jungle"
+				? (["jungle"] as const)
+				: ROLES;
+	for (const role of involved) {
+		const streak = state.plays.streaks.get(players[role]) ?? 0;
+		const bounty = spreeBounty(streak);
+		if (bounty > 0) {
+			add("killingSpree", SPREE_POINTS * (streak < 8 ? streak - 2 : 6));
+			add("shutdownRisk", -bounty);
+		}
 	}
 	const own = state[side];
 	if (
@@ -88,9 +113,10 @@ export function edge(
 	extra: Partial<
 		Record<Side, { key: string; points: number } | undefined>
 	> = {},
+	lane?: Lane,
 ): Edge {
-	const blue = strength(state, "blue", contest);
-	const red = strength(state, "red", contest);
+	const blue = strength(state, "blue", contest, lane);
+	const red = strength(state, "red", contest, lane);
 	for (const [side, map] of [
 		["blue", blue],
 		["red", red],
@@ -104,6 +130,10 @@ export function edge(
 		if (points !== 0) causes.push({ key, points });
 	}
 	const gold = goldLead(state.blue.paid, state.red.paid, state.context.rules);
+	const experience =
+		contest === "lane" && lane ? state.plays.laneExperience[lane] : 0;
+	if (experience !== 0)
+		causes.push({ key: "soloExperience", points: experience * XP_POINTS });
 	if (gold !== 0) causes.push({ key: "gold", points: gold });
 	const total = causes.reduce((sum, c) => sum + c.points, 0);
 	// Both teams affect how decisive the contest is, independently of who leads.

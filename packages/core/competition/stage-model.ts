@@ -25,6 +25,7 @@ export interface StageNode {
 	readonly stage: Stage;
 	readonly competitionIndex: number;
 	readonly stageIndex: number;
+	readonly tiebreak: readonly Competition["tiebreak"][number][];
 	readonly bracket: Bracket | undefined;
 }
 

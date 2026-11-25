@@ -68,6 +68,7 @@ function build(id: LeagueId): Competition {
 		stages: definition.stages.map((stage) => ({
 			id: stage.id,
 			parallelGroup: stage.parallelGroup,
+			tiebreakHistory: stage.tiebreakHistory,
 			window: realWindow(stage, evidence.get(stage.id) ?? []),
 			entrants:
 				stage.entrants === "roster"
