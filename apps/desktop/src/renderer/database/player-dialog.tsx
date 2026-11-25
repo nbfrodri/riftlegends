@@ -21,7 +21,9 @@ export interface OpenPlayer {
 
 /**
  * The player card (U5) as a modal: who the player is, then the attributes by
- * area and the champion pool. Escape or a click outside closes it.
+ * area and the champion pool. Escape or a click outside closes it. It takes
+ * most of the window and its type scales with it (#544); it scrolls inside
+ * only when the content does not fit.
  */
 export function PlayerDialog({
 	open,
@@ -70,35 +72,46 @@ export function PlayerDialog({
 					onClose();
 				}
 			}}
-			className="m-auto max-h-[min(86dvh,640px)] w-[min(88vw,880px)] overflow-y-auto border-action border-t-2 bg-panel p-0 text-text backdrop:bg-black/65"
+			className="m-auto h-[min(84dvh,820px)] max-h-none w-[min(90vw,1360px)] max-w-none overflow-y-auto border-action border-t-2 bg-panel p-0 text-text backdrop:bg-black/65"
 		>
-			<div className="flex flex-col gap-3 px-[18px] py-4">
-				<header className="flex items-center gap-4">
-					<PlayerPortrait id={player.id} handle={player.handle} />
+			<div className="flex min-h-full flex-col justify-between gap-[clamp(14px,3vh,32px)] px-[clamp(18px,2.4vw,44px)] py-[clamp(16px,3vh,36px)]">
+				<header className="flex items-center gap-[clamp(16px,2vw,32px)]">
+					<PlayerPortrait
+						id={player.id}
+						handle={player.handle}
+						size="h-[clamp(112px,21vh,220px)] w-[clamp(90px,16.8vh,176px)]"
+					/>
 					<div className="min-w-0 flex-1">
-						<h2 className="flex items-baseline gap-2 font-bold font-display text-[clamp(22px,2vw,30px)] leading-none tracking-heading">
+						<h2 className="flex items-baseline gap-[0.3em] font-bold font-display text-[clamp(30px,6vh,64px)] leading-none tracking-heading">
 							{player.handle}
-							<CountryFlag country={player.nationality} />
+							<CountryFlag
+								country={player.nationality}
+								className="h-[0.42em] w-[0.63em]"
+							/>
 						</h2>
-						<p className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[13px] text-muted">
-							<span className="inline-flex items-center gap-1.5 text-text">
+						<p className="mt-[clamp(10px,2vh,20px)] flex flex-wrap items-center gap-x-[clamp(16px,2vw,32px)] gap-y-1 text-[clamp(14px,2.3vh,20px)] text-muted">
+							<span className="inline-flex items-center gap-2 text-text">
 								<TeamCrest
 									id={player.team}
 									name={player.teamName}
-									className="size-5"
+									className="size-[1.4em]"
 								/>
 								<span>{player.teamName}</span>
 							</span>
 							{player.league && (
-								<span className="inline-flex items-center gap-1.5">
-									<span aria-hidden="true">
-										<LeagueLogo id={player.league} name={player.league} />
+								<span className="inline-flex items-center gap-2">
+									<span aria-hidden="true" className="inline-flex">
+										<LeagueLogo
+											id={player.league}
+											name={player.league}
+											className="size-[1.25em]"
+										/>
 									</span>
 									{player.league}
 								</span>
 							)}
-							<span className="inline-flex items-center gap-1.5">
-								<GameRoleIcon role={player.role} size={16} />
+							<span className="inline-flex items-center gap-2">
+								<GameRoleIcon role={player.role} size={20} />
 								{t(`market.role.${player.role}`)}
 							</span>
 							<span>
@@ -110,12 +123,12 @@ export function PlayerDialog({
 							</span>
 						</p>
 					</div>
-					<p className="text-right">
-						<span className="block text-[12px] text-muted">
+					<p className="self-center text-right">
+						<span className="block text-[clamp(13px,2vh,17px)] text-muted">
 							{t("market.column.rating")}
 						</span>
 						<span
-							className={`font-bold font-display text-[28px] tabular-nums ${levelColor[level]}`}
+							className={`block font-bold font-display text-[clamp(44px,9vh,96px)] leading-none tabular-nums ${levelColor[level]}`}
 						>
 							{player.level}
 						</span>
@@ -126,9 +139,9 @@ export function PlayerDialog({
 						type="button"
 						aria-label={t("database.card.close")}
 						onClick={onClose}
-						className="press grid size-7 shrink-0 cursor-pointer place-items-center self-start rounded-control text-muted hover:bg-surface hover:text-action"
+						className="press grid size-9 shrink-0 cursor-pointer place-items-center self-start rounded-control text-muted hover:bg-surface hover:text-action"
 					>
-						<X size={16} aria-hidden />
+						<X size={20} aria-hidden />
 					</button>
 				</header>
 				<div>
@@ -136,8 +149,11 @@ export function PlayerDialog({
 						attributes={player.attributes}
 						role={player.role}
 						estimated={player.estimated}
+						size="dialog"
 					/>
-					<PlayerPool pool={player.pool} names={championNames} />
+				</div>
+				<div>
+					<PlayerPool pool={player.pool} names={championNames} size="dialog" />
 				</div>
 			</div>
 		</dialog>

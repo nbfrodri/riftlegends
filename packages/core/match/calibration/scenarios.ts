@@ -250,8 +250,26 @@ export function sample(games: number, edge: number, pool: Pool) {
 				return role && multikill ? [{ role, count: multikill }] : [];
 			}),
 		);
+		const allKills = events.flatMap((e) => e.kills);
+		const firstKill = events.find((e) => e.kills.length > 0);
+		const opening = allKills.find((k) => k.firstBlood);
+		const objectives = events.filter((e) => e.steal);
 		return {
 			streaks,
+			plays: {
+				/** Minute of the opening kill, and whether it had assistants. */
+				firstBloodMinute: firstKill?.minute ?? null,
+				firstBloodAssisted: (opening?.assists.length ?? 0) > 0,
+				soloKills: allKills.filter((k) => k.soloKill).length,
+				shutdowns: allKills.filter((k) => k.shutdown).length,
+				shutdownGold: allKills.reduce((sum, k) => sum + (k.shutdown ?? 0), 0),
+				aces: allKills.filter((k) => k.ace).length,
+				topSpree: allKills.reduce(
+					(top, k) => ((k.spree ?? 0) > top ? (k.spree ?? 0) : top),
+					0,
+				),
+				steals: objectives.length,
+			},
 			teams,
 			winner: state.winner as Side,
 			minutes: state.minute,
