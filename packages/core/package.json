@@ -4,7 +4,7 @@
 	"type": "module",
 	"exports": "./index.ts",
 	"devDependencies": {
-		"fast-check": "4.10.3"
+		"fast-check": "4.11.0"
 	},
 	"dependencies": {
 		"@rift-legends/contracts": "workspace:*",
