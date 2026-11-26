@@ -27,6 +27,9 @@ export const ERROR_CODES = [
 	"slots-mismatch",
 	"format-locked",
 	"format-too-long",
+	// Competition views (plan 31)
+	"unknown-series",
+	"unknown-team",
 ] as const;
 
 export type ErrorCode = (typeof ERROR_CODES)[number];

@@ -33,6 +33,8 @@ export interface SeriesConfig {
 	readonly timer: boolean;
 	readonly pool: readonly string[];
 	readonly seed: number;
+	/** The competition can set game-1 priority; quick draft draws its own. */
+	readonly priority?: string;
 	/** Which teams the AI plays, in `teams` order (plan 07). */
 	readonly ai?: readonly [AiOfTeam, AiOfTeam];
 	/** Content the series is played with; the session's own when absent. */
@@ -229,7 +231,7 @@ export const seriesCommands = {
 			config,
 			game: 1,
 			phase: "side",
-			chooser: drawPriority(config),
+			chooser: config.priority ?? drawPriority(config),
 			choices: [],
 		};
 		const fact = {

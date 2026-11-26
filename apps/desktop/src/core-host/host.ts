@@ -1,6 +1,8 @@
 import {
 	type CommandCatalog,
 	type CoreError,
+	competitionCommands,
+	competitionQueries,
 	debugCommands,
 	debugQueries,
 	draftCommands,
@@ -11,6 +13,7 @@ import {
 	type Response,
 } from "@rift-legends/contracts";
 import {
+	CONTENT_VERSION,
 	type createDispatcher,
 	debugDispatcher,
 	draftDispatcher,
@@ -22,6 +25,8 @@ import {
 	packagedDraftContent,
 	packagedMatchContent,
 	type Session,
+	seasonDispatcher,
+	seasonStateWith,
 } from "@rift-legends/core";
 
 /** Larger messages are rejected before parsing (plan 04, P2). */
@@ -64,8 +69,11 @@ type AnyCatalog = any;
 
 /** A catalog with its dispatcher and the state a new session starts from. */
 interface HostModule<S> {
-	/** Whether a command or query `kind` belongs to this module. */
-	owns(kind: string): boolean;
+	/**
+	 * Whether a command or query `kind` belongs to this module; `params` is
+	 * the raw query params, for kinds that two modules share.
+	 */
+	owns(kind: string, params?: unknown): boolean;
 	commands: CommandCatalog<AnyCatalog>;
 	queries: QueryCatalog<AnyCatalog>;
 	dispatcher: ReturnType<typeof createDispatcher<S>>;
@@ -92,7 +100,8 @@ const createHost = (modules: readonly [AnyModule, ...AnyModule[]]) => {
 
 	const moduleOf = (raw: unknown) => {
 		const kind = isRecord(raw) && typeof raw.kind === "string" ? raw.kind : "";
-		const index = modules.findIndex((m) => m.owns(kind));
+		const params = isRecord(raw) ? raw.params : undefined;
+		const index = modules.findIndex((m) => m.owns(kind, params));
 		return index === -1 ? 0 : index;
 	};
 
@@ -154,6 +163,27 @@ const createHost = (modules: readonly [AnyModule, ...AnyModule[]]) => {
  */
 export const createCoreHost = () =>
 	createHost([
+		{
+			// `series.summary` and `match.view` of a season series name it with `series`.
+			owns: (kind, params) =>
+				/^(season|competition|team)\./.test(kind) ||
+				((kind === "series.summary" || kind === "match.view") &&
+					isRecord(params) &&
+					"series" in params),
+			commands: competitionCommands,
+			queries: competitionQueries,
+			dispatcher: seasonDispatcher,
+			initialState: () =>
+				seasonStateWith(function* () {
+					yield {
+						content: packagedDraftContent,
+						match: packagedMatchContent,
+						version: CONTENT_VERSION,
+					};
+					const { draft: content, match, version } = loadRealContent();
+					yield { content, match, version };
+				}),
+		},
 		{
 			owns: (kind) => !kind.startsWith("debug."),
 			commands: draftCommands,

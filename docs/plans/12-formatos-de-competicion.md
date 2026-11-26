@@ -187,6 +187,7 @@ Reglas del núcleo: sin reloj ni `Math.random`, solo enteros, módulos de unas 3
 
 - **Consultas:** `competition.standings`, `competition.bracket`, `competition.schedule` y `competition.qualified`. Son proyecciones de los hechos; el plan 13 las guardará.
 - **Idempotencia:** por `expectedPosition`, como el resto de comandos.
+- `season.playDay` espera el próximo día con series. Los desempates usan el calendario de la fase y conservan las fechas ya jugadas. Los formatos nuevos se aceptan al crear un año posterior tras terminar el actual.
 - **Partidas de otros equipos:** draft de la IA de cada coach y `match.play`, sin animación (decisión del 22-11-2026). La serie del usuario sigue el flujo del draft rápido.
 - **RNG:** dos ámbitos nuevos, `competition` (sorteos de Swiss, bombos y desempate final) y `schedule` (reparto en días), con id por competición, temporada, fase y ronda. Los ids de texto se convierten en el índice de la competición dentro de la temporada, no en un hash. `competition = 6` ya está en el registro (#420). La prioridad del game 1 en liga usa su propia semilla por serie. Los bombos usan la ronda reservada `0xfffffffd`. Sin bombos, los grupos se reparten según el sembrado.
 
@@ -297,7 +298,7 @@ Volumen de un año real: unas **2.400 partidas** de liga en el snapshot, más un
 | 7 | Calendario de la temporada | `type:task`, `area:competition` | C1–C4 |
 | 8 | Formatos reales de las seis ligas, adaptados a sus equipos, y comprobación con el snapshot | `type:task`, `area:content` | V1, R1, R3, C3 |
 | 9 | First Stand, MSI y Worlds 2026: el pipeline trae sus torneos de Leaguepedia, y sus formatos | `type:task`, `area:data-pipeline` | V1, R1, R2, Q4 |
-| 10 | Temporada en el despachador: crear, jugar día a día con el mismo motor y consultas | `type:task`, `area:competition` | P2–P4, P6, V6 |
+| 10 | Temporada en el despachador: crear, jugar día a día con el mismo motor y consultas (#428) | `type:task`, `area:competition` | P2–P4, P6, V6 |
 | 11 | Golden y presupuesto de un año IA contra IA | `type:test`, `area:competition` | P1, P5 |
 
 2–5 van en paralelo tras 1; 6 depende de 2–5; 7 de 6; 8 y 9 de 1 (los datos) y de 6 (la validación cruzada); 10 de 6 y 7; 11 cierra el plan.

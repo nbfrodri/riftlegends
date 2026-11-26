@@ -27,6 +27,8 @@ export interface CalendarSeries {
 }
 
 export interface Job {
+	readonly fixedDay: number | undefined;
+	readonly fromDay: number | undefined;
 	readonly stage: StageWindow;
 	readonly fixture: FixtureSlot;
 	readonly after: readonly number[];
@@ -72,9 +74,10 @@ export function allocate(
 	// Work backwards so tight successor windows constrain their feeders too.
 	for (let index = jobs.length - 1; index >= 0; index--) {
 		const job = jobs[index] as Job;
-		let day = latest[index] as number;
+		let day = min(job.fixedDay ?? seasonDays - 1, latest[index] as number);
 		while (day >= job.stage.startDay && blocked(index, day)) day--;
-		if (day < job.stage.startDay) return job;
+		if (day < (job.fixedDay ?? max(job.stage.startDay, job.fromDay ?? 0)))
+			return job;
 		latest[index] = day;
 		for (const before of job.after)
 			latest[before] = min(latest[before] as number, day - 1);
@@ -107,7 +110,10 @@ export function allocate(
 		const { stage, fixture, after } = job;
 		const earliestDay = after.reduce(
 			(day, prior) => max(day, (placed[prior]?.day as number) + 1),
-			stage.startDay + (fixture.earliestWeek ?? 0) * DAYS_PER_WEEK,
+			max(
+				stage.startDay + (fixture.earliestWeek ?? 0) * DAYS_PER_WEEK,
+				job.fixedDay ?? job.fromDay ?? 0,
+			),
 		);
 		const skipped = new Map<Delay, number>();
 		const weeks = stageWeeks.get(stage) as number[];

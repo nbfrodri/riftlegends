@@ -3,13 +3,12 @@ import {
 	type CoreError,
 	validateFormat,
 } from "@rift-legends/contracts";
-import { type Bracket, buildDoubleElim, buildSingleElim } from "./bracket";
+import { bracketFor } from "./bracket";
 import {
 	type AwardRule,
 	drawPots,
 	type IncomingPlace,
 	type SeasonTeam,
-	type Stage,
 	type StageGraph,
 	type StageNode,
 	type StageRef,
@@ -19,11 +18,6 @@ import {
 	stageError,
 	stageKey,
 } from "./stage-model";
-
-const bracketFor = ({ play }: Stage): Bracket | undefined => {
-	if (play.type === "singleElim") return buildSingleElim(play);
-	if (play.type === "doubleElim") return buildDoubleElim(play);
-};
 
 const invalidFormat = (path: string): CoreError => ({
 	code: "invalid-format",
@@ -271,7 +265,7 @@ export function buildStageGraph(
 					stageIndex,
 					competitionIndex,
 					tiebreak: competition.tiebreak,
-					bracket: bracketFor(stage),
+					bracket: bracketFor(stage.play),
 				});
 			} catch (error) {
 				if (!(error instanceof RangeError)) throw error;

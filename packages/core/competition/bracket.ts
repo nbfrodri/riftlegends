@@ -231,3 +231,8 @@ export const buildDoubleElim = (format: DoubleElim): Bracket => {
 	if (format.reset) matches.push(final("RS", "reset"));
 	return { size: format.size, matches, reset: format.reset };
 };
+
+export const bracketFor = (play: Play): Bracket | undefined => {
+	if (play.type === "singleElim") return buildSingleElim(play);
+	if (play.type === "doubleElim") return buildDoubleElim(play);
+};

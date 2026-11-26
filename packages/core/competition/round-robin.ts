@@ -68,6 +68,7 @@ export function drawGame1Priority(
 	rootSeed: number,
 	scope: PriorityScope,
 	fixtures: readonly Fixture[],
+	firstIndex = 0,
 ): string[] {
 	return fixtures.map(({ a, b }, index) => {
 		const rng = createRng(
@@ -78,7 +79,7 @@ export function drawGame1Priority(
 				scope.season,
 				scope.stage,
 				scope.round,
-				index,
+				firstIndex + index,
 			),
 		);
 		return int(rng, 0, 1) === 0 ? a : b;
