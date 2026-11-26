@@ -69,6 +69,8 @@ No controla directamente las mecánicas dentro de la partida: el resultado se si
 | **Torneo** | Configura y juega un torneo suelto: Worlds, MSI o uno personalizado. |
 | **Sandbox / Realidades** | Heredado de DraftSim: simula temporadas IA contra IA, historias alternativas, edición libre de meta y plantillas. |
 
+Carrera, Draft rápido, Torneo y Sandbox se eligen en el menú principal. Dentro de una carrera no hay draft rápido ni torneo sueltos: se juega lo que toca y se practica con scrims (decisión del 26-11-2026).
+
 ## 7. Sistemas principales
 
 Inventario basado en DraftSim, que ya validó que estos sistemas funcionan y aportan profundidad.

@@ -1,6 +1,7 @@
 import { ROLES, type Role } from "@rift-legends/contracts";
 import { describe, expect, it, test } from "vitest";
 import { loadRealContent } from "../../content/real";
+import timelines from "../../content/real/timelines.json";
 import { sample, scenario } from "./scenarios";
 
 // Monte Carlo bands of plan 08. Seeds are fixed, so each run is the
@@ -193,6 +194,15 @@ describe.each(["control", "packaged", "real-champions", "real"] as const)(
 			});
 		});
 
+		it("K22 · death time: P50 within 5 s of the pros, P10 and P90 within 8 s (#528)", () => {
+			const pro = timelines.bands.k22;
+			const times = even.flatMap((g) => g.deaths);
+			expect(times.length).toBeGreaterThan(10_000);
+			expect(gap(at(times, 0.5), pro.p50)).toBeLessThanOrEqual(5);
+			expect(gap(at(times, 0.1), pro.p10)).toBeLessThanOrEqual(8);
+			expect(gap(at(times, 0.9), pro.p90)).toBeLessThanOrEqual(8);
+		});
+
 		it("K8 · role rating means are 56–64 and at most 5 points apart", () => {
 			const teams = even.flatMap((g) => g.teams);
 			const means = ROLES.map((role) => {
@@ -294,7 +304,12 @@ describe.each(["control", "packaged", "real-champions", "real"] as const)(
 
 			it.each(ROLES)("%s kill share is within 3.5 pp of the pros", (role) => {
 				// Edges are 1/16 steps of a team's kills; 6.5 admits one step over 6 (#401).
-				within(share(role, false), KILL_SHARE[role], [3.5, 6.5]);
+				// The jungle edge is 7.5: with players down more kills fit in a game
+				// (#528), which lifts the floor of its P10 a step (pro P10 is 0).
+				within(share(role, false), KILL_SHARE[role], [
+					3.5,
+					role === "jungle" ? 7.5 : 6.5,
+				]);
 			});
 
 			it.each(ROLES)("%s participation is within 6 pp of the pros", (role) => {
