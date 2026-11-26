@@ -67,7 +67,8 @@ const roleAssignment = z.strictObject({
 	support: championId,
 });
 
-export const draftCommands = defineCommands({
+/** The raw schemas, so the season can offer the same flow to the user's series. */
+export const draftCommandSchemas = {
 	"series.start": z.strictObject({
 		teams: pair(teamId).refine(unique, "teams must differ"),
 		format: z.enum(FORMATS),
@@ -93,9 +94,10 @@ export const draftCommands = defineCommands({
 	"draft.roles": z.strictObject({ team: teamId, roles: roleAssignment }),
 	/** Plays the game after the roles; its winner comes out of play (plan 08). */
 	"match.play": z.strictObject({ strategy: teamStrategy.optional() }),
-});
+};
+export const draftCommands = defineCommands(draftCommandSchemas);
 
-export const draftQueries = defineQueries({
+export const draftQuerySchemas = {
 	/** `team` is who looks: with soft fearless, availability depends on it. */
 	"draft.view": z.strictObject({ team: teamId.optional() }),
 	"draft.champion": z.strictObject({
@@ -115,7 +117,8 @@ export const draftQueries = defineQueries({
 	"series.options": z.strictObject({ content: contentSet.optional() }),
 	/** Every player and team of `content`, or of the session's content (#443). */
 	"content.database": z.strictObject({ content: contentSet.optional() }),
-});
+};
+export const draftQueries = defineQueries(draftQuerySchemas);
 
 const factCatalog = defineFacts({
 	"series.started": {

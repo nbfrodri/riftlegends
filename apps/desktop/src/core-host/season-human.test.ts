@@ -29,8 +29,8 @@ const draftView = (core: Core) => {
 function playHuman(core: Core, series: string): Fact[] {
 	const facts = factsOf(core, "season.playSeries", { series });
 	for (let guard = 0; guard < 400; guard++) {
-		const last = facts.at(-1);
-		if (last?.type === "competition.seriesRecorded") return facts;
+		if (facts.some(({ type }) => type === "competition.seriesRecorded"))
+			return facts;
 		const view = draftView(core);
 		const turn = view.turn;
 		if (view.phase === "result") {
@@ -139,11 +139,14 @@ test("Q8: the user's series is played with the draft flow and recorded like the 
 	const { core } = dayZero();
 	const [slot] = schedule(core);
 	const facts = playHuman(core, slot?.id as string);
-	const ai = facts[0]?.ai as unknown[];
-	expect(facts[0]?.type).toBe("series.started");
+	const started = facts[0] as Fact;
+	const ai = started.ai as unknown[];
+	expect(started.type).toBe("series.started");
 	expect([...ai].sort()).toEqual(["coach", null].sort());
-	expect(ai[(facts[0]?.teams as string[]).indexOf("forge")]).toBeNull();
-	const recorded = facts.at(-1) as Fact;
+	expect(ai[(started.teams as string[]).indexOf("forge")]).toBeNull();
+	const recorded = facts.find(
+		({ type }) => type === "competition.seriesRecorded",
+	) as Fact;
 	expect(recorded).toMatchObject({
 		type: "competition.seriesRecorded",
 		competition: "league",
@@ -159,13 +162,11 @@ test("Q8: the user's series is played with the draft flow and recorded like the 
 	]);
 	const summary = core.query("series.summary", { series: slot?.id });
 	expect(summary).toMatchObject({ ok: true });
-	// The day is closed: the next one can be played.
-	const next = core.query("season.overview", {});
-	expect(next).toMatchObject({ ok: true });
-	const upcoming = (next as { view: { day: number | null } }).view.day;
-	expect(upcoming).toBeGreaterThan(0);
-	expect(core.send("season.playDay", { day: upcoming })).toMatchObject({
+	// The day is closed: with its last series played the stage is finished.
+	expect(facts.map(({ type }) => type)).toContain("competition.stageFinished");
+	expect(core.query("season.overview", {})).toMatchObject({
 		ok: true,
+		view: { day: null },
 	});
 	expect(core.send("season.playSeries", { series: slot?.id })).toMatchObject({
 		ok: false,
@@ -179,5 +180,7 @@ test("Q8: same seed and same decisions give the same log of facts", () => {
 		return [...day, ...playHuman(core, slot?.id as string)];
 	});
 	expect(logs[1]).toEqual(logs[0]);
-	expect(logs[0]?.at(-1)).toMatchObject({ type: "competition.seriesRecorded" });
+	expect(logs[0]?.map(({ type }) => type)).toContain(
+		"competition.seriesRecorded",
+	);
 });
