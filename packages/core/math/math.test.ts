@@ -36,6 +36,31 @@ describe("A1 fixed point", () => {
 		expect(mul(fx(1), fx(5_001))).toBe(1);
 	});
 
+	test("mul matches the exact BigInt rounding, also around the exact halves", () => {
+		const exact = (a: number, b: number) => {
+			const n = BigInt(a) * BigInt(b);
+			const d = BigInt(SCALE);
+			const q = n / d;
+			const twice = 2n * (n % d);
+			const abs2 = twice < 0n ? -twice : twice;
+			if (abs2 < d || (abs2 === d && q % 2n === 0n)) return Number(q);
+			return Number(n < 0n ? q - 1n : q + 1n);
+		};
+		fc.assert(
+			fc.property(
+				fc.integer({ min: -3_000_000, max: 3_000_000 }),
+				fc.oneof(
+					fc.integer({ min: -3_000_000, max: 3_000_000 }),
+					fc.integer({ min: -600, max: 600 }).map((k) => k * 5_000),
+				),
+				(a, b) => {
+					expect(mul(fx(a), fx(b))).toBe(exact(a, b) || 0);
+				},
+			),
+			{ numRuns: 5_000 },
+		);
+	});
+
 	test("mul rounds negatives half to even, symmetric around zero", () => {
 		expect(mul(fx(-1), fx(5_000))).toBe(0);
 		expect(mul(fx(-3), fx(5_000))).toBe(-2);

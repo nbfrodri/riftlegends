@@ -27,7 +27,10 @@ export interface Component {
 export function nonzeroComponents(
 	scores: Readonly<Record<string, number>>,
 ): Component[] {
-	return Object.entries(scores)
-		.filter(([, points]) => points !== 0)
-		.map(([key, points]) => ({ key, points }));
+	const components: Component[] = [];
+	for (const key in scores) {
+		const points = scores[key] as number;
+		if (points !== 0) components.push({ key, points });
+	}
+	return components;
 }
