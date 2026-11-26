@@ -31,40 +31,76 @@ for (const [width, height] of [
 		).toBe(true);
 
 		const advance = appWindow.getByRole("group", { name: "Advance" });
-		await advance.getByRole("button", { name: "Whole season" }).click();
 		const progress = appWindow.getByRole("progressbar", {
 			name: "Season progress",
 		});
-		await expect(progress).toBeVisible();
-		const values: number[] = [];
-		await expect
-			.poll(
-				async () => {
-					values.push(Number(await progress.getAttribute("aria-valuenow")));
-					return new Set(values).size;
-				},
-				{ timeout: 30_000, intervals: [50] },
-			)
-			.toBeGreaterThanOrEqual(3);
-		expect([...values].sort((a, b) => a - b)).toEqual(values);
+		const playDay = advance.getByRole("button", { name: "Play day" });
+		const stop = advance.getByRole("button", { name: "Stop" });
+		const over = appWindow.getByText("Season over");
 
-		// While days are played, a frame still answers quickly. The season of this
-		// content lasts about a second on a busy runner, so the frame is measured
-		// and Stop pressed in one step, before the season can end by itself.
-		const frame = await advance.getByRole("button", { name: "Stop" }).evaluate(
-			(stop) =>
-				new Promise<number>((resolve) => {
+		// Stop is pressed in the same step as the first change of the progress, so
+		// the season cannot end first: it stops early and the controls come back.
+		await advance.getByRole("button", { name: "Whole season" }).click();
+		await expect(progress).toBeVisible();
+		await progress.evaluate(
+			(bar) =>
+				new Promise<void>((resolve) => {
+					const first = bar.getAttribute("aria-valuenow");
+					const watch = new MutationObserver(() => {
+						if (bar.getAttribute("aria-valuenow") === first) return;
+						watch.disconnect();
+						document
+							.querySelector<HTMLElement>('[aria-label="Advance"] button')
+							?.click();
+						resolve();
+					});
+					watch.observe(bar, { attributes: true });
+				}),
+		);
+		await expect(progress).toBeHidden({ timeout: 30_000 });
+		await expect(playDay).toBeEnabled();
+		await expect(over).toHaveCount(0);
+
+		// Played again, the progress rises strictly and a frame still answers. The
+		// values are read inside the page, so the run may end by itself.
+		await advance.getByRole("button", { name: "Whole season" }).click();
+		await expect(progress).toBeVisible();
+		const { values, frame } = await progress.evaluate(
+			(bar) =>
+				new Promise<{ values: number[]; frame: number }>((resolve) => {
+					const values = [Number(bar.getAttribute("aria-valuenow"))];
+					let frame = 0;
 					const start = performance.now();
 					requestAnimationFrame(() => {
-						resolve(performance.now() - start);
-						(stop as HTMLElement).click();
+						frame = performance.now() - start;
+					});
+					const done = () => {
+						watch.disconnect();
+						resolve({ values, frame });
+					};
+					const watch = new MutationObserver(() => {
+						if (!bar.isConnected) return done();
+						values.push(Number(bar.getAttribute("aria-valuenow")));
+						if (new Set(values).size >= 3 && frame > 0) {
+							document
+								.querySelector<HTMLElement>('[aria-label="Advance"] button')
+								?.click();
+							done();
+						}
+					});
+					watch.observe(bar, { attributes: true });
+					watch.observe(bar.parentElement ?? document.body, {
+						childList: true,
 					});
 				}),
 		);
+		expect(new Set(values).size).toBeGreaterThanOrEqual(3);
+		expect([...values].sort((a, b) => a - b)).toEqual(values);
 		expect(frame).toBeLessThan(250);
 		await expect(progress).toBeHidden({ timeout: 30_000 });
-		await expect(
-			advance.getByRole("button", { name: "Play day" }),
-		).toBeEnabled();
+		// The run ended by Stop (controls back) or because the season is over.
+		await expect(stop).toHaveCount(0);
+		if (await over.count()) await expect(playDay).toBeDisabled();
+		else await expect(playDay).toBeEnabled();
 	});
 }
