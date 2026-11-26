@@ -59,6 +59,7 @@ const options = {
 vi.mock("../src/renderer/draft/session", async (original) => ({
 	...(await original<typeof import("../src/renderer/draft/session")>()),
 	useDraftSession: () => ({ options, restart: vi.fn() }),
+	useSeriesOptions: () => options,
 	useDraftContent: () => "real",
 }));
 

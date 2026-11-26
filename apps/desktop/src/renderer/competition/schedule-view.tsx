@@ -25,7 +25,7 @@ import { type SeasonOverview, useTeamNames } from "./season";
 // filtered by competition and team. Filters live in the route, so coming back
 // from a series finds them as they were (U5).
 
-export const ALL = "all";
+const ALL = "all";
 
 export interface ScheduleFilters {
 	/** A competition id, or `ALL`. */

@@ -18,7 +18,7 @@ import { useExhibitionSeason, useSeasonOverview } from "./season";
 // view per tab: its stages and its schedule (U4). What the hub shows lives in
 // the route's search, so coming back from a series finds it as it was (U5).
 
-export type HubView = "stages" | "schedule";
+type HubView = "stages" | "schedule";
 
 export interface HubSearch {
 	readonly view?: HubView | undefined;
