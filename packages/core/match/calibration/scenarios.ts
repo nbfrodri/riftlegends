@@ -17,7 +17,7 @@ import { MATCH_CONTESTS, matchDuration, playMatch } from "../loop";
 import { mentalEdge } from "../mental";
 import type { MatchSetup } from "../state";
 import { playerStats } from "../stats";
-import { structureTakes } from "./takes";
+import { fightOutcomes, structureTakes } from "./takes";
 
 const POOL = Array.from({ length: 10 }, (_, i) => `c${i}`);
 const lineup = (team: string, champions: readonly (string | undefined)[]) => ({
@@ -267,8 +267,11 @@ export function sample(games: number, edge: number, pool: Pool) {
 			),
 		);
 		const takes = structureTakes(state, events);
+		const { fights, deadAtEnd } = fightOutcomes(state, events);
 		return {
 			takes,
+			fights,
+			deadAtEnd,
 			deaths,
 			streaks,
 			plays: {
