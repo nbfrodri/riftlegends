@@ -73,3 +73,4 @@ Estado 26-11 ~01:00: fusionados #574, #575, #573. En la cola: #576 (#481, decisi
 | #483 ruta /competicion y controles de avance | Opus medium | `../riftlegends-483`, feat/483-competition-route | main |
 
 Estado 26-11 ~02:00: fusionado también #576 (#481). Cola vacía. #429 espera al final de la 3.5 (su golden cambia con cada `SIM_VERSION`).
+PR #577 (#572) aprobado y en la cola (`queue-577.log`).
