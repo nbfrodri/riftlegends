@@ -12,7 +12,7 @@ import {
 	SelectValue,
 } from "@rift-legends/ui-kit/components/select";
 import { useQueryClient } from "@tanstack/react-query";
-import { useMemo } from "react";
+import { type ReactNode, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { LeagueLogo } from "../assets/league-logo";
 import {
@@ -132,7 +132,7 @@ export function ScheduleView({
 		? slots.filter(({ teams }) => teams.includes(filters.team as string))
 		: slots;
 
-	const competitions = [
+	const competitions: { value: string; label: string; icon?: ReactNode }[] = [
 		{ value: ALL, label: t("competition.schedule.allCompetitions") },
 		...overview.competitions.map(({ id }) => ({
 			value: id,
