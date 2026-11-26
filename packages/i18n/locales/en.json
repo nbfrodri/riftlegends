@@ -884,5 +884,7 @@
 	"competition.bracket.bye": "Bye",
 	"competition.bracket.versus": "{{round}}: {{a}} vs {{b}}",
 	"competition.bracket.result": "{{round}}: {{a}} {{scoreA}}–{{scoreB}} {{b}}",
-	"competition.bracket.champion": "Champion"
+	"competition.bracket.champion": "Champion",
+	"competition.bracket.winnerShort": "Winner {{match}}",
+	"competition.bracket.loserShort": "Loser {{match}}"
 }

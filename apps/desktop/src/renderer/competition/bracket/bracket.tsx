@@ -12,7 +12,7 @@ import {
 import { useTranslation } from "react-i18next";
 import { pacing } from "../../draft/broadcast/pacing";
 import { TeamCrest } from "../../draft/team-crest";
-import { BracketCard, slotTexts } from "./bracket-card";
+import { BracketCard, slotTexts, type TeamNames } from "./bracket-card";
 import { bracketLabels, type Label } from "./bracket-labels";
 import {
 	CARD_H,
@@ -54,11 +54,12 @@ function useFreshConnectors(done: readonly string[]) {
 
 export function Bracket({
 	bracket,
-	teamName,
+	team,
 	onOpenSeries,
 }: {
 	bracket: BracketView;
-	teamName: (id: string) => string;
+	/** Names of a team; the card shows the short one and the tooltip the full one. */
+	team: (id: string) => TeamNames;
 	/** Opens a played series by its `competition.schedule` id. */
 	onOpenSeries?: (series: string) => void;
 }) {
@@ -86,10 +87,15 @@ export function Bracket({
 			? round
 			: t("competition.bracket.numbered", { round, n: label.index });
 	};
-	const origin = (slot: Slot) =>
-		slot.kind === "seed"
-			? t("competition.bracket.seed", { n: slot.rank })
+	const origin = (slot: Slot, short: boolean) => {
+		if (slot.kind === "seed")
+			return t("competition.bracket.seed", { n: slot.rank });
+		return short
+			? t(`competition.bracket.${slot.kind}Short`, {
+					match: labels.get(slot.match)?.code ?? slot.match,
+				})
 			: t(`competition.bracket.${slot.kind}Of`, { match: nameOf(slot.match) });
+	};
 
 	const move = (id: string) => (event: KeyboardEvent<HTMLButtonElement>) => {
 		const direction = KEYS[event.key as keyof typeof KEYS];
@@ -151,7 +157,7 @@ export function Bracket({
 					</span>
 				))}
 				{layout.placed.map(({ match, x, y }) => {
-					const slots = slotTexts(match, teamName, origin);
+					const slots = slotTexts(match, team, origin);
 					const [a, b] = slots.map((slot) => slot.name);
 					const round = nameOf(match.id);
 					const label = match.score
@@ -203,10 +209,10 @@ export function Bracket({
 						>
 							<TeamCrest
 								id={champion}
-								name={teamName(champion)}
+								name={team(champion).name}
 								className="size-7 shrink-0"
 							/>
-							<span className="min-w-0 truncate">{teamName(champion)}</span>
+							<span className="min-w-0 truncate">{team(champion).name}</span>
 						</span>
 					</div>
 				)}

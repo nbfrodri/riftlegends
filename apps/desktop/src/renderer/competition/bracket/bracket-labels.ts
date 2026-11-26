@@ -26,6 +26,28 @@ export interface MatchLabel {
 	round: Label;
 	/** 1-based place of the series in its round, when the round has more than one. */
 	index: number | null;
+	/** Short code for the pending slots it feeds («SF1», «U1-2», «LF»), the same in every language. */
+	code: string;
+}
+
+const CODES: Record<RoundKey, string> = {
+	final: "F",
+	semifinal: "SF",
+	quarterfinal: "QF",
+	round: "R",
+	upperFinal: "UF",
+	upperRound: "U",
+	lowerFinal: "LF",
+	lowerRound: "L",
+	grandFinal: "GF",
+	reset: "GF",
+};
+
+function codeOf(round: Label, index: number | null) {
+	const key = round.key.slice(KEY.length + 1) as RoundKey;
+	const base = `${CODES[key]}${round.params.n ?? ""}`;
+	if (index === null) return base;
+	return /\d$/.test(base) ? `${base}-${index}` : `${base}${index}`;
 }
 
 const KEY = "competition.bracket.round" as const;
@@ -71,13 +93,9 @@ export function bracketLabels(
 	return new Map(
 		matches.map((match) => {
 			const group = groups.get(`${match.side}-${match.round}`) ?? [];
-			return [
-				match.id,
-				{
-					round: roundOf(match, upperRounds, lowerRounds, double),
-					index: group.length > 1 ? group.indexOf(match) + 1 : null,
-				},
-			];
+			const round = roundOf(match, upperRounds, lowerRounds, double);
+			const index = group.length > 1 ? group.indexOf(match) + 1 : null;
+			return [match.id, { round, index, code: codeOf(round, index) }];
 		}),
 	);
 }

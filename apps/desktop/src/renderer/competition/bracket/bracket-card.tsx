@@ -8,9 +8,17 @@ import { CARD_H, CARD_W } from "./bracket-layout";
 type Match = BracketView["matches"][number];
 type Slot = Match["from"][number];
 
-export interface SlotText {
-	/** The team, or where it will come from while it is not known. */
+/** A team's full name and, when the content has it, its short one (HLE, T1). */
+export interface TeamNames {
 	name: string;
+	short?: string | undefined;
+}
+
+export interface SlotText {
+	/** The team, or where it will come from while it is not known, in full. */
+	name: string;
+	/** What the card shows: the short name, or the short origin («Winner SF1»). */
+	label: string;
 	known: boolean;
 	/** A top seed that skipped the first round. */
 	bye: boolean;
@@ -19,11 +27,12 @@ export interface SlotText {
 /** The two slots of a series, in the order of `teamA` and `teamB`. */
 export function slotTexts(
 	match: Match,
-	teamName: (id: string) => string,
-	origin: (slot: Slot) => string,
+	team: (id: string) => TeamNames,
+	origin: (slot: Slot, short: boolean) => string,
 ): [SlotText, SlotText] {
-	const text = (team: string | null, slot: Slot): SlotText => ({
-		name: team ? teamName(team) : origin(slot),
+	const text = (id: string | null, slot: Slot): SlotText => ({
+		name: id ? team(id).name : origin(slot, false),
+		label: id ? (team(id).short ?? team(id).name) : origin(slot, true),
 		known: team !== null,
 		bye: slot.kind === "seed" && match.side === "upper" && match.round > 1,
 	});
@@ -57,7 +66,7 @@ function Row({
 			) : (
 				<span aria-hidden="true" className="size-4 shrink-0" />
 			)}
-			<span className="min-w-0 flex-1 truncate">{slot.name}</span>
+			<span className="min-w-0 flex-1 truncate">{slot.label}</span>
 			{slot.bye && (
 				<span className="shrink-0 rounded-[3px] border border-line px-1 text-[10px] text-muted uppercase leading-4">
 					{t("competition.bracket.bye")}
