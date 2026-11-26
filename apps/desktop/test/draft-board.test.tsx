@@ -56,7 +56,7 @@ describe("draft board (U3)", () => {
 		);
 		await toBoard(user);
 
-		expect(screen.getByText("Ban 1 · Forge")).toBeTruthy();
+		expect(screen.getByText("Forge ban 1")).toBeTruthy();
 		expect(confirm().hasAttribute("disabled")).toBe(true);
 		// #436: the slot of the ban being chosen is marked from the start.
 		const blueSlots = within(
@@ -395,7 +395,7 @@ describe("#469: a click on empty space clears the selection", () => {
 		const targets = [
 			() => screen.getByRole("searchbox"),
 			() => screen.getByRole("button", { name: "All roles" }),
-			() => screen.getByText("Ban 1 · Forge"),
+			() => screen.getByText("Forge ban 1"),
 			() => screen.getByRole("heading", { name: "Cragbell" }),
 			() => within(card).getByText("Player card", { exact: true }),
 			() => card.querySelector('[data-slot="panel-body"]') as HTMLElement,
