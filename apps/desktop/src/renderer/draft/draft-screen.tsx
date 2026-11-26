@@ -22,7 +22,8 @@ function useDraftSounds(view: DraftView | null, mine: string | null) {
 	}, [view, mine]);
 }
 
-function DraftFlow() {
+/** The sub-screen of the current stage, under a draft or season series provider. */
+export function DraftFlow() {
 	const { view, presentation, mine } = useDraftSession();
 	useDraftSounds(view, mine);
 	const stage = stageOf(view, presentation);

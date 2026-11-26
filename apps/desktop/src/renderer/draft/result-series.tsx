@@ -75,7 +75,8 @@ export function SeriesBanner(props: {
 	);
 }
 
-function Mvp(props: {
+/** The MVP of a series: always of its winner (#437). */
+export function Mvp(props: {
 	mvp: NonNullable<SeriesSummary["mvp"]>;
 	games: readonly GameResult[];
 	sideOf: (team: string) => "blue" | "red";

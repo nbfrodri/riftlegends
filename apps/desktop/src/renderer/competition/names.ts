@@ -1,10 +1,16 @@
-type NamedId = "first-stand" | "msi" | "worlds" | "rift-league";
+type NamedId = "first-stand" | "msi" | "worlds" | "rift-league" | "custom";
 type Translate = (key: `competition.name.${NamedId}`) => string;
 
 // Names and dates of the season views. Leagues are named by their id; the
 // international events and the fictional league have catalog names.
 
-const named = new Set<string>(["first-stand", "msi", "worlds", "rift-league"]);
+const named = new Set<string>([
+	"first-stand",
+	"msi",
+	"worlds",
+	"rift-league",
+	"custom",
+]);
 const INTERNATIONAL = new Set(["first-stand", "msi", "worlds"]);
 /** First Stand, MSI and Worlds, as opposed to the leagues. */
 export const isInternational = (id: string) => INTERNATIONAL.has(id);
