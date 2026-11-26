@@ -101,3 +101,6 @@ Estado 26-11 tarde:
 - Cola: #581 → #588 (docs: menú principal y carrera separados, aprobado) → #582 (Competición rediseñada, aprobada).
 - Riesgo anotado para #584: un día con muchas ligas puede superar el límite de 10 s del puente IPC y reiniciar el núcleo (se pierde la temporada de exhibición).
 - Limpieza 26-11: `~/.cache/rift-tmp` de 2,1 GB a 7 MB y ramas locales `worktree-agent-*` fusionadas borradas.
+- Cola (26-11 tarde): #588 → #582 → #585 (#528, aprobado) → #590 (#584 primera parte, 2,5× más rápido, aprobado).
+- Siguiente en #584 (decisión del usuario): tras fusionar #582, #585 y #590, (1) `season.playDay` por tandas de series con progreso (ninguna llamada > ~1 s; toca los controles de avance de #582) y (2) acelerar la IA sin cambiar resultados (reutilizar la puntuación del rival al mirar adelante y podar). Un año cuesta ~187 s; objetivo ≤ 60 s.
+- #589 (centrar iconos del cara a cara): subagente Opus en `../riftlegends-589`.
