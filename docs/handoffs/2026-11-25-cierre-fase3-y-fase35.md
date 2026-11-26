@@ -105,3 +105,5 @@ Estado 26-11 tarde:
 - Siguiente en #584 (decisión del usuario): tras fusionar #582, #585 y #590, (1) `season.playDay` por tandas de series con progreso (ninguna llamada > ~1 s; toca los controles de avance de #582) y (2) acelerar la IA sin cambiar resultados (reutilizar la puntuación del rival al mirar adelante y podar). Un año cuesta ~187 s; objetivo ≤ 60 s.
 - #589 (centrar iconos del cara a cara): subagente Opus en `../riftlegends-589`.
 - Cola añadida: #592 (#589 iconos centrados, aprobado) → #591 (#586 sin «·», aprobado sin el equipo junto al MVP). #588 fusionado.
+- #585 (#528) fusionado: `SIM_VERSION` 16. Siguiente de la 3.5: #529 (contar solo a los vivos), subagente Sonnet en `../riftlegends-529`, feat/529-living-contests.
+- Cola: #590 → #592 → #591 → #582 (reencolado tras resolver conflicto de catálogos i18n con #581).
