@@ -26,9 +26,14 @@ const sectionsEs = [
 ];
 const pendingEs = sectionsEs.filter(
 	(name) =>
-		!["Draft", "Campeones", "Base de datos", "Mercado", "Ajustes"].includes(
-			name,
-		),
+		![
+			"Draft",
+			"Campeones",
+			"Base de datos",
+			"Mercado",
+			"Competición",
+			"Ajustes",
+		].includes(name),
 );
 
 async function renderShell(path = "/mercado", locale = "es-ES") {
@@ -118,6 +123,7 @@ describe("T5: sidebar sections", () => {
 			"Campeones",
 			"Base de datos",
 			"Mercado",
+			"Competición",
 			"Ajustes",
 		]) {
 			expect(section(name).getAttribute("aria-disabled")).toBeNull();
@@ -225,6 +231,8 @@ describe("T6: collapsing and keyboard", () => {
 		const { user } = await renderShell("/mercado");
 		section("Mercado").focus();
 		await user.keyboard("{ArrowDown}");
+		expect(document.activeElement).toBe(section("Competición"));
+		await user.keyboard("{ArrowDown}");
 		expect(document.activeElement).toBe(section("Ajustes"));
 		await user.keyboard("{ArrowDown}");
 		expect(document.activeElement).toBe(section("Draft"));
@@ -247,6 +255,8 @@ describe("T6: collapsing and keyboard", () => {
 		expect(document.activeElement).toBe(section("Base de datos"));
 		await user.tab();
 		expect(document.activeElement).toBe(section("Mercado"));
+		await user.tab();
+		expect(document.activeElement).toBe(section("Competición"));
 		await user.tab();
 		expect(document.activeElement).toBe(section("Ajustes"));
 	});
