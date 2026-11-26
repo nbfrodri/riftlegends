@@ -203,6 +203,21 @@ describe.each(["control", "packaged", "real-champions", "real"] as const)(
 			expect(gap(at(times, 0.9), pro.p90)).toBeLessThanOrEqual(8);
 		});
 
+		it("K19 · alive when taking: more than the rival within 10 pp of the pro rate, fewer at most 10 % (#529)", () => {
+			const pro = timelines.bands.k19;
+			const takes = even.flatMap((g) => g.takes);
+			for (const kind of ["baron", "inhibitor", "tower"] as const) {
+				const own = takes.filter((t) => t.kind === kind);
+				expect(own.length, kind).toBeGreaterThan(100);
+				const more = rate(own, (t) => t.ours > t.theirs) * 100;
+				const fewer = rate(own, (t) => t.ours < t.theirs) * 100;
+				expect
+					.soft(gap(more, pro[kind].moreBp / 100), `${kind} more`)
+					.toBeLessThanOrEqual(10);
+				expect.soft(fewer, `${kind} fewer`).toBeLessThanOrEqual(10);
+			}
+		});
+
 		it("K8 · role rating means are 56–64 and at most 5 points apart", () => {
 			const teams = even.flatMap((g) => g.teams);
 			const means = ROLES.map((role) => {

@@ -132,6 +132,18 @@ const deathTimer = {
 	],
 	cap: 50_000,
 };
+/** Presence per role, per 10,000, of every contest (issue #529). */
+const presence = {
+	lane: {
+		top: { top: 10_000, jungle: 0, mid: 0, bot: 0, support: 0 },
+		mid: { top: 0, jungle: 0, mid: 10_000, bot: 0, support: 0 },
+		bot: { top: 0, jungle: 0, mid: 0, bot: 6000, support: 4000 },
+	},
+	jungle: { top: 1500, jungle: 4000, mid: 1500, bot: 1000, support: 2000 },
+	fight: { top: 2000, jungle: 2000, mid: 2000, bot: 2200, support: 1800 },
+	objective: { top: 1500, jungle: 3000, mid: 2000, bot: 2000, support: 1500 },
+	siege: { top: 2000, jungle: 1500, mid: 2000, bot: 2500, support: 2000 },
+};
 const curve = [10, 20, 30];
 const levelCurve = {
 	top: curve,
@@ -169,6 +181,16 @@ describe("match.event", () => {
 		const [kill] = fact.kills;
 		roundTrips({ ...fact, kills: [{ ...kill, respawnAt: 412 }] });
 		roundTrips(fact);
+	});
+
+	it("lists the roles that were down, and still reads logs without them", () => {
+		roundTrips({
+			...fact,
+			down: { blue: ["jungle"], red: [] },
+		});
+		roundTrips(fact);
+		rejects({ ...fact, down: { blue: ["coach"], red: [] } });
+		rejects({ ...fact, down: { blue: [], red: [] } });
 	});
 
 	it("carries a structure tier for towers", () =>
@@ -301,6 +323,7 @@ describe("MatchContent", () => {
 			},
 			inhibitorRespawn: 300,
 			deathTimer,
+			presence,
 			levelCurve,
 			economy: {
 				passive: 1200,
@@ -386,6 +409,26 @@ describe("MatchContent", () => {
 					...content.rules,
 					deathTimer: { ...deathTimer, brw: deathTimer.brw.slice(0, 17) },
 				},
+			},
+		],
+		[
+			"a presence table that does not add up to 10,000",
+			{
+				...content,
+				rules: {
+					...content.rules,
+					presence: {
+						...presence,
+						fight: { ...presence.fight, top: 2001 },
+					},
+				},
+			},
+		],
+		[
+			"rules without a presence table",
+			{
+				...content,
+				rules: (({ presence: _, ...rest }) => rest)(content.rules),
 			},
 		],
 		[
