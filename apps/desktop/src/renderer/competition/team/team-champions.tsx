@@ -1,3 +1,4 @@
+import { Tooltip } from "@rift-legends/ui-kit/components/tooltip";
 import { useTranslation } from "react-i18next";
 import { ChampionPortrait } from "../../draft/champion-portrait";
 import { championLabel, useSeriesOptions } from "../../draft/session";
@@ -17,7 +18,10 @@ export function TeamChampions({
 			<h2 className="font-semibold text-[13px] text-muted uppercase tracking-[0.055em]">
 				{label}
 			</h2>
-			<ol aria-label={label} className="flex gap-[clamp(8px,1vw,16px)]">
+			<ol
+				aria-label={label}
+				className="grid grid-cols-5 gap-[clamp(6px,0.8vw,12px)]"
+			>
 				{champions.map(({ champion, games }) => {
 					const name = championLabel(options, champion);
 					return (
@@ -27,10 +31,12 @@ export function TeamChampions({
 						>
 							<ChampionPortrait id={champion} size="ban" />
 							<span className="flex min-w-0 flex-col leading-tight">
-								<span className="truncate font-semibold text-[14px]">
-									{name}
-								</span>
-								<span className="text-[12px] text-muted tabular-nums">
+								<Tooltip content={name}>
+									<span className="truncate font-semibold text-[14px]">
+										{name}
+									</span>
+								</Tooltip>
+								<span className="whitespace-nowrap text-[12px] text-muted tabular-nums">
 									{t("competition.team.games", { count: games })}
 								</span>
 							</span>

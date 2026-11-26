@@ -96,7 +96,7 @@ export function TeamRoster({ profile }: { profile: TeamProfile }) {
 				cell: (row) =>
 					row.line
 						? `${row.line.kills}/${row.line.deaths}/${row.line.assists}`
-						: "",
+						: "—",
 				numeric: true,
 				width: "7rem",
 			},
@@ -105,7 +105,7 @@ export function TeamRoster({ profile }: { profile: TeamProfile }) {
 	);
 	return (
 		<DataTable
-			className="min-h-0 flex-1"
+			className="min-h-0"
 			label={t("competition.team.roster")}
 			data={rows}
 			columns={columns}
