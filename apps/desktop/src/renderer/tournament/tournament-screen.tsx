@@ -224,7 +224,13 @@ function TournamentHub({
 					onRestart={onNew}
 				/>
 			</header>
-			{run.humanTeam ? (
+			{view.day === null && competition.champion ? (
+				<p className="text-[14px]">
+					{t("tournament.championLine", {
+						team: teamName(competition.champion),
+					})}
+				</p>
+			) : run.humanTeam ? (
 				<MyTeamLine
 					sessionId={sessionId}
 					team={run.humanTeam}

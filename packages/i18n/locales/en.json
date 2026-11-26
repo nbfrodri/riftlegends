@@ -1076,5 +1076,6 @@
 	"tournament.champion.final": "Final: {{a}} {{scoreA}}–{{scoreB}} {{b}}",
 	"tournament.champion.mine": "Your team won the tournament.",
 	"tournament.champion.notMine": "{{team}} did not win it this time.",
-	"tournament.champion.hub": "See the tournament"
+	"tournament.champion.hub": "See the tournament",
+	"tournament.championLine": "{{team}} is the champion."
 }

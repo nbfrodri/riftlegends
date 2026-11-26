@@ -94,12 +94,16 @@ describe("U10: play a tournament", () => {
 			within(champion).getByText("Champion of Custom tournament"),
 		).toBeTruthy();
 		expect(within(champion).getByText(/^Final: /)).toBeTruthy();
+		const name = within(champion).getByRole("heading", {
+			level: 2,
+		}).textContent;
 		await user.click(
 			within(champion).getByRole("button", { name: "See the tournament" }),
 		);
 		expect(
 			await within(advance()).findByRole("button", { name: "New tournament" }),
 		).toBeTruthy();
+		expect(screen.getByText(`${name} is the champion.`)).toBeTruthy();
 		await user.click(
 			within(advance()).getByRole("button", { name: "New tournament" }),
 		);
