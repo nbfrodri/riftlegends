@@ -62,6 +62,9 @@ describe("season overview (U1)", () => {
 		if (!league) throw new Error("no card");
 		expect(within(league).getByText("Not started")).toBeTruthy();
 		expect(within(league).getByText(/Starts on day 7/)).toBeTruthy();
+		// The first match day is the next one: the card says so in words.
+		expect(within(league).getByText("Today")).toBeTruthy();
+		expect(within(league).getByText("Stage 1 of 2")).toBeTruthy();
 		expect(
 			within(league).getByRole("img", { name: "Rift League" }),
 		).toBeTruthy();
@@ -74,6 +77,7 @@ describe("season overview (U1)", () => {
 		);
 		const live = card("Rift League") as HTMLElement;
 		expect(within(live).getByText("Leader")).toBeTruthy();
+		expect(within(live).getByText("Stage 1 of 2")).toBeTruthy();
 		expect(within(live).getByText(/^1-0$/)).toBeTruthy();
 		expect(within(live).getByText(/Next day: \d+/)).toBeTruthy();
 		expect(days(api)).toBe(1);
@@ -133,6 +137,8 @@ describe("advancing the season (U2)", () => {
 			name: "Season progress",
 		});
 		expect(progress.getAttribute("aria-valuenow")).toBe("0");
+		// The bar says how far the run goes.
+		expect(screen.getByText("Until the end of the season")).toBeTruthy();
 
 		await act(async () => release());
 		await waitFor(() => expect(days(api)).toBe(2));
