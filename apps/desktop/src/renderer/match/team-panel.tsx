@@ -189,9 +189,9 @@ export function TeamPanel({
 			data-side={side}
 			className={`${panel} relative row-span-6 grid grid-rows-subgrid gap-y-3 border-(--side) border-t-[3px]`}
 		>
-			<h2 className={`${panelTitle} text-(--side) [overflow-wrap:anywhere]`}>
-				{name}
-			</h2>
+			<Tooltip content={name}>
+				<h2 className={`${panelTitle} truncate text-(--side)`}>{name}</h2>
+			</Tooltip>
 			<p className="flex items-baseline justify-between gap-2">
 				<span className="text-muted">{t("draft.match.towersStanding")}</span>
 				<b>

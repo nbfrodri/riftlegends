@@ -279,6 +279,8 @@
 	"errors.slots-mismatch": "Las plazas hacia «{{competition}}» suman {{actual}} y deben sumar {{expected}}.",
 	"errors.format-locked": "El formato no se puede cambiar con la temporada empezada; el cambio vale para la siguiente.",
 	"errors.format-too-long": "«{{competition}}» necesita al menos {{needed}} días de partido y la ventana solo tiene {{available}}. Quita una vuelta o reduce el número de equipos.",
+	"errors.unknown-series": "La serie no existe o todavía no se ha jugado.",
+	"errors.unknown-team": "El equipo no existe.",
 	"draft.placeholder": "Esta pantalla llega pronto.",
 	"draft.loading": "Cargando",
 	"draft.crumb.label": "Estás aquí",

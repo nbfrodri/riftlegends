@@ -369,3 +369,42 @@ describe("row activation (#443)", () => {
 		expect(first?.hasAttribute("aria-description")).toBe(false);
 	});
 });
+
+// #578: columns have fixed widths, so long text is cut with an ellipsis and
+// read whole in the Caja tooltip (no native title).
+describe("text that does not fit its column", () => {
+	beforeEach(() => {
+		// Only the long name overflows its 800px cell.
+		Object.defineProperty(HTMLElement.prototype, "scrollWidth", {
+			configurable: true,
+			get(this: HTMLElement) {
+				return this.textContent?.includes("Fukuoka") ? 900 : 0;
+			},
+		});
+	});
+	afterEach(() => {
+		Reflect.deleteProperty(HTMLElement.prototype, "scrollWidth");
+	});
+
+	test("shows the whole text in the tooltip only when it is cut", () => {
+		render(
+			<Table
+				data={[
+					{
+						id: "a",
+						name: "Evi",
+						team: "Fukuoka SoftBank HAWKS gaming",
+						age: 24,
+					},
+					{ id: "b", name: "Kiin", team: "Gen.G", age: 26 },
+				]}
+			/>,
+		);
+		const [long, short] = rows().map(
+			(row) => within(row).getAllByRole("cell")[1] as HTMLElement,
+		);
+		expect(long?.dataset.tooltip).toBe("Fukuoka SoftBank HAWKS gaming");
+		expect(short?.dataset.tooltip).toBeUndefined();
+		expect(long?.hasAttribute("title")).toBe(false);
+	});
+});

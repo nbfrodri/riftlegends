@@ -7,6 +7,8 @@ import {
 	debugQueries,
 	draftCommands,
 	draftQueries,
+	HUMAN_SERIES_COMMANDS,
+	HUMAN_SERIES_QUERIES,
 	parseCommand,
 	parseQuery,
 	type QueryCatalog,
@@ -20,6 +22,7 @@ import {
 	draftStateWith,
 	type Fact,
 	initialDebugState,
+	isHumanSeriesOn,
 	loadRealContent,
 	openSession,
 	packagedDraftContent,
@@ -69,8 +72,13 @@ type AnyCatalog = any;
 
 /** A catalog with its dispatcher and the state a new session starts from. */
 interface HostModule<S> {
-	/** Whether a command or query `kind` belongs to this module. */
-	owns(kind: string): boolean;
+	/**
+	 * Whether a command or query `kind` belongs to this module; `params` is
+	 * the raw query params, for kinds that two modules share.
+	 */
+	owns(kind: string, params?: unknown): boolean;
+	/** Takes a kind from the other modules while the module's state asks for it. */
+	claims?(kind: string, state: S): boolean;
 	commands: CommandCatalog<AnyCatalog>;
 	queries: QueryCatalog<AnyCatalog>;
 	dispatcher: ReturnType<typeof createDispatcher<S>>;
@@ -97,7 +105,16 @@ const createHost = (modules: readonly [AnyModule, ...AnyModule[]]) => {
 
 	const moduleOf = (raw: unknown) => {
 		const kind = isRecord(raw) && typeof raw.kind === "string" ? raw.kind : "";
-		const index = modules.findIndex((m) => m.owns(kind));
+		const params = isRecord(raw) ? raw.params : undefined;
+		const own = isRecord(raw)
+			? sessions.get(raw.sessionId as number)
+			: undefined;
+		const claimed = modules.findIndex((m, i) => {
+			const session = own?.[i];
+			return session !== undefined && m.claims?.(kind, session.state) === true;
+		});
+		if (claimed !== -1) return claimed;
+		const index = modules.findIndex((m) => m.owns(kind, params));
 		return index === -1 ? 0 : index;
 	};
 
@@ -160,7 +177,17 @@ const createHost = (modules: readonly [AnyModule, ...AnyModule[]]) => {
 export const createCoreHost = () =>
 	createHost([
 		{
-			owns: (kind) => /^(season|competition)\./.test(kind),
+			// `series.summary` and `match.view` of a season series name it with `series`.
+			owns: (kind, params) =>
+				/^(season|competition|team)\./.test(kind) ||
+				((kind === "series.summary" || kind === "match.view") &&
+					isRecord(params) &&
+					"series" in params),
+			// While the user's series is on, the draft flow runs on the season.
+			claims: (kind, state) =>
+				isHumanSeriesOn(state) &&
+				(HUMAN_SERIES_COMMANDS.includes(kind) ||
+					HUMAN_SERIES_QUERIES.includes(kind)),
 			commands: competitionCommands,
 			queries: competitionQueries,
 			dispatcher: seasonDispatcher,

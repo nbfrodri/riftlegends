@@ -1,5 +1,6 @@
 import type { ContentDatabase } from "@rift-legends/contracts";
 import {
+	CellText,
 	DataTable,
 	type DataTableColumn,
 } from "@rift-legends/ui-kit/components/data-table";
@@ -27,9 +28,9 @@ type Team = ContentDatabase["teams"][number];
 
 function TeamCell({ id, name }: { id: string; name: string }) {
 	return (
-		<span className="inline-flex items-center gap-2 align-middle">
+		<span className="inline-flex max-w-full items-center gap-2 align-middle">
 			<TeamCrest id={id} name={name} className="size-5 shrink-0" />
-			{name}
+			<CellText>{name}</CellText>
 		</span>
 	);
 }
@@ -37,11 +38,11 @@ function TeamCell({ id, name }: { id: string; name: string }) {
 function LeagueCell({ league }: { league?: string | undefined }) {
 	if (!league) return null;
 	return (
-		<span className="inline-flex items-center gap-2 align-middle">
-			<span aria-hidden="true">
+		<span className="inline-flex max-w-full items-center gap-2 align-middle">
+			<span aria-hidden="true" className="shrink-0">
 				<LeagueLogo id={league} name={league} />
 			</span>
-			{league}
+			<CellText>{league}</CellText>
 		</span>
 	);
 }
@@ -96,26 +97,28 @@ export function PlayerTable({
 				header: t("market.column.player"),
 				value: (player) => player.handle,
 				cell: (player) => (
-					<span className="inline-flex items-center gap-2 align-middle font-semibold">
+					<span className="inline-flex max-w-full items-center gap-2 align-middle font-semibold">
 						<PlayerPortrait
 							id={player.id}
 							handle={player.handle}
 							size="h-[22px] w-[18px]"
 						/>
-						{player.handle}
+						<CellText>{player.handle}</CellText>
 					</span>
 				),
+				width: "8rem",
 			},
 			{
 				id: "nationality",
 				header: t("database.column.nationality"),
 				value: (player) => country(player.nationality),
 				cell: (player) => (
-					<span className="inline-flex items-center gap-2 align-middle">
+					<span className="inline-flex max-w-full items-center gap-2 align-middle">
 						<CountryFlag country={player.nationality} />
-						{country(player.nationality)}
+						<CellText>{country(player.nationality)}</CellText>
 					</span>
 				),
+				width: "8.75rem",
 			},
 			{
 				id: "age",
@@ -125,17 +128,19 @@ export function PlayerTable({
 					playerAge(player.birthDate) ?? Number.MAX_SAFE_INTEGER,
 				cell: (player) => <PlayerAge birthDate={player.birthDate} />,
 				numeric: true,
+				width: "3.75rem",
 			},
 			{
 				id: "role",
 				header: t("market.column.role"),
 				value: (player) => t(`market.role.${player.role}`),
 				cell: (player) => (
-					<span className="inline-flex items-center gap-2 align-middle">
+					<span className="inline-flex max-w-full items-center gap-2 align-middle">
 						<GameRoleIcon role={player.role} size={16} />
-						{t(`market.role.${player.role}`)}
+						<CellText>{t(`market.role.${player.role}`)}</CellText>
 					</span>
 				),
+				width: "6rem",
 			},
 			{
 				id: "team",
@@ -148,6 +153,7 @@ export function PlayerTable({
 				header: t("database.column.league"),
 				value: (player) => player.league ?? "",
 				cell: (player) => <LeagueCell league={player.league} />,
+				width: "5.5rem",
 			},
 			{
 				id: "rating",
@@ -166,6 +172,7 @@ export function PlayerTable({
 					);
 				},
 				numeric: true,
+				width: "4.75rem",
 			},
 		],
 		[t, country],
@@ -246,11 +253,13 @@ export function CoachTable({ teams }: { teams: readonly Team[] }) {
 				header: t("database.column.league"),
 				value: (team) => team.league ?? "",
 				cell: (team) => <LeagueCell league={team.league} />,
+				width: "5.5rem",
 			},
 			{
 				id: "style",
 				header: t("database.column.style"),
 				value: (team) => t(`draft.personality.${team.coach.personality}.name`),
+				width: "11rem",
 			},
 			{
 				id: "level",
@@ -261,6 +270,7 @@ export function CoachTable({ teams }: { teams: readonly Team[] }) {
 						value: tenths.format(team.coach.rating / 10),
 					}),
 				numeric: true,
+				width: "6.5rem",
 			},
 		];
 	}, [t, i18n.language]);

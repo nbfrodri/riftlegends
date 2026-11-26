@@ -3,9 +3,7 @@ import type {
 	competitionCommands,
 	competitionQueries,
 } from "@rift-legends/contracts";
-import type { LoadedContent } from "../draft/series";
-import { SCOPES } from "../rng/scopes";
-import { deriveSeed } from "../rng/seeds";
+import type { LoadedContent, SeriesState } from "../draft/series";
 import {
 	createDispatcher,
 	type Emitted,
@@ -14,21 +12,33 @@ import {
 import { buildCalendar, type CalendarStage } from "./calendar";
 import type { StageOutcome } from "./qualification";
 import { buildStageGraph } from "./season";
+import {
+	humanMatch,
+	humanSeriesCommands,
+	humanSeriesQueries,
+	humanSummary,
+	playSeries,
+} from "./season-human";
+import { seasonOverview } from "./season-overview";
+import {
+	closeDay,
+	openDayLog,
+	recordSeries,
+	type Slot,
+	type SlotSeries,
+	slotSeries,
+} from "./season-play";
+import {
+	type SeriesRecord,
+	seriesMatch,
+	seriesSummary,
+} from "./season-records";
 import { playSeasonSeries } from "./season-series";
-import {
-	advanceStage,
-	isStageReady,
-	isUnusedReservation,
-	localFixtureId,
-	type StageProgress,
-} from "./season-stages";
-import type { Played } from "./season-tables";
-import {
-	projectSchedule,
-	recordQualifications,
-	stageView,
-} from "./season-views";
-import { type StageGraph, type StageRef, stageKey } from "./stage-model";
+import type { StageProgress } from "./season-stages";
+import { updateStages } from "./season-update";
+import { projectSchedule, stageView } from "./season-views";
+import type { StageGraph, StageRef } from "./stage-model";
+import { teamProfile } from "./team-profile";
 
 type Command<K> = Extract<
 	ReturnType<typeof competitionCommands.schema.parse>,
@@ -53,12 +63,28 @@ export interface RunningSeason {
 	readonly outcomes: ReadonlyMap<string, StageOutcome>;
 	readonly qualifications: ReadonlyMap<string, Emitted>;
 	readonly playedDays: ReadonlyMap<string, number>;
+	/** Every series played, by the id of its slot. */
+	readonly records: ReadonlyMap<string, SeriesRecord>;
 	readonly formats: Command<"season.create">["competitions"];
+	/** The team the user manages, if any. */
+	readonly humanTeam?: string | undefined;
+	/** Schedule id of the user's series that waits to be played. */
+	readonly pending?: string | undefined;
 }
 
 export interface SeasonSession {
 	readonly loadContent: () => Iterable<SeasonContent>;
 	readonly season?: RunningSeason;
+	/** The user's series in play, with the draft state it runs on. */
+	readonly human?: HumanSeries;
+}
+
+interface HumanSeries {
+	readonly slot: Slot;
+	readonly series: SlotSeries;
+	readonly state: SeriesState;
+	/** Every fact of the series so far, to record it like the AI's. */
+	readonly facts: readonly Emitted[];
 }
 
 export const seasonStateWith = (
@@ -69,67 +95,6 @@ const reject = (code: CoreError["code"], params: CoreError["params"] = {}) => ({
 	ok: false as const,
 	error: { code, params },
 });
-
-function updateStages(
-	season: RunningSeason,
-	today: ReadonlyMap<string, readonly Played[]>,
-	facts: Emitted[],
-) {
-	const stages = new Map(season.stages);
-	const outcomes = new Map(season.outcomes);
-	const updated = new Set<string>();
-	const calendar = new Map(
-		season.calendar.map((stage) => [stageKey(stage.ref), stage]),
-	);
-	for (;;) {
-		let advanced = false;
-		for (const [key, node] of season.graph.nodes) {
-			const previous = stages.get(key);
-			if (
-				updated.has(key) ||
-				previous?.done ||
-				(previous && !today.has(key)) ||
-				!isStageReady(season.graph, node, outcomes)
-			)
-				continue;
-			const window = calendar.get(key);
-			const format = season.formats[node.competitionIndex];
-			if (!window || !format)
-				throw new Error(`Missing stage format for ${key}`);
-			const played = [...(previous?.played ?? []), ...(today.get(key) ?? [])];
-			const next = advanceStage(
-				season.graph,
-				node,
-				outcomes,
-				window,
-				previous,
-				played,
-				season.seed,
-				season.year,
-				format.tiebreakerBestOf,
-			);
-			if (next.error) return { ok: false as const, error: next.error };
-			if (!next.progress) continue;
-			advanced = true;
-			updated.add(key);
-			stages.set(key, next.progress);
-			if (next.paired) facts.push(next.paired);
-			if (!next.progress.done) continue;
-			outcomes.set(key, next.progress);
-			facts.push({
-				type: "competition.stageFinished",
-				...node.ref,
-				standings: next.progress.standings.rows,
-			});
-		}
-		if (!advanced) break;
-	}
-	const next = { ...season, stages, outcomes };
-	return {
-		ok: true as const,
-		season: { ...next, qualifications: recordQualifications(next, facts) },
-	};
-}
 
 function createSeason(
 	state: SeasonSession,
@@ -143,7 +108,9 @@ function createSeason(
 	)
 		return reject("format-locked");
 	const snapshot: typeof payload = structuredClone(payload);
-	const { competitions: formats, teams, year, seed } = snapshot;
+	const { competitions: formats, teams, year, seed, humanTeam } = snapshot;
+	if (humanTeam !== undefined && !teams.some(({ id }) => id === humanTeam))
+		return reject("invalid-format", { path: "humanTeam" });
 	const built = buildStageGraph(formats, teams);
 	if (!built.ok) return built;
 	// Qualification by points needs scoring rules, which the format cannot declare.
@@ -184,6 +151,8 @@ function createSeason(
 			outcomes: new Map(),
 			qualifications: new Map(),
 			playedDays: new Map(),
+			records: new Map(),
+			humanTeam,
 		},
 		new Map(),
 		facts,
@@ -205,83 +174,57 @@ function playDay(
 	const nextDay = schedule[0]?.day;
 	if (nextDay !== day)
 		return reject("wrong-action", { expected: nextDay ?? "season.create" });
-	const fixtures = schedule.filter((slot) => slot.day === day);
-	const playedDays = new Map(season.playedDays);
-	const today = new Map<string, Played[]>();
-	const facts: Emitted[] = [];
-	for (const slot of fixtures) {
+	const log = openDayLog(season);
+	let waiting: Slot | undefined;
+	for (const slot of schedule.filter((slot) => slot.day === day)) {
 		const { competition, stage } = slot;
-		const key = stageKey(slot);
-		const node = season.graph.nodes.get(key);
-		const fixture = season.stages
-			.get(key)
-			?.fixtures.find(({ id }) => id === localFixtureId(slot.id));
-		if (!node || !fixture)
-			return reject("invalid-stage-ref", { competition, stage });
-		// Series seeds are isolated from draws of priority and from the calendar day.
-		const fixtureIndex = node.bracket
-			? node.bracket.matches.findIndex(({ id }) => id === fixture.id)
-			: Number(fixture.id.split("-").at(-1));
-		const seriesSeed = deriveSeed(
-			season.seed,
-			SCOPES.competition,
-			node.competitionIndex,
-			season.year,
-			node.stageIndex,
-			0xfffffffb,
-			fixture.round,
-			fixtureIndex,
+		const series = slotSeries(season, slot);
+		if (!series) return reject("invalid-stage-ref", { competition, stage });
+		if (season.humanTeam && series.fixture.teams.includes(season.humanTeam)) {
+			waiting = slot;
+			continue;
+		}
+		const played = playSeasonSeries(
+			season.content,
+			series.fixture,
+			series.seed,
+			series.fearless,
 		);
-		const played = playSeasonSeries(season.content, fixture, seriesSeed);
 		if (!played.ok) return played;
-		facts.push(...played.facts, {
-			type: "competition.seriesRecorded",
-			competition,
-			stage,
+		recordSeries(log, slot, series, played);
+	}
+	if (waiting?.id === season.pending && !log.facts.length)
+		return reject("wrong-action", { expected: "season.playSeries" });
+	const fixture = waiting && slotSeries(season, waiting)?.fixture;
+	if (waiting && fixture)
+		log.facts.push({
+			type: "competition.seriesPending",
+			competition: waiting.competition,
+			stage: waiting.stage,
 			day,
 			round: fixture.round,
+			series: waiting.id,
 			teams: fixture.teams,
-			score: played.score,
-			winner: played.winner,
-			tiebreaker: fixture.tiebreaker ?? false,
 		});
-		const results = today.get(key) ?? [];
-		results.push({ fixture, winner: played.winner, result: played.result });
-		today.set(key, results);
-		playedDays.set(slot.id, day);
-	}
-	const updated = updateStages({ ...season, playedDays }, today, facts);
-	if (!updated.ok) return updated;
-	let next = updated.season;
-	const extraFixtures = new Map(
-		[...next.stages]
-			.filter(([, stage]) => stage.ties.length)
-			.map(([key, stage]) => [key, stage.ties]),
-	);
-	if (
-		[...extraFixtures].some(
-			([key, ties]) => ties.length > (season.stages.get(key)?.ties.length ?? 0),
-		)
-	) {
-		// Keep history fixed while making room for the newly discovered tiebreakers.
-		const calendar = buildCalendar(season.graph, {
-			year: season.year,
-			seed: season.seed,
-			outcomes: next.outcomes,
-			extraFixtures,
-			skipFixture: (ref, id) =>
-				isUnusedReservation(next.stages.get(stageKey(ref)), id),
-			playedDays,
-			fromDay: day + 1,
-		});
-		if (!calendar.ok) return calendar;
-		next = { ...next, calendar: calendar.stages };
-	}
-	return { ok: true, state: { ...state, season: next }, facts };
+	const closed = closeDay(season, log, day);
+	if (!closed.ok) return closed;
+	return {
+		ok: true,
+		state: {
+			...state,
+			season: { ...closed.season, pending: waiting?.id },
+		},
+		facts: log.facts,
+	};
 }
 
 export const seasonDispatcher = createDispatcher<SeasonSession>({
-	commands: { "season.create": createSeason, "season.playDay": playDay },
+	commands: {
+		"season.create": createSeason,
+		"season.playDay": playDay,
+		"season.playSeries": playSeries,
+		...humanSeriesCommands,
+	},
 	queries: {
 		"competition.standings": (state, ref: StageRef) =>
 			stageView(state, ref, "standings"),
@@ -289,6 +232,13 @@ export const seasonDispatcher = createDispatcher<SeasonSession>({
 			stageView(state, ref, "bracket"),
 		"competition.schedule": (state, params: ScheduleQuery) =>
 			state.season ? projectSchedule(state.season, params) : [],
+		"season.overview": (state) => seasonOverview(state.season),
+		...humanSeriesQueries,
+		"team.profile": teamProfile,
+		"series.summary": (state, params) =>
+			params.series ? seriesSummary(state, params) : humanSummary(state),
+		"match.view": (state, params) =>
+			params.series ? seriesMatch(state, params) : humanMatch(state, params),
 		"competition.qualified": (
 			state,
 			{ competition }: { competition: string },

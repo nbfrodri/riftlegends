@@ -76,6 +76,29 @@ export function stageTables(
 		cuts: final && !bracket ? cutsFor(graph, node) : [],
 	};
 	let standings = computeStageStandings(node, outcomes, input);
+	if (!played.length) {
+		// Before the first series nothing separates the teams: seed order, undrawn.
+		const rows = new Map(standings.rows.map((row) => [row.team, row]));
+		standings = {
+			...standings,
+			rows: input.teams.flatMap((team, index) => {
+				const row = rows.get(team);
+				return row
+					? [
+							{
+								...row,
+								rank: index + 1,
+								explanation: {
+									criterion: "none" as const,
+									tied: [],
+									values: {},
+								},
+							},
+						]
+					: [];
+			}),
+		};
+	}
 	const order = bracket && bracketOrder(bracket);
 	if (order) {
 		const rows = new Map(standings.rows.map((row) => [row.team, row]));
