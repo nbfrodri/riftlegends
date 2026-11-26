@@ -129,6 +129,15 @@ test("#570: a late progress event after the offline notice does not open the app
 	await act(async () =>
 		assets.progress({ completed: 0, total: 5, incomplete: true }),
 	);
-	expect(screen.getByRole("button", { name: "Continue" })).toBeTruthy();
+	expect(screen.queryByRole("navigation")).toBeNull();
+	// The status poll then answers what main really has: ready, offline.
+	assets.api.status.mockResolvedValue({
+		state: "ready",
+		version: "16.23",
+		incomplete: true,
+	});
+	expect(
+		await screen.findByRole("button", { name: "Continue" }, { timeout: 4000 }),
+	).toBeTruthy();
 	expect(screen.queryByRole("navigation")).toBeNull();
 });
