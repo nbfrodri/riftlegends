@@ -43,7 +43,7 @@ import {
 export type Presentation = "side" | "match" | "result";
 
 /** The user's series of a season (plan 31, U10): where it lives and how it is left. */
-export interface InSeason {
+interface InSeason {
 	/** The breadcrumb root, in place of «Draft rápido». */
 	readonly crumb: string;
 	/** The result screen's way out, in place of a new series. */

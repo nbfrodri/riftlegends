@@ -10,7 +10,7 @@ import { CoreRequestError, useCore } from "../core";
 // the user and the one being played. The query cache holds it.
 
 /** The user's series on screen: its id and the facts it has returned so far. */
-export interface SeriesInPlay {
+interface SeriesInPlay {
 	readonly series: string;
 	readonly facts: readonly CoreFact[];
 }
