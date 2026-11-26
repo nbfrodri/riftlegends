@@ -1,13 +1,9 @@
 import { useTranslation } from "react-i18next";
 import { LeagueLogo } from "../assets/league-logo";
 import { TeamCrest } from "../draft/team-crest";
-import {
-	competitionLogoId,
-	competitionName,
-	dayDate,
-	stageName,
-} from "./names";
+import { competitionLogoId, competitionName, dayDate } from "./names";
 import { type CompetitionOverview, type Matchdays, stageKeyOf } from "./season";
+import { StageTitle } from "./stage-title";
 
 // One competition of the season overview (plan 31, U1), as a row: name, the
 // stage with its match days, the leader or champion and the next match day.
@@ -76,9 +72,7 @@ export function CompetitionCard({
 				) : (
 					<>
 						<p className="flex min-w-0 items-baseline justify-between gap-3 text-[13px]">
-							<span className="min-w-0 truncate font-semibold">
-								{stage && stageName(stage.stage)}
-							</span>
+							{stage && <StageTitle row={stage} />}
 							<span className="shrink-0 text-muted tabular-nums">
 								{stageLive && days
 									? t("competition.matchday", {

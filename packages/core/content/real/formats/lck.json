@@ -4,6 +4,10 @@
 	"stages": [
 		{
 			"id": "cup-groups",
+			"name": {
+				"split": "winter",
+				"stage": "groups"
+			},
 			"window": {
 				"startWeek": 1,
 				"weeks": 4,
@@ -43,6 +47,10 @@
 		},
 		{
 			"id": "cup-playin-r1-1",
+			"name": {
+				"split": "winter",
+				"stage": "playInRound1Match1"
+			},
 			"window": {
 				"startWeek": 5,
 				"weeks": 1,
@@ -76,6 +84,10 @@
 		},
 		{
 			"id": "cup-playin-r1-2",
+			"name": {
+				"split": "winter",
+				"stage": "playInRound1Match2"
+			},
 			"window": {
 				"startWeek": 5,
 				"weeks": 1,
@@ -109,6 +121,10 @@
 		},
 		{
 			"id": "cup-playin-r2-1",
+			"name": {
+				"split": "winter",
+				"stage": "playInRound2Match1"
+			},
 			"window": {
 				"startWeek": 5,
 				"weeks": 1,
@@ -141,6 +157,10 @@
 		},
 		{
 			"id": "cup-playin-r2-2",
+			"name": {
+				"split": "winter",
+				"stage": "playInRound2Match2"
+			},
 			"window": {
 				"startWeek": 5,
 				"weeks": 1,
@@ -173,6 +193,10 @@
 		},
 		{
 			"id": "cup-playin-r3",
+			"name": {
+				"split": "winter",
+				"stage": "playInRound3"
+			},
 			"window": {
 				"startWeek": 5,
 				"weeks": 1,
@@ -203,6 +227,10 @@
 		},
 		{
 			"id": "cup-playoffs",
+			"name": {
+				"split": "winter",
+				"stage": "playoffs"
+			},
 			"window": {
 				"startWeek": 6,
 				"weeks": 3,
@@ -277,6 +305,10 @@
 		},
 		{
 			"id": "rounds-1-2",
+			"name": {
+				"split": "spring",
+				"stage": "rounds1And2"
+			},
 			"window": {
 				"startWeek": 12,
 				"weeks": 10,
@@ -307,6 +339,10 @@
 		},
 		{
 			"id": "road-to-msi",
+			"name": {
+				"split": "spring",
+				"stage": "roadToMsi"
+			},
 			"window": {
 				"startWeek": 22,
 				"weeks": 2,
@@ -347,6 +383,10 @@
 		},
 		{
 			"id": "rounds-3-4",
+			"name": {
+				"split": "summer",
+				"stage": "rounds3And4"
+			},
 			"window": {
 				"startWeek": 29,
 				"weeks": 5,
@@ -372,6 +412,10 @@
 		},
 		{
 			"id": "season-playin-r1-1",
+			"name": {
+				"split": "summer",
+				"stage": "playInRound1Match1"
+			},
 			"window": {
 				"startWeek": 33,
 				"weeks": 1,
@@ -403,6 +447,10 @@
 		},
 		{
 			"id": "season-playin-r1-2",
+			"name": {
+				"split": "summer",
+				"stage": "playInRound1Match2"
+			},
 			"window": {
 				"startWeek": 34,
 				"weeks": 1,
@@ -434,6 +482,10 @@
 		},
 		{
 			"id": "season-playin-r2",
+			"name": {
+				"split": "summer",
+				"stage": "playInRound2"
+			},
 			"window": {
 				"startWeek": 34,
 				"weeks": 1,
@@ -464,6 +516,10 @@
 		},
 		{
 			"id": "season-playoffs",
+			"name": {
+				"split": "summer",
+				"stage": "playoffs"
+			},
 			"window": {
 				"startWeek": 34,
 				"weeks": 3,
