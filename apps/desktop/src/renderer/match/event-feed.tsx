@@ -10,6 +10,7 @@ import { ChampionPortrait } from "../draft/champion-portrait";
 import { TeamCrest } from "../draft/team-crest";
 import { panelTitle } from "./classes";
 import type { LanePlayer } from "./face-to-face";
+import { NumbersNote } from "./numbers-note";
 import { clockTime } from "./playback";
 import type { TeamNames } from "./scoreboard";
 
@@ -240,6 +241,7 @@ const EventRow = memo(function EventRow({
 				) : (
 					<p className="text-muted">{summary}</p>
 				)}
+				<NumbersNote event={event} />
 				{event.causes.some(({ key }) => key === "ace") && (
 					<p className="text-muted">{t("draft.match.cause.ace")}</p>
 				)}

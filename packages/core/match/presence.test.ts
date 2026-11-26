@@ -10,7 +10,7 @@ import { LANE_CONTESTS } from "./contests/lane";
 import { fictionalMatchContent } from "./fixtures/content";
 import { matchSetup } from "./fixtures/setup";
 import { MATCH_CONTESTS, playMatch } from "./loop";
-import { NUMBERS_POINTS, presenceOf } from "./presence";
+import { numbersPoints, presenceOf } from "./presence";
 import { createMatch, type MatchState } from "./state";
 
 const base = createMatch(matchSetup());
@@ -44,6 +44,7 @@ const numbers = (state: MatchState, contest: Parameters<typeof edge>[1]) =>
 	edge(state, contest, {}, "top", AT).causes.find((c) => c.key === "numbers")
 		?.points ?? 0;
 
+const sign = (n: number) => (n > 0 ? 1 : n < 0 ? -1 : 0);
 const CONTESTS = ["lane", "jungle", "fight", "objective", "siege"] as const;
 
 describe("the presence weights are rules (#529)", () => {
@@ -91,9 +92,7 @@ describe("the cause numbers (#529)", () => {
 			// The jungler is no part of a lane, so the top lane does not notice.
 			const lost = contest === "lane" ? 0 : weights.jungle;
 			const points = numbers(without(at20, "blue", ["jungle"]), contest);
-			expect(points).toBe(
-				Math.trunc((NUMBERS_POINTS[contest] * -lost) / 10_000),
-			);
+			expect(points).toBe(numbersPoints(contest, 0, lost) + 0);
 			if (contest !== "lane") expect(points).toBeLessThan(0);
 		}
 	});
@@ -336,7 +335,7 @@ describe("the events say who was down (#529)", () => {
 				const other = event.side === "blue" ? "red" : "blue";
 				const lead = lost(other) - lost(event.side);
 				const points = event.causes.find((c) => c.key === "numbers")?.points;
-				expect(Math.sign(points ?? 0)).toBe(Math.sign(lead));
+				expect(sign(points ?? 0)).toBe(sign(lead));
 				checked++;
 			}
 		}

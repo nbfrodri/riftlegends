@@ -10,7 +10,7 @@ const note = (
 	kind: MatchEvent["kind"],
 	down: MatchEvent["down"],
 	side: MatchEvent["side"] = "red",
-) => <NumbersNote event={{ kind, side, zone: "baron-pit", down }} />;
+) => <NumbersNote event={{ kind, side, down }} />;
 
 test("says how many fought and who was missing, in Spanish", async () => {
 	await renderInLocale(note("fight", { blue: ["jungle"], red: [] }), "es-ES");
@@ -45,7 +45,7 @@ test("names the rivals' missing players too when both were short", async () => {
 	);
 	expect(
 		screen.getByText(
-			"Pelearon 4 contra 4: su jungla estaba muerto. Los rivales tampoco tenían a su support.",
+			"Pelearon 4 contra 4: su support estaba muerto. Los rivales tampoco tenían a su jungla.",
 		),
 	).toBeTruthy();
 });
