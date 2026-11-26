@@ -116,6 +116,12 @@ describe("standings table (U3)", () => {
 		expect(cells(third as HTMLElement).at(-1)).toBe("Eliminated");
 	});
 
+	test("a standings table has no search box: it is short enough to read", async () => {
+		await show(league);
+		expect(screen.queryByRole("searchbox")).toBeNull();
+		expect(screen.queryByText("4 of 4 teams")).toBeNull();
+	});
+
 	test("the place of a tied team explains the tiebreak in words", async () => {
 		await show(league);
 		const [first, second, , fourth] = bodyRows("Standings: Regular");
