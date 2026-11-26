@@ -12,7 +12,7 @@ import { TeamChampions } from "./team-champions";
 import { TeamRoster } from "./team-roster";
 import { TeamSeriesList } from "./team-series";
 import { TeamSummary } from "./team-summary";
-import type { TeamProfile } from "./team-text";
+import { type TeamProfile, whereText } from "./team-text";
 
 // `/competicion/equipo/$team` (plan 31, U8): a team in the current season
 // only (decision 5). Header, a line of results, the roster with each player's
@@ -64,7 +64,7 @@ function LoadedTeam({ sessionId, team }: { sessionId: number; team: string }) {
 			) : (
 				<p className="text-muted">{t("competition.team.notPlayed")}</p>
 			)}
-			<div className="grid min-h-0 flex-1 grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] gap-[clamp(12px,1.4vw,24px)]">
+			<div className="grid min-h-0 flex-1 grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] grid-rows-[minmax(0,1fr)] gap-[clamp(12px,1.4vw,24px)]">
 				<div className="flex min-h-0 flex-col gap-[clamp(10px,1.6vh,20px)]">
 					<TeamRoster profile={data} />
 					{data.stats.champions.length > 0 && (
@@ -75,6 +75,7 @@ function LoadedTeam({ sessionId, team }: { sessionId: number; team: string }) {
 					<TeamSeriesList
 						series={data.series}
 						year={year}
+						where={(series) => whereText(t, overview.data, series)}
 						onOpen={(series) =>
 							void navigate({
 								to: "/competicion/serie/$series",

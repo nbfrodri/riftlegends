@@ -38,7 +38,11 @@ export function TeamRoster({ profile }: { profile: TeamProfile }) {
 				value: (row) => row.handle,
 				cell: (row) => (
 					<span className="inline-flex max-w-full items-center gap-2 align-middle">
-						<PlayerPortrait id={row.id} handle={row.handle} size="h-6 w-5" />
+						<PlayerPortrait
+							id={row.id}
+							handle={row.handle}
+							size="h-[clamp(30px,5vh,44px)] w-[clamp(24px,4vh,35px)]"
+						/>
 						<CountryFlag country={row.nationality} />
 						<CellText>
 							<span className="font-semibold">{row.handle}</span>
@@ -105,7 +109,8 @@ export function TeamRoster({ profile }: { profile: TeamProfile }) {
 	);
 	return (
 		<DataTable
-			className="min-h-0"
+			className="min-h-0 flex-1"
+			rowHeight="h-[clamp(36px,6vh,52px)]"
 			label={t("competition.team.roster")}
 			data={rows}
 			columns={columns}

@@ -2,7 +2,7 @@ import { cn } from "@rift-legends/ui-kit/lib/utils";
 import { useTranslation } from "react-i18next";
 import { teamName, useSeriesOptions } from "../../draft/session";
 import { TeamCrest } from "../../draft/team-crest";
-import { competitionName, dayDate, stageName } from "../names";
+import { dayDate } from "../names";
 import { resultText, type TeamSeries } from "./team-text";
 
 // Every series of the season, newest first. Each one opens the read-only
@@ -11,10 +11,13 @@ import { resultText, type TeamSeries } from "./team-text";
 export function TeamSeriesList({
 	series,
 	year,
+	where,
 	onOpen,
 }: {
 	series: readonly TeamSeries[];
 	year: number;
+	/** Competition and stage of a series, in words. */
+	where: (series: TeamSeries) => string;
 	onOpen: (series: string) => void;
 }) {
 	const { t, i18n } = useTranslation();
@@ -28,11 +31,11 @@ export function TeamSeriesList({
 			</h2>
 			<ol
 				aria-label={label}
-				className="scroll-edge grid min-h-0 content-start gap-px overflow-y-auto"
+				className="scroll-edge grid min-h-0 flex-1 content-start overflow-y-auto bg-panel"
 			>
 				{series.map((entry) => {
 					const date = dayDate(year, entry.day, i18n.language);
-					const where = `${competitionName(t, entry.competition)}, ${stageName(entry.stage)}`;
+					const place = where(entry);
 					const opponent = name(entry.opponent);
 					return (
 						<li key={entry.series}>
@@ -40,11 +43,11 @@ export function TeamSeriesList({
 								type="button"
 								aria-label={t("competition.team.entry", {
 									result: resultText(t, entry, name),
-									where,
+									where: place,
 									date,
 								})}
 								onClick={() => onOpen(entry.series)}
-								className="press grid w-full cursor-pointer grid-cols-[4rem_minmax(0,1fr)_3rem_5.5rem] items-center gap-3 bg-panel px-3 py-2 text-left text-[14px] outline-offset-2 hover:bg-surface focus-visible:outline-2 focus-visible:outline-action"
+								className="press grid w-full cursor-pointer grid-cols-[4rem_minmax(0,1fr)_3rem_5.5rem] items-center gap-3 border-canvas border-b px-3 py-[clamp(8px,1.6vh,14px)] text-left text-[14px] outline-offset-2 hover:bg-surface focus-visible:outline-2 focus-visible:outline-action"
 							>
 								<span className="text-muted tabular-nums">{date}</span>
 								<span className="flex min-w-0 flex-col leading-tight">
@@ -57,7 +60,7 @@ export function TeamSeriesList({
 										<span className="truncate font-semibold">{opponent}</span>
 									</span>
 									<span className="truncate text-[12px] text-muted">
-										{where}
+										{place}
 									</span>
 								</span>
 								<span className="text-center font-display tabular-nums">
