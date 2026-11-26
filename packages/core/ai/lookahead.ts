@@ -5,6 +5,7 @@ import { pickScorer, pickTotal } from "./components/pick";
 import { indexContent, selectedChampions } from "./content-index";
 import type { AiContext } from "./context";
 import { canAssign } from "./positions";
+import { replyScorer } from "./reply-scorer";
 
 export interface Reply {
 	readonly champion: string;
@@ -96,17 +97,34 @@ export function lookahead(
 	if (replyStep < 0) return { candidates: [...candidates], replies };
 	const answerStep = depth === 2 ? nextPick(replyStep, ctx.order) : -1;
 
+	const rivalBase: AiContext = {
+		...ctx,
+		order: rivalOrder,
+		team: ctx.rival,
+		rival: ctx.team,
+		wins: [ctx.wins[1], ctx.wins[0]],
+		step: replyStep,
+	};
+	// The rival's search is shared while only our candidate leaves its open champions.
+	let shared: {
+		readonly open: ReadonlySet<string>;
+		readonly best: (last: string) => string | undefined;
+	} | null = null;
 	const adjusted = candidates.map((candidate) => {
 		const rivalTurn: AiContext = {
-			...ctx,
-			order: rivalOrder,
-			team: ctx.rival,
-			rival: ctx.team,
-			wins: [ctx.wins[1], ctx.wins[0]],
-			step: replyStep,
+			...rivalBase,
 			picks: withPick(ctx, candidate.champion),
 		};
-		const reply = bestPick(rivalTurn, free);
+		const left = free(ctx.rival, rivalTurn.picks);
+		if (!shared) {
+			const open = new Set([...left, candidate.champion]);
+			shared = { open, best: replyScorer(rivalBase, [...open]) };
+		}
+		const { open, best } = shared;
+		const same =
+			left.length === open.size - (open.has(candidate.champion) ? 1 : 0) &&
+			left.every((id) => open.has(id) && id !== candidate.champion);
+		const reply = same ? best(candidate.champion) : bestPick(rivalTurn, free);
 		if (reply === undefined) return candidate;
 		const matchup = pairMatchup(ctx, ctx.picks, candidate.champion, reply);
 		let points = matchup < -2 * SCALE ? matchup / 2 : 0;

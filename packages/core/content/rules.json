@@ -47,6 +47,41 @@
 		],
 		"cap": 50000
 	},
+	"presence": {
+		"lane": {
+			"top": { "top": 10000, "jungle": 0, "mid": 0, "bot": 0, "support": 0 },
+			"mid": { "top": 0, "jungle": 0, "mid": 10000, "bot": 0, "support": 0 },
+			"bot": { "top": 0, "jungle": 0, "mid": 0, "bot": 6000, "support": 4000 }
+		},
+		"jungle": {
+			"top": 1500,
+			"jungle": 4000,
+			"mid": 1500,
+			"bot": 1000,
+			"support": 2000
+		},
+		"fight": {
+			"top": 2000,
+			"jungle": 2000,
+			"mid": 2000,
+			"bot": 2200,
+			"support": 1800
+		},
+		"objective": {
+			"top": 1500,
+			"jungle": 3000,
+			"mid": 2000,
+			"bot": 2000,
+			"support": 1500
+		},
+		"siege": {
+			"top": 2000,
+			"jungle": 1500,
+			"mid": 2000,
+			"bot": 2500,
+			"support": 2000
+		}
+	},
 	"levelCurve": {
 		"top": [
 			10, 20, 40, 50, 50, 60, 70, 70, 80, 90, 90, 100, 110, 110, 120, 120, 130,

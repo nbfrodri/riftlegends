@@ -1,8 +1,17 @@
-import { ROLES, type Side } from "@rift-legends/contracts";
+import { ROLES, type Role, type Side } from "@rift-legends/contracts";
 import { type Fixed, mul } from "../../math";
 import type { MatchCause, MatchCauseKey } from "../cause-keys";
 import { spreeBounty } from "../events";
-import type { CONTESTS, Scored } from "../profile";
+import { gameSecond } from "../player-state";
+import {
+	downOf,
+	numbersPoints,
+	presenceOf,
+	upAt,
+	type Weights,
+	weightsOf,
+} from "../presence";
+import { type CONTESTS, liveCauses, staticCauses } from "../profile";
 import { LANES, type Lane, type MatchState, SOUL } from "../state";
 import { chance } from "./chance";
 import { goldLead } from "./gold";
@@ -27,7 +36,7 @@ const BUFF_POINTS: Record<
 	elder: { fight: 200_000, siege: 200_000, objective: 100_000 },
 };
 /** Calibrates the probability curve to game outcomes (K4). */
-const EDGE_SCALE = 1600 as Fixed;
+const EDGE_SCALE = 1550 as Fixed;
 const RISK_SCALE = { safe: 18_000, balanced: 10_000, risky: 2000 } as const;
 const AGGRESSION_SCALE = 28;
 const FIGHT_PUSH_POINTS = 500_000;
@@ -43,18 +52,24 @@ function strength(
 	state: MatchState,
 	side: Side,
 	contest: Contest,
+	weights: Weights,
+	up: readonly Role[],
 	lane?: Lane,
 ) {
 	const { profile } = state.context[side];
-	const parts: Scored[] = [
-		profile.contests[contest],
-		profile.phases[phaseOf(state.minute)],
-	];
+	const phase = phaseOf(state.minute);
 	const byKey = new Map<MatchCauseKey, number>();
 	const add = (key: MatchCauseKey, points: number) =>
 		byKey.set(key, (byKey.get(key) ?? 0) + points);
-	for (const part of parts) {
-		for (const { key, points } of part.causes) add(key, points);
+	// The draft's factors stay as they are; the players' attributes count only
+	// the ones that are up (plan 08, #529).
+	for (const part of [profile.contests[contest], profile.phases[phase]]) {
+		for (const { key, points } of staticCauses(part)) add(key, points);
+	}
+	for (const part of [contest, phase] as const) {
+		for (const { key, points } of liveCauses(profile, part, weights, up)) {
+			add(key, points);
+		}
 	}
 	const { form, mental } = state.context[side];
 	add("form", form);
@@ -104,18 +119,48 @@ export interface Edge {
 	readonly blue: number;
 	/** Why, as blue's edge over red; negative points favour red. */
 	readonly causes: readonly MatchCause[];
+	/** Who counted for the contest and was down, when anyone was. */
+	readonly down?: Record<Side, Role[]>;
 }
 
-/** Edge of blue over red in a contest, from the profiles and the state. */
+/**
+ * Edge of blue over red in a contest, from the profiles and the state, for
+ * the players that are up at `at` (second of the game; the start of the
+ * minute by default). A side with no presence in the contest, with nobody up
+ * or without the laner of a lane, loses without a roll (plan 08, #529).
+ */
 export function edge(
 	state: MatchState,
 	contest: Contest,
 	/** Points a contest adds on top, by side. */
 	extra: Partial<Record<Side, MatchCause | undefined>> = {},
 	lane?: Lane,
+	at = gameSecond(state.minute > 0 ? state.minute : 1, 0),
 ): Edge {
-	const blue = strength(state, "blue", contest, lane);
-	const red = strength(state, "red", contest, lane);
+	const weights = weightsOf(state.context.rules, contest, lane);
+	const up = upAt(state, at);
+	const present = {
+		blue: presenceOf(weights, up.blue),
+		red: presenceOf(weights, up.red),
+	};
+	const counted = ROLES.filter((role) => weights[role] > 0);
+	const missing = {
+		blue: downOf(up.blue).filter((role) => counted.includes(role)),
+		red: downOf(up.red).filter((role) => counted.includes(role)),
+	};
+	const down =
+		missing.blue.length + missing.red.length > 0 ? missing : undefined;
+	if (present.blue === 0 || present.red === 0) {
+		const none = present.blue === present.red;
+		const points = numbersPoints(contest, present.blue, present.red);
+		return {
+			blue: none ? 5000 : present.blue === 0 ? 0 : 10_000,
+			causes: none ? [] : [{ key: "numbers", points }],
+			...(down ? { down } : {}),
+		};
+	}
+	const blue = strength(state, "blue", contest, weights, up.blue, lane);
+	const red = strength(state, "red", contest, weights, up.red, lane);
 	for (const [side, map] of [
 		["blue", blue],
 		["red", red],
@@ -134,6 +179,8 @@ export function edge(
 	if (experience !== 0)
 		causes.push({ key: "soloExperience", points: experience * XP_POINTS });
 	if (gold !== 0) causes.push({ key: "gold", points: gold });
+	const numbers = numbersPoints(contest, present.blue, present.red);
+	if (numbers !== 0) causes.push({ key: "numbers", points: numbers });
 	const total = causes.reduce((sum, c) => sum + c.points, 0);
 	// Both teams affect how decisive the contest is, independently of who leads.
 	const risk = (side: Side) => {
@@ -144,7 +191,11 @@ export function edge(
 	const adjusted = mul(total as Fixed, scale as Fixed);
 	const adjustment = adjusted - total;
 	if (adjustment !== 0) causes.push({ key: "risk", points: adjustment });
-	return { blue: chance(mul(adjusted, EDGE_SCALE)), causes };
+	return {
+		blue: chance(mul(adjusted, EDGE_SCALE)),
+		causes,
+		...(down ? { down } : {}),
+	};
 }
 
 /** The winner's chance and causes, seen from the winner. */
@@ -153,5 +204,6 @@ export function outcome(result: Edge, winner: Side) {
 	return {
 		chance: winner === "blue" ? result.blue : 10000 - result.blue,
 		causes: result.causes.map((c) => ({ key: c.key, points: c.points * flip })),
+		...(result.down ? { down: result.down } : {}),
 	};
 }

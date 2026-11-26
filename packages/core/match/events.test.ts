@@ -168,12 +168,12 @@ test("solo kills pay extra lane gold and give experience pressure only in the wi
 	expect(solo.events[0]?.kills[0]).toHaveProperty("soloKill", true);
 	expect(solo.events[0]?.gold.blue).toBe(rules.kill + 100 + 50);
 	expect(solo.events[1]?.kills[0]).not.toHaveProperty("soloKill");
-	expect(edge(solo.state, "lane", {}, "top").causes).toContainEqual({
+	expect(edge(solo.state, "lane", {}, "top", 200).causes).toContainEqual({
 		key: "soloExperience",
 		points: expect.any(Number),
 	});
 	expect(
-		edge(solo.state, "lane", {}, "mid").causes.map(({ key }) => key),
+		edge(solo.state, "lane", {}, "mid", 200).causes.map(({ key }) => key),
 	).not.toContain("soloExperience");
 });
 

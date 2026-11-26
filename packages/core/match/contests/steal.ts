@@ -6,6 +6,7 @@ import { SCOPES } from "../../rng/scopes";
 import { deriveSeed } from "../../rng/seeds";
 import { createRng } from "../../rng/streams";
 import type { MatchCause } from "../cause-keys";
+import { isAlive } from "../player-state";
 import { type MatchState, other } from "../state";
 import { roll } from "./contest";
 
@@ -15,12 +16,15 @@ export function trySteal(
 	state: MatchState,
 	controllingSide: Side,
 	contest: number,
+	at: number,
 ) {
 	const { seed, game } = state.context;
 	const rng = createRng(
 		deriveSeed(seed, SCOPES.matchSteal, game, state.minute, contest),
 	);
 	const side = other(controllingSide);
+	// Only a jungler who is up comes to steal.
+	if (!isAlive(state, side, "jungle", at)) return undefined;
 	const attacker = state.context[side];
 	const defender = state.context[controllingSide];
 	const defenders = int(rng, 2, ROLES.length);

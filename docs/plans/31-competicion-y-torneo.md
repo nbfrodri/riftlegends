@@ -79,10 +79,10 @@ Un clic en cualquier logo o nombre de equipo abre su página.
 
 | Consulta | Origen | Uso |
 | --- | --- | --- |
-| `competition.standings` | Plan 12 (#428); aquí se pide en curso (Q2) | Clasificación, grupos y Swiss |
+| `competition.standings` | Plan 12 (#428); aquí se pide en curso (Q2) y con `destinations` (#484) | Clasificación, grupos, Swiss y columna «Destino» |
 | `competition.bracket` | Plan 12 (#428) | Cuadros |
 | `competition.schedule` | Plan 12 (#428) + filtro `team` (Q4) | Calendario, página de equipo |
-| `competition.qualified` | Plan 12 (#428) | Columna «Destino» y plazas internacionales |
+| `competition.qualified` | Plan 12 (#428) | Plazas internacionales ya ganadas |
 | `season.overview` | **Nueva** (Q1) | Resumen |
 | `team.profile` | **Nueva** (Q5), agregada de `competition.seriesRecorded` y `match.*` | Página de equipo |
 | `series.summary`, `match.view` | Draft rápido, ampliadas con id de serie (Q6) | Resultado de una serie |
