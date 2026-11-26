@@ -115,8 +115,7 @@ describe("U9: tournament setup", () => {
 		// #608: a plain text field, without the +/- spin buttons.
 		expect(screen.queryByRole("spinbutton")).toBeNull();
 		expect(
-			(screen.getByRole("textbox", { name: "Seed" }) as HTMLInputElement)
-				.value,
+			(screen.getByRole("textbox", { name: "Seed" }) as HTMLInputElement).value,
 		).toBe("1234");
 	});
 
