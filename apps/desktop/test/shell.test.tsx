@@ -33,6 +33,7 @@ const pendingEs = sectionsEs.filter(
 			"Campeones",
 			"Base de datos",
 			"Mercado",
+			"Competición",
 			"Ajustes",
 		].includes(name),
 );
@@ -126,6 +127,7 @@ describe("T5: sidebar sections", () => {
 			"Campeones",
 			"Base de datos",
 			"Mercado",
+			"Competición",
 			"Ajustes",
 		]) {
 			expect(section(name).getAttribute("aria-disabled")).toBeNull();
@@ -234,6 +236,8 @@ describe("T6: collapsing and keyboard", () => {
 		const { user } = await renderShell("/mercado");
 		section("Mercado").focus();
 		await user.keyboard("{ArrowDown}");
+		expect(document.activeElement).toBe(section("Competición"));
+		await user.keyboard("{ArrowDown}");
 		expect(document.activeElement).toBe(section("Ajustes"));
 		await user.keyboard("{ArrowDown}");
 		expect(document.activeElement).toBe(section("Draft"));
@@ -258,6 +262,8 @@ describe("T6: collapsing and keyboard", () => {
 		expect(document.activeElement).toBe(section("Base de datos"));
 		await user.tab();
 		expect(document.activeElement).toBe(section("Mercado"));
+		await user.tab();
+		expect(document.activeElement).toBe(section("Competición"));
 		await user.tab();
 		expect(document.activeElement).toBe(section("Ajustes"));
 	});

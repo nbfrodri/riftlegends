@@ -154,11 +154,11 @@ describe("credits view", () => {
 		const names = groups.flatMap((list) =>
 			within(list)
 				.getAllByRole("link")
-				.map((link) => link.textContent?.split("·")[0]?.trim()),
+				.map((link) => link.firstChild?.textContent?.trim()),
 		);
 		expect(names.sort()).toEqual(LIBRARIES.map((l) => l.name).sort());
 		expect(
-			within(region).getByRole("link", { name: "react · MIT" }),
+			within(region).getByRole("link", { name: "react MIT" }),
 		).toBeTruthy();
 	});
 

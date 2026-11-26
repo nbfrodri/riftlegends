@@ -42,7 +42,7 @@ test("makes the user's first ban from the setup", async ({
 	await appWindow.getByRole("button", { name: "Start series" }).click();
 	await appWindow.getByRole("button", { name: "Confirm choice" }).click();
 	await appWindow.getByRole("button", { name: "Go to draft" }).click();
-	await expect(appWindow.getByText("Ban 1 · Forge")).toBeVisible();
+	await expect(appWindow.getByText("Forge ban 1")).toBeVisible();
 
 	const grid = appWindow.getByRole("group", { name: "Champions" });
 	await grid.getByRole("button", { name: "Cragbell" }).click();
@@ -334,11 +334,11 @@ test("#469: a click on empty space drops the pick preview", async ({
 	const grid = appWindow.getByRole("group", { name: "Champions" });
 	const free = grid.locator("button:not([aria-disabled])").first();
 	for (let ban = 1; ban <= 3; ban++) {
-		await expect(appWindow.getByText(`Ban ${ban} · Forge`)).toBeVisible();
+		await expect(appWindow.getByText(`Forge ban ${ban}`)).toBeVisible();
 		await free.click();
 		await appWindow.getByRole("button", { name: "Confirm ban" }).click();
 	}
-	await expect(appWindow.getByText("B1 · Forge pick")).toBeVisible();
+	await expect(appWindow.getByText("Forge pick B1")).toBeVisible();
 
 	const name = (await free.getAttribute("aria-label")) ?? "";
 	await free.click();

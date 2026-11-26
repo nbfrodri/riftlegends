@@ -32,6 +32,7 @@ type SectionPath =
 	| "/campeones"
 	| "/base-de-datos"
 	| "/mercado"
+	| "/competicion"
 	| "/ajustes";
 
 interface Section {
@@ -66,7 +67,7 @@ const sections: readonly Section[] = [
 	{ label: "shell.nav.market", icon: ArrowLeftRight, to: "/mercado" },
 	{ label: "shell.nav.scouting", icon: Binoculars },
 	{ label: "shell.nav.training", icon: Dumbbell },
-	{ label: "shell.nav.competition", icon: Trophy },
+	{ label: "shell.nav.competition", icon: Trophy, to: "/competicion" },
 	{ label: "shell.nav.news", icon: Newspaper },
 	{ label: "shell.nav.history", icon: History },
 	{ label: "shell.nav.settings", icon: SlidersHorizontal, to: "/ajustes" },
@@ -158,7 +159,9 @@ export function Sidebar({
 				</span>
 				{sections.map(({ label: key, icon: Icon, to }) => {
 					const label = t(key);
-					const current = to !== undefined && pathname === to;
+					const current =
+						to !== undefined &&
+						(pathname === to || pathname.startsWith(`${to}/`));
 					return (
 						<Tooltip
 							key={key}

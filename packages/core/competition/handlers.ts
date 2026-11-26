@@ -11,6 +11,7 @@ import {
 	QueryRejection,
 } from "../server/dispatcher";
 import { buildCalendar, type CalendarStage } from "./calendar";
+import { exhibitionSeason } from "./exhibition";
 import type { StageOutcome } from "./qualification";
 import { buildStageGraph } from "./season";
 import {
@@ -248,6 +249,10 @@ export const seasonDispatcher = createDispatcher<SeasonSession>({
 		"competition.schedule": (state, params: ScheduleQuery) =>
 			state.season ? projectSchedule(state.season, params) : [],
 		"season.overview": (state) => seasonOverview(state.season),
+		"season.exhibition": (
+			_state,
+			params: Parameters<typeof exhibitionSeason>[0],
+		) => exhibitionSeason(params),
 		...humanSeriesQueries,
 		"team.profile": teamProfile,
 		"tournament.preset": (state, { preset }) => {

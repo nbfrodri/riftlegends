@@ -401,7 +401,7 @@ test("reveals facts at their second and updates the map and gold from the comple
 	expect(feed.getByText(/future-factor/)).toBeTruthy();
 	expect(feed.queryByText("Nexo")).toBeNull();
 	const shoal = within(
-		screen.getByRole("region", { name: "Shoal · estructuras y objetivos" }),
+		screen.getByRole("region", { name: "Estructuras y objetivos de Shoal" }),
 	);
 	const top = () => within(shoal.getByRole("row", { name: /Top/ }));
 	expect(top().queryAllByLabelText("Torre destruida")).toHaveLength(0);
@@ -413,15 +413,15 @@ test("reveals facts at their second and updates the map and gold from the comple
 	expect(shoal.getByText("9 de 11")).toBeTruthy();
 	expect(screen.getByText("+3.200 oro")).toBeTruthy();
 	const forge = within(
-		screen.getByRole("region", { name: "Forge · estructuras y objetivos" }),
+		screen.getByRole("region", { name: "Estructuras y objetivos de Forge" }),
 	);
 	expect(forge.getByText("11 de 11")).toBeTruthy();
 	expect(forge.getByText("3 de 4")).toBeTruthy();
 	expect(
-		within(forge.getByRole("list", { name: "Efectos activos" })).getByText(
-			/Barón.*02:00/,
-		),
-	).toBeTruthy();
+		within(forge.getByRole("list", { name: "Efectos activos" }))
+			.getAllByRole("listitem")
+			.map((item) => item.textContent),
+	).toContain("Barón 02:00");
 	expect(shoal.getByText("Sin efectos activos")).toBeTruthy();
 });
 
@@ -433,7 +433,7 @@ test("each team's panel shows its own structures and objectives in its colour", 
 		["Shoal", "red"],
 	] as const) {
 		const panel = screen.getByRole("region", {
-			name: `${team} · structures and objectives`,
+			name: `${team} structures and objectives`,
 		});
 		expect(panel.getAttribute("data-side")).toBe(side);
 		expect(within(panel).getByRole("heading", { name: team })).toBeTruthy();
@@ -449,7 +449,7 @@ test("each team's panel shows its own structures and objectives in its colour", 
 		expect(within(table).getAllByRole("row")).toHaveLength(5);
 	}
 	const forge = within(
-		screen.getByRole("region", { name: "Forge · structures and objectives" }),
+		screen.getByRole("region", { name: "Forge structures and objectives" }),
 	);
 	expect(forge.queryAllByLabelText(/Destroyed/)).toHaveLength(0);
 	// Each term is followed by its value.
@@ -489,7 +489,11 @@ test.each(["blue", "red"] as const)(
 			owner,
 		);
 		expect(within(effects).getByText("Dragon soul")).toBeTruthy();
-		expect(within(effects).getByText(/Baron.*02:00/)).toBeTruthy();
+		expect(
+			within(effects)
+				.getAllByRole("listitem")
+				.map((item) => item.textContent),
+		).toContain("Baron 02:00");
 		expect(effects.classList.contains("text-(--side)")).toBe(true);
 	},
 );
@@ -501,14 +505,14 @@ test("skipping reveals the last partial minute and waits for the result button",
 	expect(screen.getByText("Dragon soul")).toBeTruthy();
 	expect(screen.getByText("5,100 gold")).toBeTruthy();
 	const shoal = within(
-		screen.getByRole("region", { name: "Shoal · structures and objectives" }),
+		screen.getByRole("region", { name: "Shoal structures and objectives" }),
 	);
 	const nexus = within(shoal.getByRole("row", { name: /Nexus/ }));
 	expect(nexus.getAllByLabelText("Destroyed tower")).toHaveLength(2);
 	expect(nexus.getByLabelText("Destroyed nexus")).toBeTruthy();
 	expect(shoal.getByText("9 of 11")).toBeTruthy();
 	const forge = within(
-		screen.getByRole("region", { name: "Forge · structures and objectives" }),
+		screen.getByRole("region", { name: "Forge structures and objectives" }),
 	);
 	expect(
 		within(forge.getByRole("row", { name: /Nexus/ })).getByLabelText(
@@ -700,7 +704,7 @@ test.each([
 			"Solo kill",
 			"Killing spree",
 			"Rampage",
-			"Shutdown · 150 gold",
+			"Shutdown worth 150 gold",
 			"Ace",
 			"outsmited the opposition",
 			"snatched it from the pit",
@@ -713,7 +717,7 @@ test.each([
 			"Baja en solitario",
 			"En racha",
 			"Dominando",
-			"Fin de la racha · 150 de oro",
+			"Corta la racha y gana 150 de oro",
 			"Exterminio",
 			"ganó el duelo de Aplastar",
 			"arrebató el objetivo en el foso",

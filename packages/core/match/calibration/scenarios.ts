@@ -254,7 +254,19 @@ export function sample(games: number, edge: number, pool: Pool) {
 		const firstKill = events.find((e) => e.kills.length > 0);
 		const opening = allKills.find((k) => k.firstBlood);
 		const objectives = events.filter((e) => e.steal);
+		/** Seconds each victim stays down (K22, plan 08 #528). */
+		const deaths = events.flatMap((e) =>
+			e.kills.flatMap((k) =>
+				k.respawnAt === undefined
+					? []
+					: [
+							k.respawnAt -
+								((e.minute - 1) * 60 + e.second + (k.fightSecond ?? 0)),
+						],
+			),
+		);
 		return {
+			deaths,
 			streaks,
 			plays: {
 				/** Minute of the opening kill, and whether it had assistants. */
