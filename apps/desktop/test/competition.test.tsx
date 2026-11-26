@@ -37,8 +37,11 @@ const card = (name: string) =>
 const advance = () => screen.getByRole("group", { name: "Advance" });
 const button = (name: string) =>
 	within(advance()).getByRole("button", { name });
+const batches = (api: ReturnType<typeof hostCore>) =>
+	api.send.mock.calls.filter(([c]) => c.kind === "season.playDay");
+/** Days the advance has started: a day takes several batches of series. */
 const days = (api: ReturnType<typeof hostCore>) =>
-	api.send.mock.calls.filter(([c]) => c.kind === "season.playDay").length;
+	new Set(batches(api).map(([c]) => (c.payload as { day: number }).day)).size;
 
 describe("season overview (U1)", () => {
 	it("is a sidebar section that creates the exhibition season on entry", async () => {
@@ -143,20 +146,45 @@ describe("advancing the season (U2)", () => {
 		// The bar says how far the run goes.
 		expect(screen.getByText("Until the end of the season")).toBeTruthy();
 
-		await act(async () => release());
-		await waitFor(() => expect(days(api)).toBe(2));
+		await waitFor(async () => {
+			await act(async () => release());
+			expect(days(api)).toBe(2);
+		});
 		await waitFor(() =>
 			expect(Number(progress.getAttribute("aria-valuenow"))).toBeGreaterThan(0),
 		);
-		// Stop ends the run after the day being played.
+		// Stop ends the run after the batch being played.
 		await user.click(within(advance()).getByRole("button", { name: "Stop" }));
-		await act(async () => release());
-		await waitFor(() =>
-			expect(button("Play day").hasAttribute("disabled")).toBe(false),
-		);
+		await waitFor(async () => {
+			await act(async () => release());
+			expect(button("Play day").hasAttribute("disabled")).toBe(false);
+		});
 		expect(days(api)).toBe(2);
 		expect(
 			screen.queryByRole("progressbar", { name: "Season progress" }),
+		).toBeNull();
+	});
+
+	it("plays a day in batches of series until it closes (#584)", async () => {
+		const api = hostCore((command, send) =>
+			send(
+				command.kind === "season.playDay"
+					? {
+							...command,
+							payload: { ...(command.payload as object), maxSeries: 1 },
+						}
+					: command,
+			),
+		);
+		const { user } = await open(api);
+		await user.click(button("Play day"));
+		await waitFor(() =>
+			expect(button("Play day").hasAttribute("disabled")).toBe(false),
+		);
+		// One day takes several batches, and the day shown only moves when it closes.
+		expect(batches(api).length).toBeGreaterThan(days(api));
+		expect(
+			within(card("Rift League") as HTMLElement).queryByText("Starts today"),
 		).toBeNull();
 	});
 

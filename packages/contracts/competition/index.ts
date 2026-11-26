@@ -76,7 +76,14 @@ export const competitionCommands = defineCommands({
 	 * Plays every series scheduled for the given day, counted from the season
 	 * start, except the one of `humanTeam`, which is announced as pending.
 	 */
-	"season.playDay": z.strictObject({ day: z.int().min(0).max(1000) }),
+	"season.playDay": z.strictObject({
+		day: z.int().min(0).max(1000),
+		/**
+		 * Plays at most this many series; call again with the same day until it
+		 * closes. Without it the whole day is played at once.
+		 */
+		maxSeries: z.int().min(1).max(100).optional(),
+	}),
 	/** Starts the pending series of `humanTeam`, by the id the schedule gives it. */
 	"season.playSeries": z.strictObject({
 		series: id,

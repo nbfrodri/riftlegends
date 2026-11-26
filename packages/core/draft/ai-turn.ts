@@ -3,7 +3,7 @@ import { choose, DIFFICULTY, difficultyOf, type Scored } from "../ai/choose";
 import { scoreBan } from "../ai/components/ban";
 import { comfort } from "../ai/components/comfort";
 import { meta } from "../ai/components/meta";
-import { scorePick } from "../ai/components/pick";
+import { pickComponents } from "../ai/components/pick";
 import { indexContent } from "../ai/content-index";
 import type { AiContext } from "../ai/context";
 import { lookahead } from "../ai/lookahead";
@@ -166,9 +166,12 @@ export const aiTurn: CommandHandler<SeriesState> = (state) => {
 			.filter((entry) => entry.status === "free")
 			.map((entry) => entry.champion);
 
-	const score = next.action === "ban" ? scoreBan : scorePick;
+	const score =
+		next.action === "ban"
+			? (champion: string) => scoreBan(ctx, champion)
+			: pickComponents(ctx);
 	const scored = free(next.team, input.picks)
-		.map((champion) => ({ champion, components: score(ctx, champion) }))
+		.map((champion) => ({ champion, components: score(champion) }))
 		.sort((a, b) => total(b) - total(a) || (a.champion < b.champion ? -1 : 1));
 	if (scored.length === 0) {
 		return apply(state, next.team, "ban", null, false);

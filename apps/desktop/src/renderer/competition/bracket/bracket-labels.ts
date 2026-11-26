@@ -99,3 +99,43 @@ export function bracketLabels(
 		}),
 	);
 }
+
+type Slot = Match["from"][number];
+type Translate = (
+	key:
+		| Label["key"]
+		| `competition.bracket.${"numbered" | "seed" | `${"winner" | "loser"}${"Of" | "Short"}`}`,
+	params: Record<string, string | number>,
+) => string;
+
+/** The full name of a series: its round, numbered when the round has more than one. */
+export function matchName(
+	t: Translate,
+	labels: ReadonlyMap<string, MatchLabel>,
+	id: string,
+) {
+	const label = labels.get(id);
+	if (!label) return id;
+	const round = t(label.round.key, label.round.params);
+	return label.index === null
+		? round
+		: t("competition.bracket.numbered", { round, n: label.index });
+}
+
+/** Where a team not yet known comes from: a seed, or the winner or loser of a series. */
+export function originText(
+	t: Translate,
+	labels: ReadonlyMap<string, MatchLabel>,
+	slot: Slot,
+	short: boolean,
+) {
+	if (slot.kind === "seed")
+		return t("competition.bracket.seed", { n: slot.rank });
+	return short
+		? t(`competition.bracket.${slot.kind}Short`, {
+				match: labels.get(slot.match)?.code ?? slot.match,
+			})
+		: t(`competition.bracket.${slot.kind}Of`, {
+				match: matchName(t, labels, slot.match),
+			});
+}

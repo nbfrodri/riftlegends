@@ -13,7 +13,12 @@ import { useTranslation } from "react-i18next";
 import { pacing } from "../../draft/broadcast/pacing";
 import { TeamCrest } from "../../draft/team-crest";
 import { BracketCard, slotTexts, type TeamNames } from "./bracket-card";
-import { bracketLabels, type Label } from "./bracket-labels";
+import {
+	bracketLabels,
+	type Label,
+	matchName,
+	originText,
+} from "./bracket-labels";
 import {
 	CARD_H,
 	CARD_W,
@@ -79,23 +84,9 @@ export function Bracket({
 
 	const text = (label: Label | undefined) =>
 		label ? t(label.key, label.params) : "";
-	const nameOf = (id: string) => {
-		const label = labels.get(id);
-		if (!label) return id;
-		const round = text(label.round);
-		return label.index === null
-			? round
-			: t("competition.bracket.numbered", { round, n: label.index });
-	};
-	const origin = (slot: Slot, short: boolean) => {
-		if (slot.kind === "seed")
-			return t("competition.bracket.seed", { n: slot.rank });
-		return short
-			? t(`competition.bracket.${slot.kind}Short`, {
-					match: labels.get(slot.match)?.code ?? slot.match,
-				})
-			: t(`competition.bracket.${slot.kind}Of`, { match: nameOf(slot.match) });
-	};
+	const nameOf = (id: string) => matchName(t, labels, id);
+	const origin = (slot: Slot, short: boolean) =>
+		originText(t, labels, slot, short);
 
 	const move = (id: string) => (event: KeyboardEvent<HTMLButtonElement>) => {
 		const direction = KEYS[event.key as keyof typeof KEYS];
