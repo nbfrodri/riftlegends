@@ -54,10 +54,14 @@ export function takeChance(state: MatchState, winner: Side) {
 const push: Contest = {
 	id: 20,
 	due: (state) => state.minute >= PUSH_FROM,
-	resolve(state, rng) {
+	resolve(state, rng, first) {
 		const lost: Record<Side, Loss> = { blue: state.blue, red: state.red };
 		const events: ContestEvent[] = [];
-		const seconds = LANES.map(() => int(rng, 0, 59)).sort((a, b) => a - b);
+		// The first push is at the contest's second, the others come after it.
+		const seconds = [
+			first,
+			...LANES.slice(1).map(() => int(rng, first, 59)),
+		].sort((a, b) => a - b);
 		const { economy } = state.context.rules;
 		for (const lane of LANES) {
 			const result = edge(state, "siege");

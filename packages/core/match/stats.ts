@@ -7,9 +7,11 @@ import {
 } from "@rift-legends/contracts";
 import { SCALE } from "../math";
 import { clamp } from "../math/int";
+import { trackDown } from "./dead-passive";
 import { farmed, paidByRole, type Slot, splitDamage } from "./economy";
 import { per30, rate, share } from "./rating";
 import { minuteOf } from "./state";
+import { visionScore } from "./vision";
 
 export type { EventFact } from "./explain";
 
@@ -53,50 +55,6 @@ const PRESSURE = new Set(["lane", "tower"]);
 const isVisionZone = (zone: string) =>
 	zone.startsWith("jungle") || zone.endsWith("-pit");
 
-/**
- * Vision score per 30 minutes of a player with the reference attribute, by
- * role. The pro mean (Leaguepedia, 4,756 lines of six leagues): the support
- * wards for the team and the jungle clears; the rest barely place any.
- */
-const VISION_PER_30: Record<Role, number> = {
-	top: 40,
-	jungle: 54,
-	mid: 40,
-	bot: 40,
-	support: 127,
-};
-/** The attribute that scores the reference, and the change per point (bp). */
-const VISION_REFERENCE = 66;
-const VISION_PER_POINT = 50;
-/** Won contests of jungle and pits move the score between ±10 %. */
-const VISION_CONTEST = 2000;
-
-/**
- * Vision score of a player: the role's rate over the game length, scaled by
- * the `vision` attribute and by the share of the jungle and pit contests the
- * team won (5,000 without any). Integer and deterministic.
- */
-function visionScore(
-	role: Role,
-	vision: number,
-	contested: number | null,
-	seconds: number,
-): number {
-	const attribute = clamp(
-		SCALE + VISION_PER_POINT * (vision - VISION_REFERENCE),
-		0,
-		3 * SCALE,
-	);
-	const contest =
-		SCALE -
-		VISION_CONTEST / 2 +
-		div(VISION_CONTEST * (contested ?? SCALE / 2), SCALE);
-	return div(
-		div(VISION_PER_30[role] * seconds * attribute, 1800) * contest,
-		SCALE * SCALE,
-	);
-}
-
 interface Chances {
 	won: number;
 	total: number;
@@ -139,6 +97,7 @@ export function trackPlayerStats(
 		blue: ROLES.map(() => 0),
 		red: ROLES.map(() => 0),
 	};
+	const down = trackDown(slotOf, farmed(rules.economy.passive));
 	const teamKills = { blue: 0, red: 0 };
 	// What each side won of the objectives, top-lane and jungle contests (R3).
 	const chances = Object.fromEntries(
@@ -166,6 +125,7 @@ export function trackPlayerStats(
 			contest("pressure", winner);
 		if (isVisionZone(event.zone)) contest("vision", winner);
 		const paid = paidByRole(event, slotOf, rules.economy);
+		down.add(event);
 		for (const side of SIDES) {
 			paid[side].forEach((gold, i) => {
 				rest[side][i] = (rest[side][i] as number) + gold;
@@ -210,7 +170,10 @@ export function trackPlayerStats(
 		) => T,
 	): T[] => {
 		// The same passive income every minute, as the loop pays it.
-		const income = farmed(rules.economy.passive).map((gold) => gold * minutes);
+		const farm = farmed(rules.economy.passive);
+		const income = farm.map((gold) => gold * minutes);
+		// What a victim does not farm while he is down (plan 08, #528).
+		const lost = down.through(minutes);
 		const bySide = Object.fromEntries(
 			SIDES.map((side) => [
 				side,
@@ -226,7 +189,10 @@ export function trackPlayerStats(
 		return slots.map((slot) => {
 			const i = ROLES.indexOf(slot.role);
 			const line = lines.get(slot.player) as Line;
-			const gold = (rest[slot.side][i] as number) + (income[i] as number);
+			const gold =
+				(rest[slot.side][i] as number) +
+				(income[i] as number) -
+				(lost[slot.side][i] as number);
 			return project(slot, line, gold, bySide[slot.side][i] as number);
 		});
 	};

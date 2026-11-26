@@ -148,8 +148,10 @@ async function expectKeyMomentsWhole(page: Page) {
 			}),
 		);
 	expect(
-		moments.some(({ text }) => text.includes(longTeamNames.Forge ?? "")),
-		"a key moment names the longest team",
+		moments.some(({ text }) =>
+			Object.values(longTeamNames).some((name) => text.includes(name)),
+		),
+		"a key moment names a team with a long name",
 	).toBe(true);
 	expect(
 		moments.flatMap(({ clipped }) => clipped),

@@ -26,9 +26,9 @@ export interface KillSlot {
  */
 const COUNTS = {
 	duo: { first: 0, weights: [5, 95] },
-	gank: { first: 1, weights: [20, 80] },
-	skirmish: { first: 1, weights: [20, 80] },
-	teamfight: { first: 2, weights: [5, 30, 65] },
+	gank: { first: 1, weights: [8, 92] },
+	skirmish: { first: 1, weights: [4, 96] },
+	teamfight: { first: 2, weights: [0, 8, 92] },
 } as const;
 /** Gankers score twice as often as the laner they visit. */
 const GANKER = 1;
@@ -66,17 +66,21 @@ function draw(
  * come from the roles of the engagement, by role, champion and attributes
  * (plan 08, R1). No role repeats within a kill. It draws from its own stream
  * `(seed, matchAttribution, game, minute, contest, event, kill)`, so it never
- * moves the draws that resolve the contest.
+ * moves the draws that resolve the contest. `alive` limits it to the players
+ * who are up (plan 08, #528): the caller makes sure the exchange has some.
  */
 export function attribute(
 	state: MatchState,
 	side: Side,
 	engagement: Engagement,
 	slot: KillSlot,
+	alive: readonly Role[] = ROLES,
+	/** Who may assist: a player who just died still can (see `ASSIST_WINDOW`). */
+	helpers: readonly Role[] = alive,
 ): { killer: Role; assists: Role[] } {
 	const { seed, game } = state.context;
 	const weights = state.context[side].attribution;
-	const roles = local(engagement);
+	const roles = local(engagement).filter((role) => alive.includes(role));
 	if (engagement.kind === "duel") {
 		return { killer: engagement.lane, assists: [] };
 	}
@@ -102,14 +106,18 @@ export function attribute(
 	// A gank always brings the jungler into that lane. Reserve their assist
 	// when the normal draw would omit them, keeping the size of the assist bag.
 	const assists: Role[] = [];
-	let rest = author.rest;
+	let rest = local(engagement).filter(
+		(role) => role !== author.role && helpers.includes(role),
+	);
 	while (assists.length < asked && rest.length > 0) {
 		const next = draw(rng, rest, (role) => weights[role].assist);
 		assists.push(next.role);
 		rest = next.rest;
 	}
 	if (gank && author.role !== "jungle" && !assists.includes("jungle")) {
-		assists[assists.length - 1] = "jungle";
+		// Takes the place of the last assist, or comes alone if the draw had none.
+		if (assists.length > 0) assists[assists.length - 1] = "jungle";
+		else assists.push("jungle");
 	}
 	return { killer: author.role, assists };
 }

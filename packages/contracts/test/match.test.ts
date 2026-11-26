@@ -118,6 +118,29 @@ describe("match.started", () => {
 	});
 });
 
+/** Death timer of the wiki (issue #528): BRW in tenths of a second, TIF in thousandths of a point. */
+const deathTimer = {
+	brw: [
+		100, 100, 120, 120, 140, 160, 200, 250, 280, 325, 350, 375, 400, 425, 450,
+		475, 500, 525,
+	],
+	step: 30,
+	tif: [
+		{ from: 900, base: 0, perStep: 425 },
+		{ from: 1800, base: 12_750, perStep: 300 },
+		{ from: 2700, base: 21_750, perStep: 1450 },
+	],
+	cap: 50_000,
+};
+const curve = [10, 20, 30];
+const levelCurve = {
+	top: curve,
+	jungle: curve,
+	mid: curve,
+	bot: curve,
+	support: curve,
+};
+
 describe("match.event", () => {
 	const fact = {
 		type: "match.event",
@@ -141,6 +164,12 @@ describe("match.event", () => {
 
 	it("round-trips with its second, zone, kills and causes", () =>
 		roundTrips(fact));
+
+	it("stores the second a victim comes back, and still reads logs without it", () => {
+		const [kill] = fact.kills;
+		roundTrips({ ...fact, kills: [{ ...kill, respawnAt: 412 }] });
+		roundTrips(fact);
+	});
 
 	it("carries a structure tier for towers", () =>
 		roundTrips({
@@ -271,6 +300,8 @@ describe("MatchContent", () => {
 				elder: { first: 2100, respawn: 360 },
 			},
 			inhibitorRespawn: 300,
+			deathTimer,
+			levelCurve,
 			economy: {
 				passive: 1200,
 				kill: 300,
@@ -348,6 +379,26 @@ describe("MatchContent", () => {
 			},
 		],
 		[
+			"a death timer with no BRW for level 18",
+			{
+				...content,
+				rules: {
+					...content.rules,
+					deathTimer: { ...deathTimer, brw: deathTimer.brw.slice(0, 17) },
+				},
+			},
+		],
+		[
+			"level curves of different length",
+			{
+				...content,
+				rules: {
+					...content.rules,
+					levelCurve: { ...levelCurve, top: [10, 20] },
+				},
+			},
+		],
+		[
 			"a zero full build",
 			{ ...content, rules: { ...content.rules, fullBuildGold: 0 } },
 		],
@@ -394,6 +445,10 @@ const player = {
 	cs: 8,
 };
 const snapshot = { minute: 1, blue: side, red: side, players: [player] };
+const withRespawn = {
+	...snapshot,
+	players: [{ ...player, respawnAt: 95 }],
+};
 
 describe("match.view", () => {
 	const query = (params: unknown) =>
@@ -435,6 +490,18 @@ describe("match.view", () => {
 		expect(
 			matchView.safeParse({ ...view, snapshots: [{ ...snapshot, minute: -1 }] })
 				.success,
+		).toBe(false);
+	});
+
+	it("stores when each player comes back, and reads snapshots without it", () => {
+		const view = { game: 1, facts: [], snapshots: [withRespawn, snapshot] };
+		expect(matchView.parse(view)).toEqual(view);
+		expect(
+			matchView.safeParse({
+				game: 1,
+				facts: [],
+				snapshots: [{ ...snapshot, players: [{ ...player, respawnAt: -1 }] }],
+			}).success,
 		).toBe(false);
 	});
 

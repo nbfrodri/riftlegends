@@ -156,6 +156,37 @@ async function expectBigFaceToFace(page: Page) {
 	// Pictures and name blocks sit in fixed tracks: none of them moves (#548).
 	for (const spread of measure.columns) expect(spread).toBeLessThanOrEqual(1);
 	await expectColumnsAligned(page);
+	await expectHeaderIconsCentred(page);
+}
+
+/** #589: each stat header's icon is centred over its label (±1 px). */
+async function expectHeaderIconsCentred(page: Page) {
+	const offsets = await page.evaluate(() => {
+		const table = document.querySelector("table[aria-label='Cara a cara']");
+		if (!table) throw new Error("Missing face to face");
+		const headers = [...table.querySelectorAll("thead th[scope=col]")].filter(
+			(th) => th.querySelector("img, svg"),
+		);
+		return headers.map((th) => {
+			const icon = th.querySelector("img, svg")?.getBoundingClientRect();
+			const walker = document.createTreeWalker(th, NodeFilter.SHOW_TEXT);
+			let label: DOMRect | undefined;
+			for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+				if (!node.textContent?.trim()) continue;
+				const range = document.createRange();
+				range.selectNodeContents(node);
+				label = range.getBoundingClientRect();
+			}
+			if (!icon || !label) throw new Error("Missing icon or label");
+			return {
+				label: th.textContent,
+				offset: icon.left + icon.width / 2 - (label.left + label.width / 2),
+			};
+		});
+	});
+	expect(offsets).toHaveLength(6);
+	for (const { offset } of offsets)
+		expect(Math.abs(offset), JSON.stringify(offsets)).toBeLessThanOrEqual(1);
 }
 
 /**
@@ -169,7 +200,7 @@ async function expectColumnsAligned(page: Page) {
 		const table = document.querySelector("table[aria-label='Cara a cara']");
 		if (!table) throw new Error("Missing face to face");
 		/** Painted extent of an element's text and icons, clipped to its box. */
-		const extent = (el: Element) => {
+		const extent = (el: Element, icons = true) => {
 			const clip = el.getBoundingClientRect();
 			const rects: DOMRect[] = [];
 			const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
@@ -183,8 +214,9 @@ async function expectColumnsAligned(page: Page) {
 				range.selectNodeContents(node);
 				rects.push(range.getBoundingClientRect());
 			}
-			for (const svg of el.querySelectorAll("svg"))
-				rects.push(svg.getBoundingClientRect());
+			if (icons)
+				for (const svg of el.querySelectorAll("svg"))
+					rects.push(svg.getBoundingClientRect());
 			return {
 				left: Math.max(clip.left, Math.min(...rects.map((r) => r.left))),
 				right: Math.min(clip.right, Math.max(...rects.map((r) => r.right))),
@@ -206,7 +238,8 @@ async function expectColumnsAligned(page: Page) {
 				if (!target) throw new Error(`Missing cell ${index}`);
 				return Math.round(extent(target)[edge]);
 			});
-			return { header: Math.round(extent(header)[edge]), cells };
+			// The header's edge is its label's: its icon is centred over it (#589).
+			return { header: Math.round(extent(header, false)[edge]), cells };
 		};
 		return [
 			...[0, 1, 2, 3].map((i) => column(i, "blue")),
