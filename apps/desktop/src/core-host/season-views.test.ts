@@ -407,7 +407,9 @@ test("Q3: a played bracket series gives its score in the order of its teams and 
 		competitionViews.bracket.parse(view(core, "competition.bracket", ref));
 	expect(bracket().matches.some((match) => "score" in match)).toBe(false);
 	playAll(core);
-	const schedule = view(core, "competition.schedule", ref) as {
+	const schedule = view(core, "competition.schedule", {
+		competition: ref.competition,
+	}) as {
 		id: string;
 		teams: [string, string];
 		score: [number, number];
