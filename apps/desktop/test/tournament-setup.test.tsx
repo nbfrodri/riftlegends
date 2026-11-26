@@ -138,7 +138,9 @@ describe("U9: tournament setup", () => {
 			fearless: "soft",
 			humanTeam: outsider.id,
 		});
-		expect((create?.payload as { teams: string[] }).teams[0]).toBe(outsider.id);
+		expect((create?.payload as { teams: string[] } | undefined)?.teams[0]).toBe(
+			outsider.id,
+		);
 		expect(
 			await screen.findByRole("heading", { name: "Tournament ready" }),
 		).toBeTruthy();
@@ -199,7 +201,9 @@ describe("U9: tournament setup", () => {
 				],
 			},
 		});
-		expect((create?.payload as { teams: string[] }).teams).toHaveLength(8);
+		expect(
+			(create?.payload as { teams: string[] } | undefined)?.teams,
+		).toHaveLength(8);
 	});
 
 	test("without real leagues only the custom editor is offered", async () => {
