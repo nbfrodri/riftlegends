@@ -4,7 +4,7 @@ import type { Emitted } from "../server/dispatcher";
 import { buildCalendar } from "./calendar";
 import type { RunningSeason } from "./handlers";
 import { gamesOf, type SeriesRecord } from "./season-records";
-import type { SeasonFixture } from "./season-series";
+import type { Fearless, SeasonFixture } from "./season-series";
 import {
 	isUnusedReservation,
 	localFixtureId,
@@ -22,6 +22,7 @@ export interface SlotSeries {
 	readonly key: string;
 	readonly fixture: StageProgress["fixtures"][number];
 	readonly seed: number;
+	readonly fearless: Fearless;
 }
 
 export function slotSeries(
@@ -48,7 +49,8 @@ export function slotSeries(
 		fixture.round,
 		fixtureIndex,
 	);
-	return { key, fixture, seed };
+	const fearless = season.formats[node.competitionIndex]?.fearless ?? "hard";
+	return { key, fixture, seed, fearless };
 }
 
 /** The series a day has already played, and the facts and results it gave. */
@@ -77,7 +79,7 @@ interface PlayedSeries {
 export function recordSeries(
 	log: DayLog,
 	slot: Slot,
-	{ key, fixture, seed }: SlotSeries,
+	{ key, fixture, seed, fearless }: SlotSeries,
 	played: PlayedSeries,
 ) {
 	const { competition, stage, day } = slot;
@@ -102,6 +104,7 @@ export function recordSeries(
 		winner: played.winner,
 		fixture: fixture as SeasonFixture,
 		seed,
+		fearless,
 		games: gamesOf(played.facts),
 	});
 	const results = log.today.get(key) ?? [];

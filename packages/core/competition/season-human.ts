@@ -29,7 +29,7 @@ export const isHumanSeriesOn = ({ human }: SeasonSession) =>
 /** `series.start` of the user's series: the pending one of the day. */
 export function playSeries(
 	state: SeasonSession,
-	{ series: id }: { series: string },
+	{ series: id, timer }: { series: string; timer: boolean },
 ): Outcome<SeasonSession> {
 	const { season } = state;
 	if (!season) return reject("wrong-action", { expected: "season.create" });
@@ -44,7 +44,7 @@ export function playSeries(
 		season.content,
 		series.fixture,
 		series.seed,
-		season.humanTeam,
+		{ fearless: series.fearless, human: season.humanTeam, timer },
 	);
 	if (!started.ok) return started;
 	return {

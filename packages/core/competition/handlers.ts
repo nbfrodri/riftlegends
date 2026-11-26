@@ -188,6 +188,7 @@ function playDay(
 			season.content,
 			series.fixture,
 			series.seed,
+			series.fearless,
 		);
 		if (!played.ok) return played;
 		recordSeries(log, slot, series, played);

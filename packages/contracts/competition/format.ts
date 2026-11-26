@@ -217,6 +217,8 @@ export const competitionSchema = z
 		tiebreak: z.array(competitionCriterion).max(CRITERIA.length),
 		/** Bo of the tiebreaker series that decides a tie at a cut. */
 		tiebreakerBestOf: bestOf.default(3),
+		/** Fearless mode of every series of the competition. */
+		fearless: z.enum(["hard", "soft", "off"]).default("hard"),
 		slots: z.array(slot).max(16).optional(),
 		/** False while the format is not checked against the rulebook. */
 		verified: z.boolean(),

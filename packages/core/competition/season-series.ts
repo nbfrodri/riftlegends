@@ -7,6 +7,8 @@ import {
 } from "../draft/series";
 import type { Emitted } from "../server/dispatcher";
 
+export type Fearless = "hard" | "soft" | "off";
+
 export interface SeasonFixture {
 	readonly id: string;
 	readonly teams: readonly [string, string];
@@ -25,20 +27,23 @@ export function startSeasonSeries(
 	{ content, match }: LoadedContent,
 	fixture: SeasonFixture,
 	seed: number,
-	human?: string,
+	options: {
+		readonly fearless: Fearless;
+		readonly human?: string | undefined;
+		readonly timer?: boolean;
+	},
 ) {
 	return seriesCommands["series.start"](draftStateWith(content, match), {
 		teams: fixture.teams,
 		format: `bo${fixture.bestOf}`,
 		seed,
 		priority: fixture.priority,
-		fearless: "off",
-		timer: false,
+		fearless: options.fearless,
+		timer: options.timer ?? false,
 		pool: content.champions.map(({ id }) => id),
-		ai: fixture.teams.map((team) => (team === human ? null : "coach")) as [
-			"coach" | null,
-			"coach" | null,
-		],
+		ai: fixture.teams.map((team) =>
+			team === options.human ? null : "coach",
+		) as ["coach" | null, "coach" | null],
 	});
 }
 
@@ -78,8 +83,9 @@ export function playSeasonSeries(
 	content: LoadedContent,
 	fixture: SeasonFixture,
 	seed: number,
+	fearless: Fearless,
 ) {
-	const started = startSeasonSeries(content, fixture, seed);
+	const started = startSeasonSeries(content, fixture, seed, { fearless });
 	if (!started.ok) return started;
 	let state = started.state;
 	const facts: Emitted[] = [...started.facts];

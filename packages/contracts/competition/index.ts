@@ -76,7 +76,11 @@ export const competitionCommands = defineCommands({
 	 */
 	"season.playDay": z.strictObject({ day: z.int().min(0).max(1000) }),
 	/** Starts the pending series of `humanTeam`, by the id the schedule gives it. */
-	"season.playSeries": z.strictObject({ series: id }),
+	"season.playSeries": z.strictObject({
+		series: id,
+		/** The timer setting of the app; the AI series never use it. */
+		timer: z.boolean().default(false),
+	}),
 	...humanSeriesCommands,
 });
 
