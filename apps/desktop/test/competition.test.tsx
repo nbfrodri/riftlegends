@@ -63,8 +63,9 @@ describe("season overview (U1)", () => {
 		expect(within(league).getByText("Not started")).toBeTruthy();
 		expect(within(league).getByText(/Starts on day 7/)).toBeTruthy();
 		// The first match day is the next one: the card says so in words.
-		expect(within(league).getByText("Today")).toBeTruthy();
-		expect(within(league).getByText("Stage 1 of 2")).toBeTruthy();
+		expect(within(league).getByText("Starts today")).toBeTruthy();
+		// No status badges: the state is plain text (user feedback on #582).
+		expect(within(league).queryByText("Live")).toBeNull();
 		expect(
 			within(league).getByRole("img", { name: "Rift League" }),
 		).toBeTruthy();
@@ -72,12 +73,14 @@ describe("season overview (U1)", () => {
 		await user.click(button("Play day"));
 		await waitFor(() =>
 			expect(
-				within(card("Rift League") as HTMLElement).getByText("Live"),
+				within(card("Rift League") as HTMLElement).getByText(
+					/^Matchday 1 of \d+$/,
+				),
 			).toBeTruthy(),
 		);
 		const live = card("Rift League") as HTMLElement;
 		expect(within(live).getByText("Leader")).toBeTruthy();
-		expect(within(live).getByText("Stage 1 of 2")).toBeTruthy();
+		expect(within(live).getByText("Regular")).toBeTruthy();
 		expect(within(live).getByText(/^1-0$/)).toBeTruthy();
 		expect(within(live).getByText(/Next day: \d+/)).toBeTruthy();
 		expect(days(api)).toBe(1);
@@ -174,7 +177,7 @@ describe("advancing the season (U2)", () => {
 			expect(button("Play day").hasAttribute("disabled")).toBe(false),
 		);
 		expect(
-			within(card("Rift League") as HTMLElement).getByText("Live"),
+			within(card("Rift League") as HTMLElement).getByText("Not started"),
 		).toBeTruthy();
 	});
 
