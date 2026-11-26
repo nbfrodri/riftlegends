@@ -3,8 +3,8 @@ import { RouterProvider } from "@tanstack/react-router";
 import { cleanup, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, test, vi } from "vitest";
-import { createAppRouter } from "../src/renderer/router";
 import { StandingsTables } from "../src/renderer/competition/standings/standings-tables";
+import { createAppRouter } from "../src/renderer/router";
 import { renderInLocale } from "./render-in-locale";
 import { hostCore, renderWithCore } from "./season-core";
 
@@ -28,7 +28,11 @@ const NAMES: Record<string, string> = {
 };
 const teamName = (id: string) => NAMES[id] ?? id;
 
-const UNTIED = { criterion: "seriesWins", tied: [], values: {} } as const;
+const UNTIED: Row["explanation"] = {
+	criterion: "seriesWins",
+	tied: [],
+	values: {},
+};
 
 function row(
 	team: string,
@@ -47,11 +51,11 @@ function row(
 	};
 }
 
-const headToHead = {
+const headToHead: Row["explanation"] = {
 	criterion: "headToHead",
 	tied: ["shoal", "breakwater"],
 	values: { shoal: 1, breakwater: 0 },
-} as const;
+};
 
 const league: StandingsView = {
 	rows: [
@@ -198,7 +202,7 @@ describe("standings table (U3)", () => {
 		});
 		const [first, second] = bodyRows("Standings: Regular");
 		expect(cells(first as HTMLElement).at(-1)).toBe(
-			"Road to msi, Rounds 3-4 and MSI",
+			"Road to msi, Rounds 3-4, and MSI",
 		);
 		expect(cells(second as HTMLElement).at(-1)).toBe("Rounds 3-4");
 	});
