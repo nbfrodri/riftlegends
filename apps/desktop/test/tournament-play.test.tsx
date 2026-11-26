@@ -28,14 +28,20 @@ async function startTournament(watch: boolean) {
 		api,
 	);
 	const user = userEvent.setup();
-	const first = await screen.findByRole("group", { name: "Stage 1" });
+	const first = await screen.findByRole(
+		"group",
+		{ name: "Stage 1" },
+		{ timeout: 10_000 },
+	);
 	await choose(
 		user,
 		within(first).getByRole("combobox", { name: "Block" }),
 		"Single elimination",
 	);
 	for (const n of [8, 7, 6, 5])
-		await user.click(screen.getByRole("button", { name: `Remove team ${n}` }));
+		await user.click(
+			await screen.findByRole("button", { name: `Remove team ${n}` }),
+		);
 	const best = screen.getByRole("combobox", { name: "Team 1" }).textContent;
 	if (!best) throw new Error("no first team");
 	if (!watch)
@@ -43,13 +49,18 @@ async function startTournament(watch: boolean) {
 	const start = screen.getByRole("button", { name: "Start tournament" });
 	await waitFor(() => expect(start.hasAttribute("disabled")).toBe(false));
 	await user.click(start);
-	await screen.findByRole("heading", { level: 1, name: "Custom tournament" });
+	await screen.findByRole(
+		"heading",
+		{ level: 1, name: "Custom tournament" },
+		{ timeout: 10_000 },
+	);
 	return { api, user, best };
 }
 
 const advance = () => screen.getByRole("group", { name: "Advance" });
 
-describe("U10: play a tournament", () => {
+// Each test plays several days of a tournament against the real core host.
+describe("U10: play a tournament", { timeout: 30_000 }, () => {
 	test("the hub plays the AI's series and stops at mine, which opens the draft flow", async () => {
 		const { api, user, best } = await startTournament(false);
 		expect(screen.getByText(`You play with ${best}.`)).toBeTruthy();
