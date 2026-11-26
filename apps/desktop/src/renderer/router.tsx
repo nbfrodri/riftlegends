@@ -10,6 +10,7 @@ import { ChampionsScreen } from "./champions-screen";
 import { CompetitionHub, parseHubSearch } from "./competition/competition-hub";
 import { CompetitionScreen } from "./competition/competition-screen";
 import { SeriesScreen } from "./competition/series-screen";
+import { TeamScreen } from "./competition/team/team-screen";
 import { CreditsScreen } from "./credits/credits-screen";
 import { DatabaseScreen } from "./database/database-screen";
 import { DraftScreen, MarketScreen, SettingsScreen } from "./screens";
@@ -99,6 +100,15 @@ const seriesRoute = createRoute({
 	},
 });
 
+const teamRoute = createRoute({
+	getParentRoute: () => rootRoute,
+	path: "competicion/equipo/$team",
+	component: function Team() {
+		const { team } = teamRoute.useParams();
+		return <TeamScreen key={team} team={team} />;
+	},
+});
+
 const settingsRoute = createRoute({
 	getParentRoute: () => rootRoute,
 	path: "ajustes",
@@ -121,6 +131,7 @@ const routeTree = rootRoute.addChildren([
 	competitionRoute,
 	competitionHubRoute,
 	seriesRoute,
+	teamRoute,
 	settingsRoute,
 	creditsRoute,
 ]);

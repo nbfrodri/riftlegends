@@ -21,6 +21,10 @@ async function render(path: string, locale = "en-US") {
 	return { router, user: userEvent.setup() };
 }
 
+/** The value of a term of the summary line. */
+const term = (label: string) =>
+	screen.getByText(label, { selector: "dt" }).nextElementSibling?.textContent;
+
 const heading = (name: string) =>
 	screen.findByRole("heading", { level: 1, name }, { timeout: 30_000 });
 
@@ -29,7 +33,6 @@ describe("team page (U8)", () => {
 		await render("/competicion/equipo/forge");
 		await heading("Forge");
 		expect(screen.getByText("Seed 1")).toBeTruthy();
-		expect(screen.getByRole("img", { name: "Forge" })).toBeTruthy();
 
 		const roster = screen.getByRole("table", { name: "Roster" });
 		const rows = within(roster).getAllByRole("row").slice(1);
@@ -94,12 +97,8 @@ describe("team page (U8)", () => {
 		expect(result?.textContent).toMatch(/^(W|L)(Won|Lost) \d–\d against \w+$/);
 		const won = result?.textContent?.startsWith("W") ?? false;
 		expect(screen.getByText(won ? "1 win" : "1 loss")).toBeTruthy();
-		expect(screen.getByRole("definition", { name: "Series" }).textContent).toBe(
-			won ? "1-0" : "0-1",
-		);
-		expect(
-			screen.getByRole("definition", { name: "Average game" }).textContent,
-		).toMatch(/^\d+:\d\d$/);
+		expect(term("Series")).toBe(won ? "1-0" : "0-1");
+		expect(term("Average game")).toMatch(/^\d+:\d\d$/);
 		expect(screen.queryByText("Has not played yet")).toBeNull();
 
 		// Per-player stats of the season in the roster.

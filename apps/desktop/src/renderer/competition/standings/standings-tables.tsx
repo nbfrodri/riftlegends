@@ -31,10 +31,13 @@ export function StandingsTables({
 	standings,
 	stage,
 	teamName,
+	onOpenTeam,
 }: {
 	standings: StandingsView;
 	stage: string;
 	teamName: (id: string) => string;
+	/** Opens a team's page from its row (U8). */
+	onOpenTeam?: (team: string) => void;
 }) {
 	const { t } = useTranslation();
 	const { groups, destinations } = standings;
@@ -46,6 +49,7 @@ export function StandingsTables({
 				destinations={destinationsOf(destinations)}
 				showDestination={destinations.length > 0}
 				teamName={teamName}
+				onOpenTeam={onOpenTeam}
 			/>
 		);
 	return (
@@ -74,6 +78,7 @@ export function StandingsTables({
 							destinations={destinationsOf(destinations, group)}
 							showDestination={destinations.length > 0}
 							teamName={teamName}
+							onOpenTeam={onOpenTeam}
 						/>
 					</section>
 				);
@@ -88,12 +93,14 @@ function StandingsTable({
 	destinations,
 	showDestination,
 	teamName,
+	onOpenTeam,
 }: {
 	label: string;
 	rows: readonly Row[];
 	destinations: readonly Destination[];
 	showDestination: boolean;
 	teamName: (id: string) => string;
+	onOpenTeam: ((team: string) => void) | undefined;
 }) {
 	const { t, i18n } = useTranslation();
 	const language = i18n.language;
@@ -169,6 +176,11 @@ function StandingsTable({
 			filterable={false}
 			emptyText={t("competition.standings.empty")}
 			locale={language}
+			{...(onOpenTeam && {
+				onRowActivate: (row: Row) => onOpenTeam(row.team),
+				rowActionLabel: (row: Row) =>
+					t("competition.open", { name: teamName(row.team) }),
+			})}
 		/>
 	);
 }

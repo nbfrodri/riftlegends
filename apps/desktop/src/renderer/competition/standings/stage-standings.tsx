@@ -1,4 +1,5 @@
 import { CONTRACT_VERSION, type StandingsView } from "@rift-legends/contracts";
+import { useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import type { CoreFact } from "../../../shared/bridge";
 import { CoreErrorMessage, useCoreQuery } from "../../core";
@@ -21,6 +22,7 @@ export function StageStandings({
 }) {
 	const { t } = useTranslation();
 	const teamName = useTeamNames(sessionId);
+	const navigate = useNavigate();
 	const standings = useCoreQuery<StandingsView | null>(
 		{
 			v: CONTRACT_VERSION,
@@ -41,6 +43,9 @@ export function StageStandings({
 			standings={standings.data}
 			stage={stage}
 			teamName={teamName}
+			onOpenTeam={(team) =>
+				void navigate({ to: "/competicion/equipo/$team", params: { team } })
+			}
 		/>
 	);
 }
