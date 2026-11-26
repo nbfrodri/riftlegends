@@ -98,10 +98,9 @@ describe.each(["control", "packaged", "real-champions", "real"] as const)(
 	(pool) => {
 		const even = sample(1000, 0, pool);
 
-		it("K5 · with balanced sides, blue wins 49–54 %", () => {
-			// Floor 49 % (was 50 %), provisional: players down (#529) shrink the favourite's edge.
+		it("K5 · with balanced sides, blue wins 50–54 %", () => {
 			const blue = rate(even, (g) => g.winner === "blue");
-			expect(blue).toBeGreaterThanOrEqual(0.49);
+			expect(blue).toBeGreaterThanOrEqual(0.5);
 			expect(blue).toBeLessThanOrEqual(0.54);
 		});
 
@@ -329,11 +328,11 @@ describe.each(["control", "packaged", "real-champions", "real"] as const)(
 
 			it.each(ROLES)("%s kill share is within 3.5 pp of the pros", (role) => {
 				// Edges are 1/16 steps of a team's kills; 6.5 admits one step over 6 (#401).
-				// The jungle edge is 10 (7.5 until #529, 6.5 before): with players down more kills fit in a game
+				// The jungle edge is 7.5 (6.5 before #528): with players down more kills fit in a game
 				// (#528), which lifts the floor of its P10 a step (pro P10 is 0).
 				within(share(role, false), KILL_SHARE[role], [
 					3.5,
-					role === "jungle" ? 10 : 6.5,
+					role === "jungle" ? 7.5 : 6.5,
 				]);
 			});
 
@@ -411,8 +410,8 @@ describe.each(["control", "packaged", "real-champions", "real"] as const)(
 				expect(median).toBeLessThanOrEqual(13_000);
 			});
 
-			it("the winner's P90 lead stays under 20,500 (20,000 until #529) and its P10 at least +2,000", () => {
-				expect(at(longLeads, 0.9)).toBeLessThanOrEqual(20_500);
+			it("the winner's P90 lead stays under 20,000 and its P10 at least +2,000", () => {
+				expect(at(longLeads, 0.9)).toBeLessThanOrEqual(20_000);
 				expect(at(longLeads, 0.1)).toBeGreaterThanOrEqual(2000);
 			});
 

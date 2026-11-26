@@ -13,10 +13,10 @@ export type Weights = Readonly<Record<Role, number>>;
  * fewer players up takes a baron, an inhibitor or a tower at most 10 % of the
  * time (plan 08, #529).
  */
-export const NUMBERS_POINTS: Readonly<Record<Contest, number>> = {
-	lane: 3_000_000,
-	jungle: 5_000_000,
-	fight: 10_000_000,
+const NUMBERS_POINTS: Readonly<Record<Contest, number>> = {
+	lane: 10_000_000,
+	jungle: 20_000_000,
+	fight: 80_000_000,
 	objective: 30_000_000,
 	siege: 10_000_000,
 };
