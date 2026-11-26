@@ -1,10 +1,17 @@
+import fc from "fast-check";
 import { describe, expect, it } from "vitest";
-import { type Fixed, SCALE } from "../math";
+import { type Fixed, mul, SCALE } from "../math";
 import { int } from "../rng/helpers";
 import { SCOPES } from "../rng/scopes";
 import { deriveSeed } from "../rng/seeds";
 import { createRng as rawRng } from "../rng/streams";
-import { choose, type DIFFICULTY, difficultyOf, type Scored } from "./choose";
+import {
+	choose,
+	type DIFFICULTY,
+	difficultyOf,
+	type Scored,
+	topRanked,
+} from "./choose";
 import type { Profile } from "./profiles";
 
 // A neutral profile: these tests are about the choice mechanics, not the calibrated base weights.
@@ -174,5 +181,72 @@ describe("explanation (E1, E2)", () => {
 		expect(decision.alternatives[2]?.chance).toBe(0);
 		const total = decision.alternatives.reduce((sum, a) => sum + a.chance, 0);
 		expect(total).toBeLessThan(10_000);
+	});
+});
+
+describe("ranking only the top candidates (#584)", () => {
+	const keys = ["meta", "comfort", "matchup", "synergy"] as const;
+	const candidate = fc.record({
+		champion: fc.constantFrom(
+			...Array.from({ length: 40 }, (_, i) => `c${String(i).padStart(2, "0")}`),
+		),
+		components: fc.array(
+			fc.record({
+				key: fc.constantFrom(...keys),
+				points: fc.integer({ min: -90_000, max: 90_000 }),
+			}),
+			{ maxLength: 6 },
+		),
+	});
+	const weights = fc.record(
+		{
+			meta: fc.integer({ min: 0, max: 30_000 }),
+			comfort: fc.integer({ min: 0, max: 30_000 }),
+			matchup: fc.integer({ min: 0, max: 30_000 }),
+		},
+		{ requiredKeys: [] },
+	);
+
+	it("gives the first entries of the full ranking, with their breakdown", () => {
+		fc.assert(
+			fc.property(
+				fc.array(candidate, { minLength: 1, maxLength: 60 }),
+				weights,
+				fc.integer({ min: 1, max: 10 }),
+				(candidates, w, count) => {
+					const total = (c: Scored) =>
+						c.components.reduce(
+							(sum, { key, points }) =>
+								sum +
+								mul(
+									points as Fixed,
+									(w[key as keyof typeof w] ?? SCALE) as Fixed,
+								),
+							0,
+						);
+					const full = candidates
+						.map((c, index) => ({ c, index, total: total(c) }))
+						.sort(
+							(a, b) =>
+								b.total - a.total ||
+								(a.c.champion < b.c.champion
+									? -1
+									: a.c.champion > b.c.champion
+										? 1
+										: a.index - b.index),
+						)
+						.slice(0, count);
+					const top = topRanked(
+						candidates,
+						w as Parameters<typeof topRanked>[1],
+						count,
+					);
+					expect(top.map((t) => [t.champion, t.total])).toEqual(
+						full.map(({ c, total: t }) => [c.champion, t]),
+					);
+				},
+			),
+			{ numRuns: 400 },
+		);
 	});
 });

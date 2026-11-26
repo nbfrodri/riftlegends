@@ -92,7 +92,7 @@ const weightedTotal = ({ components }: Scored, weights: Weights) => {
  * The first `count` candidates by weighted total (ties by id) with their
  * breakdown. Only these are ever read, so the rest are not weighed in full.
  */
-const topRanked = (
+export const topRanked = (
 	candidates: readonly Scored[],
 	weights: Weights,
 	count: number,
@@ -135,6 +135,12 @@ export const choose = (
 		throw new RangeError("No candidates to choose from");
 	const rules = DIFFICULTY[difficulty];
 	const poolSize = max(1, rules.pool + profile.pool);
+	// `ranked` is read only through `pool` (the first `poolSize`), `outside` (up to
+	// rank `WILDCARD_REACH`, so its length and the draw over it are the same as
+	// with the full list) and `alternatives` (the first three other than the
+	// chosen one, who is itself in the first `max(poolSize, WILDCARD_REACH)`:
+	// four entries are enough). Keeping that many leaves every read and every
+	// draw of the rng as it was with the whole list ranked.
 	const ranked = topRanked(
 		candidates,
 		profile.weights,
