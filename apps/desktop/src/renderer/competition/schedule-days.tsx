@@ -3,7 +3,8 @@ import { cn } from "@rift-legends/ui-kit/lib/utils";
 import { useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { TeamCrest } from "../draft/team-crest";
-import { dayDate, stageName } from "./names";
+import { dayDate, type stageLabel } from "./names";
+import { StageTitle } from "./stage-title";
 
 // The schedule of plan 31 (U4): the series grouped by day, with the result of
 // those already played. A played series opens on click; the others are text.
@@ -19,6 +20,7 @@ export function ScheduleDays({
 	showCompetition,
 	team,
 	competition,
+	stageRow,
 	origin,
 	onOpen,
 }: {
@@ -32,6 +34,8 @@ export function ScheduleDays({
 	showCompetition: boolean;
 	team: (id: string) => string;
 	competition: (id: string) => string;
+	/** The stage of a series, with its split when it has one. */
+	stageRow: (slot: ScheduleSlot) => Parameters<typeof stageLabel>[1];
 	/** Where a team not known yet comes from; empty when nothing says it. */
 	origin: (slot: ScheduleSlot, index: 0 | 1) => string;
 	onOpen: (slot: ScheduleSlot) => void;
@@ -114,8 +118,8 @@ export function ScheduleDays({
 											{competition(slot.competition)}
 										</span>
 									)}
-									<span className="truncate text-muted">
-										{stageName(slot.stage)}
+									<span className="min-w-0 text-muted">
+										<StageTitle row={stageRow(slot)} />
 									</span>
 									<Side slot={slot} index={0} label={a} />
 									<span className="text-center font-display tabular-nums">

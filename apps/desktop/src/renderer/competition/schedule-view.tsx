@@ -17,7 +17,7 @@ import {
 	useFacts,
 } from "../core";
 import { bracketLabels, originText } from "./bracket/bracket-labels";
-import { competitionName } from "./names";
+import { competitionName, stageRowOf } from "./names";
 import { ScheduleDays, type ScheduleSlot } from "./schedule-days";
 import { type SeasonOverview, useTeamNames } from "./season";
 
@@ -150,6 +150,7 @@ export function ScheduleView({
 						showCompetition={filters.scope === ALL}
 						team={teamName}
 						competition={(id) => competitionName(t, id)}
+						stageRow={(slot) => stageRowOf(overview, slot)}
 						origin={origin}
 						onOpen={onOpen}
 					/>

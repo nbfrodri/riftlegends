@@ -212,6 +212,7 @@ describe("pending rivals (U4)", () => {
 				]}
 				today={40}
 				showCompetition={false}
+				stageRow={({ stage }) => ({ stage })}
 				team={(id) => ({ t1: "T1", geng: "Gen.G" })[id] ?? id}
 				competition={(id) => id.toUpperCase()}
 				origin={origin}

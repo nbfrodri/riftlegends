@@ -34,6 +34,30 @@ export function stageLabel(
 	return competitionStageName(t, row.name, stageName(row.stage));
 }
 
+/** The stage row of `season.overview` that a schedule slot belongs to. */
+export function stageRowOf(
+	overview:
+		| {
+				competitions: readonly {
+					id: string;
+					stages: readonly {
+						stage: string;
+						name?: StageNaming | undefined;
+					}[];
+				}[];
+		  }
+		| undefined,
+	slot: { competition: string; stage: string },
+) {
+	return (
+		overview?.competitions
+			.find(({ id }) => id === slot.competition)
+			?.stages.find(({ stage }) => stage === slot.stage) ?? {
+			stage: slot.stage,
+		}
+	);
+}
+
 /** The same label for sentences: «Winter Split, Playoffs». */
 export function stageText(
 	t: StageTranslate,
