@@ -32,12 +32,15 @@ export function StandingsTables({
 	stageLabel,
 	stageOf,
 	teamName,
+	onOpenTeam,
 }: {
 	standings: StandingsView;
 	/** The stage as titled, with its split. */
 	stageLabel: string;
 	stageOf: StageOf;
 	teamName: (id: string) => string;
+	/** Opens a team's page from its row (U8). */
+	onOpenTeam?: (team: string) => void;
 }) {
 	const { t } = useTranslation();
 	const { groups, destinations } = standings;
@@ -50,6 +53,7 @@ export function StandingsTables({
 				showDestination={destinations.length > 0}
 				stageOf={stageOf}
 				teamName={teamName}
+				onOpenTeam={onOpenTeam}
 			/>
 		);
 	return (
@@ -79,6 +83,7 @@ export function StandingsTables({
 							showDestination={destinations.length > 0}
 							stageOf={stageOf}
 							teamName={teamName}
+							onOpenTeam={onOpenTeam}
 						/>
 					</section>
 				);
@@ -94,6 +99,7 @@ function StandingsTable({
 	showDestination,
 	stageOf,
 	teamName,
+	onOpenTeam,
 }: {
 	label: string;
 	rows: readonly Row[];
@@ -101,6 +107,7 @@ function StandingsTable({
 	showDestination: boolean;
 	stageOf: StageOf;
 	teamName: (id: string) => string;
+	onOpenTeam: ((team: string) => void) | undefined;
 }) {
 	const { t, i18n } = useTranslation();
 	const language = i18n.language;
@@ -177,6 +184,11 @@ function StandingsTable({
 			filterable={false}
 			emptyText={t("competition.standings.empty")}
 			locale={language}
+			{...(onOpenTeam && {
+				onRowActivate: (row: Row) => onOpenTeam(row.team),
+				rowActionLabel: (row: Row) =>
+					t("competition.open", { name: teamName(row.team) }),
+			})}
 		/>
 	);
 }
