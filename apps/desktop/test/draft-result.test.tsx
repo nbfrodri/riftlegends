@@ -331,6 +331,10 @@ describe("series result (U10)", () => {
 			);
 		}
 		expect(panel.textContent).toContain(capital(mvp.team));
+		// The team is named in the sentence below, not beside the player.
+		expect(
+			within(panel).getByRole("heading", { level: 2 }).textContent,
+		).not.toContain(capital(mvp.team));
 		expect(panel.textContent).toContain(handleOf(mvp.player));
 		expect(panel.textContent).toContain(String(mvp.rating / 10));
 		expect(panel.textContent).toContain(

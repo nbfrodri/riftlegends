@@ -136,9 +136,6 @@ function Mvp(props: {
 					)}
 					<CountryFlag country={player?.nationality} />
 					{player?.handle ?? mvp.player}
-					<span className="min-w-0 truncate font-sans font-semibold text-[15px] text-muted tracking-normal">
-						{name}
-					</span>
 				</h2>
 				<p className="mt-1 text-[14px] text-muted">
 					{new Intl.ListFormat(i18n.language, {
