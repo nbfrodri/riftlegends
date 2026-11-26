@@ -97,6 +97,13 @@ export const competitionQueries = defineQueries({
 	"competition.qualified": competitionRef,
 	/** Every competition with its stages and state, and the day to play next. */
 	"season.overview": z.strictObject({}),
+	/**
+	 * The `season.create` body, without its seed, of the exhibition season that
+	 * «Competición» plays before a career exists (plan 31, decision 1).
+	 */
+	"season.exhibition": z.strictObject({
+		content: z.enum(["fictional", "real"]).optional(),
+	}),
 	/** The season of one team: roster, series, form, streak and statistics. */
 	"team.profile": z.strictObject({ team: teamId }),
 	/**

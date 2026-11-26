@@ -7,6 +7,8 @@ import {
 } from "@tanstack/react-router";
 import { StartupGate } from "./assets/startup-gate";
 import { ChampionsScreen } from "./champions-screen";
+import { CompetitionHub } from "./competition/competition-hub";
+import { CompetitionScreen } from "./competition/competition-screen";
 import { CreditsScreen } from "./credits/credits-screen";
 import { DatabaseScreen } from "./database/database-screen";
 import { DraftScreen, MarketScreen, SettingsScreen } from "./screens";
@@ -55,6 +57,21 @@ const marketRoute = createRoute({
 	component: MarketScreen,
 });
 
+const competitionRoute = createRoute({
+	getParentRoute: () => rootRoute,
+	path: "competicion",
+	component: CompetitionScreen,
+});
+
+const competitionHubRoute = createRoute({
+	getParentRoute: () => rootRoute,
+	path: "competicion/$competition",
+	component: function Hub() {
+		const { competition } = competitionHubRoute.useParams();
+		return <CompetitionHub key={competition} competition={competition} />;
+	},
+});
+
 const settingsRoute = createRoute({
 	getParentRoute: () => rootRoute,
 	path: "ajustes",
@@ -73,6 +90,8 @@ const routeTree = rootRoute.addChildren([
 	championsRoute,
 	databaseRoute,
 	marketRoute,
+	competitionRoute,
+	competitionHubRoute,
 	settingsRoute,
 	creditsRoute,
 ]);

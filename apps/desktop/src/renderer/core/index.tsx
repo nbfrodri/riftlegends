@@ -36,7 +36,7 @@ export function CoreProvider(props: { api: CoreApi; children: ReactNode }) {
 	return <CoreContext value={props.api}>{props.children}</CoreContext>;
 }
 
-const useCore = () => {
+export const useCore = () => {
 	const api = use(CoreContext);
 	if (!api) throw new Error("useCore needs a CoreProvider");
 	return api;
