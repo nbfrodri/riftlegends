@@ -107,3 +107,5 @@ Estado 26-11 tarde:
 - Cola añadida: #592 (#589 iconos centrados, aprobado) → #591 (#586 sin «·», aprobado sin el equipo junto al MVP). #588 fusionado.
 - #585 (#528) fusionado: `SIM_VERSION` 16. Siguiente de la 3.5: #529 (contar solo a los vivos), subagente Sonnet en `../riftlegends-529`, feat/529-living-contests.
 - Cola: #590 → #592 → #591 → #582 (reencolado tras resolver conflicto de catálogos i18n con #581).
+- #590 falló en CI porque la huella de `season-replay.test.ts` era anterior a #585; comprobado que `main` y la rama dan la misma huella (`f06d0ab…`), actualizada y reencolado (`queue-590b.log`). Cola: #592 → #591 → #582 → #590.
+- Nuevos: #583 en Codex (gpt-6.2-sol medium, `../riftlegends-583`, `r583.json`/`e583.jsonl`, thread 01a21848-9490-7102-8ac3-443aa5b4cc30); #484 y #485 con subagentes Opus desde la rama de #582 (`../riftlegends-484`, `../riftlegends-485`), PR solo cuando #582 esté en `main`.
