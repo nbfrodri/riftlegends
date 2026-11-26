@@ -866,7 +866,7 @@
 	"credits.libraries.group.engine": "Motor y escritorio",
 	"credits.libraries.group.fonts": "Fuentes",
 	"competition.bracket.label": "Cuadro",
-	"competition.bracket.header": "{{round}} · Bo{{n}}",
+	"competition.bracket.bestOf": "Bo{{n}}",
 	"competition.bracket.round.final": "Final",
 	"competition.bracket.round.semifinal": "Semifinal",
 	"competition.bracket.round.quarterfinal": "Cuartos de final",

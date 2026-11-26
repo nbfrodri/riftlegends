@@ -147,13 +147,16 @@ export function Bracket({
 					<span
 						key={`${match.side}-${match.round}`}
 						aria-hidden="true"
+						data-round-header
 						style={{ left: x, top: y, width: CARD_W, height: HEADER_H }}
-						className="absolute truncate font-semibold text-[11px] text-muted uppercase tracking-heading"
+						className="absolute flex items-baseline gap-2 whitespace-nowrap font-semibold text-[11px] uppercase tracking-heading"
 					>
-						{t("competition.bracket.header", {
-							round: text(labels.get(match.id)?.round),
-							n: match.bestOf,
-						})}
+						<span className="min-w-0 truncate text-text">
+							{text(labels.get(match.id)?.round)}
+						</span>
+						<span data-best-of className="shrink-0 font-normal text-muted">
+							{t("competition.bracket.bestOf", { n: match.bestOf })}
+						</span>
 					</span>
 				))}
 				{layout.placed.map(({ match, x, y }) => {

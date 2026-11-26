@@ -866,7 +866,7 @@
 	"credits.libraries.group.engine": "Engine and desktop",
 	"credits.libraries.group.fonts": "Fonts",
 	"competition.bracket.label": "Bracket",
-	"competition.bracket.header": "{{round}} · Bo{{n}}",
+	"competition.bracket.bestOf": "Bo{{n}}",
 	"competition.bracket.round.final": "Final",
 	"competition.bracket.round.semifinal": "Semifinal",
 	"competition.bracket.round.quarterfinal": "Quarterfinal",
