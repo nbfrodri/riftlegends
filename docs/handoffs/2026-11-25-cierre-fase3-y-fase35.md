@@ -74,3 +74,6 @@ Estado 26-11 ~01:00: fusionados #574, #575, #573. En la cola: #576 (#481, decisi
 
 Estado 26-11 ~02:00: fusionado también #576 (#481). Cola vacía. #429 espera al final de la 3.5 (su golden cambia con cada `SIM_VERSION`).
 PR #577 (#572) aprobado y en la cola (`queue-577.log`).
+| #486 componente de cuadro (eliminatorias) | Opus medium | `../riftlegends-486`, feat/486-bracket-view | main; sin conectar a la ruta hasta que entre #483 |
+
+#482: PR #579; el usuario decidió (26-11) fearless de la competición (hard por defecto, configurable) para todas las series de la temporada, temporizador de Ajustes en la serie del usuario y sin abandonar; resto aprobado. El subagente lo está aplicando. #577 fusionado. #484, #485 y #487 esperan a #483 (misma ruta).
