@@ -942,5 +942,22 @@
 	"competition.bracket.result": "{{round}}: {{a}} {{scoreA}}–{{scoreB}} {{b}}",
 	"competition.bracket.champion": "Champion",
 	"competition.bracket.winnerShort": "Winner {{match}}",
-	"competition.bracket.loserShort": "Loser {{match}}"
+	"competition.bracket.loserShort": "Loser {{match}}",
+	"competition.hub.view": "View",
+	"competition.schedule.label": "Schedule",
+	"competition.schedule.days": "Match days",
+	"competition.schedule.today": "Today",
+	"competition.schedule.empty": "No series match these filters.",
+	"competition.schedule.toBeDecided": "To be decided",
+	"competition.schedule.open": "Open series: {{a}} {{scoreA}}–{{scoreB}} {{b}}",
+	"competition.schedule.competition": "Competition",
+	"competition.schedule.allCompetitions": "All competitions",
+	"competition.schedule.team": "Team",
+	"competition.schedule.teamSearch": "Search team",
+	"competition.schedule.teamEmpty": "No team found",
+	"competition.schedule.allTeams": "All teams",
+	"competition.series.title": "{{a}} vs {{b}}",
+	"competition.series.unknown": "Series",
+	"competition.series.where": "{{competition}}, {{stage}}, {{date}}",
+	"competition.series.back": "Back"
 }
