@@ -372,3 +372,15 @@ describe("Mercado filter panel (#385)", () => {
 		expect(rowsOf().length).toBeLessThan(100);
 	});
 });
+
+// Every column declares its width, so the space left over is spread over
+// all of them instead of leaving one wide gap after the player and team.
+test("gives every column a width so the spacing between columns is even", async () => {
+	await renderInLocale(<MarketScreen />, "es-ES");
+	await screen.findByRole("table");
+	const widths = Array.from(document.querySelectorAll("colgroup col")).map(
+		(col) => (col as HTMLElement).style.width,
+	);
+	expect(widths.length).toBeGreaterThan(0);
+	expect(widths.every(Boolean)).toBe(true);
+});
