@@ -4,6 +4,9 @@
 	"stages": [
 		{
 			"id": "playin",
+			"name": {
+				"stage": "playIn"
+			},
 			"window": {
 				"startWeek": 41,
 				"weeks": 1,
@@ -59,6 +62,9 @@
 		},
 		{
 			"id": "swiss",
+			"name": {
+				"stage": "swiss"
+			},
 			"window": {
 				"startWeek": 42,
 				"weeks": 2,
@@ -158,6 +164,9 @@
 		},
 		{
 			"id": "knockout",
+			"name": {
+				"stage": "knockout"
+			},
 			"window": {
 				"startWeek": 43,
 				"weeks": 3,

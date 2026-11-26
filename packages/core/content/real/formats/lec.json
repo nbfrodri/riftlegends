@@ -4,6 +4,10 @@
 	"stages": [
 		{
 			"id": "versus",
+			"name": {
+				"split": "winter",
+				"stage": "regularSeason"
+			},
 			"window": {
 				"startWeek": 2,
 				"weeks": 4,
@@ -34,6 +38,10 @@
 		},
 		{
 			"id": "versus-playoffs",
+			"name": {
+				"split": "winter",
+				"stage": "playoffs"
+			},
 			"window": {
 				"startWeek": 6,
 				"weeks": 3,
@@ -82,6 +90,10 @@
 		},
 		{
 			"id": "spring",
+			"name": {
+				"split": "spring",
+				"stage": "regularSeason"
+			},
 			"window": {
 				"startWeek": 12,
 				"weeks": 7,
@@ -115,6 +127,10 @@
 		},
 		{
 			"id": "spring-playoffs",
+			"name": {
+				"split": "spring",
+				"stage": "playoffs"
+			},
 			"window": {
 				"startWeek": 20,
 				"weeks": 3,
@@ -157,6 +173,10 @@
 		},
 		{
 			"id": "summer",
+			"name": {
+				"split": "summer",
+				"stage": "regularSeason"
+			},
 			"window": {
 				"startWeek": 29,
 				"weeks": 6,
@@ -191,6 +211,10 @@
 		},
 		{
 			"id": "summer-playoffs",
+			"name": {
+				"split": "summer",
+				"stage": "playoffs"
+			},
 			"window": {
 				"startWeek": 35,
 				"weeks": 3,

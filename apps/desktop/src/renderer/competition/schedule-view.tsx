@@ -22,7 +22,7 @@ import {
 } from "../core";
 import { bracketLabels, originText } from "./bracket/bracket-labels";
 import { Calendar, type CalendarMode } from "./calendar/calendar";
-import { competitionName } from "./names";
+import { competitionName, stageRowOf, stageText } from "./names";
 import { type SeasonOverview, useTeams } from "./season";
 
 // The season calendar with its filters (plan 31, U4; #593): the «Schedule» tab
@@ -138,6 +138,7 @@ export function ScheduleView({
 			showCompetition={filters.scope === ALL}
 			team={team}
 			competition={(id) => competitionName(t, id)}
+			stage={(slot) => stageText(t, stageRowOf(overview, slot))}
 			origin={origin}
 			onOpen={onOpen}
 		>

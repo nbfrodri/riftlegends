@@ -214,3 +214,38 @@ describe("schedule (U4, #593)", () => {
 		).toBeTruthy();
 	});
 });
+
+describe("stage names (#583)", () => {
+	it("each series names its split and stage, not the stage id", async () => {
+		const api = hostCore();
+		const query = api.query.getMockImplementation() as (
+			q: unknown,
+		) => Promise<{ ok: boolean; view?: unknown }>;
+		api.query.mockImplementation((async (q: { kind: string }) => {
+			const result = await query(q);
+			if (q.kind === "season.overview" && result.ok) {
+				const view = result.view as {
+					competitions: { stages: { stage: string }[] }[];
+				};
+				for (const competition of view.competitions)
+					for (const stage of competition.stages)
+						Object.assign(stage, {
+							name:
+								stage.stage === "regular"
+									? { split: "winter", stage: "groups" }
+									: { stage: "playoffs" },
+						});
+			}
+			return result;
+		}) as never);
+		const { user } = await openSchedule(api);
+		await toSchedule(user);
+		await user.click(screen.getByRole("radio", { name: "Day" }));
+		const list = await screen.findByRole("list", { name: /./ });
+		expect(
+			within(list).getAllByText("Winter Split, Groups").length,
+		).toBeGreaterThan(0);
+		expect(list.textContent).not.toContain("Regular");
+		expect(list.textContent).not.toContain("·");
+	});
+});

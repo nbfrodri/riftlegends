@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { ROLES } from "../draft/index";
-import { competitionCriterion } from "./format";
+import { competitionCriterion, stageNameSchema } from "./format";
 
 // What the view queries of plan 31 answer (#481).
 
@@ -25,6 +25,7 @@ const seasonOverview = z.strictObject({
 			stages: z.array(
 				z.strictObject({
 					stage: id,
+					name: stageNameSchema.optional(),
 					status,
 					startDay: count,
 					endDay: count,

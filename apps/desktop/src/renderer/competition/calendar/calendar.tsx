@@ -4,7 +4,6 @@ import { cn } from "@rift-legends/ui-kit/lib/utils";
 import { type KeyboardEvent, type ReactNode, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { TeamCrest } from "../../draft/team-crest";
-import { stageName } from "../names";
 import type { ScheduleSlot } from "../schedule-view";
 import {
 	type CalendarMode,
@@ -43,6 +42,7 @@ export function Calendar({
 	showCompetition,
 	team,
 	competition,
+	stage,
 	origin,
 	onOpen,
 	children,
@@ -67,7 +67,7 @@ export function Calendar({
 			days.set(slot.day, [...(days.get(slot.day) ?? []), slot]);
 		return days;
 	}, [slots]);
-	const names = { team, competition, origin };
+	const names = { team, competition, stage, origin };
 	const { mode } = place;
 	const day = clampDay(year, place.day ?? today ?? slots.at(-1)?.day ?? 0);
 	const title = periodTitle(mode, year, day, i18n.language);
@@ -207,7 +207,7 @@ function DayList({
 								{names.competition(slot.competition)}
 							</span>
 						)}
-						<span className="truncate text-muted">{stageName(slot.stage)}</span>
+						<span className="truncate text-muted">{names.stage(slot)}</span>
 						<Side slot={slot} names={names} index={0} />
 						<span className="text-center font-display tabular-nums">
 							{middleText(t, slot)}
