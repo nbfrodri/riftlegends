@@ -49,3 +49,14 @@ it("phrase every match cause in the game result too", () => {
 		expect(missing).toEqual([]);
 	}
 });
+
+it("writes the tournament texts without the middle-dot separator", () => {
+	for (const catalog of [es, en]) {
+		const dotted = Object.entries(catalog)
+			.filter(
+				([key, value]) => key.startsWith("tournament.") && value.includes("·"),
+			)
+			.map(([key]) => key);
+		expect(dotted).toEqual([]);
+	}
+});
