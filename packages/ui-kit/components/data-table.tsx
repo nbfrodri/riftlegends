@@ -107,6 +107,8 @@ export type DataTableProps<Row extends RowData> = FilterProps & {
 	onRowActivate?: (row: Row) => void;
 	/** What activating a row does, read after the row by screen readers. */
 	rowActionLabel?: (row: Row) => string;
+	/** Tailwind height of the body rows, for a short table that fills its panel. */
+	rowHeight?: string;
 };
 
 const features = tableFeatures({
@@ -147,6 +149,7 @@ export function DataTable<Row extends RowData>({
 	className,
 	onRowActivate,
 	rowActionLabel,
+	rowHeight = "h-[clamp(24px,3vh,30px)]",
 }: DataTableProps<Row>) {
 	const filterId = useId();
 	const [activeId, setActiveId] = useState<string>();
@@ -386,7 +389,8 @@ export function DataTable<Row extends RowData>({
 									// hold). The darker tone is a plain class so hover and the
 									// active row, both variants, still win over it.
 									className={cn(
-										"h-[clamp(24px,3vh,30px)] hover:bg-surface focus-visible:outline-3 focus-visible:outline-action focus-visible:-outline-offset-3 data-[active=true]:bg-surface data-[active=true]:[&>td:first-child]:shadow-[inset_3px_0_var(--color-action)]",
+										rowHeight,
+										"hover:bg-surface focus-visible:outline-3 focus-visible:outline-action focus-visible:-outline-offset-3 data-[active=true]:bg-surface data-[active=true]:[&>td:first-child]:shadow-[inset_3px_0_var(--color-action)]",
 										index % 2 === 1 && "bg-canvas/50",
 										onRowActivate && "cursor-pointer",
 									)}
