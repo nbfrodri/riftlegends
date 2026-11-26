@@ -54,6 +54,16 @@ export function sub(a: Fixed, b: Fixed): Fixed {
 export function mul(a: Fixed, b: Fixed): Fixed {
 	assertSafeInteger(a);
 	assertSafeInteger(b);
+	const product = a * b;
+	if (Number.isSafeInteger(product)) {
+		// Exact in doubles: the same rounding without BigInt (hot in the AI).
+		const remainder = product % SCALE;
+		const quotient = (product - remainder) / SCALE;
+		const twice = 2 * (remainder < 0 ? -remainder : remainder);
+		if (twice < SCALE || (twice === SCALE && quotient % 2 === 0))
+			return quotient as Fixed;
+		return (quotient + (product < 0 ? -1 : 1)) as Fixed;
+	}
 	return checked(divRound(BigInt(a) * BigInt(b), BIG_SCALE));
 }
 

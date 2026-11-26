@@ -1,7 +1,7 @@
 import { DRAFT_ORDER, type Order } from "../draft/order";
 import { min, SCALE } from "../math";
 import type { Scored } from "./choose";
-import { scorePick } from "./components/pick";
+import { pickScorer, pickTotal } from "./components/pick";
 import { indexContent, selectedChampions } from "./content-index";
 import type { AiContext } from "./context";
 import { canAssign } from "./positions";
@@ -31,11 +31,9 @@ function withPick(ctx: AiContext, champion: string): AiContext["picks"] {
 function bestPick(ctx: AiContext, free: Free) {
 	let best: string | undefined;
 	let bestTotal = Number.MIN_SAFE_INTEGER;
+	const score = pickScorer(ctx);
 	for (const id of free(ctx.team, ctx.picks)) {
-		const total = scorePick(ctx, id).reduce(
-			(sum, component) => sum + component.points,
-			0,
-		);
+		const total = pickTotal(score, id);
 		if (
 			total > bestTotal ||
 			(total === bestTotal && (best === undefined || id < best))
