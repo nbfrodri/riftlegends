@@ -83,3 +83,9 @@ PR #579 (#482) con las decisiones aplicadas, aprobado y en la cola (`queue-579.l
 Estado 26-11 ~04:00: fusionados #580 (#578) y #579 (#482). Cola vacía.
 | #489 tournament.create y pantalla de torneo | Opus medium | `../riftlegends-489`, feat/489-tournament-setup | main |
 Siguen: #528 (Sonnet), #483 (Opus, avisado de #579), #486 (Opus). Stryker a las 05:00: con agentes trabajando puede ir lento; revisar `~/.cache/rift-tmp/stryker.log`.
+
+Estado 26-11 ~05:00:
+- PR #582 (#483): el usuario pide **diseño más bonito** y arreglar el **logo de CBLOL** (falta en la caché de ligas); el subagente Opus lo está haciendo. Resto de decisiones pendientes de visto bueno tras ver el nuevo diseño.
+- PR #581 (#486): aprobado con cambio: logo real y nombre corto en cada tarjeta, nombre completo en tooltip; subagente Opus aplicándolo.
+- Issues nuevos: #583 (nombres reales de fase ES/EN), #584 (rendimiento del año IA contra IA; subagente Sonnet en `../riftlegends-584`, perf/584-season-speed, sin tocar `packages/core/match` por #528).
+- Siguen: #528 (Sonnet), #489 (Opus).
