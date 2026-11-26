@@ -110,14 +110,29 @@ export function stageView(
 	if (!stage) return null;
 	if (kind === "bracket") {
 		const source = state.season.graph.nodes.get(key)?.bracket;
+		const records = new Map(
+			[...state.season.records.values()]
+				.filter(
+					(r) => r.competition === ref.competition && r.stage === ref.stage,
+				)
+				.map((r) => [localFixtureId(r.id), r]),
+		);
 		return stage.bracket && source
 			? {
 					...stage.bracket,
-					matches: stage.bracket.matches.map((match, index) => ({
-						...match,
-						// Where each team comes from: a seed, or the winner or loser of a match.
-						from: [source.matches[index]?.a, source.matches[index]?.b],
-					})),
+					matches: stage.bracket.matches.map((match, index) => {
+						const record = records.get(match.id);
+						const [a, b] = record?.score ?? [0, 0];
+						return {
+							...match,
+							// Where each team comes from: a seed, or the winner or loser of a match.
+							from: [source.matches[index]?.a, source.matches[index]?.b],
+							...(record && {
+								series: record.id,
+								score: record.teams[0] === match.teamA ? [a, b] : [b, a],
+							}),
+						};
+					}),
 				}
 			: null;
 	}

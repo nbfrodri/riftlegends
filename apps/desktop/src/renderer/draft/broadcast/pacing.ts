@@ -8,6 +8,8 @@ export const pacing = {
 	pendingPulseMs: 1200,
 	// A new ban enters its slot, greys out and is stamped (#436).
 	banStampMs: 520,
+	// A bracket connector that a new result completes is drawn in (#486).
+	bracketDrawMs: 400,
 	captionDelayMs: 480,
 	captionEnterMs: 120,
 	ease: [0.23, 1, 0.32, 1] as [number, number, number, number],
