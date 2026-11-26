@@ -44,8 +44,9 @@ export type DataTableColumn<Row extends RowData> = {
 	/** Right-aligned tabular figures, for amounts and counts. */
 	numeric?: boolean;
 	/**
-	 * Fixed CSS width, such as "6rem". Columns without one share what is left,
-	 * so give one to every column but those that should stretch.
+	 * Fixed CSS width, such as "6rem". Columns without one share what is left.
+	 * When every column has one, the table spreads what is left over all of
+	 * them in proportion, so the spacing between columns stays even.
 	 */
 	width?: string;
 };

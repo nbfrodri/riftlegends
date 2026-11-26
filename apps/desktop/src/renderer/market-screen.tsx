@@ -115,6 +115,7 @@ export function MarketScreen({
 				id: "name",
 				header: t("market.column.player"),
 				value: (player) => player.name,
+				width: "9rem",
 			},
 			{
 				id: "role",
@@ -148,6 +149,7 @@ export function MarketScreen({
 						<CellText>{player.team}</CellText>
 					</CellFilter>
 				),
+				width: "10rem",
 			},
 			{
 				id: "age",

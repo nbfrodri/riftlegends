@@ -147,6 +147,7 @@ export function PlayerTable({
 				header: t("market.column.team"),
 				value: (player) => player.teamName,
 				cell: (player) => <TeamCell id={player.team} name={player.teamName} />,
+				width: "12rem",
 			},
 			{
 				id: "league",
@@ -241,12 +242,14 @@ export function CoachTable({ teams }: { teams: readonly Team[] }) {
 				cell: (team) => (
 					<span className="font-semibold">{team.coach.name}</span>
 				),
+				width: "12rem",
 			},
 			{
 				id: "team",
 				header: t("market.column.team"),
 				value: (team) => team.name,
 				cell: (team) => <TeamCell id={team.id} name={team.name} />,
+				width: "12rem",
 			},
 			{
 				id: "league",
