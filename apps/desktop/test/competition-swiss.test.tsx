@@ -1,0 +1,296 @@
+import type { StandingsView } from "@rift-legends/contracts";
+import { RouterProvider } from "@tanstack/react-router";
+import { cleanup, fireEvent, screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { afterEach, describe, expect, test, vi } from "vitest";
+import { SwissRounds } from "../src/renderer/competition/swiss/swiss-rounds";
+import { createAppRouter } from "../src/renderer/router";
+import { renderInLocale } from "./render-in-locale";
+import { hostCore, renderWithCore } from "./season-core";
+
+// Plan 31, U7 and U11 (#487): the Swiss stage in columns by balance, as the
+// Worlds broadcast shows it.
+
+/** Downloaded team logos; a team without one shows the own shield. */
+const logos: Record<string, string> = {
+	d: "rift-asset://logos/teams/d.png",
+};
+vi.mock("../src/renderer/assets", async (original) => ({
+	...(await original<typeof import("../src/renderer/assets")>()),
+	useTeamLogoSrc: (id: string) => logos[id],
+}));
+
+vi.setConfig({ testTimeout: 60_000 });
+
+afterEach(() => {
+	cleanup();
+	vi.restoreAllMocks();
+	window.history.replaceState(null, "", "/");
+});
+
+type Swiss = NonNullable<StandingsView["swiss"]>;
+
+const names: Record<string, { name: string; short?: string }> = {
+	a: { name: "Alpha" },
+	b: { name: "Bravo" },
+	c: { name: "Charlie" },
+	d: { name: "Delta", short: "DEL" },
+};
+const team = (id: string) => names[id] ?? { name: id };
+
+/**
+ * Four teams to 2 wins or 2 losses. Round 1 had to pair teams of one region;
+ * round 3 is a rematch still to play.
+ */
+const swiss: Swiss = {
+	wins: 2,
+	losses: 2,
+	rounds: [
+		{
+			round: 1,
+			relaxed: ["region"],
+			series: [
+				{
+					teams: ["a", "b"],
+					record: [0, 0],
+					winner: "a",
+					score: [1, 0],
+					series: "s-1",
+				},
+				{
+					teams: ["c", "d"],
+					record: [0, 0],
+					winner: "d",
+					score: [0, 1],
+					series: "s-2",
+				},
+			],
+		},
+		{
+			round: 2,
+			relaxed: [],
+			series: [
+				{
+					teams: ["a", "d"],
+					record: [1, 0],
+					winner: "a",
+					score: [1, 0],
+					series: "s-3",
+				},
+				{
+					teams: ["b", "c"],
+					record: [0, 1],
+					winner: "c",
+					score: [0, 1],
+					series: "s-4",
+				},
+			],
+		},
+		{
+			round: 3,
+			relaxed: ["rematch"],
+			series: [{ teams: ["d", "c"], record: [1, 1] }],
+		},
+	],
+	teams: [
+		{ team: "a", wins: 2, losses: 0, status: "qualified" },
+		{ team: "b", wins: 0, losses: 2, status: "eliminated" },
+		{ team: "c", wins: 1, losses: 1, status: "active" },
+		{ team: "d", wins: 1, losses: 1, status: "active" },
+	],
+};
+
+const show = (onOpenSeries?: (series: string) => void, locale = "en-US") =>
+	renderInLocale(
+		<SwissRounds swiss={swiss} team={team} onOpenSeries={onOpenSeries} />,
+		locale,
+	);
+const round = (name: string) => screen.getByRole("region", { name });
+const card = (name: RegExp) => screen.getByRole("button", { name });
+
+describe("U7: Swiss by balance", () => {
+	test("one column per round, its series pooled by balance", async () => {
+		await show();
+		expect(
+			within(screen.getByRole("group", { name: "Swiss" }))
+				.getAllByRole("region")
+				.map((region) => region.getAttribute("aria-label")),
+		).toEqual(["Round 1", "Round 2", "Round 3", "Qualified", "Eliminated"]);
+		const pools = (name: string) =>
+			within(round(name))
+				.getAllByRole("group")
+				.map((group) => group.getAttribute("aria-label"));
+		expect(pools("Round 1")).toEqual(["0-0"]);
+		expect(pools("Round 2")).toEqual(["1-0", "0-1"]);
+		expect(pools("Round 3")).toEqual(["1-1"]);
+		expect(
+			within(within(round("Round 2")).getByRole("group", { name: "0-1" }))
+				.getAllByRole("button")
+				.map((button) => button.getAttribute("aria-label")),
+		).toEqual(["Round 2, 0-1: Bravo 0–1 Charlie"]);
+	});
+
+	test("a series shows each team's logo and short name, the winner marked", async () => {
+		await show();
+		const played = card(/^Round 2, 1-0:/);
+		expect(within(played).getByText("DEL")).toBeTruthy();
+		expect(within(played).queryByText("Delta")).toBeNull();
+		const [alpha, delta] = [...played.querySelectorAll("[data-result]")];
+		expect(alpha?.getAttribute("data-result")).toBe("won");
+		expect(delta?.getAttribute("data-result")).toBe("lost");
+		// Delta has a downloaded logo; Alpha falls back to the own shield.
+		expect(alpha?.firstElementChild?.tagName).toBe("svg");
+		expect(delta?.firstElementChild?.getAttribute("src")).toBe(logos.d);
+		expect(played.dataset.tooltip).toBe(played.getAttribute("aria-label"));
+	});
+
+	test("qualified and eliminated teams are listed at the end with their record", async () => {
+		await show();
+		expect(within(round("Qualified")).getByText("Alpha")).toBeTruthy();
+		expect(within(round("Qualified")).getByText("2-0")).toBeTruthy();
+		expect(within(round("Eliminated")).getByText("Bravo")).toBeTruthy();
+		expect(within(round("Eliminated")).getByText("0-2")).toBeTruthy();
+		// Teams still playing are in neither list.
+		expect(within(round("Qualified")).queryByText("Charlie")).toBeNull();
+		expect(within(round("Eliminated")).queryByText("DEL")).toBeNull();
+	});
+
+	test("a round that relaxed its constraints says so in words", async () => {
+		await show();
+		expect(
+			within(round("Round 1")).getByText(
+				"Same-region pairing: no other was possible",
+			),
+		).toBeTruthy();
+		expect(
+			within(round("Round 3")).getByText(
+				"Rematch: no other pairing was possible",
+			),
+		).toBeTruthy();
+		expect(within(round("Round 2")).queryByText(/possible/)).toBeNull();
+	});
+
+	test("clicking a played series opens it; one not played yet does nothing", async () => {
+		const open = vi.fn();
+		await show(open);
+		fireEvent.click(card(/^Round 1, 0-0: Charlie 0–1 Delta/));
+		expect(open).toHaveBeenCalledWith("s-2");
+		const waiting = card(/^Round 3, 1-1: Delta vs Charlie/);
+		expect(waiting.getAttribute("aria-disabled")).toBe("true");
+		fireEvent.click(waiting);
+		expect(open).toHaveBeenCalledTimes(1);
+	});
+
+	test("Spanish names the rounds, the lists and the notices", async () => {
+		await show(undefined, "es-ES");
+		expect(card(/^Ronda 3, 1-1: Delta contra Charlie$/)).toBeTruthy();
+		expect(screen.getByRole("region", { name: "Clasificados" })).toBeTruthy();
+		expect(screen.getByRole("region", { name: "Eliminados" })).toBeTruthy();
+		expect(
+			screen.getByText("Cruce de la misma región: no había otro posible"),
+		).toBeTruthy();
+		expect(
+			screen.getByText("Revancha: no había otro cruce posible"),
+		).toBeTruthy();
+	});
+});
+
+describe("U11: Swiss keyboard and screen reader", () => {
+	test("one series is in the tab order and the arrows move between series", async () => {
+		await show();
+		const tabbable = () =>
+			screen.getAllByRole("button").filter((button) => button.tabIndex === 0);
+		expect(tabbable()).toEqual([card(/^Round 1, 0-0: Alpha/)]);
+		card(/^Round 1, 0-0: Alpha/).focus();
+		const press = (key: string) =>
+			fireEvent.keyDown(document.activeElement as Element, { key });
+		press("ArrowDown");
+		expect(document.activeElement).toBe(card(/^Round 1, 0-0: Charlie/));
+		press("ArrowRight");
+		expect(document.activeElement).toBe(card(/^Round 2, 0-1:/));
+		press("ArrowRight");
+		// Round 3 has one series: the nearest one.
+		expect(document.activeElement).toBe(card(/^Round 3, 1-1:/));
+		press("ArrowRight");
+		expect(document.activeElement).toBe(card(/^Round 3, 1-1:/));
+		press("ArrowLeft");
+		expect(document.activeElement).toBe(card(/^Round 2, 1-0:/));
+		press("ArrowUp");
+		expect(document.activeElement).toBe(card(/^Round 2, 1-0:/));
+		expect(tabbable()).toEqual([card(/^Round 2, 1-0:/)]);
+	});
+
+	test("the reader hears the round, the balance, the teams and the score", async () => {
+		await show();
+		expect(card(/Alpha 1–0 Bravo/).getAttribute("aria-label")).toBe(
+			"Round 1, 0-0: Alpha 1–0 Bravo",
+		);
+	});
+});
+
+describe("U7: the Swiss stage in the competition hub", () => {
+	test("a Swiss stage adds the Bracket view, with round 1 at 0-0", async () => {
+		const api = hostCore((command, send) => {
+			if (command.kind !== "season.create") return send();
+			const payload = command.payload as {
+				competitions: { stages: { window: unknown }[] }[];
+				teams: { id: string }[];
+			};
+			const [league] = payload.competitions;
+			return send({
+				...command,
+				payload: {
+					...payload,
+					competitions: [
+						{
+							...league,
+							stages: [
+								{
+									id: "swiss",
+									window: league?.stages[0]?.window,
+									entrants: {
+										kind: "fixed",
+										teams: payload.teams.map(({ id }) => id),
+									},
+									play: {
+										type: "swiss",
+										size: payload.teams.length,
+										wins: 2,
+										losses: 2,
+										bestOf: 1,
+										decisiveBestOf: 1,
+										round1: "pots",
+										avoid: ["region"],
+									},
+								},
+							],
+						},
+					],
+				},
+			});
+		});
+		const router = createAppRouter("/competicion/rift-league");
+		await renderWithCore(<RouterProvider router={router} />, api);
+		const user = userEvent.setup();
+		await user.click(
+			await screen.findByRole(
+				"radio",
+				{ name: "Bracket" },
+				{ timeout: 30_000 },
+			),
+		);
+		const first = await screen.findByRole(
+			"region",
+			{ name: "Round 1" },
+			{ timeout: 30_000 },
+		);
+		expect(
+			within(within(first).getByRole("group", { name: "0-0" })).getAllByRole(
+				"button",
+			),
+		).toHaveLength(4);
+		expect(
+			within(first).getByText("Same-region pairing: no other was possible"),
+		).toBeTruthy();
+	});
+});
