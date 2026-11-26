@@ -66,3 +66,6 @@ Para Codex: leer `r<N>.json`, comprobar con `tack codex-used <thread_id>` (prime
 | #572 partida desborda con nombres largos | Opus medium | `../riftlegends-572`, fix/572-match-fit | main |
 | #481 consultas de vista de competición | Sonnet medium | `../riftlegends-481`, feat/481-competition-views | rama de #574; PR solo tras fusionar #574 |
 | #528 tiempos de muerte (Fase 3.5) | Sonnet medium | `../riftlegends-528`, feat/528-death-timers | rama de #573; PR solo tras fusionar #573 |
+| #578 columnas de la tabla se mueven al hacer scroll (Base de datos) | Opus medium | `../riftlegends-578`, fix/578-table-columns | main |
+
+Estado 26-11 ~01:00: fusionados #574, #575, #573. En la cola: #576 (#481, decisiones aprobadas por el usuario). PR #577 (#572) esperando visto bueno con capturas `~/.cache/rift-tmp/572-*.png`. #528 puede abrir PR (avisado).
