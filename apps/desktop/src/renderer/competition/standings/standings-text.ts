@@ -1,6 +1,6 @@
 import type { StandingsView } from "@rift-legends/contracts";
 import type { useTranslation } from "react-i18next";
-import { competitionName, stageName } from "../names";
+import { competitionName } from "../names";
 
 // Words of the standings table (plan 31, U3): where a place leads and why a
 // tie went the way it did. The core gives both as data.
@@ -31,11 +31,12 @@ export function destinationText(
 	language: string,
 	destinations: readonly Destination[],
 	rank: number,
+	stageOf: (competition: string, stage: string) => string,
 ) {
 	const names = destinations
 		.filter(({ from, to }) => from <= rank && rank <= to)
 		.map(({ competition, stage }) =>
-			stage ? stageName(stage) : competitionName(t, competition),
+			stage ? stageOf(competition, stage) : competitionName(t, competition),
 		);
 	if (!names.length) return t("competition.standings.eliminated");
 	return new Intl.ListFormat(language, { type: "conjunction" }).format(names);

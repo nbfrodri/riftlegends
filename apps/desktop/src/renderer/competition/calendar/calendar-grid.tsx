@@ -9,7 +9,6 @@ import {
 } from "react";
 import { useTranslation } from "react-i18next";
 import { TeamCrest } from "../../draft/team-crest";
-import { stageName } from "../names";
 import type { ScheduleSlot } from "../schedule-view";
 import {
 	type CalendarMode,
@@ -297,7 +296,7 @@ function Openable({
 	const label = seriesLabel(t, names, slot);
 	const where = t("competition.calendar.where", {
 		competition: names.competition(slot.competition),
-		stage: stageName(slot.stage),
+		stage: names.stage(slot),
 	});
 	return (
 		<Tooltip heading={where} content={label}>

@@ -4,6 +4,10 @@
 	"stages": [
 		{
 			"id": "lock-in-swiss",
+			"name": {
+				"split": "winter",
+				"stage": "swiss"
+			},
 			"window": {
 				"startWeek": 3,
 				"weeks": 3,
@@ -39,6 +43,10 @@
 		},
 		{
 			"id": "lock-in-last-chance",
+			"name": {
+				"split": "winter",
+				"stage": "lastChance"
+			},
 			"window": {
 				"startWeek": 5,
 				"weeks": 1,
@@ -61,6 +69,10 @@
 		},
 		{
 			"id": "lock-in-playoffs",
+			"name": {
+				"split": "winter",
+				"stage": "playoffs"
+			},
 			"window": {
 				"startWeek": 6,
 				"weeks": 3,
@@ -111,6 +123,10 @@
 		},
 		{
 			"id": "spring",
+			"name": {
+				"split": "spring",
+				"stage": "regularSeason"
+			},
 			"window": {
 				"startWeek": 13,
 				"weeks": 7,
@@ -139,6 +155,10 @@
 		},
 		{
 			"id": "spring-playoffs",
+			"name": {
+				"split": "spring",
+				"stage": "playoffs"
+			},
 			"window": {
 				"startWeek": 20,
 				"weeks": 4,
@@ -181,6 +201,10 @@
 		},
 		{
 			"id": "summer",
+			"name": {
+				"split": "summer",
+				"stage": "regularSeason"
+			},
 			"window": {
 				"startWeek": 29,
 				"weeks": 7,
@@ -209,6 +233,10 @@
 		},
 		{
 			"id": "summer-playoffs",
+			"name": {
+				"split": "summer",
+				"stage": "playoffs"
+			},
 			"window": {
 				"startWeek": 36,
 				"weeks": 4,

@@ -2,7 +2,8 @@ import { CONTRACT_VERSION, type StandingsView } from "@rift-legends/contracts";
 import { useTranslation } from "react-i18next";
 import type { CoreFact } from "../../../shared/bridge";
 import { CoreErrorMessage, useCoreQuery } from "../../core";
-import { useTeamNames } from "../season";
+import { stageRowOf, stageText } from "../names";
+import { useSeasonOverview, useTeamNames } from "../season";
 import { StandingsTables } from "./standings-tables";
 
 // The standings of one stage of the exhibition season, read again after every
@@ -21,6 +22,9 @@ export function StageStandings({
 }) {
 	const { t } = useTranslation();
 	const teamName = useTeamNames(sessionId);
+	const overview = useSeasonOverview(sessionId);
+	const stageOf = (id: string, name: string) =>
+		stageText(t, stageRowOf(overview.data, { competition: id, stage: name }));
 	const standings = useCoreQuery<StandingsView | null>(
 		{
 			v: CONTRACT_VERSION,
@@ -39,7 +43,8 @@ export function StageStandings({
 	return (
 		<StandingsTables
 			standings={standings.data}
-			stage={stage}
+			stageLabel={stageOf(competition, stage)}
+			stageOf={stageOf}
 			teamName={teamName}
 		/>
 	);

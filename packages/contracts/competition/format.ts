@@ -151,8 +151,16 @@ const source = z.discriminatedUnion("kind", [
 	}),
 ]);
 
+/** Display metadata for real formats. Stage IDs still identify stages. */
+export const stageNameSchema = z.strictObject({
+	split: z.enum(["winter", "spring", "summer"]).optional(),
+	/** Key suffix in the competition.stage catalog. */
+	stage: id,
+});
+
 const stage = z.strictObject({
 	id: stageId,
+	name: stageNameSchema.optional(),
 	window,
 	/** Consecutive league stages in the same block may play in parallel. */
 	parallelGroup: id.optional(),

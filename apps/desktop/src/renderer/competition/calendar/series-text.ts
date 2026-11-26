@@ -15,6 +15,8 @@ interface CalendarTeam {
 export interface SeriesNames {
 	team: (id: string) => CalendarTeam;
 	competition: (id: string) => string;
+	/** The stage of a series, with its split when it has one. */
+	stage: (slot: ScheduleSlot) => string;
 	/** Where a team not known yet comes from; empty when nothing says it. */
 	origin: (slot: ScheduleSlot, index: 0 | 1, short: boolean) => string;
 }
