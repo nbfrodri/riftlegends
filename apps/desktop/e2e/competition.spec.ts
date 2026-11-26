@@ -57,7 +57,7 @@ for (const [width, height] of [
 					const start = performance.now();
 					requestAnimationFrame(() => {
 						resolve(performance.now() - start);
-						stop.click();
+						(stop as HTMLElement).click();
 					});
 				}),
 		);
