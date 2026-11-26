@@ -4,6 +4,21 @@ Estado: en curso (25-11, 23:30). Fusionados hoy en esta sesión: #561, #534, #56
 
 Decisiones en el [registro](../decisions/README.md). Reglas del usuario: respuestas en español, claras y breves; **TDD estricto** (commit de test en rojo y después el de implementación); **nada de `git stash`** ni force-push; **títulos de PR en inglés** (Conventional; el squash los usa como commit) y cuerpo en español; visto bueno del usuario antes de fusionar, con capturas (vídeo si hay animación); vigilar el CI de cada PR y de `main` tras cada fusión; máximo 4–5 subagentes (Sonnet medium lógica, Opus medium visual); Codex `gpt-6.2-sol` medium para tareas sin red.
 
+
+## ▶ Estado para retomar (26-11, 22:45) — leer esto primero
+
+- **`main` verde.** Fusionado hoy (entre otros): #585 (`SIM_VERSION` 16), #596 (#529, `SIM_VERSION` 17), #599 (día por tandas), #598 (#570), #600 y #603 (IA más rápida: año ~88 s con la sim actual), #581, #582, #591, #592, #594, #595, #587.
+- **Cola** (`~/.cache/rift-ship/queue.sh`, logs `~/.cache/rift-tmp/queue-*.log`): **#604** (#593 calendario día/semana/mes, aprobado) en `queue-604b.log`.
+- **Esperando a #604:** **#597** (#583 nombres de fase, aprobado, CI verde, `../riftlegends-583`): tras fusionarse #604, `git merge origin/main`, pasar clasificación (#594) y calendario (#604) a `stageLabel`/`stageText`/`stageRowOf`, recalcular las dos huellas de `season-replay.test.ts`, verify, encolar.
+- **Subagentes en marcha** (si se pierden con el `/clear`, su trabajo está en el worktree; revisar `git status` y `git log origin/main..HEAD`):
+  - **#530** ventana de conversión (`../riftlegends-530`, feat/530-conversion-window): `SIM_VERSION` 18, K19 «más vivos» debe pasar de verdad; **no ensanchar bandas** (si no entra, preguntar). Tiene trabajo sin commitear.
+  - **#488** página de equipo (`../riftlegends-488`, feat/488-team-page).
+  - Ambos deben parar las ejecuciones pesadas antes de las 02:30.
+- **Stryker:** 27-11 03:00 (`systemctl --user list-timers rift-stryker-night*`), solo con carga < 2 hasta las 09:00, log `~/.cache/rift-tmp/stryker.log`, patch `stryker-config.patch` (excluye calibraciones; sin subir límites). Con el resultado: PR que cierra la Fase 3 (patch + nota en el plan 05). Borrar `../riftlegends-stryker-fix` (rama `test/stryker-timeouts`, obsoleta).
+- **Siguiente (en paralelo, máx. 4–5 subagentes):** cablear el cuadro (#581) en el hub y #487 (Swiss) tras #604; #531 tras #530; luego #339/#374, #540; abaratar `edge` de la simulación para #584 (año ≤ 60 s) tras #530; #490, #491, #429.
+- **Reglas del usuario (26-11):** sin «·» en textos; nada de estética «AI slop» (puntos de estado, pastillas, brillos); splits «Winter/Spring/Summer Split» en inglés; **no ensanchar bandas ni subir límites de tests**; menú principal y carrera separados (Fase 5). Visto bueno con capturas antes de encolar (salvo resolver conflictos de algo ya aprobado).
+- **PR #601** (Dependabot): se fusiona solo si pasa.
+
 ## Cómo se fusiona
 
 - `~/.cache/rift-ship/queue.sh WAIT_PID "PR RAMA WORKTREE" …`: espera al PID, fusiona `origin/main` en la rama (sin rebase), regenera capturas en el CI, espera el CI del PR, hace squash, limpia worktree y rama, y comprueba el CI de `main`. Log en `~/.cache/rift-tmp/queue-<PR>.log` (`grep -E "^[0-9]+ (MERGED|main|CI|CONFL)|STOP"`).
