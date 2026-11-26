@@ -8,6 +8,7 @@ import {
 	createDispatcher,
 	type Emitted,
 	type Outcome,
+	QueryRejection,
 } from "../server/dispatcher";
 import { buildCalendar, type CalendarStage } from "./calendar";
 import type { StageOutcome } from "./qualification";
@@ -39,6 +40,7 @@ import { updateStages } from "./season-update";
 import { projectSchedule, stageView } from "./season-views";
 import type { StageGraph, StageRef } from "./stage-model";
 import { teamProfile } from "./team-profile";
+import { presetSlots, tournamentSeason } from "./tournament";
 
 type Command<K> = Extract<
 	ReturnType<typeof competitionCommands.schema.parse>,
@@ -162,6 +164,18 @@ function createSeason(
 		: started;
 }
 
+/** A tournament replaces a finished season only; a running one is locked. */
+function createTournament(
+	state: SeasonSession,
+	payload: Command<"tournament.create">,
+): Outcome<SeasonSession> {
+	const { season, ...fresh } = state;
+	if (season && season.outcomes.size !== season.graph.nodes.size)
+		return reject("format-locked");
+	const built = tournamentSeason(payload, state.loadContent);
+	return built.ok ? createSeason(fresh, built.season) : built;
+}
+
 function playDay(
 	state: SeasonSession,
 	{ day }: Command<"season.playDay">,
@@ -223,6 +237,7 @@ export const seasonDispatcher = createDispatcher<SeasonSession>({
 		"season.create": createSeason,
 		"season.playDay": playDay,
 		"season.playSeries": playSeries,
+		"tournament.create": createTournament,
 		...humanSeriesCommands,
 	},
 	queries: {
@@ -235,6 +250,10 @@ export const seasonDispatcher = createDispatcher<SeasonSession>({
 		"season.overview": (state) => seasonOverview(state.season),
 		...humanSeriesQueries,
 		"team.profile": teamProfile,
+		"tournament.preset": (state, { preset }) => {
+			const slots = presetSlots(preset, state.loadContent);
+			return slots.ok ? slots.view : new QueryRejection(slots.error);
+		},
 		"series.summary": (state, params) =>
 			params.series ? seriesSummary(state, params) : humanSummary(state),
 		"match.view": (state, params) =>

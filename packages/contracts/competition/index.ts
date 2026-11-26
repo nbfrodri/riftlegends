@@ -8,8 +8,10 @@ import {
 	competitionCriterion,
 	competitionSchema,
 } from "./format";
+import { tournamentCreate, tournamentPreset } from "./tournament";
 
 export * from "./format";
+export * from "./tournament";
 export * from "./views";
 
 // Catalog of plan 12: formats, seasons and competition facts.
@@ -81,6 +83,8 @@ export const competitionCommands = defineCommands({
 		/** The timer setting of the app; the AI series never use it. */
 		timer: z.boolean().default(false),
 	}),
+	/** Starts a tournament: a season of one competition with fixed teams (plan 31). */
+	"tournament.create": tournamentCreate,
 	...humanSeriesCommands,
 });
 
@@ -99,6 +103,8 @@ export const competitionQueries = defineQueries({
 	"season.overview": z.strictObject({}),
 	/** The season of one team: roster, series, form, streak and statistics. */
 	"team.profile": z.strictObject({ team: teamId }),
+	/** The slots of a preset, each one filled with the best seed of its league. */
+	"tournament.preset": z.strictObject({ preset: tournamentPreset }),
 	/**
 	 * `series.summary` and `match.view` of a series of the season, by the id
 	 * that `competition.schedule` gives it. With `series` they are answered

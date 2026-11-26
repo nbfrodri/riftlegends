@@ -86,7 +86,7 @@ describe("Q9: presets fill the slots by region with the best seeds", () => {
 		expect(slots[0]).toMatchObject({ league: "LCK", place: 2 });
 	});
 
-	test("Worlds and First Stand give one distinct team per slot", () => {
+	test("Worlds and First Stand give one distinct team per slot and start", () => {
 		for (const [id, count] of [
 			["worlds", 19],
 			["first-stand", 8],
@@ -94,6 +94,7 @@ describe("Q9: presets fill the slots by region with the best seeds", () => {
 			const teams = slotsOf(client(), id).map(({ team }) => team);
 			expect(teams).toHaveLength(count);
 			expect(new Set(teams).size).toBe(count);
+			created(client(), preset(id));
 		}
 	});
 
