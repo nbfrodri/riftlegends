@@ -109,3 +109,11 @@ Estado 26-11 tarde:
 - Cola: #590 → #592 → #591 → #582 (reencolado tras resolver conflicto de catálogos i18n con #581).
 - #590 falló en CI porque la huella de `season-replay.test.ts` era anterior a #585; comprobado que `main` y la rama dan la misma huella (`f06d0ab…`), actualizada y reencolado (`queue-590b.log`). Cola: #592 → #591 → #582 → #590.
 - Nuevos: #583 en Codex (gpt-6.2-sol medium, `../riftlegends-583`, `r583.json`/`e583.jsonl`, thread 01a21848-9490-7102-8ac3-443aa5b4cc30); #484 y #485 con subagentes Opus desde la rama de #582 (`../riftlegends-484`, `../riftlegends-485`), PR solo cuando #582 esté en `main`.
+
+## Reanudación 26-11 noche (se cerró la terminal)
+- En `main`: #581, #588, #592, #585 (`SIM_VERSION` 16), #591, #582. CI de `main` en verde (f75f79a).
+- Cola: #590 (`queue-590c.log`), con el CI relanzado; su fallo es el E2E inestable de «Parar» (`competition.spec.ts`), que arregla la parte 2 de #584.
+- Subagentes reanudados: #529 (`../riftlegends-529`, implementación a medias sin commitear), #570 (`../riftlegends-570`, rama scratch de tiempos en Windows), #587/#489 (fusionar `main` y verificar).
+- #583: Codex (gpt-6.2-sol medium, verificado) dejó dos commits; un subagente Sonnet revisa, fusiona `main`, conecta los nombres a la UI de Competición y abre el PR.
+- Esperando visto bueno del usuario: #594 (clasificación) y #595 (calendario), con capturas con logos reales; se encolan #595 primero y #594 después.
+- Pendiente: #593 (calendario día/semana/mes) tras #595; parte 2 de #584; Stryker con la máquina libre.
