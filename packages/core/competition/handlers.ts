@@ -14,21 +14,24 @@ import {
 import { buildCalendar, type CalendarStage } from "./calendar";
 import type { StageOutcome } from "./qualification";
 import { buildStageGraph } from "./season";
+import { seasonOverview } from "./season-overview";
+import {
+	gamesOf,
+	type SeriesRecord,
+	seriesMatch,
+	seriesSummary,
+} from "./season-records";
 import { playSeasonSeries } from "./season-series";
 import {
-	advanceStage,
-	isStageReady,
 	isUnusedReservation,
 	localFixtureId,
 	type StageProgress,
 } from "./season-stages";
 import type { Played } from "./season-tables";
-import {
-	projectSchedule,
-	recordQualifications,
-	stageView,
-} from "./season-views";
+import { updateStages } from "./season-update";
+import { projectSchedule, stageView } from "./season-views";
 import { type StageGraph, type StageRef, stageKey } from "./stage-model";
+import { teamProfile } from "./team-profile";
 
 type Command<K> = Extract<
 	ReturnType<typeof competitionCommands.schema.parse>,
@@ -53,6 +56,8 @@ export interface RunningSeason {
 	readonly outcomes: ReadonlyMap<string, StageOutcome>;
 	readonly qualifications: ReadonlyMap<string, Emitted>;
 	readonly playedDays: ReadonlyMap<string, number>;
+	/** Every series played, by the id of its slot. */
+	readonly records: ReadonlyMap<string, SeriesRecord>;
 	readonly formats: Command<"season.create">["competitions"];
 }
 
@@ -69,67 +74,6 @@ const reject = (code: CoreError["code"], params: CoreError["params"] = {}) => ({
 	ok: false as const,
 	error: { code, params },
 });
-
-function updateStages(
-	season: RunningSeason,
-	today: ReadonlyMap<string, readonly Played[]>,
-	facts: Emitted[],
-) {
-	const stages = new Map(season.stages);
-	const outcomes = new Map(season.outcomes);
-	const updated = new Set<string>();
-	const calendar = new Map(
-		season.calendar.map((stage) => [stageKey(stage.ref), stage]),
-	);
-	for (;;) {
-		let advanced = false;
-		for (const [key, node] of season.graph.nodes) {
-			const previous = stages.get(key);
-			if (
-				updated.has(key) ||
-				previous?.done ||
-				(previous && !today.has(key)) ||
-				!isStageReady(season.graph, node, outcomes)
-			)
-				continue;
-			const window = calendar.get(key);
-			const format = season.formats[node.competitionIndex];
-			if (!window || !format)
-				throw new Error(`Missing stage format for ${key}`);
-			const played = [...(previous?.played ?? []), ...(today.get(key) ?? [])];
-			const next = advanceStage(
-				season.graph,
-				node,
-				outcomes,
-				window,
-				previous,
-				played,
-				season.seed,
-				season.year,
-				format.tiebreakerBestOf,
-			);
-			if (next.error) return { ok: false as const, error: next.error };
-			if (!next.progress) continue;
-			advanced = true;
-			updated.add(key);
-			stages.set(key, next.progress);
-			if (next.paired) facts.push(next.paired);
-			if (!next.progress.done) continue;
-			outcomes.set(key, next.progress);
-			facts.push({
-				type: "competition.stageFinished",
-				...node.ref,
-				standings: next.progress.standings.rows,
-			});
-		}
-		if (!advanced) break;
-	}
-	const next = { ...season, stages, outcomes };
-	return {
-		ok: true as const,
-		season: { ...next, qualifications: recordQualifications(next, facts) },
-	};
-}
 
 function createSeason(
 	state: SeasonSession,
@@ -184,6 +128,7 @@ function createSeason(
 			outcomes: new Map(),
 			qualifications: new Map(),
 			playedDays: new Map(),
+			records: new Map(),
 		},
 		new Map(),
 		facts,
@@ -207,6 +152,7 @@ function playDay(
 		return reject("wrong-action", { expected: nextDay ?? "season.create" });
 	const fixtures = schedule.filter((slot) => slot.day === day);
 	const playedDays = new Map(season.playedDays);
+	const records = new Map(season.records);
 	const today = new Map<string, Played[]>();
 	const facts: Emitted[] = [];
 	for (const slot of fixtures) {
@@ -245,12 +191,28 @@ function playDay(
 			winner: played.winner,
 			tiebreaker: fixture.tiebreaker ?? false,
 		});
+		records.set(slot.id, {
+			id: slot.id,
+			competition,
+			stage,
+			day,
+			teams: fixture.teams,
+			score: played.score,
+			winner: played.winner,
+			fixture,
+			seed: seriesSeed,
+			games: gamesOf(played.facts),
+		});
 		const results = today.get(key) ?? [];
 		results.push({ fixture, winner: played.winner, result: played.result });
 		today.set(key, results);
 		playedDays.set(slot.id, day);
 	}
-	const updated = updateStages({ ...season, playedDays }, today, facts);
+	const updated = updateStages(
+		{ ...season, playedDays, records },
+		today,
+		facts,
+	);
 	if (!updated.ok) return updated;
 	let next = updated.season;
 	const extraFixtures = new Map(
@@ -289,6 +251,10 @@ export const seasonDispatcher = createDispatcher<SeasonSession>({
 			stageView(state, ref, "bracket"),
 		"competition.schedule": (state, params: ScheduleQuery) =>
 			state.season ? projectSchedule(state.season, params) : [],
+		"season.overview": (state) => seasonOverview(state.season),
+		"team.profile": teamProfile,
+		"series.summary": seriesSummary,
+		"match.view": seriesMatch,
 		"competition.qualified": (
 			state,
 			{ competition }: { competition: string },
