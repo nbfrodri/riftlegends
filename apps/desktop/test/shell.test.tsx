@@ -13,6 +13,7 @@ const sectionsEs = [
 	"Inicio",
 	"Calendario",
 	"Draft",
+	"Torneo",
 	"Campeones",
 	"Base de datos",
 	"Plantilla",
@@ -26,9 +27,14 @@ const sectionsEs = [
 ];
 const pendingEs = sectionsEs.filter(
 	(name) =>
-		!["Draft", "Campeones", "Base de datos", "Mercado", "Ajustes"].includes(
-			name,
-		),
+		![
+			"Draft",
+			"Torneo",
+			"Campeones",
+			"Base de datos",
+			"Mercado",
+			"Ajustes",
+		].includes(name),
 );
 
 async function renderShell(path = "/mercado", locale = "es-ES") {
@@ -75,6 +81,7 @@ describe("T5: sidebar sections", () => {
 	// The Draft screen is titled after its current stage (plan 09).
 	test.each([
 		["Draft", "Configurar serie", "/draft"],
+		["Torneo", "Torneo", "/torneo"],
 		["Campeones", "Campeones", "/campeones"],
 		["Base de datos", "Base de datos", "/base-de-datos"],
 		["Mercado", "Mercado", "/mercado"],
@@ -115,6 +122,7 @@ describe("T5: sidebar sections", () => {
 		await renderShell();
 		for (const name of [
 			"Draft",
+			"Torneo",
 			"Campeones",
 			"Base de datos",
 			"Mercado",
@@ -141,6 +149,7 @@ describe("T5: sidebar sections", () => {
 			"Home",
 			"Calendar",
 			"Draft",
+			"Tournament",
 			"Champions",
 			"Database",
 			"Roster",

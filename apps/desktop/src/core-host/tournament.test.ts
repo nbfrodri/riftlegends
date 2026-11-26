@@ -313,3 +313,34 @@ test("a running tournament is locked; a new one needs a new session", () => {
 		),
 	).toMatchObject({ ok: false, error: { code: "format-locked" } });
 });
+
+test("tournament.check answers the error a create would give, without creating", () => {
+	const core = client();
+	const valid = custom(
+		[{ type: "singleElim", bestOf: 1 }],
+		fictional.slice(0, 4),
+	);
+	expect(core.query("tournament.check", valid)).toEqual({
+		ok: true,
+		view: { error: null },
+	});
+	expect(
+		core.query(
+			"tournament.check",
+			custom([{ type: "doubleElim", bestOf: 1 }], fictional.slice(0, 6)),
+		),
+	).toEqual({
+		ok: true,
+		view: {
+			error: {
+				code: "invalid-format",
+				params: { path: "stages.0.play.size" },
+			},
+		},
+	});
+	expect(core.query("competition.schedule", {})).toEqual({
+		ok: true,
+		view: [],
+	});
+	created(core, valid);
+});
