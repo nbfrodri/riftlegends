@@ -8,6 +8,7 @@ import {
 import { mergeSamePlayers } from "./canonical-players.ts";
 import { Client, type ClientOptions } from "./client.ts";
 import { normalizeGames } from "./games.ts";
+import { parseApiTeams, teamsUrl } from "./logos.ts";
 import {
 	championResolver,
 	field,
@@ -16,6 +17,10 @@ import {
 	required,
 	teamResolver,
 } from "./normalization.ts";
+import {
+	officialStarters,
+	preferOfficialStarters,
+} from "./official-starters.ts";
 import { acquirePlayerAliases } from "./player-aliases.ts";
 import {
 	acquire,
@@ -215,7 +220,15 @@ export async function snapshot(
 	const files = new Map<string, string>();
 	const totals = [];
 	// The role-gap lookup is a query too, so provenance is refreshed after it.
-	const closed = await closeRoleGaps(client, mergeSamePlayers(built, aliases));
+	// The official lolesports roster breaks ties between starters and covers gaps.
+	// It has its own client so the provenance only lists Leaguepedia queries.
+	const apiTeams = await new Client(options).get(teamsUrl, parseApiTeams);
+	const closed = await closeRoleGaps(
+		client,
+		preferOfficialStarters(mergeSamePlayers(built, aliases), apiTeams),
+		undefined,
+		officialStarters(apiTeams),
+	);
 	for (const validated of closed.map((row) => ({
 		...row,
 		provenance: { ...row.provenance, ...sources() },

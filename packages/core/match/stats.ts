@@ -42,10 +42,8 @@ export interface PlayerStats {
 	rating: number;
 }
 
-// Damage is not in the facts, so it is estimated from what is: a kill,
-// an assist and a death each leave their damage; every player of a fight or
-// siege adds a share (more for the winners); farm and objectives add a flat
-// amount per minute.
+// Estimate damage from kills, assists, deaths, fights and sieges (more for
+// winners), plus a flat amount per minute for farm and objectives.
 const DAMAGE = { kill: 1500, assist: 600, death: 300, won: 500, lost: 250 };
 const DAMAGE_PER_MINUTE = 150;
 const FIGHTS = new Set(["fight", "siege"]);
@@ -213,7 +211,6 @@ export function trackPlayerStats(
 	): T[] => {
 		// The same passive income every minute, as the loop pays it.
 		const income = farmed(rules.economy.passive).map((gold) => gold * minutes);
-		const farm = { blue: income, red: income };
 		const bySide = Object.fromEntries(
 			SIDES.map((side) => [
 				side,
@@ -229,8 +226,7 @@ export function trackPlayerStats(
 		return slots.map((slot) => {
 			const i = ROLES.indexOf(slot.role);
 			const line = lines.get(slot.player) as Line;
-			const gold =
-				(rest[slot.side][i] as number) + (farm[slot.side][i] as number);
+			const gold = (rest[slot.side][i] as number) + (income[i] as number);
 			return project(slot, line, gold, bySide[slot.side][i] as number);
 		});
 	};
