@@ -115,6 +115,8 @@ export const matchEventFact = {
 			/** Additional gold paid to the killer for ending the victim's spree. */
 			shutdown: z.int().positive().optional(),
 			soloKill: z.literal(true).optional(),
+			/** Second of the game the victim comes back; absent in older logs. */
+			respawnAt: position.optional(),
 			/** The casualty that left all five opponents down in this fight. */
 			ace: z.literal(true).optional(),
 		}),
@@ -174,6 +176,28 @@ const rating = z.int().min(0).max(100);
 const stat = z.int().min(0).max(10);
 const seconds = position;
 const timer = z.strictObject({ first: seconds, respawn: seconds });
+const roleLevels = z.array(z.int().min(10).max(200)).min(1);
+
+/**
+ * Death time of the wiki (issue #528): `BRW + BRW × TIF`. `brw` is the base
+ * in tenths of a second for levels 1 to 18; each `tif` step starts at `from`
+ * seconds, adds `perStep` thousandths of a point every `step` seconds on top
+ * of `base`, and the sum never passes `cap` (of 100,000).
+ */
+const deathTimer = z.strictObject({
+	brw: z.array(z.int().min(1)).length(18),
+	step: z.int().min(1),
+	tif: z
+		.array(
+			z.strictObject({
+				from: seconds,
+				base: position,
+				perStep: position,
+			}),
+		)
+		.min(1),
+	cap: z.int().min(0).max(100_000),
+});
 
 /** Everything the simulation reads besides the draft content (plan 07). */
 export const matchContent = z
@@ -228,6 +252,21 @@ export const matchContent = z
 				elder: timer,
 			}),
 			inhibitorRespawn: seconds,
+			deathTimer,
+			/** Median level per role and minute, in tenths, until #338 levels players. */
+			levelCurve: z
+				.strictObject({
+					top: roleLevels,
+					jungle: roleLevels,
+					mid: roleLevels,
+					bot: roleLevels,
+					support: roleLevels,
+				})
+				.refine(
+					(curve) =>
+						new Set(Object.values(curve).map((list) => list.length)).size === 1,
+					"every role needs the same number of minutes",
+				),
 			economy: z.strictObject({
 				/** Per team and minute. */
 				passive: position,
@@ -329,6 +368,8 @@ export const mapSnapshot = z.strictObject({
 			assists: position,
 			gold: position,
 			cs: position,
+			/** Second of the game the player comes back; alive when it is not ahead. */
+			respawnAt: position.optional(),
 		}),
 	),
 });

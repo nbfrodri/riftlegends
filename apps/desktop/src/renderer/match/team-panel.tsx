@@ -113,13 +113,13 @@ function Objectives({ view }: { view: TeamMap }) {
 			? t("draft.match.dragonCount", { count: dragons })
 			: view.objectives[`${kind}s`];
 	const effects = [
-		...(soul ? [{ icon: "dragon" as const, text: t("draft.match.soul") }] : []),
+		...(soul
+			? [{ icon: "dragon" as const, text: t("draft.match.soul"), time: null }]
+			: []),
 		...view.effects.map(({ kind, remaining }) => ({
 			icon: kind,
-			text: t("draft.match.effectTime", {
-				effect: t(`draft.match.kind.${kind}`),
-				time: clockTime(remaining),
-			}),
+			text: t(`draft.match.kind.${kind}`),
+			time: clockTime(remaining),
 		})),
 	];
 	return (
@@ -158,10 +158,16 @@ function Objectives({ view }: { view: TeamMap }) {
 					aria-label={t("draft.match.effects")}
 					className="flex flex-wrap gap-x-3 gap-y-1 font-bold text-(--side)"
 				>
-					{effects.map(({ icon, text }) => (
+					{effects.map(({ icon, text, time }) => (
 						<li key={icon} className="flex items-center gap-1.5">
 							<MapIcon kind={icon} />
 							{text}
+							{time && " "}
+							{time && (
+								<span className="font-normal text-text tabular-nums">
+									{time}
+								</span>
+							)}
 						</li>
 					))}
 				</ul>

@@ -98,7 +98,8 @@ export function trackSnapshots(initial: MatchState, content: MatchContent) {
 						(state.minute * rate + won * CS_PER_LANE_GOLD) * ROLE_SHARE[role];
 					const scale = SCALE * SCALE;
 					const cs = (scaled - (scaled % scale)) / scale;
-					return { player, kills, deaths, assists, gold, cs };
+					const { respawnAt } = state[side].players[role];
+					return { player, kills, deaths, assists, gold, cs, respawnAt };
 				},
 			),
 		};
