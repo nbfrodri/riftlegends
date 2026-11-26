@@ -90,7 +90,7 @@ function casualties(
 const FIGHT_ID = 30;
 
 /** Chance per 10,000 that a fight won 5–0 or 4–0 is one player's rampage (K18). */
-const RAMPAGE_CHANCE = { 4: 800, 5: 2100 } as const;
+const RAMPAGE_CHANCE = { 4: 700, 5: 1800 } as const;
 /** Slot of the rampage draws in the attribution stream, past every kill slot. */
 const RAMPAGE_SLOT = 99;
 /**
@@ -199,11 +199,11 @@ export const FIGHT_CONTEST: Contest = {
 		)
 			return [];
 
-		const result = edge(state, "fight");
+		const result = edge(state, "fight", {}, undefined, now);
 		const winner = roll(rng, result.blue) ? "blue" : "red";
 		const loser = other(winner);
 		const zone = pick(rng, ZONES);
-		const at = gameSecond(state.minute, second);
+		const at = now;
 		const up = {
 			winner: aliveRoles(state, winner, at),
 			loser: aliveRoles(state, loser, at),
