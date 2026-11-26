@@ -125,3 +125,4 @@ Estado 26-11 tarde:
 - #596 (#529, `SIM_VERSION` 17) aprobado y en la cola (`queue-596.log`). Después: #530 (ventana de conversión; arregla K19).
 - #597 listo (CI verde) pero va **después** de #596 y #594: su subagente fusionará `main`, pasará la clasificación de #594 a `stageLabel`/`stageText` y recalculará las huellas de la temporada; luego encolar.
 - PR #604 (#593 calendario día/semana/mes) aprobado; cola: #594 → #587 → #604 (choque esperado con #594 en el hub) → luego #597 (adaptar #594 y #604 a `stageLabel`).
+- PR #603 (#584 parte 2b, año ~73 s, huella idéntica) aprobado y en cola tras #604. Tercer PR de rendimiento (solo IA, perf/584-ai-speed-3) en marcha, con entrega antes de las 02:30 por Stryker.
