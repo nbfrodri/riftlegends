@@ -21,7 +21,7 @@ import {
 } from "../draft/session";
 import { TeamCrest } from "../draft/team-crest";
 import { competitionName, dayDate, stageName } from "./names";
-import type { ScheduleSlot } from "./schedule-days";
+import type { ScheduleSlot } from "./schedule-view";
 import { useExhibitionSeason, useSeasonOverview } from "./season";
 
 // `/competicion/serie/$series` (plan 31, U5): a played series of the season,
