@@ -11,6 +11,15 @@ import { afterEach, describe, expect, test, vi } from "vitest";
 import { Bracket } from "../src/renderer/competition/bracket/bracket";
 import { renderInLocale } from "./render-in-locale";
 
+/** Downloaded team logos; a team without one shows the own shield. */
+const logos: Record<string, string> = {
+	d: "rift-asset://logos/teams/d.png",
+};
+vi.mock("../src/renderer/assets", async (original) => ({
+	...(await original<typeof import("../src/renderer/assets")>()),
+	useTeamLogoSrc: (id: string) => logos[id],
+}));
+
 afterEach(() => {
 	cleanup();
 	vi.restoreAllMocks();
@@ -51,15 +60,16 @@ function match(
 	};
 }
 
-const names: Record<string, string> = {
-	a: "Alpha",
-	b: "Bravo",
-	c: "Charlie",
-	d: "Delta",
-	e: "Echo",
-	f: "Foxtrot",
+/** Full names; Delta and Echo also have the short name of the content. */
+const teams: Record<string, { name: string; short?: string }> = {
+	a: { name: "Alpha" },
+	b: { name: "Bravo" },
+	c: { name: "Charlie" },
+	d: { name: "Delta", short: "DEL" },
+	e: { name: "Echo", short: "ECH" },
+	f: { name: "Foxtrot" },
 };
-const teamName = (id: string) => names[id] ?? id;
+const team = (id: string) => teams[id] ?? { name: id };
 
 /** Six teams: seeds 1 and 2 have a bye; semifinal 2 is played, the final waits. */
 const sixTeams: BracketView = {
@@ -134,7 +144,7 @@ let initial: BracketView;
 function Harness() {
 	const [bracket, setBracket] = useState(initial);
 	show = setBracket;
-	return <Bracket bracket={bracket} teamName={teamName} />;
+	return <Bracket bracket={bracket} team={team} />;
 }
 
 /** Renders the bracket inside the providers and lets the test show a newer one. */
@@ -148,29 +158,53 @@ const series = () => screen.getAllByRole("button");
 const card = (name: RegExp) => screen.getByRole("button", { name });
 
 describe("U6: bracket", () => {
+	test("a card shows each team's logo and short name; the full names are in the tooltip and the reading", async () => {
+		const { container } = await renderInLocale(
+			<Bracket bracket={sixTeams} team={team} />,
+		);
+		const quarter = card(/^Quarterfinal 1:/);
+		expect(within(quarter).queryByText("Delta")).toBeNull();
+		expect(within(quarter).getByText("DEL")).toBeTruthy();
+		expect(quarter.getAttribute("aria-label")).toBe(
+			"Quarterfinal 1: Delta 2–0 Echo",
+		);
+		expect(quarter.dataset.tooltip).toBe("Quarterfinal 1: Delta 2–0 Echo");
+		// Delta has a downloaded logo; Echo falls back to the own shield.
+		const [logo, shield] = [
+			...quarter.querySelectorAll("[data-result] > :first-child"),
+		];
+		expect(logo?.getAttribute("src")).toBe(logos.d);
+		expect(shield?.tagName).toBe("svg");
+		// Without a short name the full one is shown.
+		expect(within(card(/^Quarterfinal 2:/)).getByText("Charlie")).toBeTruthy();
+		expect(
+			container.querySelector('img[src="rift-asset://logos/teams/d.png"]'),
+		).not.toBeNull();
+	});
+
 	test("each series shows its teams and score, with the winner marked", async () => {
-		await renderInLocale(<Bracket bracket={sixTeams} teamName={teamName} />);
+		await renderInLocale(<Bracket bracket={sixTeams} team={team} />);
 		expect(series()).toHaveLength(5);
 		const quarter = card(/Delta 2–0 Echo/);
 		expect(
-			within(quarter).getByText("Delta").closest("[data-result]"),
+			within(quarter).getByText("DEL").closest("[data-result]"),
 		).toHaveProperty("dataset.result", "won");
 		expect(
-			within(quarter).getByText("Echo").closest("[data-result]"),
+			within(quarter).getByText("ECH").closest("[data-result]"),
 		).toHaveProperty("dataset.result", "lost");
 	});
 
 	test("with six teams the two best seeds get a bye into the semifinals", async () => {
-		await renderInLocale(<Bracket bracket={sixTeams} teamName={teamName} />);
+		await renderInLocale(<Bracket bracket={sixTeams} team={team} />);
 		expect(within(card(/Alpha vs Delta/)).getByText("Bye")).toBeTruthy();
 		expect(within(card(/Bravo 2–1 Charlie/)).getByText("Bye")).toBeTruthy();
 		expect(screen.getAllByText("Bye")).toHaveLength(2);
 	});
 
 	test("a pending slot says where its team will come from", async () => {
-		await renderInLocale(<Bracket bracket={sixTeams} teamName={teamName} />);
+		await renderInLocale(<Bracket bracket={sixTeams} team={team} />);
 		const final = card(/^Final:/);
-		expect(within(final).getByText("Winner of Semifinal 1")).toBeTruthy();
+		expect(within(final).getByText("Winner SF1")).toBeTruthy();
 		expect(final.getAttribute("aria-label")).toBe(
 			"Final: Winner of Semifinal 1 vs Bravo",
 		);
@@ -181,7 +215,7 @@ describe("U6: bracket", () => {
 	test("clicking a played series opens it; one not played yet does nothing", async () => {
 		const open = vi.fn();
 		await renderInLocale(
-			<Bracket bracket={sixTeams} teamName={teamName} onOpenSeries={open} />,
+			<Bracket bracket={sixTeams} team={team} onOpenSeries={open} />,
 		);
 		fireEvent.click(card(/Bravo 2–1 Charlie/));
 		expect(open).toHaveBeenCalledWith("series-U2-2");
@@ -193,7 +227,7 @@ describe("U6: bracket", () => {
 
 	test("connectors join each series to the one its winner goes to", async () => {
 		const { container } = await renderInLocale(
-			<Bracket bracket={sixTeams} teamName={teamName} />,
+			<Bracket bracket={sixTeams} team={team} />,
 		);
 		const lines = container.querySelectorAll("[data-connector]");
 		expect(
@@ -207,9 +241,7 @@ describe("U6: bracket", () => {
 	});
 
 	test("the champion is highlighted once known", async () => {
-		await renderInLocale(
-			<Bracket bracket={doubleElim("upper")} teamName={teamName} />,
-		);
+		await renderInLocale(<Bracket bracket={doubleElim("upper")} team={team} />);
 		const champion = screen.getByRole("status");
 		expect(champion.textContent).toContain("Champion");
 		expect(champion.textContent).toContain("Alpha");
@@ -217,7 +249,7 @@ describe("U6: bracket", () => {
 
 	test("double elimination shows the lower bracket and where its teams drop from", async () => {
 		await renderInLocale(
-			<Bracket bracket={doubleElim("pending")} teamName={teamName} />,
+			<Bracket bracket={doubleElim("pending")} team={team} />,
 		);
 		expect(card(/^Lower round 1:/)).toBeTruthy();
 		expect(card(/^Lower final: Charlie 1–2 Bravo/)).toBeTruthy();
@@ -243,24 +275,27 @@ describe("U6: bracket", () => {
 			champion: "a",
 			losses: {},
 		};
-		await renderInLocale(<Bracket bracket={gsl} teamName={teamName} />);
+		await renderInLocale(<Bracket bracket={gsl} team={team} />);
 		expect(screen.queryByRole("button", { name: /Grand final/ })).toBeNull();
 		expect(screen.getByRole("status").textContent).toContain("Alpha");
 	});
 
 	test("Spanish names the rounds and origins", async () => {
-		await renderInLocale(
-			<Bracket bracket={doubleElim("pending")} teamName={teamName} />,
+		const view = await renderInLocale(
+			<Bracket bracket={doubleElim("pending")} team={team} />,
 			"es-ES",
 		);
 		expect(card(/^Final inferior: Charlie 1–2 Bravo/)).toBeTruthy();
 		expect(card(/^Gran final: Alpha contra Bravo/)).toBeTruthy();
+		view.unmount();
+		await renderInLocale(<Bracket bracket={sixTeams} team={team} />, "es-ES");
+		expect(within(card(/^Final:/)).getByText("Ganador SF1")).toBeTruthy();
 	});
 });
 
 describe("U11: keyboard and screen reader", () => {
 	test("one series is in the tab order and the arrows move between series", async () => {
-		await renderInLocale(<Bracket bracket={sixTeams} teamName={teamName} />);
+		await renderInLocale(<Bracket bracket={sixTeams} team={team} />);
 		const tabbable = () => series().filter((button) => button.tabIndex === 0);
 		expect(tabbable()).toHaveLength(1);
 		const first = card(/^Quarterfinal 1:/);
@@ -279,7 +314,7 @@ describe("U11: keyboard and screen reader", () => {
 	});
 
 	test("the reader hears the round, the teams and the score", async () => {
-		await renderInLocale(<Bracket bracket={sixTeams} teamName={teamName} />);
+		await renderInLocale(<Bracket bracket={sixTeams} team={team} />);
 		expect(card(/Bravo 2–1 Charlie/).getAttribute("aria-label")).toBe(
 			"Semifinal 2: Bravo 2–1 Charlie",
 		);
