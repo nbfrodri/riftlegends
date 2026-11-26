@@ -76,6 +76,21 @@ test("Q1: before day 0 every competition and stage is pending, without a leader"
 	});
 });
 
+test("Q1: preserves the optional stage name from the format to the renderer", () => {
+	const core = client();
+	const name = { split: "winter", stage: "playoffs" };
+	accepted(
+		core.send("season.create", {
+			...roundRobin,
+			competitions: [{ ...league, stages: [{ ...league.stages[0], name }] }],
+		}),
+	);
+	expect(overview(core).competitions[0]?.stages[0]).toMatchObject({
+		stage: "split",
+		name,
+	});
+});
+
 test("Q1: goes live with a leader, then finishes with a champion and no next day", () => {
 	const core = client();
 	accepted(core.send("season.create", roundRobin));
