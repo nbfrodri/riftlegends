@@ -1,5 +1,4 @@
 import type { Side } from "@rift-legends/contracts";
-import { int } from "../../rng/helpers";
 import type { MatchCause } from "../cause-keys";
 import { GRUBS, type MatchState, minuteOf, SOUL } from "../state";
 import { type Contest, paid, roll } from "./contest";
@@ -34,7 +33,7 @@ const objective = (kind: Objective, id: number): Contest => ({
 	id,
 	due: (state) =>
 		state.minute >= state.objectives[kind] && AVAILABLE[kind](state),
-	resolve(state, rng) {
+	resolve(state, rng, second) {
 		const priority = (side: Side): MatchCause | undefined =>
 			state.context[side].strategy.objectives === FAVOURED_BY[kind]
 				? { key: "strategy", points: PRIORITY_POINTS }
@@ -44,7 +43,6 @@ const objective = (kind: Objective, id: number): Contest => ({
 			red: priority("red"),
 		});
 		const controlling: Side = roll(rng, result.blue) ? "blue" : "red";
-		const second = int(rng, 0, 59);
 		const stolen =
 			kind === "elder" ? undefined : trySteal(state, controlling, id);
 		const award = stolen ?? {
@@ -79,7 +77,7 @@ const grub: Contest = {
 		state.minute >= state.objectives.grub &&
 		state.minute < minuteOf(state.context.rules.objectives.grub.despawn) &&
 		state.blue.grubs + state.red.grubs === 0,
-	resolve(state, rng) {
+	resolve(state, rng, second) {
 		const priority = (side: Side): MatchCause | undefined =>
 			state.context[side].strategy.objectives === FAVOURED_BY.herald
 				? { key: "strategy", points: PRIORITY_POINTS }
@@ -98,7 +96,7 @@ const grub: Contest = {
 				kind: "grub",
 				side: winner,
 				zone: "baron-pit",
-				second: int(rng, 0, 59),
+				second,
 				kills: [],
 				grubs,
 				gold: { blue: pay * grubs.blue, red: pay * grubs.red },

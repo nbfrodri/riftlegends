@@ -383,3 +383,47 @@ test("Q3: the bracket gives each series its teams, origin and result as it is pl
 	expect(after.champion).toBe(decider?.winner);
 	expect([decider?.teamA, decider?.teamB]).toContain(semi?.winner);
 });
+
+test("Q3: a played bracket series gives its score in the order of its teams and the id that opens it", () => {
+	const core = client();
+	accepted(
+		core.send("season.create", {
+			...season,
+			competitions: [
+				{
+					...league,
+					stages: [
+						{
+							...league.stages[0],
+							play: { type: "singleElim", size: 4, bestOf: [3, 3] },
+						},
+					],
+				},
+			],
+		}),
+	);
+	const ref = { competition: "league", stage: "split" };
+	const bracket = () =>
+		competitionViews.bracket.parse(view(core, "competition.bracket", ref));
+	expect(bracket().matches.some((match) => "score" in match)).toBe(false);
+	playAll(core);
+	const schedule = view(core, "competition.schedule", {
+		competition: ref.competition,
+	}) as {
+		id: string;
+		teams: [string, string];
+		score: [number, number];
+	}[];
+	for (const match of bracket().matches) {
+		const slot = schedule.find(({ id }) => id === match.series);
+		expect(slot).toBeDefined();
+		const [a, b] = match.score ?? [];
+		const ordered =
+			slot?.teams[0] === match.teamA
+				? slot?.score
+				: [slot?.score[1], slot?.score[0]];
+		expect([a, b]).toEqual(ordered);
+		expect(Math.max(a ?? 0, b ?? 0)).toBe(2);
+		expect((a ?? 0) > (b ?? 0) ? match.teamA : match.teamB).toBe(match.winner);
+	}
+});

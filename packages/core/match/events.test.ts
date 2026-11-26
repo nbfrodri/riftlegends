@@ -1,6 +1,10 @@
 import { type MatchEvent, ROLES } from "@rift-legends/contracts";
 import fc from "fast-check";
 import { expect, test } from "vitest";
+import { int } from "../rng/helpers";
+import { SCOPES } from "../rng/scopes";
+import { deriveSeed } from "../rng/seeds";
+import { createRng } from "../rng/streams";
 import type { Contest, ContestEvent } from "./contests/contest";
 import { edge } from "./contests/edge";
 import { kill } from "./contests/lane";
@@ -39,13 +43,23 @@ const contest = (e: ContestEvent, id = 100): Contest => ({
 	resolve: () => [e],
 });
 
+/** Contests resolve by the second of their own stream (plan 08, #528). */
+const resolvesFirst = (ids: readonly number[]) =>
+	[...ids].sort((a, b) => secondOf(a) - secondOf(b) || a - b) as [
+		number,
+		number,
+	];
+const secondOf = (id: number) =>
+	int(createRng(deriveSeed(42, SCOPES.match, 1, 1, id)), 0, 59);
+
 test("first blood pays the killer and a single shared extra assist bag", () => {
+	const [early, late] = resolvesFirst([100, 101]);
 	const {
 		events: [first, second],
 		state,
 	} = playMinute(base, [
-		contest(event([blueKill()], { second: 30 })),
-		contest(event([blueKill(["jungle", "support"])], { second: 10 }), 101),
+		contest(event([blueKill()], { second: 30 }), late),
+		contest(event([blueKill(["jungle", "support"])], { second: 10 }), early),
 	]);
 	expect(first?.kills[0]).toMatchObject({
 		firstBlood: { killerGold: 100, assistGold: 50 },
