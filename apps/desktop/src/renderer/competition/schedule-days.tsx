@@ -20,6 +20,8 @@ export interface ScheduleSlot {
 	readonly winner?: string | undefined;
 	/** Games won by each team, in the order of `teams`. */
 	readonly score?: readonly [number, number] | undefined;
+	/** In a bracket stage, the id of the series in `competition.bracket`. */
+	readonly match?: string | undefined;
 }
 
 export function ScheduleDays({

@@ -22,6 +22,7 @@ export function projectSchedule(
 			const upcoming = new Map(
 				stage?.fixtures.map((fixture) => [fixture.id, fixture]),
 			);
+			const bracket = season.graph.nodes.get(stageKey(ref))?.bracket;
 			return series.flatMap((slot) => {
 				if (
 					slot.day < (params.fromDay ?? 0) ||
@@ -42,6 +43,8 @@ export function projectSchedule(
 					{
 						...slot,
 						...ref,
+						// The series of a bracket, as `competition.bracket` names it.
+						...(bracket && { match: id }),
 						...(fixture && {
 							teams: fixture.teams,
 							bestOf: fixture.bestOf,

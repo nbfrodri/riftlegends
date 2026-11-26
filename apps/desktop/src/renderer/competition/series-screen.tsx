@@ -19,6 +19,7 @@ import {
 	teamName,
 	useSeriesOptions,
 } from "../draft/session";
+import { TeamCrest } from "../draft/team-crest";
 import { competitionName, dayDate, stageName } from "./names";
 import type { ScheduleSlot } from "./schedule-days";
 import { useExhibitionSeason, useSeasonOverview } from "./season";
@@ -122,14 +123,30 @@ function Header({
 	return (
 		<header className="flex flex-wrap items-start justify-between gap-3">
 			<div className="min-w-0">
-				<h1 className="min-w-0 truncate font-bold font-display text-[clamp(24px,2.1vw,40px)] uppercase leading-none tracking-heading">
-					{first
-						? t("competition.series.title", {
-								a: teamName(options, first.blue),
-								b: teamName(options, first.red),
-							})
-						: t("competition.series.unknown")}
-				</h1>
+				<div className="flex min-w-0 items-center gap-3">
+					{first && (
+						<TeamCrest
+							id={first.blue}
+							name={teamName(options, first.blue)}
+							className="h-[clamp(28px,2.6vw,44px)] w-[clamp(36px,3.4vw,58px)] shrink-0"
+						/>
+					)}
+					<h1 className="min-w-0 truncate font-bold font-display text-[clamp(24px,2.1vw,40px)] uppercase leading-none tracking-heading">
+						{first
+							? t("competition.series.title", {
+									a: teamName(options, first.blue),
+									b: teamName(options, first.red),
+								})
+							: t("competition.series.unknown")}
+					</h1>
+					{first && (
+						<TeamCrest
+							id={first.red}
+							name={teamName(options, first.red)}
+							className="h-[clamp(28px,2.6vw,44px)] w-[clamp(36px,3.4vw,58px)] shrink-0"
+						/>
+					)}
+				</div>
 				{slot && year !== undefined && (
 					<p className="mt-1 text-muted">
 						{t("competition.series.where", {

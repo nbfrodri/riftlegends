@@ -206,18 +206,8 @@ function useOrigins(sessionId: number, slots: readonly ScheduleSlot[]) {
 		const source = sources.find(
 			(s) => s.competition === slot.competition && s.stage === slot.stage,
 		);
-		const match = source?.matches.get(localId(slot.id));
+		const match = slot.match ? source?.matches.get(slot.match) : undefined;
 		const from = match?.from[index];
 		return source && from ? originText(t, source.labels, from, false) : "";
 	};
-}
-
-/** The schedule id names the series inside its stage last: `[competition, stage, series]`. */
-function localId(id: string) {
-	try {
-		const parsed: unknown = JSON.parse(id);
-		return Array.isArray(parsed) ? String(parsed.at(-1)) : id;
-	} catch {
-		return id;
-	}
 }
