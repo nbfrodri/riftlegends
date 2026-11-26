@@ -13,6 +13,7 @@ const sectionsEs = [
 	"Inicio",
 	"Calendario",
 	"Draft",
+	"Torneo",
 	"Campeones",
 	"Base de datos",
 	"Plantilla",
@@ -28,6 +29,7 @@ const pendingEs = sectionsEs.filter(
 	(name) =>
 		![
 			"Draft",
+			"Torneo",
 			"Campeones",
 			"Base de datos",
 			"Mercado",
@@ -80,6 +82,7 @@ describe("T5: sidebar sections", () => {
 	// The Draft screen is titled after its current stage (plan 09).
 	test.each([
 		["Draft", "Configurar serie", "/draft"],
+		["Torneo", "Torneo", "/torneo"],
 		["Campeones", "Campeones", "/campeones"],
 		["Base de datos", "Base de datos", "/base-de-datos"],
 		["Mercado", "Mercado", "/mercado"],
@@ -120,6 +123,7 @@ describe("T5: sidebar sections", () => {
 		await renderShell();
 		for (const name of [
 			"Draft",
+			"Torneo",
 			"Campeones",
 			"Base de datos",
 			"Mercado",
@@ -147,6 +151,7 @@ describe("T5: sidebar sections", () => {
 			"Home",
 			"Calendar",
 			"Draft",
+			"Tournament",
 			"Champions",
 			"Database",
 			"Roster",
@@ -249,6 +254,8 @@ describe("T6: collapsing and keyboard", () => {
 	test("Tab skips the pending sections", async () => {
 		const { user } = await renderShell("/mercado");
 		section("Draft").focus();
+		await user.tab();
+		expect(document.activeElement).toBe(section("Torneo"));
 		await user.tab();
 		expect(document.activeElement).toBe(section("Campeones"));
 		await user.tab();

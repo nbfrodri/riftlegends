@@ -8,6 +8,7 @@ import {
 	createDispatcher,
 	type Emitted,
 	type Outcome,
+	QueryRejection,
 } from "../server/dispatcher";
 import { buildCalendar, type CalendarStage } from "./calendar";
 import { exhibitionSeason } from "./exhibition";
@@ -33,6 +34,7 @@ import { updateStages } from "./season-update";
 import { projectSchedule, stageView } from "./season-views";
 import type { StageGraph, StageRef } from "./stage-model";
 import { teamProfile } from "./team-profile";
+import { presetSlots, tournamentSeason } from "./tournament";
 
 export type Command<K> = Extract<
 	ReturnType<typeof competitionCommands.schema.parse>,
@@ -158,11 +160,25 @@ function createSeason(
 		: started;
 }
 
+/** A tournament replaces a finished season only; a running one is locked. */
+function createTournament(
+	state: SeasonSession,
+	payload: Command<"tournament.create">,
+): Outcome<SeasonSession> {
+	const { season, loadContent } = state;
+	if (season && season.outcomes.size !== season.graph.nodes.size)
+		return reject("format-locked");
+	const built = tournamentSeason(payload, loadContent);
+	// A new session state: nothing of the finished season carries over.
+	return built.ok ? createSeason({ loadContent }, built.season) : built;
+}
+
 export const seasonDispatcher = createDispatcher<SeasonSession>({
 	commands: {
 		"season.create": createSeason,
 		"season.playDay": playDay,
 		"season.playSeries": playSeries,
+		"tournament.create": createTournament,
 		...humanSeriesCommands,
 	},
 	queries: {
@@ -179,6 +195,14 @@ export const seasonDispatcher = createDispatcher<SeasonSession>({
 		) => exhibitionSeason(params),
 		...humanSeriesQueries,
 		"team.profile": teamProfile,
+		"tournament.preset": (state, { preset }) => {
+			const slots = presetSlots(preset, state.loadContent);
+			return slots.ok ? slots.view : new QueryRejection(slots.error);
+		},
+		"tournament.check": ({ loadContent }, payload) => {
+			const outcome = createTournament({ loadContent }, payload);
+			return { error: outcome.ok ? null : outcome.error };
+		},
 		"series.summary": (state, params) =>
 			params.series ? seriesSummary(state, params) : humanSummary(state),
 		"match.view": (state, params) =>
