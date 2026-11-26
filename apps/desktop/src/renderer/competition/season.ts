@@ -4,7 +4,7 @@ import {
 	type competitionViews,
 } from "@rift-legends/contracts";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import type { CoreFact } from "../../shared/bridge";
 import { appContent } from "../content-set";
 import { CoreRequestError, useCore, useCoreQuery } from "../core";
@@ -78,29 +78,63 @@ export function useSeasonOverview(sessionId: number) {
 
 interface ScheduleSlot {
 	readonly competition: string;
+	readonly stage: string;
 	readonly day: number;
 	readonly status: "played" | "ready" | "pending";
 }
 
-/** Days ahead read to find each competition's next match day. */
-const LOOKAHEAD_DAYS = 60;
+/** Match days of a stage: those already played and all of them. */
+export interface Matchdays {
+	readonly played: number;
+	readonly total: number;
+}
 
-/** The next match day of each competition, within the next weeks. */
-export function useNextDays(sessionId: number, day: number | null) {
+export interface SeasonSchedule {
+	/** The next match day of each competition. */
+	readonly nextDay: ReadonlyMap<string, number>;
+	/** By `competition/stage`. */
+	readonly matchdays: ReadonlyMap<string, Matchdays>;
+}
+
+export const stageKeyOf = (competition: string, stage: string) =>
+	`${competition}/${stage}`;
+
+/** The whole calendar, read again after each day, as match days per stage. */
+export function useSeasonSchedule(sessionId: number): SeasonSchedule {
 	const schedule = useCoreQuery<ScheduleSlot[]>(
 		{
 			v: CONTRACT_VERSION,
 			kind: "competition.schedule",
 			sessionId,
-			params: { fromDay: day ?? 0, toDay: (day ?? 0) + LOOKAHEAD_DAYS },
+			params: {},
 		},
-		{ affectedBy: seasonFact, enabled: day !== null },
+		{ affectedBy: seasonFact },
 	);
-	const next = new Map<string, number>();
-	for (const slot of schedule.data ?? [])
-		if (slot.status !== "played" && !next.has(slot.competition))
-			next.set(slot.competition, slot.day);
-	return next;
+	return useMemo(() => {
+		const nextDay = new Map<string, number>();
+		const days = new Map<string, Map<number, boolean>>();
+		for (const slot of schedule.data ?? []) {
+			if (slot.status !== "played" && !nextDay.has(slot.competition))
+				nextDay.set(slot.competition, slot.day);
+			const key = stageKeyOf(slot.competition, slot.stage);
+			const stage = days.get(key) ?? new Map<number, boolean>();
+			stage.set(
+				slot.day,
+				(stage.get(slot.day) ?? true) && slot.status === "played",
+			);
+			days.set(key, stage);
+		}
+		const matchdays = new Map(
+			[...days].map(([key, stage]) => [
+				key,
+				{
+					played: [...stage.values()].filter(Boolean).length,
+					total: stage.size,
+				},
+			]),
+		);
+		return { nextDay, matchdays };
+	}, [schedule.data]);
 }
 
 /** Display names of the content's teams, by id. */

@@ -18,8 +18,8 @@ import { useExhibitionSeason, useSeasonOverview } from "./season";
 
 const tone = {
 	pending: "text-muted",
-	live: "text-good",
-	finished: "text-text",
+	live: "text-text",
+	finished: "text-muted",
 } as const;
 
 export function CompetitionHub({ competition }: { competition: string }) {

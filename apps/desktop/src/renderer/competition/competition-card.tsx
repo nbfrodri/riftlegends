@@ -1,6 +1,3 @@
-import { cn } from "@rift-legends/ui-kit/lib/utils";
-import { CalendarDays, Trophy } from "lucide-react";
-import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { LeagueLogo } from "../assets/league-logo";
 import { TeamCrest } from "../draft/team-crest";
@@ -10,24 +7,12 @@ import {
 	dayDate,
 	stageName,
 } from "./names";
-import type { CompetitionOverview } from "./season";
+import { type CompetitionOverview, type Matchdays, stageKeyOf } from "./season";
 
-// One competition of the season overview (plan 31, U1): logo, stage, leader or
-// champion and the next match day. The whole card opens the competition.
-
-type Status = CompetitionOverview["status"];
-
-const chip: Record<Status, string> = {
-	pending: "border-line text-muted",
-	live: "border-good/45 bg-good/12 text-good",
-	finished: "border-action/45 bg-action/12 text-action",
-};
-
-const segment: Record<Status, string> = {
-	pending: "bg-line",
-	live: "bg-good",
-	finished: "bg-action",
-};
+// One competition of the season overview (plan 31, U1), as a row: name, the
+// stage with its match days, the leader or champion and the next match day.
+// The state is plain text, never a badge (user feedback on #582). The whole
+// row opens the competition.
 
 /** The stage being played, else the next one, else the last. */
 const currentStage = ({ stages }: CompetitionOverview) =>
@@ -35,11 +20,16 @@ const currentStage = ({ stages }: CompetitionOverview) =>
 	stages.find(({ status }) => status === "pending") ??
 	stages.at(-1);
 
+/** The columns every row shares, so the list reads as a table. */
+const ROW_COLUMNS =
+	"grid-cols-[minmax(150px,1fr)_minmax(210px,1.35fr)_minmax(230px,1.5fr)_minmax(120px,0.8fr)]";
+
 export function CompetitionCard({
 	competition,
 	year,
 	today,
 	nextDay,
+	matchdays,
 	teamName,
 	onOpen,
 }: {
@@ -49,6 +39,7 @@ export function CompetitionCard({
 	today: number | null;
 	/** The next match day of this competition, when it is known. */
 	nextDay: number | undefined;
+	matchdays: ReadonlyMap<string, Matchdays>;
 	teamName: (id: string) => string;
 	onOpen: () => void;
 }) {
@@ -58,121 +49,113 @@ export function CompetitionCard({
 	const { status, leader, champion, stages } = competition;
 	const date = (day: number) => dayDate(year, day, i18n.language);
 	const startDay = stages[0]?.startDay ?? 0;
-	// The day the card shows big: the start, or the next day of a stage without a table.
-	const dateDay =
-		status === "pending"
-			? startDay
-			: status === "live" && !leader
-				? nextDay
-				: undefined;
-	const footerDay =
-		status === "pending" ? startDay : status === "live" ? nextDay : undefined;
+	const days = stage && matchdays.get(stageKeyOf(competition.id, stage.stage));
+	const stageLive = stage?.status === "live";
+	const share = days && days.total > 0 ? days.played / days.total : 0;
 
 	return (
-		<li className="group relative flex min-w-0 flex-col gap-[clamp(6px,1vh,10px)] border border-line bg-panel p-[clamp(10px,1vw,16px)] hover:border-text hover:bg-surface has-[button:active]:brightness-90 has-[button:focus-visible]:outline-2 has-[button:focus-visible]:outline-action">
-			<header className="grid min-w-0 grid-cols-[auto_1fr] items-center gap-x-3">
-				<span className="grid size-[clamp(42px,3.6vw,60px)] place-items-center border border-line bg-canvas">
-					<LeagueLogo
-						id={competitionLogoId(competition.id)}
-						name={name}
-						className="size-[72%]"
-					/>
-				</span>
-				<div className="min-w-0">
-					<div className="flex min-w-0 items-center justify-between gap-2">
-						<h2 className="min-w-0 truncate font-bold font-display text-[clamp(17px,1.45vw,24px)] leading-[1.1] tracking-[-0.03em]">
-							{name}
-						</h2>
-						<span
-							className={cn(
-								"inline-flex shrink-0 items-center gap-1.5 rounded-control border px-1.5 py-0.5 font-semibold text-[11px] leading-none",
-								chip[status],
-							)}
-						>
-							{status === "live" && (
-								<span
-									aria-hidden="true"
-									className="size-1.5 rounded-full bg-current"
-								/>
-							)}
-							{t(`competition.status.${status}`)}
-						</span>
-					</div>
-					<p className="mt-1 flex min-w-0 items-baseline justify-between gap-2 text-[13px]">
-						<span className="min-w-0 truncate text-muted">
-							{stage && stageName(stage.stage)}
-						</span>
-						{stage && (
-							<span className="shrink-0 text-muted tabular-nums">
-								{t("competition.stageOf", {
-									index: stages.indexOf(stage) + 1,
-									total: stages.length,
-								})}
-							</span>
-						)}
+		<li
+			className={`group relative grid min-h-[clamp(44px,6.6vh,66px)] ${ROW_COLUMNS} items-center gap-x-[clamp(12px,1.4vw,28px)] px-[clamp(10px,1vw,16px)] odd:bg-panel hover:bg-surface has-[button:active]:brightness-90 has-[button:focus-visible]:outline-2 has-[button:focus-visible]:-outline-offset-2 has-[button:focus-visible]:outline-action`}
+		>
+			<div className="flex min-w-0 items-center gap-3">
+				<LeagueLogo
+					id={competitionLogoId(competition.id)}
+					name={name}
+					className="size-[clamp(26px,2.3vw,36px)]"
+				/>
+				<h2 className="min-w-0 truncate font-bold font-display text-[clamp(16px,1.3vw,21px)] leading-none tracking-[-0.03em]">
+					{name}
+				</h2>
+			</div>
+
+			<div className="min-w-0">
+				{status === "finished" ? (
+					<p className="text-[13px] text-muted">
+						{t("competition.status.finished")}
 					</p>
-				</div>
-			</header>
-			<StageBar competition={competition} />
-			<div className="flex min-h-[clamp(28px,4vh,40px)] min-w-0 items-center">
+				) : (
+					<>
+						<p className="flex min-w-0 items-baseline justify-between gap-3 text-[13px]">
+							<span className="min-w-0 truncate font-semibold">
+								{stage && stageName(stage.stage)}
+							</span>
+							<span className="shrink-0 text-muted tabular-nums">
+								{stageLive && days
+									? t("competition.matchday", {
+											played: days.played,
+											total: days.total,
+										})
+									: t("competition.status.pending")}
+							</span>
+						</p>
+						<div aria-hidden="true" className="mt-1.5 h-0.5 bg-line">
+							<div
+								className="h-full bg-text transition-[width] duration-300 ease-lock motion-reduce:transition-none"
+								style={{ width: `${(stageLive ? share : 0) * 100}%` }}
+							/>
+						</div>
+					</>
+				)}
+			</div>
+
+			<div className="flex min-w-0 items-center gap-2.5 text-[14px]">
 				{status === "finished" && champion ? (
-					<Team label={t("competition.champion")} highlight>
-						<Trophy
-							aria-hidden="true"
-							className="size-4 shrink-0 text-action"
-						/>
+					<>
+						<span className="shrink-0 text-[12px] text-muted">
+							{t("competition.champion")}
+						</span>
 						<TeamCrest
 							id={champion}
 							name={teamName(champion)}
-							className="size-7 shrink-0"
+							className="size-6 shrink-0"
 						/>
-						<b className="min-w-0 truncate font-display text-[clamp(15px,1.15vw,19px)] tracking-[-0.02em]">
-							{teamName(champion)}
-						</b>
-					</Team>
+						<b className="min-w-0 truncate">{teamName(champion)}</b>
+					</>
 				) : leader ? (
-					<Team label={t("competition.leader")}>
+					<>
+						<span className="shrink-0 text-[12px] text-muted">
+							{t("competition.leader")}
+						</span>
 						<TeamCrest
 							id={leader.team}
 							name={teamName(leader.team)}
-							className="size-7 shrink-0"
+							className="size-6 shrink-0"
 						/>
-						<b className="min-w-0 truncate text-[15px]">
-							{teamName(leader.team)}
-						</b>
-						<span className="ml-auto font-bold font-display text-[clamp(16px,1.25vw,21px)] tabular-nums tracking-[-0.02em]">
+						<b className="min-w-0 truncate">{teamName(leader.team)}</b>
+						<span className="ml-auto shrink-0 font-bold font-display tabular-nums tracking-[-0.02em]">
 							{t("competition.record", {
 								wins: leader.seriesWins,
 								losses: leader.seriesLosses,
 							})}
 						</span>
-					</Team>
-				) : dateDay !== undefined && today !== null ? (
-					<p className="flex min-w-0 items-baseline gap-2.5">
-						<b className="font-bold font-display text-[clamp(18px,1.5vw,25px)] tracking-[-0.02em]">
-							{date(dateDay)}
-						</b>
-						<span className="text-[13px] text-muted">
-							{dateDay <= today
-								? t("competition.startsToday")
-								: t("competition.startsIn", { count: dateDay - today })}
-						</span>
-					</p>
+					</>
+				) : status === "pending" && today !== null ? (
+					<span className="text-[13px] text-muted">
+						{startDay <= today
+							? t("competition.startsToday")
+							: t("competition.startsIn", { count: startDay - today })}
+					</span>
 				) : null}
 			</div>
-			{footerDay !== undefined && (
-				<p className="mt-auto flex items-center gap-1.5 text-[12px] text-muted tabular-nums">
-					<CalendarDays aria-hidden="true" className="size-3.5 shrink-0" />
-					{status === "pending"
-						? t("competition.startsOnDay", { day: footerDay })
-						: leader
-							? t("competition.nextDay", {
-									day: footerDay,
-									date: date(footerDay),
-								})
-							: t("competition.nextDayNumber", { day: footerDay })}
-				</p>
-			)}
+
+			<p className="min-w-0 text-right text-[13px] tabular-nums">
+				{status === "pending" ? (
+					<>
+						<span className="block">{date(startDay)}</span>
+						<span className="block text-[12px] text-muted">
+							{t("competition.startsOnDay", { day: startDay })}
+						</span>
+					</>
+				) : status === "live" && nextDay !== undefined ? (
+					<>
+						<span className="block">{date(nextDay)}</span>
+						<span className="block text-[12px] text-muted">
+							{t("competition.nextDayNumber", { day: nextDay })}
+						</span>
+					</>
+				) : null}
+			</p>
+
 			<button
 				type="button"
 				aria-label={t("competition.open", { name })}
@@ -180,40 +163,5 @@ export function CompetitionCard({
 				className="absolute inset-0 cursor-pointer outline-none"
 			/>
 		</li>
-	);
-}
-
-/** One segment per stage, in order: done, under way or still to play. */
-function StageBar({ competition }: { competition: CompetitionOverview }) {
-	return (
-		<div aria-hidden="true" className="flex h-1 gap-0.5">
-			{competition.stages.map(({ stage, status }) => (
-				<span key={stage} className={cn("min-w-0 flex-1", segment[status])} />
-			))}
-		</div>
-	);
-}
-
-function Team({
-	label,
-	highlight = false,
-	children,
-}: {
-	label: string;
-	highlight?: boolean;
-	children: ReactNode;
-}) {
-	return (
-		<div className="flex w-full min-w-0 items-center gap-2.5">
-			<span
-				className={cn(
-					"w-[clamp(52px,4.4vw,68px)] shrink-0 text-[12px]",
-					highlight ? "font-semibold text-action" : "text-muted",
-				)}
-			>
-				{label}
-			</span>
-			{children}
-		</div>
 	);
 }

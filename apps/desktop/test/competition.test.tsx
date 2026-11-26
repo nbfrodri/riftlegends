@@ -51,7 +51,7 @@ describe("season overview (U1)", () => {
 				.getByRole("button", { name: "Competición" })
 				.getAttribute("aria-current"),
 		).toBe("page");
-		expect(screen.getByText(/Temporada 2026 · exhibición/)).toBeTruthy();
+		expect(screen.getByText(/^Temporada de exhibición 2026$/)).toBeTruthy();
 		const kinds = api.send.mock.calls.map(([c]) => c.kind);
 		expect(kinds).toEqual(["season.create"]);
 	});

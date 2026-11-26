@@ -15,8 +15,8 @@ import { competitionName, dayDate, isInternational, stageName } from "./names";
 import {
 	type SeasonHandle,
 	useExhibitionSeason,
-	useNextDays,
 	useSeasonOverview,
+	useSeasonSchedule,
 	useTeamNames,
 } from "./season";
 
@@ -80,7 +80,7 @@ function Season({
 	const listId = useId();
 	const overview = useSeasonOverview(season.sessionId);
 	const { run, pending, error, start, stop } = useSeasonAdvance(season);
-	const nextDays = useNextDays(season.sessionId, overview.data?.day ?? null);
+	const schedule = useSeasonSchedule(season.sessionId);
 	const teamName = useTeamNames(season.sessionId);
 	const view = overview.data;
 	if (!view) {
@@ -114,16 +114,19 @@ function Season({
 		<>
 			<header className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
 				<Heading>
-					<p className="mt-2 text-[14px] text-muted tabular-nums">
-						{t("competition.season", { year: view.year })}
-						{" · "}
+					<p className="mt-2 flex flex-wrap gap-x-5 text-[14px] tabular-nums">
+						<span className="text-muted">
+							{t("competition.season", { year: view.year })}
+						</span>
 						{view.day === null ? (
-							<b className="font-semibold text-text">{t("competition.over")}</b>
+							<b className="font-semibold">{t("competition.over")}</b>
 						) : (
-							t("competition.today", {
-								day: view.day,
-								date: dayDate(view.year, view.day, i18n.language),
-							})
+							<span className="font-semibold">
+								{t("competition.today", {
+									day: view.day,
+									date: dayDate(view.year, view.day, i18n.language),
+								})}
+							</span>
 						)}
 					</p>
 				</Heading>
@@ -186,14 +189,14 @@ function Season({
 			</header>
 			{run && <RunProgress run={run} year={view.year} />}
 			{error && <CoreErrorMessage error={error} />}
-			<div className="flex min-h-0 flex-1 flex-col gap-[clamp(10px,1.6vh,18px)] overflow-y-auto scroll-edge">
+			<div className="flex min-h-0 flex-1 flex-col gap-[clamp(14px,2.2vh,26px)] overflow-y-auto scroll-edge">
 				{groups.map(({ key, competitions }) => (
 					<section key={key} aria-labelledby={`${listId}-${key}`}>
 						<h2
 							id={`${listId}-${key}`}
 							className={
 								groups.length > 1
-									? "mb-1.5 font-bold font-display text-[13px] text-muted uppercase tracking-[0.04em]"
+									? "mb-1.5 font-semibold text-[12px] text-muted uppercase tracking-[0.06em]"
 									: "sr-only"
 							}
 						>
@@ -201,7 +204,7 @@ function Season({
 						</h2>
 						<ul
 							aria-labelledby={`${listId}-${key}`}
-							className="grid grid-cols-[repeat(auto-fill,minmax(clamp(250px,24vw,400px),1fr))] gap-[clamp(8px,0.8vw,14px)]"
+							className="border-line border-t"
 						>
 							{competitions.map((competition) => (
 								<CompetitionCard
@@ -209,7 +212,8 @@ function Season({
 									competition={competition}
 									year={view.year}
 									today={view.day}
-									nextDay={nextDays.get(competition.id)}
+									nextDay={schedule.nextDay.get(competition.id)}
+									matchdays={schedule.matchdays}
 									teamName={teamName}
 									onOpen={() =>
 										void navigate({
@@ -241,7 +245,7 @@ function RunProgress({ run, year }: { run: AdvanceRun; year: number }) {
 						stage: stageName(run.target?.stage ?? ""),
 					});
 	return (
-		<div className="border border-line bg-panel px-[clamp(10px,1vw,16px)] py-[clamp(6px,1vh,10px)]">
+		<div className="min-w-0">
 			<p className="mb-1.5 flex min-w-0 items-baseline gap-3 text-[13px]">
 				<b className="shrink-0 font-semibold text-text">
 					{t("competition.advance.playingDay", {
@@ -264,10 +268,10 @@ function RunProgress({ run, year }: { run: AdvanceRun; year: number }) {
 					day: run.day,
 					end: run.toDay,
 				})}
-				className="h-2 overflow-hidden rounded-control bg-canvas"
+				className="h-1 overflow-hidden bg-line"
 			>
 				<div
-					className="h-full bg-action shadow-[inset_-2px_0_0_var(--color-text)] transition-[width] duration-[420ms] ease-lock motion-reduce:transition-none"
+					className="h-full bg-action transition-[width] duration-[420ms] ease-lock motion-reduce:transition-none"
 					style={{ width: `${(done / total) * 100}%` }}
 				/>
 			</div>
