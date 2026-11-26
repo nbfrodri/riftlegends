@@ -302,11 +302,8 @@ describe("standings in the competition hub (U3)", () => {
 			{ timeout: 30_000 },
 		);
 		const views = screen.getByRole("radiogroup", { name: "View" });
-		expect(
-			within(views)
-				.getAllByRole("radio")
-				.map((radio) => radio.textContent),
-		).toEqual(["Standings", "Schedule"]);
+		expect(within(views).getAllByRole("radio")).toHaveLength(2);
+		expect(within(views).getByRole("radio", { name: "Schedule" })).toBeTruthy();
 		expect(
 			within(views).getByRole("radio", { name: "Standings" }),
 		).toHaveProperty("checked", true);

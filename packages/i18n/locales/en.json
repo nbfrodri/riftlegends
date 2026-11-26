@@ -971,6 +971,5 @@
 	"competition.series.title": "{{a}} vs {{b}}",
 	"competition.series.unknown": "Series",
 	"competition.series.where": "{{competition}}, {{stage}}, {{date}}",
-	"competition.series.back": "Back",
-	"competition.hub.stages": "Stages"
+	"competition.series.back": "Back"
 }
