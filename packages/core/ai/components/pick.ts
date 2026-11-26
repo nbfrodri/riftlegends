@@ -5,14 +5,13 @@ import {
 	selectedChampions,
 } from "../content-index";
 import { type AiContext, type Component, nonzeroComponents } from "../context";
+import { lanesOf } from "../lanes";
 import { canAssign } from "../positions";
-import { comfort } from "./comfort";
 import { compositionFor } from "./composition";
 import { fearlessReserve } from "./fearless-reserve";
 import { flex } from "./flex";
 import { identityFor } from "./identity";
 import { rivalsInRole, worstMatchup } from "./matchup";
-import { meta } from "./meta";
 import { side } from "./side";
 import { synergy } from "./synergy";
 
@@ -75,15 +74,13 @@ export function pickScorer(ctx: AiContext) {
 		let best = Number.MIN_SAFE_INTEGER;
 		let playable = 0;
 		scores.meta = scores.comfort = scores.matchup = 0;
-		for (const { role, tier } of candidate.positions) {
+		for (const lane of lanesOf(index, ctx.team, champion)) {
+			const { role } = lane;
 			if (!canTake(role)) continue;
 			playable++;
-			const laneMeta = meta(tier);
-			const laneComfort = comfort(roster?.get(role), champion);
-			const laneMatchup = worstMatchup(
-				index.matchups.get(champion)?.get(role),
-				rivalsIn(role),
-			);
+			const laneMeta = lane.meta;
+			const laneComfort = lane.comfort;
+			const laneMatchup = worstMatchup(lane.row, rivalsIn(role));
 			const total = laneMeta + laneComfort + laneMatchup;
 			if (total > best) {
 				scores.meta = laneMeta;
