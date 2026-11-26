@@ -65,6 +65,10 @@ describe("U10: play a tournament", { timeout: 30_000 }, () => {
 		const { api, user, best } = await startTournament(false);
 		expect(screen.getByText(`You play with ${best}.`)).toBeTruthy();
 		expect(screen.getByRole("radio", { name: "Standings" })).toBeTruthy();
+		// The knockout of a custom tournament has a catalog name, not its id.
+		expect(
+			(await screen.findByRole("combobox", { name: "Stage" })).textContent,
+		).toMatch(/^Playoffs/);
 		await user.click(
 			within(advance()).getByRole("button", { name: "Play day" }),
 		);
