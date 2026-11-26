@@ -106,7 +106,6 @@ export function CompetitionHub({
 					void onSearch({
 						...search,
 						view: next === "standings" ? undefined : next,
-						day: undefined,
 					})
 				}
 				className="self-start"
