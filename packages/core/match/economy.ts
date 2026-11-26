@@ -6,6 +6,7 @@ import {
 	type Side,
 } from "@rift-legends/contracts";
 import { SCALE } from "../math";
+import { deadNow, lostInMinute } from "./dead-passive";
 import type { MatchState } from "./state";
 
 /** Integer division of non-negative numbers, rounding down. */
@@ -172,15 +173,33 @@ export interface SideEconomy {
 	readonly kills: number;
 }
 
-/** Adds one minute of passive income to a side, by role. */
-export function earnPassive(state: MatchState, side: Side): MatchState[Side] {
+/**
+ * Adds the passive income of `minute` to a side, by role. A player still down
+ * from a death in an earlier minute loses what the seconds down in this one
+ * farm (plan 08, #528); `deadNow` takes the part of a death in its own minute.
+ */
+export function earnPassive(
+	state: MatchState,
+	side: Side,
+	minute: number,
+): MatchState[Side] {
 	const own = state[side];
 	const income = state.context.rules.economy.passive;
 	const farm = farmed(income);
+	const down = ROLES.map((role, i) =>
+		lostInMinute(
+			farm[i] as number,
+			own.players[role].diedAt,
+			own.players[role].respawnAt,
+			minute,
+		),
+	);
 	return {
 		...own,
-		gold: own.gold + income,
-		paid: own.paid.map((gold, i) => gold + (farm[i] as number)),
+		gold: own.gold + income - down.reduce((a, b) => a + b, 0),
+		paid: own.paid.map(
+			(gold, i) => gold + (farm[i] as number) - (down[i] as number),
+		),
 	};
 }
 
@@ -195,18 +214,23 @@ export function markEconomy(state: MatchState, e: MatchEvent, loserSide: Side) {
 			loserPlayers.includes(kill.killer),
 		).length;
 	}
-	const paid = paidByRole(e, state.context.slots, state.context.rules.economy);
+	const { slots, rules } = state.context;
+	const paid = paidByRole(e, slots, rules.economy);
+	const down = deadNow(e, slots, farmed(rules.economy.passive));
 	const earned = (own: SideEconomy, side: Side) =>
-		own.paid.map((gold, i) => gold + (paid[side][i] as number));
+		own.paid.map(
+			(gold, i) => gold + (paid[side][i] as number) - (down[side][i] as number),
+		);
+	const lostGold = (side: Side) => down[side].reduce((a, b) => a + b, 0);
 	const won = {
 		...winner,
-		gold: winner.gold + e.gold[e.side],
+		gold: winner.gold + e.gold[e.side] - lostGold(e.side),
 		paid: earned(winner, e.side),
 		kills: winner.kills + e.kills.length - loserKills,
 	};
 	const lost = {
 		...loser,
-		gold: loser.gold + e.gold[loserSide],
+		gold: loser.gold + e.gold[loserSide] - lostGold(loserSide),
 		paid: earned(loser, loserSide),
 		kills: loser.kills + loserKills,
 	};

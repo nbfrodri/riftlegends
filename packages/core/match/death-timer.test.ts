@@ -1,7 +1,7 @@
 import { ROLES } from "@rift-legends/contracts";
 import { describe, expect, it } from "vitest";
-import timelines from "../content/real/timelines.json";
 import { packagedMatchContent } from "../content/match";
+import timelines from "../content/real/timelines.json";
 import { levelAt, respawnTime } from "./death-timer";
 
 const { deathTimer, levelCurve } = packagedMatchContent.rules;

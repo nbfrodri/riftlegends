@@ -23,6 +23,7 @@ import {
 	type SideObjectives,
 	startObjectives,
 } from "./objective-state";
+import { markDeaths, type SidePlayers, startPlayers } from "./player-state";
 import { type Lineup, type Profile, profiles } from "./profile";
 
 export { earnPassive } from "./economy";
@@ -76,7 +77,12 @@ interface MatchContext {
 	readonly slots: ReadonlyMap<string, Slot>;
 }
 
-type SideState = SideEconomy & SideObjectives & SideMap;
+type SideState = SideEconomy &
+	SideObjectives &
+	SideMap & {
+		/** Who is down and until when, by role (plan 08, #528). */
+		readonly players: SidePlayers;
+	};
 
 export interface MatchState {
 	readonly context: MatchContext;
@@ -187,6 +193,7 @@ export function createMatch(setup: MatchSetup): MatchState {
 		fightPushAt: 0,
 		inhibitors: { top: 0, mid: 0, bot: 0 },
 		buffs: { herald: 0, baron: 0, elder: 0 },
+		players: startPlayers(),
 	};
 	const { objectives } = setup.match.rules;
 	const blue = side(setup.blue, us, "blue");
@@ -247,10 +254,11 @@ function mark(state: MatchState, e: MatchEvent): MatchState {
 			));
 			break;
 	}
+	const players = markDeaths(state, e);
 	return {
 		...state,
-		[e.side]: won,
-		[loserSide]: lost,
+		[e.side]: { ...won, players: players[e.side] },
+		[loserSide]: { ...lost, players: players[loserSide] },
 		objectives,
 		winner: e.kind === "nexus" ? e.side : state.winner,
 	};

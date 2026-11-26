@@ -56,7 +56,7 @@ describe("D2 · every kill sets when the victim comes back (#528)", () => {
 			...base,
 			blue: {
 				...base.blue,
-				players: { ...base.blue.players, mid: { respawnAt: 100 } },
+				players: { ...base.blue.players, mid: { respawnAt: 100, diedAt: 40 } },
 			},
 		};
 		expect(isAlive(dead, "blue", "mid", 99)).toBe(false);
@@ -211,11 +211,11 @@ describe("a dead player loses the passive gold of the time he is down (#528)", (
 		const income = rules.economy.passive;
 		const farm = farmed(income);
 		const top = farm[ROLES.indexOf("top")] as number;
-		const lost = Math.floor((top * 10) / 60);
+		const lost = (top * 10 - ((top * 10) % 60)) / 60;
 		expect(lost).toBeGreaterThan(0);
 		expect(state.red.paid[ROLES.indexOf("top")]).toBe(top - lost);
 		expect(state.red.gold).toBe(income - lost);
-		expect(state.blue.gold).toBe(income + 0);
+		expect(state.blue.gold).toBe(income + (events[0]?.gold.blue ?? 0));
 	});
 
 	it("the stats rebuilt from the facts agree with the state", () => {

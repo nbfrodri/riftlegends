@@ -11,7 +11,15 @@ export interface Contest {
 	/** Fixed forever: it feeds the seed of the contest's stream. */
 	readonly id: number;
 	readonly due: (state: MatchState) => boolean;
-	readonly resolve: (state: MatchState, rng: Rng) => ContestEvent[];
+	/**
+	 * `second` of the minute is the first draw of `rng`, taken by the loop to
+	 * order the minute's contests; state already holds the earlier ones.
+	 */
+	readonly resolve: (
+		state: MatchState,
+		rng: Rng,
+		second: number,
+	) => ContestEvent[];
 }
 
 /** True with `chance` per 10,000. */

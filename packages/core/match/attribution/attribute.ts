@@ -66,17 +66,19 @@ function draw(
  * come from the roles of the engagement, by role, champion and attributes
  * (plan 08, R1). No role repeats within a kill. It draws from its own stream
  * `(seed, matchAttribution, game, minute, contest, event, kill)`, so it never
- * moves the draws that resolve the contest.
+ * moves the draws that resolve the contest. `alive` limits it to the players
+ * who are up (plan 08, #528): the caller makes sure the exchange has some.
  */
 export function attribute(
 	state: MatchState,
 	side: Side,
 	engagement: Engagement,
 	slot: KillSlot,
+	alive: readonly Role[] = ROLES,
 ): { killer: Role; assists: Role[] } {
 	const { seed, game } = state.context;
 	const weights = state.context[side].attribution;
-	const roles = local(engagement);
+	const roles = local(engagement).filter((role) => alive.includes(role));
 	if (engagement.kind === "duel") {
 		return { killer: engagement.lane, assists: [] };
 	}
@@ -109,7 +111,9 @@ export function attribute(
 		rest = next.rest;
 	}
 	if (gank && author.role !== "jungle" && !assists.includes("jungle")) {
-		assists[assists.length - 1] = "jungle";
+		// Takes the place of the last assist, or comes alone if the draw had none.
+		if (assists.length > 0) assists[assists.length - 1] = "jungle";
+		else assists.push("jungle");
 	}
 	return { killer: author.role, assists };
 }
