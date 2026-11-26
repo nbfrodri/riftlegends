@@ -207,3 +207,52 @@ describe("advancing the season (U2)", () => {
 			expect(button(name).hasAttribute("disabled")).toBe(true);
 	});
 });
+
+// Issue #583: the stages read as «Winter Split» and «Playoffs», not as ids.
+const named: Record<string, { split?: string; stage: string }> = {
+	regular: { split: "winter", stage: "groups" },
+	playoffs: { stage: "playoffs" },
+};
+function namedCore() {
+	const api = hostCore();
+	const query = api.query.getMockImplementation();
+	api.query.mockImplementation(async (q) => {
+		const result = await query?.(q);
+		if (q.kind !== "season.overview" || !result?.ok) return result as never;
+		const view = result.view as {
+			competitions: { stages: { stage: string }[] }[];
+		};
+		for (const competition of view.competitions)
+			for (const stage of competition.stages)
+				Object.assign(stage, { name: named[stage.stage] });
+		return result;
+	});
+	return api;
+}
+
+describe("stage names (#583)", () => {
+	it("the row shows the split and the stage in the language, with no middle dot", async () => {
+		await open(namedCore(), "es-ES");
+		const row = card("Rift League") as HTMLElement;
+		expect(within(row).getByText("Winter Split")).toBeTruthy();
+		expect(within(row).getByText("Grupos")).toBeTruthy();
+		expect(row.textContent).not.toContain("·");
+		expect(row.textContent).not.toContain("Regular");
+	});
+
+	it("the hub lists the stages and the advance hint names them", async () => {
+		const { user } = await open(namedCore());
+		expect(
+			screen.getByRole("button", { name: "Until end of stage" }),
+		).toBeTruthy();
+		await user.click(
+			within(card("Rift League") as HTMLElement).getByRole("button", {
+				name: "Open Rift League",
+			}),
+		);
+		const list = await screen.findByRole("list");
+		expect(within(list).getAllByText("Winter Split").length).toBe(1);
+		expect(within(list).getByText("Groups")).toBeTruthy();
+		expect(within(list).getByText("Playoffs")).toBeTruthy();
+	});
+});
