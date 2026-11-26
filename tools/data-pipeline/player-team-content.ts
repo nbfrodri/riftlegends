@@ -83,7 +83,7 @@ function build(
 		id: string,
 		team: string,
 		role: Role,
-		extra: { handle: string; sub?: boolean; placeholder?: true },
+		extra: { handle: string; sub?: boolean },
 	) => {
 		const lines = (gamesBy.get(id) ?? []).filter((line) => line.role === role);
 		const champions = [
@@ -106,7 +106,6 @@ function build(
 				handle: nick(extra.handle),
 				...(extra.sub !== undefined ? { sub: extra.sub } : {}),
 				...(estimated.length ? { estimated } : {}),
-				...(extra.placeholder ? { placeholder: true as const } : {}),
 				level,
 				...pool(champions, pools(role)),
 				attributes,
@@ -146,16 +145,11 @@ function build(
 		.map((team: Team) => {
 			const played = games(team.id);
 			const roster = members.filter((member) => member.team === team.id);
-			for (const role of roles) {
+			for (const role of roles)
 				if (!roster.some((member) => member.row.role === role))
-					roster.push({
-						team: team.id,
-						...make(`${team.id}-${role}`, team.id, role, {
-							handle: `${team.short ?? team.id} ${role}`,
-							placeholder: true,
-						}),
-					});
-			}
+					throw new Error(
+						`${team.name} (${team.id}) has no ${role}: the snapshot must name a real one, never an invented player`,
+					);
 			roster.sort(
 				(a, b) =>
 					roles.indexOf(a.row.role) - roles.indexOf(b.row.role) ||

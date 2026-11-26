@@ -13,7 +13,11 @@ type Entry = RealSnapshot["rosters"][number]["players"][number];
 const handleOf = (id: string) =>
 	(id.split("~")[0] ?? id).replace(/I/g, "l").toLowerCase().replace(/0/g, "o");
 
-export function mergeSamePlayers<T extends Snapshot>(snapshots: T[]): T[] {
+export function mergeSamePlayers<T extends Snapshot>(
+	snapshots: T[],
+	/** Ids that the wiki redirects to another id: one person under two links. */
+	aliases: ReadonlyMap<string, string> = new Map(),
+): T[] {
 	const games = new Map<string, number>();
 	const parent = new Map<string, string>();
 	const find = (id: string): string => {
@@ -42,6 +46,9 @@ export function mergeSamePlayers<T extends Snapshot>(snapshots: T[]): T[] {
 				see(id, roster.team);
 		for (const row of snapshot.seasonPlayers) see(row.id, row.team);
 	}
+	for (const [alias, target] of aliases)
+		if (parent.has(alias) && parent.has(target))
+			parent.set(find(alias), find(target));
 	// Most games first; ties go to the lexicographic order.
 	const canonical = new Map<string, string>();
 	for (const id of [...parent.keys()].sort(compare)) {

@@ -8,6 +8,7 @@ import {
 import { mergeSamePlayers } from "./canonical-players.ts";
 import { Client, type ClientOptions } from "./client.ts";
 import { normalizeGames } from "./games.ts";
+import { parseApiTeams, teamsUrl } from "./logos.ts";
 import {
 	championResolver,
 	field,
@@ -17,12 +18,18 @@ import {
 	teamResolver,
 } from "./normalization.ts";
 import {
+	officialStarters,
+	preferOfficialStarters,
+} from "./official-starters.ts";
+import { acquirePlayerAliases } from "./player-aliases.ts";
+import {
 	acquire,
 	acquireScoreboard,
 	compare,
 	inList,
 	teamKey,
 } from "./queries.ts";
+import { closeRoleGaps } from "./roster-gaps.ts";
 import { normalizeRosters } from "./rosters.ts";
 import { dataDragonVersion, type LeagueScope } from "./scope.ts";
 import { discoverSeason } from "./season.ts";
@@ -144,19 +151,27 @@ export async function snapshot(
 		);
 		pastGames.set(id, games);
 	}
-	const recorded = new Map([...client.queries, ...closedSeasons.queries]);
-	const queries = [...recorded]
-		.sort(([a], [b]) => compare(a, b))
-		.map(([url, retrievedAt]) => ({ url, retrievedAt }));
+	const aliases = await acquirePlayerAliases(
+		client,
+		scope.flatMap(({ pages }) => pages),
+	);
+	const sources = () => {
+		const recorded = new Map([...client.queries, ...closedSeasons.queries]);
+		return {
+			retrievedAt: [...recorded.values()].sort().at(-1),
+			queries: [...recorded]
+				.sort(([a], [b]) => compare(a, b))
+				.map(([url, retrievedAt]) => ({ url, retrievedAt })),
+		};
+	};
 	const provenance = {
 		source: "Leaguepedia",
 		domain: "lol.fandom.com",
-		retrievedAt: [...recorded.values()].sort().at(-1),
+		...sources(),
 		licence: "CC BY-SA 3.0",
 		attribution:
 			"Datos normalizados de los colaboradores de Leaguepedia (https://lol.fandom.com/wiki/Leaguepedia), CC BY-SA 3.0 Unported.",
 		dataDragonVersion,
-		queries,
 	};
 	let missingLogos = 0;
 	const built: RealSnapshot[] = [];
@@ -204,7 +219,20 @@ export async function snapshot(
 	}
 	const files = new Map<string, string>();
 	const totals = [];
-	for (const validated of mergeSamePlayers(built)) {
+	// The role-gap lookup is a query too, so provenance is refreshed after it.
+	// The official lolesports roster breaks ties between starters and covers gaps.
+	// It has its own client so the provenance only lists Leaguepedia queries.
+	const apiTeams = await new Client(options).get(teamsUrl, parseApiTeams);
+	const closed = await closeRoleGaps(
+		client,
+		preferOfficialStarters(mergeSamePlayers(built, aliases), apiTeams),
+		undefined,
+		officialStarters(apiTeams),
+	);
+	for (const validated of closed.map((row) => ({
+		...row,
+		provenance: { ...row.provenance, ...sources() },
+	}))) {
 		const file = `${validated.league.id.toLowerCase()}.json`;
 		files.set(
 			file,

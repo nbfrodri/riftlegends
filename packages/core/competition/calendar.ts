@@ -11,7 +11,7 @@ import {
 import type { StageOutcomes } from "./qualification";
 import { type StageGraph, type StageRef, stageError } from "./stage-model";
 
-interface CalendarStage {
+export interface CalendarStage {
 	readonly ref: StageRef;
 	readonly startDay: number;
 	readonly endDay: number;
@@ -22,6 +22,10 @@ interface CalendarOptions {
 	readonly year: number;
 	readonly seed: number;
 	readonly outcomes?: StageOutcomes;
+	readonly extraFixtures?: ReadonlyMap<string, readonly FixtureSlot[]>;
+	readonly skipFixture?: (ref: StageRef, id: string) => boolean;
+	readonly playedDays?: ReadonlyMap<string, number>;
+	readonly fromDay?: number;
 }
 
 type CalendarResult =
@@ -82,7 +86,15 @@ function minimumDays(stage: StageWindow, fixtures: readonly FixtureSlot[]) {
  * for day placement; the seed is only used to resolve the existing stage draw. */
 export function buildCalendar(
 	graph: StageGraph,
-	{ year, seed, outcomes = new Map() }: CalendarOptions,
+	{
+		year,
+		seed,
+		outcomes = new Map(),
+		extraFixtures,
+		skipFixture,
+		playedDays,
+		fromDay,
+	}: CalendarOptions,
 ): CalendarResult {
 	if (!Number.isSafeInteger(year) || year < 1970 || year > 9999)
 		return {
@@ -102,7 +114,13 @@ export function buildCalendar(
 	for (const [key, stage] of planned.windows) {
 		const result = stageFixtures(graph, stage.node, outcomes, seed, year);
 		if (result.error) return { ok: false, error: result.error };
-		const minimum = minimumDays(stage, result.fixtures);
+		const fixtureKey = (id: string) =>
+			JSON.stringify([stage.node.ref.competition, stage.node.ref.stage, id]);
+		const fixtures = [
+			...result.fixtures,
+			...(extraFixtures?.get(key) ?? []),
+		].filter(({ id }) => !skipFixture?.(stage.node.ref, id));
+		const minimum = minimumDays(stage, fixtures);
 		if (minimum > availableDays(stage)) return tooLong(stage, minimum);
 
 		const previousStages = [...stage.after].flatMap(
@@ -110,8 +128,11 @@ export function buildCalendar(
 		);
 		const local = new Map<string, number>();
 		const indexes: number[] = [];
-		for (const fixture of result.fixtures) {
-			const after = fixture.after.map((id) => local.get(id) as number);
+		for (const fixture of fixtures) {
+			const after = fixture.after.flatMap((id) => {
+				const index = local.get(id);
+				return index === undefined ? [] : [index];
+			});
 			const [home, away] = fixture.teams;
 			const teams =
 				home !== null && away !== null
@@ -120,6 +141,8 @@ export function buildCalendar(
 			local.set(fixture.id, jobs.length);
 			indexes.push(jobs.length);
 			jobs.push({
+				fixedDay: playedDays?.get(fixtureKey(fixture.id)),
+				fromDay,
 				stage,
 				fixture,
 				after: [...previousStages, ...after],

@@ -51,6 +51,8 @@ export interface ApiTeam {
 interface ApiPlayer {
 	handle: string;
 	image: string | null;
+	/** lolesports position: top, jungle, mid, bottom, support or none (bench). */
+	role: string | null;
 }
 
 export interface Unmatched {
@@ -82,12 +84,13 @@ export function parseApiTeams(body: unknown): ApiTeam[] {
 			homeLeague: homeLeague ? { name: homeLeague.name } : null,
 			players: Array.isArray(players)
 				? players.flatMap((player) => {
-						const { summonerName, image } = player ?? {};
+						const { summonerName, image, role } = player ?? {};
 						return typeof summonerName === "string" && summonerName
 							? [
 									{
 										handle: summonerName,
 										image: typeof image === "string" ? image : null,
+										role: typeof role === "string" ? role : null,
 									},
 								]
 							: [];
