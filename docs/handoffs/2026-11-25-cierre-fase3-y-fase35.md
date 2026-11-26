@@ -98,3 +98,6 @@ Estado 26-11 tarde:
 - #586 (quitar «·» en toda la app): subagente Opus en `../riftlegends-586`.
 - Reglas nuevas del usuario (26-11): sin «·» en textos; nada de estética «AI slop» (puntos de estado, pastillas, brillos); splits «Winter/Spring/Summer Split» en inglés (#583).
 - Stryker de las 05:00 abortó (C2 superó 60 s con la máquina cargada). Relanzar con la máquina libre: `~/.cache/rift-tmp/stryker-night.sh`.
+- Cola: #581 → #588 (docs: menú principal y carrera separados, aprobado) → #582 (Competición rediseñada, aprobada).
+- Riesgo anotado para #584: un día con muchas ligas puede superar el límite de 10 s del puente IPC y reiniciar el núcleo (se pierde la temporada de exhibición).
+- Limpieza 26-11: `~/.cache/rift-tmp` de 2,1 GB a 7 MB y ramas locales `worktree-agent-*` fusionadas borradas.
