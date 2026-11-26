@@ -3,6 +3,12 @@ import { createI18n } from "@rift-legends/i18n";
 import { TooltipProvider } from "@rift-legends/ui-kit/components/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
+	createMemoryHistory,
+	createRootRoute,
+	createRouter,
+	RouterProvider,
+} from "@tanstack/react-router";
+import {
 	cleanup,
 	render,
 	screen,
@@ -23,6 +29,13 @@ afterEach(() => {
 	cleanup();
 	vi.restoreAllMocks();
 });
+
+/** The screen alone under a router: the hub it opens navigates. */
+const tournamentRouter = () =>
+	createRouter({
+		routeTree: createRootRoute({ component: () => <TournamentScreen /> }),
+		history: createMemoryHistory({ initialEntries: ["/"] }),
+	});
 
 function hostCore() {
 	const host = createCoreHost();
@@ -63,7 +76,7 @@ async function renderSetup(locale = "en-US", content = "real") {
 			<QueryClientProvider client={client}>
 				<TooltipProvider>
 					<CoreProvider api={core.api}>
-						<TournamentScreen />
+						<RouterProvider router={tournamentRouter()} />
 					</CoreProvider>
 				</TooltipProvider>
 			</QueryClientProvider>
@@ -143,8 +156,9 @@ describe("U9: tournament setup", () => {
 			outsider.id,
 		);
 		expect(
-			await screen.findByRole("heading", { name: "Tournament ready" }),
+			await screen.findByRole("heading", { level: 1, name: "MSI" }),
 		).toBeTruthy();
+		expect(screen.getByText(`You play with ${outsider.name}.`)).toBeTruthy();
 	});
 
 	test("a team twice is flagged at its slot and blocks the start", async () => {
@@ -191,7 +205,7 @@ describe("U9: tournament setup", () => {
 		await user.click(within(second).getByRole("radio", { name: "Bo5" }));
 		await waitFor(() => expect(start().hasAttribute("disabled")).toBe(false));
 		await user.click(start());
-		await screen.findByRole("heading", { name: "Tournament ready" });
+		await screen.findByRole("heading", { level: 1, name: "Custom tournament" });
 		const create = sent.find(({ kind }) => kind === "tournament.create");
 		expect(create?.payload).toMatchObject({
 			format: {
