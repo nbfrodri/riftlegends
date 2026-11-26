@@ -215,25 +215,32 @@ const named: Record<string, { split?: string; stage: string }> = {
 };
 function namedCore() {
 	const api = hostCore();
-	const query = api.query.getMockImplementation();
-	api.query.mockImplementation(async (q) => {
-		const result = await query?.(q);
-		if (q.kind !== "season.overview" || !result?.ok) return result as never;
-		const view = result.view as {
-			competitions: { stages: { stage: string }[] }[];
-		};
-		for (const competition of view.competitions)
-			for (const stage of competition.stages)
-				Object.assign(stage, { name: named[stage.stage] });
+	const query = api.query.getMockImplementation() as (
+		q: unknown,
+	) => Promise<{ ok: boolean; view?: unknown }>;
+	api.query.mockImplementation((async (q: { kind: string }) => {
+		const result = await query(q);
+		if (q.kind === "season.overview" && result.ok) {
+			const view = result.view as {
+				competitions: { stages: { stage: string }[] }[];
+			};
+			for (const competition of view.competitions)
+				for (const stage of competition.stages)
+					Object.assign(stage, { name: named[stage.stage] });
+		}
 		return result;
-	});
+	}) as never);
 	return api;
 }
 
 describe("stage names (#583)", () => {
 	it("the row shows the split and the stage in the language, with no middle dot", async () => {
 		await open(namedCore(), "es-ES");
-		const row = card("Rift League") as HTMLElement;
+		const row = within(screen.getByRole("list", { name: "Competiciones" }))
+			.getAllByRole("listitem")
+			.find((item) =>
+				within(item).queryByRole("heading", { name: "Liga Rift" }),
+			) as HTMLElement;
 		expect(within(row).getByText("Winter Split")).toBeTruthy();
 		expect(within(row).getByText("Grupos")).toBeTruthy();
 		expect(row.textContent).not.toContain("·");

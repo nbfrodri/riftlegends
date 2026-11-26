@@ -4,13 +4,9 @@ import { useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import { LeagueLogo } from "../assets/league-logo";
 import { CoreErrorMessage } from "../core";
-import {
-	competitionLogoId,
-	competitionName,
-	dayDate,
-	stageName,
-} from "./names";
+import { competitionLogoId, competitionName, dayDate } from "./names";
 import { useExhibitionSeason, useSeasonOverview } from "./season";
+import { StageTitle } from "./stage-title";
 
 // `/competicion/$competition`: the hub of one competition (plan 31). This
 // first version lists its stages; standings, calendar and bracket come with
@@ -79,22 +75,22 @@ function Stages({
 				{t("competition.hub.stages")}
 			</h2>
 			<ol className="grid max-h-full gap-1 overflow-y-auto scroll-edge">
-				{stages.map(({ stage, status, startDay, endDay }) => (
+				{stages.map((row) => (
 					<li
-						key={stage}
+						key={row.stage}
 						className="grid grid-cols-[1fr_auto_auto] items-center gap-4 bg-panel px-3 py-2 text-[14px]"
 					>
-						<span className="min-w-0 truncate font-semibold">
-							{stageName(stage)}
-						</span>
+						<StageTitle row={row} />
 						<span className="text-muted tabular-nums">
 							{t("competition.hub.days", {
-								start: date(startDay),
-								end: date(endDay),
+								start: date(row.startDay),
+								end: date(row.endDay),
 							})}
 						</span>
-						<span className={cn("w-24 text-right font-semibold", tone[status])}>
-							{t(`competition.status.${status}`)}
+						<span
+							className={cn("w-24 text-right font-semibold", tone[row.status])}
+						>
+							{t(`competition.status.${row.status}`)}
 						</span>
 					</li>
 				))}

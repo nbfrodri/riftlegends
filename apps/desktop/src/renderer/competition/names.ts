@@ -1,3 +1,7 @@
+import { competitionStageName } from "@rift-legends/i18n";
+
+type StageTranslate = Parameters<typeof competitionStageName>[0];
+type StageNaming = Parameters<typeof competitionStageName>[1];
 type NamedId = "first-stand" | "msi" | "worlds" | "rift-league";
 type Translate = (key: `competition.name.${NamedId}`) => string;
 
@@ -21,6 +25,23 @@ const logoIds: Record<string, string> = {
 	worlds: "Worlds",
 };
 export const competitionLogoId = (id: string) => logoIds[id] ?? id;
+
+/** Split and stage of a stage row of `season.overview`, in the UI language. */
+export function stageLabel(
+	t: StageTranslate,
+	row: { stage: string; name?: StageNaming | undefined },
+) {
+	return competitionStageName(t, row.name, stageName(row.stage));
+}
+
+/** The same label for sentences: «Winter Split, Playoffs». */
+export function stageText(
+	t: StageTranslate,
+	row: { stage: string; name?: StageNaming | undefined },
+) {
+	const { split, stage } = stageLabel(t, row);
+	return split ? `${split}, ${stage}` : stage;
+}
 
 /**
  * A stage id as a title: «cup-playin-r1-1» reads «Cup playin r1 1», and a
