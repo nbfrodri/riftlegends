@@ -10,15 +10,15 @@ type Swiss = NonNullable<StandingsView["swiss"]>;
 export type SwissSeries = Swiss["rounds"][number]["series"][number];
 type Outcome = "qualified" | "eliminated";
 
-export const CARD_H = 38;
-const CARD_GAP = 3;
+export const CARD_H = 42;
+const CARD_GAP = 8;
 export const POOL_HEAD = 18;
-const POOL_GAP = 10;
+const POOL_GAP = 14;
 export const ROUND_HEAD = 24;
 export const NOTE_H = 30;
-export const ROW_H = 22;
-const ROW_GAP = 3;
-const BOX_GAP = 14;
+export const ROW_H = 20;
+const ROW_GAP = 2;
+const BOX_GAP = 10;
 export const COL_GAP = 32;
 
 interface PlacedPool {
