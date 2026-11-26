@@ -184,6 +184,8 @@ const standings = z.strictObject({
 		.strictObject({
 			wins: count,
 			losses: count,
+			/** Rounds the stage plays at most, paired or not. */
+			totalRounds: z.int().min(1),
 			rounds: z.array(
 				z.strictObject({
 					round: z.int().min(1),

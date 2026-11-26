@@ -1,38 +1,63 @@
 import type { StandingsView } from "@rift-legends/contracts";
 import { Tooltip } from "@rift-legends/ui-kit/components/tooltip";
 import { cn } from "@rift-legends/ui-kit/lib/utils";
-import { type KeyboardEvent, useRef, useState } from "react";
+import {
+	type KeyboardEvent,
+	useLayoutEffect,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
 import { useTranslation } from "react-i18next";
 import { TeamCrest } from "../../draft/team-crest";
 import { type TeamNames, TeamRow } from "../bracket/bracket-card";
+import {
+	CARD_H,
+	COL_GAP,
+	cardTop,
+	layoutSwiss,
+	NOTE_H,
+	POOL_HEAD,
+	ROUND_HEAD,
+	ROW_H,
+	rowTop,
+	type SwissSeries,
+} from "./swiss-layout";
 
 // A Swiss stage in columns by balance, as the Worlds broadcast shows it (plan
 // 31, U7 and U11, #487): one column per round with its series pooled by the
-// record their teams brought (0-0, then 1-0 and 0-1…), and at the end who
-// qualified and who was eliminated.
+// record their teams brought (0-0, then 1-0 and 0-1…), winners climbing and
+// losers sinking, thin lines showing where each balance leads, and at the end
+// the qualified teams on top and the eliminated ones at the bottom.
 
 type Swiss = NonNullable<StandingsView["swiss"]>;
-type Series = Swiss["rounds"][number]["series"][number];
 
 interface Card {
 	key: string;
-	series: Series;
+	round: number;
+	series: SwissSeries;
 	label: string;
+	/** Centre of the card, to move sideways to the nearest one. */
+	y: number;
 }
 
 const STEP = { ArrowUp: -1, ArrowDown: 1 } as const;
 const SIDE = { ArrowLeft: -1, ArrowRight: 1 } as const;
 
-/** Pools of a round, the best balance first: 2-0, 1-1, 0-2. */
-function pools(series: readonly Series[]) {
-	const byRecord = new Map<string, Series[]>();
-	for (const one of [...series].sort(
-		(a, b) => b.record[0] - a.record[0] || a.record[1] - b.record[1],
-	)) {
-		const key = one.record.join("-");
-		byRecord.set(key, [...(byRecord.get(key) ?? []), one]);
-	}
-	return [...byRecord.values()];
+/** Columns share the width they have, within readable bounds. */
+function useColumnWidth(columns: number) {
+	const ref = useRef<HTMLDivElement>(null);
+	const [width, setWidth] = useState(0);
+	useLayoutEffect(() => {
+		const element = ref.current;
+		if (!element || typeof ResizeObserver === "undefined") return;
+		const observer = new ResizeObserver(() => setWidth(element.clientWidth));
+		observer.observe(element);
+		setWidth(element.clientWidth);
+		return () => observer.disconnect();
+	}, []);
+	const fit = Math.floor((width - (columns - 1) * COL_GAP) / columns);
+	return { ref, column: width ? Math.min(200, Math.max(136, fit)) : 160 };
 }
 
 export function SwissRounds({
@@ -46,69 +71,73 @@ export function SwissRounds({
 	onOpenSeries?: ((series: string) => void) | undefined;
 }) {
 	const { t } = useTranslation();
-	const container = useRef<HTMLDivElement>(null);
-	const record = ([wins, losses]: readonly [number, number]) =>
+	const rounds = Math.max(swiss.totalRounds, swiss.rounds.length);
+	const { ref, column } = useColumnWidth(rounds + 1);
+	const layout = useMemo(() => layoutSwiss(swiss, column), [swiss, column]);
+	const record = (wins: number, losses: number) =>
 		t("competition.record", { wins, losses });
-	const columns = swiss.rounds.map(({ round, relaxed, series }) => {
-		const name = t("competition.bracket.round.round", { n: round });
-		const grouped = pools(series).map((pool) => {
-			const balance = record(pool[0]?.record ?? [0, 0]);
-			const where = t("competition.swiss.pool", { round: name, balance });
-			return {
-				balance,
-				cards: pool.map((one, index): Card => {
-					const [a, b] = one.teams.map((id) => team(id).name);
-					return {
-						key: `${round}-${balance}-${index}`,
-						series: one,
-						label: one.score
-							? t("competition.bracket.result", {
-									round: where,
-									a,
-									b,
-									scoreA: one.score[0],
-									scoreB: one.score[1],
-								})
-							: t("competition.bracket.versus", { round: where, a, b }),
-					};
-				}),
-			};
-		});
-		return { round, name, relaxed, pools: grouped };
-	});
-	const order = columns.map((column) =>
-		column.pools.flatMap((pool) => pool.cards.map((card) => card.key)),
-	);
-	const [focused, setFocused] = useState<string>();
-	const active = order.flat().includes(focused ?? "") ? focused : order[0]?.[0];
+	const roundName = (round: number) =>
+		t("competition.bracket.round.round", { n: round });
 
-	const move = (key: string) => (event: KeyboardEvent<HTMLButtonElement>) => {
-		const column = order.findIndex((keys) => keys.includes(key));
-		const row = order[column]?.indexOf(key) ?? 0;
-		let next: string | undefined;
+	const cards = layout.rounds.map(({ round, pools }) =>
+		pools.flatMap((pool) =>
+			(pool.series ?? []).map((series, index): Card => {
+				const where = t("competition.swiss.pool", {
+					round: roundName(round),
+					balance: record(pool.wins, pool.losses),
+				});
+				const [a, b] = series.teams.map((id) => team(id).name);
+				return {
+					key: `${pool.id}-${index}`,
+					round,
+					series,
+					y: pool.y + cardTop(index) + CARD_H / 2,
+					label: series.score
+						? t("competition.bracket.result", {
+								round: where,
+								a,
+								b,
+								scoreA: series.score[0],
+								scoreB: series.score[1],
+							})
+						: t("competition.bracket.versus", { round: where, a, b }),
+				};
+			}),
+		),
+	);
+	const all = cards.flat();
+	const [focused, setFocused] = useState<string>();
+	const active = all.some(({ key }) => key === focused) ? focused : all[0]?.key;
+
+	const move = (card: Card) => (event: KeyboardEvent<HTMLButtonElement>) => {
+		const column = card.round - 1;
+		const own = cards[column] ?? [];
+		let next: Card | undefined;
 		if (event.key in STEP) {
-			const keys = order[column] ?? [];
-			next =
-				keys[
-					Math.min(
-						keys.length - 1,
-						Math.max(0, row + STEP[event.key as keyof typeof STEP]),
-					)
-				];
+			const index = own.indexOf(card) + STEP[event.key as keyof typeof STEP];
+			next = own[Math.min(own.length - 1, Math.max(0, index))];
 		} else if (event.key in SIDE) {
-			const keys =
-				order[column + SIDE[event.key as keyof typeof SIDE]] ??
-				order[column] ??
-				[];
-			next = keys[Math.min(row, keys.length - 1)];
+			const step = SIDE[event.key as keyof typeof SIDE];
+			// The nearest round with series that way; none: stay.
+			let target = column + step;
+			while (cards[target] && cards[target]?.length === 0) target += step;
+			const candidates = cards[target] ?? [];
+			next =
+				candidates.reduce<Card | undefined>(
+					(best, other) =>
+						!best || Math.abs(other.y - card.y) < Math.abs(best.y - card.y)
+							? other
+							: best,
+					undefined,
+				) ?? card;
 		} else return;
 		event.preventDefault();
-		container.current
-			?.querySelector<HTMLElement>(`[data-swiss="${next}"]`)
+		ref.current
+			?.querySelector<HTMLElement>(`[data-swiss="${next?.key}"]`)
 			?.focus();
 	};
 
-	const standing = (status: "qualified" | "eliminated") =>
+	const end = (status: "qualified" | "eliminated") =>
 		swiss.teams
 			.filter((row) => row.status === status)
 			.sort((a, b) => b.wins - a.wins || a.losses - b.losses);
@@ -118,81 +147,142 @@ export function SwissRounds({
 		<div
 			role="group"
 			aria-label={t("competition.swiss.label")}
-			ref={container}
+			ref={ref}
 			className="min-h-0 max-w-full flex-1 overflow-auto"
 		>
-			<div className="grid min-w-max auto-cols-[minmax(9.5rem,1fr)] grid-flow-col gap-x-4">
-				{columns.map((column) => (
+			<div
+				className="relative"
+				style={{ width: layout.width, height: layout.height }}
+			>
+				<svg
+					aria-hidden="true"
+					className="pointer-events-none absolute inset-0 fill-none"
+					width={layout.width}
+					height={layout.height}
+				>
+					{layout.flows.map((flow) => (
+						<path
+							key={flow.id}
+							d={flow.d}
+							data-flow={flow.id}
+							className="stroke-[1.25] stroke-line"
+						/>
+					))}
+				</svg>
+				{layout.rounds.map((placed, index) => (
 					<section
-						key={column.round}
-						aria-label={column.name}
-						className="flex flex-col gap-2"
+						key={placed.round}
+						aria-label={roundName(placed.round)}
+						className="absolute top-0"
+						style={{ left: placed.x, width: column, height: layout.height }}
 					>
-						<h3 className="font-semibold text-[11px] text-text uppercase leading-[28px] tracking-heading">
-							{column.name}
+						<h3
+							className="font-semibold text-[11px] text-text uppercase tracking-heading"
+							style={{ lineHeight: `${ROUND_HEAD}px` }}
+						>
+							{roundName(placed.round)}
 						</h3>
-						{column.relaxed.map((rule) => (
-							<p key={rule} className="text-[11px] text-muted leading-tight">
-								{t(`competition.swiss.relaxed.${rule}`)}
-							</p>
-						))}
-						{column.pools.map((pool) => (
+						{placed.relaxed.length > 0 && (
+							<div
+								className="absolute flex flex-col justify-start text-[11px] text-muted leading-tight"
+								style={{ top: ROUND_HEAD, height: NOTE_H }}
+							>
+								{placed.relaxed.map((rule) => (
+									<p key={rule}>{t(`competition.swiss.relaxed.${rule}`)}</p>
+								))}
+							</div>
+						)}
+						{placed.pools.map((pool) => (
 							// biome-ignore lint/a11y/useSemanticElements: a fieldset is for form controls, not a pool of series.
 							<div
-								key={pool.balance}
+								key={pool.id}
 								role="group"
-								aria-label={pool.balance}
-								className="flex flex-col gap-1.5"
+								aria-label={record(pool.wins, pool.losses)}
+								className="absolute inset-x-0"
+								style={{ top: pool.y, height: pool.height }}
 							>
 								<span
 									aria-hidden="true"
-									className="text-[11px] text-muted tabular-nums"
+									className="block font-semibold text-[12px] text-muted tabular-nums"
+									style={{ lineHeight: `${POOL_HEAD}px` }}
 								>
-									{pool.balance}
+									{record(pool.wins, pool.losses)}
 								</span>
-								{pool.cards.map((card) => (
-									<Tooltip key={card.key} content={card.label}>
-										<SwissCard
-											card={card}
-											team={team}
-											focusable={card.key === active}
-											onOpen={
-												card.series.series && onOpenSeries
-													? () => onOpenSeries(card.series.series as string)
-													: undefined
-											}
-											onFocus={() => setFocused(card.key)}
-											onKeyDown={move(card.key)}
-										/>
-									</Tooltip>
-								))}
+								{pool.series ? (
+									(cards[index] ?? [])
+										.filter((card) => card.key.startsWith(`${pool.id}-`))
+										.map((card, at) => (
+											<Tooltip key={card.key} content={card.label}>
+												<SwissCard
+													card={card}
+													team={team}
+													top={cardTop(at)}
+													focusable={card.key === active}
+													onOpen={
+														card.series.series && onOpenSeries
+															? () => onOpenSeries(card.series.series as string)
+															: undefined
+													}
+													onFocus={() => setFocused(card.key)}
+													onKeyDown={move(card)}
+												/>
+											</Tooltip>
+										))
+								) : (
+									<p
+										className="absolute inset-x-0 flex items-center justify-center rounded-control border border-line border-dashed text-[12px] text-muted"
+										style={{ top: POOL_HEAD, height: CARD_H }}
+									>
+										{t("competition.swiss.toPair")}
+									</p>
+								)}
 							</div>
 						))}
 					</section>
 				))}
-				<div className="flex flex-col gap-4">
-					{(["qualified", "eliminated"] as const).map((status) => (
+				{(["qualified", "eliminated"] as const).map((status) => {
+					const rows = end(status);
+					const name = t(`competition.swiss.${status}`);
+					return (
 						<section
 							key={status}
-							aria-label={t(`competition.swiss.${status}`)}
-							className="flex flex-col gap-1.5"
+							aria-label={name}
+							className="absolute"
+							style={{
+								left: layout.end.x,
+								top: layout.end[status].y,
+								width: column,
+								height: layout.end[status].height,
+							}}
 						>
-							<h3 className="font-semibold text-[11px] text-text uppercase leading-[28px] tracking-heading">
-								{t(`competition.swiss.${status}`)}
+							<h3
+								className={cn(
+									"font-semibold text-[11px] uppercase tracking-heading",
+									status === "qualified" ? "text-text" : "text-muted",
+								)}
+								style={{ lineHeight: `${POOL_HEAD}px` }}
+							>
+								{name}
 							</h3>
-							{standing(status).length === 0 ? (
-								<p className="text-[13px] text-muted">
+							{rows.length === 0 ? (
+								<p
+									className="absolute inset-x-0 flex items-center px-2.5 text-[12px] text-muted"
+									style={{ top: POOL_HEAD, height: ROW_H }}
+								>
 									{t("competition.swiss.none")}
 								</p>
 							) : (
-								<ul className="flex flex-col gap-1.5">
-									{standing(status).map((row) => (
+								<ul>
+									{rows.map((row, index) => (
 										<li
 											key={row.team}
 											className={cn(
-												"flex h-7 items-center gap-2 rounded-control border border-line bg-panel px-2.5 text-[13px]",
-												status === "qualified" ? "text-text" : "text-muted",
+												"absolute inset-x-0 flex items-center gap-2 rounded-control border border-line px-2.5 text-[13px]",
+												status === "qualified"
+													? "bg-panel font-semibold text-text"
+													: "text-muted",
 											)}
+											style={{ top: rowTop(index), height: ROW_H }}
 										>
 											<TeamCrest
 												id={row.team}
@@ -200,18 +290,29 @@ export function SwissRounds({
 												className="size-4 shrink-0"
 											/>
 											<span className="min-w-0 flex-1 truncate">
-												{team(row.team).name}
+												{team(row.team).short ? (
+													<>
+														<span aria-hidden="true">
+															{team(row.team).short}
+														</span>
+														<span className="sr-only">
+															{team(row.team).name}
+														</span>
+													</>
+												) : (
+													team(row.team).name
+												)}
 											</span>
 											<span className="shrink-0 tabular-nums">
-												{record([row.wins, row.losses])}
+												{record(row.wins, row.losses)}
 											</span>
 										</li>
 									))}
 								</ul>
 							)}
 						</section>
-					))}
-				</div>
+					);
+				})}
 			</div>
 		</div>
 	);
@@ -221,6 +322,7 @@ export function SwissRounds({
 function SwissCard({
 	card,
 	team,
+	top,
 	focusable,
 	onOpen,
 	onFocus,
@@ -229,6 +331,7 @@ function SwissCard({
 }: {
 	card: Card;
 	team: (id: string) => TeamNames;
+	top: number;
 	focusable: boolean;
 	onOpen: (() => void) | undefined;
 	onFocus: () => void;
@@ -247,8 +350,9 @@ function SwissCard({
 			onClick={onOpen}
 			onFocus={onFocus}
 			onKeyDown={onKeyDown}
+			style={{ top, height: CARD_H }}
 			className={cn(
-				"press flex h-[52px] w-full cursor-pointer flex-col divide-y divide-line overflow-hidden rounded-control border border-line bg-panel text-left text-text outline-none focus-visible:ring-2 focus-visible:ring-action aria-disabled:cursor-default",
+				"press absolute inset-x-0 flex cursor-pointer flex-col divide-y divide-line overflow-hidden rounded-control border border-line bg-panel text-left text-text outline-none focus-visible:ring-2 focus-visible:ring-action aria-disabled:cursor-default",
 				onOpen && "hover:border-muted hover:bg-surface",
 			)}
 		>

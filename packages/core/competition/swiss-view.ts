@@ -1,3 +1,4 @@
+import { min } from "../math/int";
 import type { RunningSeason } from "./handlers";
 import type { SeasonFixture } from "./season-series";
 import type { StageProgress } from "./season-stages";
@@ -83,6 +84,10 @@ export function swissView(
 	return {
 		wins: play.wins,
 		losses: play.losses,
+		totalRounds: min(
+			play.maxRounds ?? play.wins + play.losses - 1,
+			play.wins + play.losses - 1,
+		),
 		rounds: [...rounds.values()].sort((x, y) => x.round - y.round),
 		teams: standing.map(({ id, wins, losses, status }) => ({
 			team: id,

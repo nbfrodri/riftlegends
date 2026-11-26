@@ -1050,6 +1050,7 @@
 	"competition.swiss.qualified": "Clasificados",
 	"competition.swiss.eliminated": "Eliminados",
 	"competition.swiss.none": "Aún ninguno",
+	"competition.swiss.toPair": "Por emparejar",
 	"competition.swiss.relaxed.region": "Cruce de la misma región: no había otro posible",
 	"competition.swiss.relaxed.rematch": "Revancha: no había otro cruce posible",
 	"competition.hub.stage": "Fase",

@@ -1050,6 +1050,7 @@
 	"competition.swiss.qualified": "Qualified",
 	"competition.swiss.eliminated": "Eliminated",
 	"competition.swiss.none": "None yet",
+	"competition.swiss.toPair": "To be paired",
 	"competition.swiss.relaxed.region": "Same-region pairing: no other was possible",
 	"competition.swiss.relaxed.rematch": "Rematch: no other pairing was possible",
 	"competition.hub.stage": "Stage",
