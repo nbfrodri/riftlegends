@@ -30,6 +30,9 @@ import { ScrollArea } from "./scroll-area";
 // a prop, so the app owns the translations. Only the rows near the viewport are
 // mounted (spike S2: 500 rows plain miss the frame budget); the active row is
 // always mounted and hidden spacer rows keep every row at its real offset.
+// Column widths are fixed (#578): with automatic layout they would follow the
+// rows mounted at each moment and jump while scrolling. Text that does not fit
+// is cut with an ellipsis and read whole in the Caja tooltip.
 
 export type DataTableColumn<Row extends RowData> = {
 	id: string;
@@ -40,6 +43,37 @@ export type DataTableColumn<Row extends RowData> = {
 	cell?: (row: Row) => ReactNode;
 	/** Right-aligned tabular figures, for amounts and counts. */
 	numeric?: boolean;
+	/**
+	 * Fixed CSS width, such as "6rem". Columns without one share what is left,
+	 * so give one to every column but those that should stretch.
+	 */
+	width?: string;
+};
+
+/**
+ * Text in a cell next to an icon: it shrinks and is cut with an ellipsis, and
+ * the cell shows it whole in the tooltip when it does not fit.
+ */
+export function CellText({ children }: { children: ReactNode }) {
+	return (
+		<span data-cell-text className="min-w-0 truncate">
+			{children}
+		</span>
+	);
+}
+
+// The tooltip carries the whole text only while something in the cell is cut.
+const syncCutText = (row: HTMLTableRowElement) => {
+	for (const cell of row.cells) {
+		const cut = [
+			...cell.querySelectorAll<HTMLElement>("[data-cell-text]"),
+			cell,
+		].find((element) => element.scrollWidth > element.clientWidth);
+		const text = cut?.textContent;
+		if (text && cell.dataset.tooltip !== text) cell.dataset.tooltip = text;
+		else if (!text && cell.dataset.tooltip !== undefined)
+			delete cell.dataset.tooltip;
+	}
 };
 
 export type DataTableProps<Row extends RowData> = {
@@ -251,8 +285,16 @@ export function DataTable<Row extends RowData>({
 				<table
 					aria-label={label}
 					aria-rowcount={rows.length + 1}
-					className="w-full border-separate border-spacing-0 whitespace-nowrap text-table"
+					className="w-full table-fixed border-separate border-spacing-0 whitespace-nowrap text-table"
 				>
+					<colgroup>
+						{columns.map((column) => (
+							<col
+								key={column.id}
+								style={column.width ? { width: column.width } : undefined}
+							/>
+						))}
+					</colgroup>
 					<thead ref={setHead}>
 						{table.getHeaderGroups().map((group) => (
 							<tr key={group.id}>
@@ -264,7 +306,7 @@ export function DataTable<Row extends RowData>({
 											scope="col"
 											aria-sort={sorted ? ariaSort[sorted] : undefined}
 											className={cn(
-												"sticky top-0 z-10 h-8 border-line border-b bg-surface px-2.5 font-semibold last:pe-3.5",
+												"sticky top-0 z-10 h-8 truncate border-line border-b bg-surface px-2.5 font-semibold last:pe-3.5",
 												cellAlign(column.id),
 											)}
 										>
@@ -311,6 +353,7 @@ export function DataTable<Row extends RowData>({
 										if (element) {
 											rowElements.current.set(row.id, element);
 											virtualizer.measureElement(element);
+											syncCutText(element);
 										} else rowElements.current.delete(row.id);
 									}}
 									data-index={index}
@@ -336,7 +379,7 @@ export function DataTable<Row extends RowData>({
 										<td
 											key={cell.id}
 											className={cn(
-												"px-2.5 last:pe-3.5",
+												"truncate px-2.5 last:pe-3.5",
 												cellAlign(cell.column.id),
 											)}
 										>
