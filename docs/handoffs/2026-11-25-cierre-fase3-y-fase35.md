@@ -117,3 +117,5 @@ Estado 26-11 tarde:
 - #583: Codex (gpt-6.2-sol medium, verificado) dejó dos commits; un subagente Sonnet revisa, fusiona `main`, conecta los nombres a la UI de Competición y abre el PR.
 - Esperando visto bueno del usuario: #594 (clasificación) y #595 (calendario), con capturas con logos reales; se encolan #595 primero y #594 después.
 - Pendiente: #593 (calendario día/semana/mes) tras #595; parte 2 de #584; Stryker con la máquina libre.
+- **`main` en rojo** tras #590: `e2e/competition.spec.ts:10` falla en Linux y Windows (run 45855151096). Cola pausada: #595 → #594 aprobados, encolar cuando `main` esté verde; #587 (#489) aprobado, `main` fusionado y verify local verde, mismo bloqueo. El subagente de #584 parte 2 saca primero un PR pequeño (tandas de series) que lo arregle.
+- #596 (#529): el usuario acepta K19 como fallo esperado hasta #530 y pide recalibrar K5, K6 y K16 sin ensanchar bandas; el subagente lo está haciendo.
