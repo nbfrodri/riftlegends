@@ -39,7 +39,8 @@ export function slotTexts(
 	return [text(match.teamA, match.from[0]), text(match.teamB, match.from[1])];
 }
 
-function Row({
+/** One team of a series card: logo, name, score; the winner in bold. */
+export function TeamRow({
 	team,
 	slot,
 	score,
@@ -123,13 +124,13 @@ export function BracketCard({
 				match.status === "waiting" && "border-dashed",
 			)}
 		>
-			<Row
+			<TeamRow
 				team={match.teamA}
 				slot={slots[0]}
 				score={match.score?.[0]}
 				result={resultOf(match.teamA)}
 			/>
-			<Row
+			<TeamRow
 				team={match.teamB}
 				slot={slots[1]}
 				score={match.score?.[1]}

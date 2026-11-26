@@ -30,11 +30,13 @@ import {
 	useSeasonOverview,
 } from "./season";
 import { StageStandings } from "./standings/stage-standings";
+import { StageSwiss } from "./swiss/stage-swiss";
 
 // `/competicion/$competition`: the hub of one competition (plan 31), with a
 // view per tab: the standings of a stage (U3), its schedule (U4) and, when the
-// stage is played as one, its bracket (U6, #605). What the hub shows lives in
-// the route's search, so coming back from a series finds it as it was (U5).
+// stage is played as one, its bracket (U6, #605) or its Swiss rounds (U7,
+// #487). What the hub shows lives in the route's search, so coming back from
+// a series finds it as it was (U5).
 
 type HubView = "standings" | "schedule" | "bracket";
 
@@ -229,8 +231,9 @@ function Schedule({
 
 type Stage = CompetitionOverview["stages"][number];
 
+/** Elimination brackets (U6) and Swiss rounds (U7) have the «Bracket» view. */
 const isBracket = ({ play }: Stage) =>
-	play === "singleElim" || play === "doubleElim";
+	play === "singleElim" || play === "doubleElim" || play === "swiss";
 
 /**
  * The stage in the route search; otherwise the one in play, between stages
@@ -305,7 +308,14 @@ function StagePanel({
 					{t(`competition.status.${selected.status}`)}
 				</span>
 			</div>
-			{view === "bracket" ? (
+			{view === "bracket" && selected.play === "swiss" ? (
+				<StageSwiss
+					key={selected.stage}
+					sessionId={sessionId}
+					competition={competition}
+					stage={selected.stage}
+				/>
+			) : view === "bracket" ? (
 				<StageBracket
 					key={selected.stage}
 					sessionId={sessionId}
