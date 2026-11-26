@@ -13,7 +13,7 @@ import { SCOPES } from "../rng/scopes";
 import { deriveSeed } from "../rng/seeds";
 import { createRng } from "../rng/streams";
 import { roleWeights } from "./attribution/weights";
-import { markEconomy, type SideEconomy, type Slot } from "./economy";
+import { farmed, markEconomy, type SideEconomy, type Slot } from "./economy";
 import { type MatchPlays, startPlays } from "./events";
 import { markStructure, type SideMap } from "./map-state";
 import type { MentalEdge } from "./mental";
@@ -23,6 +23,7 @@ import {
 	type SideObjectives,
 	startObjectives,
 } from "./objective-state";
+import { markDeaths, type SidePlayers, startPlayers } from "./player-state";
 import { type Lineup, type Profile, profiles } from "./profile";
 
 export { earnPassive } from "./economy";
@@ -74,9 +75,16 @@ interface MatchContext {
 	readonly red: SideContext;
 	/** Side and role of each player, to pay the gold of an event. */
 	readonly slots: ReadonlyMap<string, Slot>;
+	/** Passive income each role farms in a minute. */
+	readonly farm: readonly number[];
 }
 
-type SideState = SideEconomy & SideObjectives & SideMap;
+type SideState = SideEconomy &
+	SideObjectives &
+	SideMap & {
+		/** Who is down and until when, by role (plan 08, #528). */
+		readonly players: SidePlayers;
+	};
 
 export interface MatchState {
 	readonly context: MatchContext;
@@ -187,6 +195,7 @@ export function createMatch(setup: MatchSetup): MatchState {
 		fightPushAt: 0,
 		inhibitors: { top: 0, mid: 0, bot: 0 },
 		buffs: { herald: 0, baron: 0, elder: 0 },
+		players: startPlayers(),
 	};
 	const { objectives } = setup.match.rules;
 	const blue = side(setup.blue, us, "blue");
@@ -208,6 +217,7 @@ export function createMatch(setup: MatchSetup): MatchState {
 			blue,
 			red,
 			slots,
+			farm: farmed(setup.match.rules.economy.passive),
 		},
 		minute: 0,
 		blue: start,
@@ -247,10 +257,11 @@ function mark(state: MatchState, e: MatchEvent): MatchState {
 			));
 			break;
 	}
+	const players = markDeaths(state, e);
 	return {
 		...state,
-		[e.side]: won,
-		[loserSide]: lost,
+		[e.side]: { ...won, players: players[e.side] },
+		[loserSide]: { ...lost, players: players[loserSide] },
 		objectives,
 		winner: e.kind === "nexus" ? e.side : state.winner,
 	};

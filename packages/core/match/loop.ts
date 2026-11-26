@@ -1,4 +1,5 @@
 import type { MatchEvent } from "@rift-legends/contracts";
+import { int } from "../rng/helpers";
 import { SCOPES } from "../rng/scopes";
 import { deriveSeed } from "../rng/seeds";
 import { createRng } from "../rng/streams";
@@ -9,6 +10,7 @@ import { OBJECTIVE_CONTESTS } from "./contests/objectives";
 import { STRUCTURE_CONTESTS } from "./contests/structures";
 import { recordPlays } from "./events";
 import { recordMultikills } from "./multikills";
+import { timeDeaths } from "./player-state";
 import { trackSnapshots } from "./snapshot";
 import {
 	applyEvents,
@@ -36,8 +38,11 @@ export const matchDuration = (last: MatchEvent | undefined): number =>
 	last ? (last.minute - 1) * 60 + last.second : 0;
 
 /**
- * Plays one more minute: each due contest draws from its own stream
- * `(seed, match, game, minute, contest)`, so adding one never moves the rest.
+ * Plays one more minute. Each due contest draws from its own stream
+ * `(seed, match, game, minute, contest)`, so adding one never moves the rest,
+ * and its first draw is the second it happens at. The contests then resolve
+ * one by one in (second, id) order, each over the state the earlier ones
+ * left: their deaths, objectives and gold (plan 08, #528).
  */
 export function playMinute(
 	state: MatchState,
@@ -45,32 +50,45 @@ export function playMinute(
 ): { state: MatchState; events: MatchEvent[] } {
 	const { seed, game } = state.context;
 	const minute = state.minute + 1;
-	const current: MatchState = {
+	let current: MatchState = {
 		...state,
 		minute,
-		blue: earnPassive(state, "blue"),
-		red: earnPassive(state, "red"),
+		blue: earnPassive(state, "blue", minute),
+		red: earnPassive(state, "red", minute),
 	};
-	const resolved: MatchEvent[] = contests
+	const due = contests
 		.filter((contest) => contest.due(current))
-		.flatMap((contest) =>
-			contest
-				.resolve(
-					current,
-					createRng(deriveSeed(seed, SCOPES.match, game, minute, contest.id)),
-				)
-				.map((event) => ({ game, minute, ...event })),
-		)
-		// Stable: events of the same second keep the order of the contests.
-		.sort((a, b) => a.second - b.second);
-	// Nothing happens after the nexus falls.
-	const end = resolved.findIndex((e) => e.kind === "nexus");
-	if (end >= 0) resolved.length = end + 1;
-	const { events, plays } = recordPlays(
-		current,
-		resolved.map(recordMultikills),
-	);
-	return { state: applyEvents({ ...current, plays }, events), events };
+		.map((contest) => {
+			const rng = createRng(
+				deriveSeed(seed, SCOPES.match, game, minute, contest.id),
+			);
+			return { contest, rng, second: int(rng, 0, 59) };
+		})
+		.sort((a, b) => a.second - b.second || a.contest.id - b.contest.id);
+	const events: MatchEvent[] = [];
+	// Nothing happens from the second the nexus falls.
+	let end = 60;
+	for (const { contest, rng, second } of due) {
+		if (second >= end) continue;
+		const resolved: MatchEvent[] = contest
+			.resolve(current, rng, second)
+			.map((event) => ({ game, minute, ...event }))
+			.filter((event) => event.second < end);
+		const nexus = resolved.findIndex((e) => e.kind === "nexus");
+		if (nexus >= 0) resolved.length = nexus + 1;
+		const timed = resolved.map((event) => timeDeaths(current, event));
+		const recorded = recordPlays(current, timed.map(recordMultikills));
+		current = applyEvents(
+			{ ...current, plays: recorded.plays },
+			recorded.events,
+		);
+		events.push(...recorded.events);
+		if (current.winner !== null) {
+			end = recorded.events.find((e) => e.kind === "nexus")?.second ?? end;
+		}
+	}
+	// Stable: events of the same second keep the order they resolved in.
+	return { state: current, events: events.sort((a, b) => a.second - b.second) };
 }
 
 /**

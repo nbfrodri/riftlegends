@@ -65,7 +65,7 @@ export const ANCHORS: Record<Role, Partial<Record<Metric, Anchors>>> = {
 	},
 	support: {
 		kp: { low: 5000, mid: 6630, high: 9444 },
-		assists: { low: 107, mid: 610, high: 1478 },
+		assists: { low: 107, mid: 565, high: 1478 },
 		deaths: { low: 389, mid: 110, high: 0 },
 		vision: { low: 103, mid: 127, high: 151 },
 	},
