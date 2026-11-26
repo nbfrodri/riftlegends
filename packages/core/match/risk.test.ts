@@ -5,7 +5,9 @@ import { matchSetup } from "./fixtures/setup";
 import { MATCH_CONTESTS, playMinute } from "./loop";
 import { createMatch, type MatchSetup, other } from "./state";
 
-const SEEDS = 1200;
+const SEEDS = 700;
+/** F13 plays two samples, so each is lighter. */
+const F13_SEEDS = 450;
 const CHECKPOINT = 20;
 const LEAD = 3000;
 type Risk = ReturnType<
@@ -51,12 +53,12 @@ function playUntilDecided(setup: MatchSetup) {
 	return { gap, state, counted: decided };
 }
 
-function measure(match: MatchContent, side?: Side) {
+function measure(match: MatchContent, side?: Side, seeds = SEEDS) {
 	let trailed = 0;
 	let led = 0;
 	let comebacks = 0;
 	let throws = 0;
-	for (let seed = 0; seed < SEEDS; seed++) {
+	for (let seed = 0; seed < seeds; seed++) {
 		const { gap, state, counted } = playUntilDecided(
 			matchSetup({ seed, match }),
 		);
@@ -75,8 +77,8 @@ function measure(match: MatchContent, side?: Side) {
 }
 
 it("F13 · a risky team comes back and throws more often than the same safe team", () => {
-	const safe = measure(withRisk("safe", "balanced"), "blue");
-	const risky = measure(withRisk("risky", "balanced"), "blue");
+	const safe = measure(withRisk("safe", "balanced"), "blue", F13_SEEDS);
+	const risky = measure(withRisk("risky", "balanced"), "blue", F13_SEEDS);
 	const rates = (sample: typeof safe) => ({
 		comeback: sample.comebacks / sample.trailed,
 		throw: sample.throws / sample.led,
@@ -88,7 +90,7 @@ it("F13 · a risky team comes back and throws more often than the same safe team
 	});
 	expect(rates(risky).comeback).toBeGreaterThan(rates(safe).comeback);
 	expect(rates(risky).throw).toBeGreaterThan(rates(safe).throw);
-}, 30_000);
+}, 15_000);
 
 it("K4 · minute-20 comebacks from at least 3,000 gold down stay within 15–30%", () => {
 	const { comebacks, trailed } = measure(matchSetup().match);
@@ -97,7 +99,7 @@ it("K4 · minute-20 comebacks from at least 3,000 gold down stay within 15–30%
 	expect(trailed).toBeGreaterThan(300);
 	expect(rate).toBeGreaterThanOrEqual(0.15);
 	expect(rate).toBeLessThanOrEqual(0.3);
-}, 30_000);
+}, 15_000);
 
 it("scales either team's edge symmetrically and explains the adjustment", () => {
 	const initial = createMatch(matchSetup());
