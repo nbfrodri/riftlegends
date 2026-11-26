@@ -6,6 +6,7 @@ import {
 	screen,
 	within,
 } from "@testing-library/react";
+import { useState } from "react";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { Bracket } from "../src/renderer/competition/bracket/bracket";
 import { renderInLocale } from "./render-in-locale";
@@ -127,6 +128,22 @@ function doubleElim(final: "pending" | "upper" | "lower"): BracketView {
 	};
 }
 
+let show: (bracket: BracketView) => void = () => {};
+let initial: BracketView;
+
+function Harness() {
+	const [bracket, setBracket] = useState(initial);
+	show = setBracket;
+	return <Bracket bracket={bracket} teamName={teamName} />;
+}
+
+/** Renders the bracket inside the providers and lets the test show a newer one. */
+async function renderBracket(first: BracketView) {
+	initial = first;
+	const view = await renderInLocale(<Harness />);
+	return { ...view, show: (bracket: BracketView) => act(() => show(bracket)) };
+}
+
 const series = () => screen.getAllByRole("button");
 const card = (name: RegExp) => screen.getByRole("button", { name });
 
@@ -157,6 +174,8 @@ describe("U6: bracket", () => {
 		expect(final.getAttribute("aria-label")).toBe(
 			"Final: Winner of Semifinal 1 vs Bravo",
 		);
+		// A truncated name reads whole in the Caja tooltip.
+		expect(final.dataset.tooltip).toBe(final.getAttribute("aria-label"));
 	});
 
 	test("clicking a played series opens it; one not played yet does nothing", async () => {
@@ -207,17 +226,11 @@ describe("U6: bracket", () => {
 	});
 
 	test("the reset final appears only when it is played", async () => {
-		const view = await renderInLocale(
-			<Bracket bracket={doubleElim("pending")} teamName={teamName} />,
-		);
+		const view = await renderBracket(doubleElim("pending"));
 		expect(screen.queryByRole("button", { name: /reset/i })).toBeNull();
-		view.rerender(
-			<Bracket bracket={doubleElim("upper")} teamName={teamName} />,
-		);
+		view.show(doubleElim("upper"));
 		expect(screen.queryByRole("button", { name: /reset/i })).toBeNull();
-		view.rerender(
-			<Bracket bracket={doubleElim("lower")} teamName={teamName} />,
-		);
+		view.show(doubleElim("lower"));
 		expect(card(/^Grand final reset: Alpha vs Bravo/)).toBeTruthy();
 	});
 
@@ -287,13 +300,11 @@ describe("U11: keyboard and screen reader", () => {
 	});
 
 	test("a connector that a new result completes is drawn in", async () => {
-		const view = await renderInLocale(
-			<Bracket bracket={sixTeams} teamName={teamName} />,
-		);
+		const view = await renderBracket(sixTeams);
 		const line = () =>
 			view.container.querySelector('[data-connector="U2-1>U3-1"]');
 		expect(view.container.querySelectorAll(".bracket-draw")).toHaveLength(0);
-		view.rerender(<Bracket bracket={played()} teamName={teamName} />);
+		view.show(played());
 		expect(line()?.classList.contains("bracket-draw")).toBe(true);
 		expect(view.container.querySelectorAll(".bracket-draw")).toHaveLength(1);
 	});
@@ -302,10 +313,8 @@ describe("U11: keyboard and screen reader", () => {
 		const media = window.matchMedia("(prefers-reduced-motion: reduce)");
 		vi.spyOn(media, "matches", "get").mockReturnValue(true);
 		vi.spyOn(window, "matchMedia").mockReturnValue(media);
-		const view = await renderInLocale(
-			<Bracket bracket={sixTeams} teamName={teamName} />,
-		);
-		view.rerender(<Bracket bracket={played()} teamName={teamName} />);
+		const view = await renderBracket(sixTeams);
+		view.show(played());
 		expect(
 			view.container
 				.querySelector('[data-connector="U2-1>U3-1"]')
