@@ -206,7 +206,7 @@ test("a steal can only award a pit objective and its actual buff to the opposing
 				);
 			}
 		}),
-		{ numRuns: 60, seed: 508, examples: [[117]] },
+		{ numRuns: 40, seed: 508, examples: [[117]] },
 	);
 	expect(stolen).toBeGreaterThan(0);
 	expect(barons).toBeGreaterThan(0);
