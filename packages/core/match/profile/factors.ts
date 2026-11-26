@@ -107,6 +107,45 @@ function draftFactors(draft: AiContent, us: Lineup, them: Lineup) {
 	};
 }
 
+/** The factors a player's own attributes decide, apart from the draft's. */
+export const ATTRIBUTE_FACTORS: ReadonlySet<string> = new Set([
+	...AREAS,
+	"jungler",
+	"mastery",
+]);
+
+/** What each role brings to the attribute factors, in fixed point and never negative. */
+export type PlayerFactors = Readonly<Record<string, Fixed>>;
+
+/**
+ * Per role, the raw (not centred) value of every attribute factor. A team's
+ * factor is the mean of these over the players that are up, minus 50: with all
+ * five up it is the old team average, and a player who is down adds nothing
+ * (plan 08, #529). The jungler's factor is his own macro and mechanics.
+ */
+export function playerFactors(
+	draft: AiContent,
+	match: MatchContent,
+	lineup: Lineup,
+): Record<Role, PlayerFactors> {
+	const roster = players(draft, match, lineup);
+	return Object.fromEntries(
+		roster.map((p) => {
+			const factors: Record<string, Fixed> = {};
+			for (const key of AREAS) factors[key] = fixed(p.attributes[key]);
+			factors.jungler =
+				p.role === "jungle"
+					? (((p.attributes.macro + p.attributes.mechanics) *
+							(SCALE / 2)) as Fixed)
+					: (0 as Fixed);
+			// A champion the player has never shown: versatility softens it.
+			factors.mastery = ((p.mastery.find((m) => m.champion === p.champion)
+				?.value ?? p.attributes.versatility / 2) * SCALE) as Fixed;
+			return [p.role, factors];
+		}),
+	) as Record<Role, PlayerFactors>;
+}
+
 /** Every input of a team's profile, centred near zero, in fixed point. */
 export function teamFactors(
 	draft: AiContent,

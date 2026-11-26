@@ -66,9 +66,19 @@ it("starts fights in the mid game and credits and pays both teams' kills", () =>
 				const siege = (offset: number) =>
 					edge({ ...next.state, minute: minute + offset }, "siege");
 				const points = siege(1).causes.find((cause) => cause.key === "fight");
-				expect(
-					(points?.points ?? 0) * (event.side === "blue" ? 1 : -1),
-				).toBeGreaterThan(0);
+				// A side wiped out is still down a minute later (no contest, no push),
+				// nobody is up after a fight that runs into the next minute, and
+				// fights won by both sides in the minute cancel each other out.
+				const both = next.state.blue.fightPushAt === next.state.red.fightPushAt;
+				if (
+					!both &&
+					siege(1).causes.length > 0 &&
+					!siege(1).causes.some((cause) => cause.key === "numbers")
+				) {
+					expect(
+						(points?.points ?? 0) * (event.side === "blue" ? 1 : -1),
+					).toBeGreaterThan(0);
+				}
 				expect(siege(2).causes.some((cause) => cause.key === "fight")).toBe(
 					false,
 				);

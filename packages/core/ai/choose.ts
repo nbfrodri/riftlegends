@@ -80,6 +80,44 @@ const weigh = (scored: Scored, weights: Weights) => {
 	return { champion: scored.champion, components, total };
 };
 
+/** The weighted total of a candidate, without building its breakdown. */
+const weightedTotal = ({ components }: Scored, weights: Weights) => {
+	let total = 0;
+	for (const { key, points } of components)
+		total += mul(points as Fixed, weights[key] ?? (SCALE as Fixed));
+	return total;
+};
+
+/**
+ * The first `count` candidates by weighted total (ties by id) with their
+ * breakdown. Only these are ever read, so the rest are not weighed in full.
+ */
+export const topRanked = (
+	candidates: readonly Scored[],
+	weights: Weights,
+	count: number,
+) => {
+	const top: { index: number; total: number }[] = [];
+	const before = (a: { index: number; total: number }, b: typeof a) =>
+		a.total > b.total ||
+		(a.total === b.total &&
+			(candidates[a.index] as Scored).champion <
+				(candidates[b.index] as Scored).champion);
+	for (let index = 0; index < candidates.length; index++) {
+		const entry = {
+			index,
+			total: weightedTotal(candidates[index] as Scored, weights),
+		};
+		if (top.length === count && !before(entry, top[count - 1] as typeof entry))
+			continue;
+		let at = top.length;
+		while (at > 0 && before(entry, top[at - 1] as typeof entry)) at--;
+		top.splice(at, 0, entry);
+		if (top.length > count) top.pop();
+	}
+	return top.map(({ index }) => weigh(candidates[index] as Scored, weights));
+};
+
 const share = (part: number, whole: number) =>
 	Number((BigInt(part) * 10_000n) / BigInt(whole));
 
@@ -95,11 +133,19 @@ export const choose = (
 ): Decision => {
 	if (candidates.length === 0)
 		throw new RangeError("No candidates to choose from");
-	const ranked = candidates
-		.map((c) => weigh(c, profile.weights))
-		.sort((a, b) => b.total - a.total || (a.champion < b.champion ? -1 : 1));
 	const rules = DIFFICULTY[difficulty];
 	const poolSize = max(1, rules.pool + profile.pool);
+	// `ranked` is read only through `pool` (the first `poolSize`), `outside` (up to
+	// rank `WILDCARD_REACH`, so its length and the draw over it are the same as
+	// with the full list) and `alternatives` (the first three other than the
+	// chosen one, who is itself in the first `max(poolSize, WILDCARD_REACH)`:
+	// four entries are enough). Keeping that many leaves every read and every
+	// draw of the rng as it was with the whole list ranked.
+	const ranked = topRanked(
+		candidates,
+		profile.weights,
+		max(poolSize, WILDCARD_REACH),
+	);
 	const temperature = mul(
 		rules.temperature as Fixed,
 		profile.temperature as Fixed,
