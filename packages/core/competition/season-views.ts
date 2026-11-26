@@ -2,7 +2,13 @@ import { type Emitted, QueryRejection } from "../server/dispatcher";
 import type { RunningSeason, ScheduleQuery, SeasonSession } from "./handlers";
 import { awardPlaces } from "./qualification";
 import { isUnusedReservation, localFixtureId } from "./season-stages";
-import { type StageRef, stageKey } from "./stage-model";
+import {
+	type StageGraph,
+	type StageRef,
+	sourceRef,
+	sourcesOf,
+	stageKey,
+} from "./stage-model";
 
 export function projectSchedule(
 	season: RunningSeason,
@@ -136,5 +142,40 @@ export function stageView(
 				}
 			: null;
 	}
-	return { ...stage.standings, ...(stage.groups && { groups: stage.groups }) };
+	return {
+		...stage.standings,
+		...(stage.groups && { groups: stage.groups }),
+		destinations: stageDestinations(state.season.graph, ref),
+	};
+}
+
+/**
+ * Where the places of a stage lead, read from the formats: the later stages
+ * that take teams by their place, then the international slots that read the
+ * stage. A season-points slot reads no single table and is left out.
+ */
+function stageDestinations(graph: StageGraph, ref: StageRef) {
+	const key = stageKey(ref);
+	const stages = [...graph.nodes.values()].flatMap((next) =>
+		sourcesOf(next.stage).flatMap((source) =>
+			source.kind === "standing" && stageKey(sourceRef(source, next)) === key
+				? [
+						{
+							from: source.from,
+							to: source.to,
+							...next.ref,
+							...(source.group && { group: source.group }),
+						},
+					]
+				: [],
+		),
+	);
+	const events = [...graph.awards].flatMap(([to, leagues]) =>
+		(leagues.get(ref.competition) ?? []).flatMap(({ slot, stage }) =>
+			slot.rule !== "points" && stage.stage === ref.stage
+				? [{ from: 1, to: slot.count, competition: to }]
+				: [],
+		),
+	);
+	return [...stages, ...events];
 }
