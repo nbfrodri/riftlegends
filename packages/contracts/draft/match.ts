@@ -57,6 +57,8 @@ const multikillCount = z.union([
 	z.literal(4),
 	z.literal(5),
 ]);
+const MATCH_ROLES = ["top", "jungle", "mid", "bot", "support"] as const;
+
 const perSide = <T extends z.ZodType>(item: T) =>
 	z.strictObject({ blue: item, red: item });
 
@@ -121,6 +123,20 @@ export const matchEventFact = {
 			ace: z.literal(true).optional(),
 		}),
 	),
+	/**
+	 * Roles of each side that were down when the contest started, listed only
+	 * when someone was (issue #529); absent in older logs.
+	 */
+	down: z
+		.strictObject({
+			blue: z.array(z.enum(MATCH_ROLES)).max(5),
+			red: z.array(z.enum(MATCH_ROLES)).max(5),
+		})
+		.refine(
+			({ blue, red }) => blue.length + red.length > 0,
+			"list who was down only when someone was",
+		)
+		.optional(),
 	/** Gold each side earned from the event. */
 	gold: perSide(z.int().nonnegative()),
 	/** Chance `side` had of winning the event. */
@@ -199,6 +215,22 @@ const deathTimer = z.strictObject({
 	cap: z.int().min(0).max(100_000),
 });
 
+/** How much each role counts in a contest, per 10,000 (issue #529). */
+const presenceWeight = z.int().min(0).max(10_000);
+const presenceTable = z
+	.strictObject({
+		top: presenceWeight,
+		jungle: presenceWeight,
+		mid: presenceWeight,
+		bot: presenceWeight,
+		support: presenceWeight,
+	})
+	.refine(
+		(table) =>
+			Object.values(table).reduce((sum, value) => sum + value, 0) === 10_000,
+		"the weights of a contest add up to 10,000",
+	);
+
 /** Everything the simulation reads besides the draft content (plan 07). */
 export const matchContent = z
 	.strictObject({
@@ -253,6 +285,22 @@ export const matchContent = z
 			}),
 			inhibitorRespawn: seconds,
 			deathTimer,
+			/**
+			 * Weight of each role among the players up in each contest, so that
+			 * a missing player costs what he is worth there (issue #529). In a
+			 * lane only its laners count.
+			 */
+			presence: z.strictObject({
+				lane: z.strictObject({
+					top: presenceTable,
+					mid: presenceTable,
+					bot: presenceTable,
+				}),
+				jungle: presenceTable,
+				fight: presenceTable,
+				objective: presenceTable,
+				siege: presenceTable,
+			}),
 			/** Median level per role and minute, in tenths, until #338 levels players. */
 			levelCurve: z
 				.strictObject({
@@ -398,7 +446,7 @@ export type MatchView = z.infer<typeof matchView>;
 export const GAP_RATING = 15;
 
 const lineGap = z.strictObject({
-	role: z.enum(["top", "jungle", "mid", "bot", "support"]),
+	role: z.enum(MATCH_ROLES),
 	/** Blue rating minus red rating. */
 	rating: z.int(),
 	/** Blue gold minus red gold. */

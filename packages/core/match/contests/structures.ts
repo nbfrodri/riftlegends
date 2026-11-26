@@ -1,5 +1,6 @@
 import type { Side } from "@rift-legends/contracts";
 import { int } from "../../rng/helpers";
+import { gameSecond } from "../player-state";
 import {
 	GRUBS,
 	inhibitorDown,
@@ -64,7 +65,13 @@ const push: Contest = {
 		].sort((a, b) => a - b);
 		const { economy } = state.context.rules;
 		for (const lane of LANES) {
-			const result = edge(state, "siege");
+			const result = edge(
+				state,
+				"siege",
+				{},
+				undefined,
+				gameSecond(state.minute, first),
+			);
 			const winner: Side = roll(rng, result.blue) ? "blue" : "red";
 			const loser = other(winner);
 			const next = target(lost[loser], lane, state.minute);

@@ -1,7 +1,15 @@
 import type { AiContent, MatchContent } from "@rift-legends/contracts";
+import { ROLES, type Role } from "@rift-legends/contracts";
 import { type Fixed, mul, SCALE } from "../../math";
 import type { MatchCause, MatchCauseKey } from "../cause-keys";
-import { type Factors, type Lineup, teamFactors } from "./factors";
+import {
+	ATTRIBUTE_FACTORS,
+	type Factors,
+	type Lineup,
+	type PlayerFactors,
+	playerFactors,
+	teamFactors,
+} from "./factors";
 
 export type { Lineup } from "./factors";
 
@@ -26,6 +34,8 @@ export interface Scored {
 export interface Profile {
 	readonly phases: Readonly<Record<Phase, Scored>>;
 	readonly contests: Readonly<Record<Contest, Scored>>;
+	/** What each player brings to the attribute factors (see `liveCauses`). */
+	readonly players: Readonly<Record<Role, PlayerFactors>>;
 }
 
 type FactorKey = MatchCauseKey | `${MatchCauseKey}.${Phase}`;
@@ -141,12 +151,60 @@ function score(factors: Factors, weights: Weights): Scored {
 	return { total: causes.reduce((sum, c) => sum + c.points, 0), causes };
 }
 
-function profile(factors: Factors): Profile {
+function profile(
+	factors: Factors,
+	players: Readonly<Record<Role, PlayerFactors>>,
+): Profile {
 	const pick = <K extends Contest | Phase>(keys: readonly K[]) =>
 		Object.fromEntries(
 			keys.map((key) => [key, score(factors, WEIGHTS[key])]),
 		) as Record<K, Scored>;
-	return { phases: pick(PHASES), contests: pick(CONTESTS) };
+	return { phases: pick(PHASES), contests: pick(CONTESTS), players };
+}
+
+/** The causes of a profile part that do not depend on who is up. */
+export const staticCauses = (scored: Scored) =>
+	scored.causes.filter(({ key }) => !ATTRIBUTE_FACTORS.has(key));
+
+/**
+ * The attribute causes of a contest or phase for the players that are up, with
+ * `weights` per 10,000 by role: each factor is the weighted mean of the living
+ * minus 50, so a player who is down adds nothing and never more than he is
+ * worth (the values are never negative). With all five up and equal weights it
+ * is the team average of the full profile (plan 08, #529).
+ */
+export function liveCauses(
+	profile: Profile,
+	part: Contest | Phase,
+	weights: Readonly<Record<Role, number>>,
+	up: readonly Role[],
+): MatchCause[] {
+	return Object.entries(WEIGHTS[part]).flatMap(([factor, weight]) => {
+		const key = (factor.split(".")[0] ?? factor) as MatchCauseKey;
+		if (!ATTRIBUTE_FACTORS.has(key)) return [];
+		let value: number;
+		if (key === "jungler") {
+			// A contest that does not count the jungler (a lane) keeps his factor.
+			value =
+				up.includes("jungle") || weights.jungle === 0
+					? (profile.players.jungle.jungler ?? 0)
+					: 0;
+		} else {
+			value = 0;
+			for (const role of ROLES) {
+				if (up.includes(role)) {
+					value += weights[role] * (profile.players[role][key] ?? 0);
+				}
+			}
+			value = (value - (value % SCALE)) / SCALE;
+		}
+		return [
+			{
+				key,
+				points: mul((value - 50 * SCALE) as Fixed, (weight * PERCENT) as Fixed),
+			},
+		];
+	});
 }
 
 /** Strength of each team by phase and contest, with its breakdown (F1–F5). */
@@ -157,8 +215,14 @@ export function profiles(
 	them: Lineup,
 ): { us: Profile; them: Profile } {
 	return {
-		us: profile(teamFactors(draft, match, us, them)),
-		them: profile(teamFactors(draft, match, them, us)),
+		us: profile(
+			teamFactors(draft, match, us, them),
+			playerFactors(draft, match, us),
+		),
+		them: profile(
+			teamFactors(draft, match, them, us),
+			playerFactors(draft, match, them),
+		),
 	};
 }
 
