@@ -17,6 +17,7 @@ import {
 	cardTop,
 	layoutSwiss,
 	NOTE_H,
+	type PlacedBox,
 	POOL_HEAD,
 	ROUND_HEAD,
 	ROW_H,
@@ -27,8 +28,9 @@ import {
 // A Swiss stage in columns by balance, as the Worlds broadcast shows it (plan
 // 31, U7 and U11, #487): one column per round with its series pooled by the
 // record their teams brought (0-0, then 1-0 and 0-1…), winners climbing and
-// losers sinking, thin lines showing where each balance leads, and at the end
-// the qualified teams on top and the eliminated ones at the bottom.
+// losers sinking, thin lines showing where each balance leads; the teams a
+// round qualifies open the next column on top and the ones it eliminates
+// close it at the bottom.
 
 type Swiss = NonNullable<StandingsView["swiss"]>;
 
@@ -79,7 +81,11 @@ export function SwissRounds({
 	const roundName = (round: number) =>
 		t("competition.bracket.round.round", { n: round });
 
-	const cards = layout.rounds.map(({ round, pools }) =>
+	const roundColumns = layout.columns.filter(
+		(column): column is typeof column & { round: number } =>
+			column.round !== null,
+	);
+	const cards = roundColumns.map(({ round, pools }) =>
 		pools.flatMap((pool) =>
 			(pool.series ?? []).map((series, index): Card => {
 				const where = t("competition.swiss.pool", {
@@ -137,11 +143,6 @@ export function SwissRounds({
 			?.focus();
 	};
 
-	const end = (status: "qualified" | "eliminated") =>
-		swiss.teams
-			.filter((row) => row.status === status)
-			.sort((a, b) => b.wins - a.wins || a.losses - b.losses);
-
 	return (
 		// biome-ignore lint/a11y/useSemanticElements: a fieldset is for form controls, not a stage.
 		<div
@@ -169,7 +170,7 @@ export function SwissRounds({
 						/>
 					))}
 				</svg>
-				{layout.rounds.map((placed, index) => (
+				{roundColumns.map((placed, index) => (
 					<section
 						key={placed.round}
 						aria-label={roundName(placed.round)}
@@ -184,7 +185,7 @@ export function SwissRounds({
 						</h3>
 						{placed.relaxed.length > 0 && (
 							<div
-								className="absolute flex flex-col justify-start text-[11px] text-muted leading-tight"
+								className="absolute flex flex-col text-[11px] text-muted leading-tight"
 								style={{ top: ROUND_HEAD, height: NOTE_H }}
 							>
 								{placed.relaxed.map((rule) => (
@@ -240,81 +241,105 @@ export function SwissRounds({
 						))}
 					</section>
 				))}
-				{(["qualified", "eliminated"] as const).map((status) => {
-					const rows = end(status);
-					const name = t(`competition.swiss.${status}`);
-					return (
-						<section
-							key={status}
-							aria-label={name}
-							className="absolute"
-							style={{
-								left: layout.end.x,
-								top: layout.end[status].y,
-								width: column,
-								height: layout.end[status].height,
-							}}
-						>
-							<h3
-								className={cn(
-									"font-semibold text-[11px] uppercase tracking-heading",
-									status === "qualified" ? "text-text" : "text-muted",
-								)}
-								style={{ lineHeight: `${POOL_HEAD}px` }}
-							>
-								{name}
-							</h3>
-							{rows.length === 0 ? (
-								<p
-									className="absolute inset-x-0 flex items-center px-2.5 text-[12px] text-muted"
-									style={{ top: POOL_HEAD, height: ROW_H }}
-								>
-									{t("competition.swiss.none")}
-								</p>
-							) : (
-								<ul>
-									{rows.map((row, index) => (
-										<li
-											key={row.team}
-											className={cn(
-												"absolute inset-x-0 flex items-center gap-2 rounded-control border border-line px-2.5 text-[13px]",
-												status === "qualified"
-													? "bg-panel font-semibold text-text"
-													: "text-muted",
-											)}
-											style={{ top: rowTop(index), height: ROW_H }}
-										>
-											<TeamCrest
-												id={row.team}
-												name={team(row.team).name}
-												className="size-4 shrink-0"
-											/>
-											<span className="min-w-0 flex-1 truncate">
-												{team(row.team).short ? (
-													<>
-														<span aria-hidden="true">
-															{team(row.team).short}
-														</span>
-														<span className="sr-only">
-															{team(row.team).name}
-														</span>
-													</>
-												) : (
-													team(row.team).name
-												)}
-											</span>
-											<span className="shrink-0 tabular-nums">
-												{record(row.wins, row.losses)}
-											</span>
-										</li>
-									))}
-								</ul>
-							)}
-						</section>
-					);
-				})}
+				{layout.columns.flatMap((placed) =>
+					placed.boxes.map((box) => (
+						<OutcomeBox
+							key={box.id}
+							box={box}
+							x={placed.x}
+							width={column}
+							team={team}
+							record={record(box.wins, box.losses)}
+						/>
+					)),
+				)}
 			</div>
 		</div>
+	);
+}
+
+/**
+ * The teams a round qualified (on top of the next column) or eliminated (at
+ * its bottom), under their record. The state is the title and the place.
+ */
+function OutcomeBox({
+	box,
+	x,
+	width,
+	team,
+	record,
+}: {
+	box: PlacedBox;
+	x: number;
+	width: number;
+	team: (id: string) => TeamNames;
+	record: string;
+}) {
+	const { t } = useTranslation();
+	const qualified = box.outcome === "qualified";
+	return (
+		<section
+			aria-label={t(
+				qualified
+					? "competition.swiss.qualifiedAt"
+					: "competition.swiss.eliminatedAt",
+				{ record },
+			)}
+			className="absolute"
+			style={{ left: x, top: box.y, width, height: box.height }}
+		>
+			<h3
+				className={cn(
+					"flex items-baseline justify-between font-semibold text-[11px] uppercase tracking-heading",
+					qualified ? "text-text" : "text-muted",
+				)}
+				style={{ lineHeight: `${POOL_HEAD}px` }}
+			>
+				<span>{t(`competition.swiss.${box.outcome}`)}</span>
+				<span className="text-[12px] tabular-nums tracking-normal">
+					{record}
+				</span>
+			</h3>
+			{box.teams.length === 0 ? (
+				<p
+					className="absolute inset-x-0 flex items-center justify-center rounded-control border border-line border-dashed text-[12px] text-muted"
+					style={{ top: POOL_HEAD, height: ROW_H }}
+				>
+					{t("competition.swiss.toDecide")}
+				</p>
+			) : (
+				<ul>
+					{box.teams.map((id, index) => (
+						<li
+							key={id}
+							className={cn(
+								"absolute inset-x-0 flex items-center gap-2 rounded-control border px-2.5 text-[13px]",
+								qualified
+									? "border-line bg-panel font-semibold text-text"
+									: "border-line/60 text-muted",
+							)}
+							style={{ top: rowTop(index), height: ROW_H }}
+						>
+							<TeamCrest
+								id={id}
+								name={team(id).name}
+								className="size-4 shrink-0"
+							/>
+							<span className="min-w-0 flex-1 truncate">
+								{team(id).short ? (
+									<>
+										<span aria-hidden="true">{team(id).short}</span>
+										<span className="sr-only">{team(id).name}</span>
+									</>
+								) : (
+									team(id).name
+								)}
+							</span>
+						</li>
+					))}
+				</ul>
+			)}
+		</section>
 	);
 }
 
