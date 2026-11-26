@@ -126,11 +126,7 @@ function Header({
 			<div className="min-w-0">
 				<div className="flex min-w-0 items-center gap-3">
 					{first && (
-						<TeamCrest
-							id={first.blue}
-							name={teamName(options, first.blue)}
-							className="h-[clamp(28px,2.6vw,44px)] w-[clamp(36px,3.4vw,58px)] shrink-0"
-						/>
+						<TeamLink id={first.blue} name={teamName(options, first.blue)} />
 					)}
 					<h1 className="min-w-0 truncate font-bold font-display text-[clamp(24px,2.1vw,40px)] uppercase leading-none tracking-heading">
 						{first
@@ -141,11 +137,7 @@ function Header({
 							: t("competition.series.unknown")}
 					</h1>
 					{first && (
-						<TeamCrest
-							id={first.red}
-							name={teamName(options, first.red)}
-							className="h-[clamp(28px,2.6vw,44px)] w-[clamp(36px,3.4vw,58px)] shrink-0"
-						/>
+						<TeamLink id={first.red} name={teamName(options, first.red)} />
 					)}
 				</div>
 				{slot && year !== undefined && (
@@ -169,5 +161,27 @@ function Header({
 				{t("competition.series.back")}
 			</Button>
 		</header>
+	);
+}
+
+/** A team's crest, opening its page (U8). */
+function TeamLink({ id, name }: { id: string; name: string }) {
+	const { t } = useTranslation();
+	const navigate = useNavigate();
+	return (
+		<button
+			type="button"
+			aria-label={t("competition.open", { name })}
+			onClick={() =>
+				void navigate({ to: "/competicion/equipo/$team", params: { team: id } })
+			}
+			className="press shrink-0 cursor-pointer rounded-control p-0.5 hover:bg-surface focus-visible:outline-2 focus-visible:outline-action"
+		>
+			<TeamCrest
+				id={id}
+				name={name}
+				className="h-[clamp(28px,2.6vw,44px)] w-[clamp(36px,3.4vw,58px)]"
+			/>
+		</button>
 	);
 }
