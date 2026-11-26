@@ -104,3 +104,4 @@ Estado 26-11 tarde:
 - Cola (26-11 tarde): #588 → #582 → #585 (#528, aprobado) → #590 (#584 primera parte, 2,5× más rápido, aprobado).
 - Siguiente en #584 (decisión del usuario): tras fusionar #582, #585 y #590, (1) `season.playDay` por tandas de series con progreso (ninguna llamada > ~1 s; toca los controles de avance de #582) y (2) acelerar la IA sin cambiar resultados (reutilizar la puntuación del rival al mirar adelante y podar). Un año cuesta ~187 s; objetivo ≤ 60 s.
 - #589 (centrar iconos del cara a cara): subagente Opus en `../riftlegends-589`.
+- Cola añadida: #592 (#589 iconos centrados, aprobado) → #591 (#586 sin «·», aprobado sin el equipo junto al MVP). #588 fusionado.
