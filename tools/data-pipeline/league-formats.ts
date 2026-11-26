@@ -13,6 +13,7 @@ import {
 	leagueSeries,
 	selectSeries,
 } from "./league-series.ts";
+import { leagueStageName } from "./stage-names.ts";
 
 const output = new URL("../../packages/core/content/real/", import.meta.url);
 const definitions = {
@@ -67,6 +68,7 @@ function build(id: LeagueId): Competition {
 		kind: "league",
 		stages: definition.stages.map((stage) => ({
 			id: stage.id,
+			name: leagueStageName(id, stage.id),
 			parallelGroup: stage.parallelGroup,
 			tiebreakHistory: stage.tiebreakHistory,
 			window: realWindow(stage, evidence.get(stage.id) ?? []),

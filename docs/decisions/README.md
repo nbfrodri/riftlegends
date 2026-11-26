@@ -126,6 +126,7 @@ Resumen de las decisiones **vigentes**, para empezar cualquier sesión sin volve
 
 | Fecha | Decisión | Fuente |
 | --- | --- | --- |
+| 2026-11-26 | Todas las ligas usan **Winter Split**, **Spring Split** y **Summer Split**, también en español. Competición muestra el split y la etapa traducida como dos partes visuales sin punto medio. Los torneos internacionales muestran solo la etapa. Los nombres propios, como Road to MSI, conservan su forma original. | #583 |
 | 2026-11-24 | La sección «Competición» y el modo Torneo van en un plan aparte de la Fase 4 | [plan 12](../plans/12-formatos-de-competicion.md#5-decisiones-del-usuario-24-11-2026) |
 | 2026-11-24 | Empate en un corte: **serie de desempate**, Bo3 por defecto (configurable a Bo1 o Bo5; los formatos reales usan su reglamento). Fuera de los cortes, criterios y sorteo | [plan 12](../plans/12-formatos-de-competicion.md#5-decisiones-del-usuario-24-11-2026) |
 | 2026-11-24 | Playoffs con **cuadro fijo por sembrado**, sin elección de rival | [plan 12](../plans/12-formatos-de-competicion.md#5-decisiones-del-usuario-24-11-2026) |

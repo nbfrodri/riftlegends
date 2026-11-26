@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { MATCH_CAUSE_KEYS } from "../../core/match/cause-keys";
 import en from "../locales/en.json" with { type: "json" };
 import es from "../locales/es.json" with { type: "json" };
+import { competitionStageName, createI18n } from "../src/index";
 
 describe("catalogs", () => {
 	it("have the same key set in ES and EN", () => {
@@ -24,6 +25,35 @@ describe("catalogs", () => {
 		expect(labels(en)).toEqual(["Top", "Jungle", "Mid", "ADC", "Support"]);
 	});
 });
+
+it.each([
+	["es", "Play-in, ronda 1, serie 1", "Fase eliminatoria"],
+	["en", "Play-in, round 1, series 1", "Knockout stage"],
+])(
+	"resolves separate competition stage labels in %s",
+	async (locale, playIn, knockout) => {
+		const { t } = await createI18n(locale);
+		expect(
+			competitionStageName(
+				t,
+				{ split: "winter", stage: "playInRound1Match1" },
+				"Fallback",
+			),
+		).toEqual({ split: "Winter Split", stage: playIn });
+		expect(competitionStageName(t, { stage: "knockout" }, "Fallback")).toEqual({
+			split: undefined,
+			stage: knockout,
+		});
+		expect(competitionStageName(t, undefined, "Fallback")).toEqual({
+			split: undefined,
+			stage: "Fallback",
+		});
+		expect(competitionStageName(t, { stage: "custom" }, "Fallback")).toEqual({
+			split: undefined,
+			stage: "Fallback",
+		});
+	},
+);
 
 const causeCatalogs: Record<"es" | "en", Record<string, string>> = { es, en };
 
