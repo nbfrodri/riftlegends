@@ -43,21 +43,25 @@ for (const [width, height] of [
 					values.push(Number(await progress.getAttribute("aria-valuenow")));
 					return new Set(values).size;
 				},
-				{ timeout: 30_000 },
+				{ timeout: 30_000, intervals: [50] },
 			)
 			.toBeGreaterThanOrEqual(3);
 		expect([...values].sort((a, b) => a - b)).toEqual(values);
 
-		// While days are played, a frame and a hover still answer quickly.
-		const frame = await appWindow.evaluate(
-			() =>
+		// While days are played, a frame still answers quickly. The season of this
+		// content lasts about a second on a busy runner, so the frame is measured
+		// and Stop pressed in one step, before the season can end by itself.
+		const frame = await advance.getByRole("button", { name: "Stop" }).evaluate(
+			(stop) =>
 				new Promise<number>((resolve) => {
 					const start = performance.now();
-					requestAnimationFrame(() => resolve(performance.now() - start));
+					requestAnimationFrame(() => {
+						resolve(performance.now() - start);
+						stop.click();
+					});
 				}),
 		);
 		expect(frame).toBeLessThan(250);
-		await advance.getByRole("button", { name: "Stop" }).click();
 		await expect(progress).toBeHidden({ timeout: 30_000 });
 		await expect(
 			advance.getByRole("button", { name: "Play day" }),
