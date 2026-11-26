@@ -28,6 +28,7 @@ export const MATCH_CAUSE_KEYS = [
 	"mechanics",
 	"meta",
 	"momentum",
+	"numbers",
 	"objectiveControl",
 	"peel",
 	"positioning",

@@ -91,11 +91,11 @@ function PlayedBy(props: {
 	const { options } = useDraftSession();
 	const id = useId();
 	return (
-		<div className="flex min-w-0 flex-col gap-2">
+		<div className="flex min-w-0 flex-col gap-1.5 short:gap-1">
 			<h3 id={id} className="font-bold">
 				{t("draft.side.playedBy", { team: teamName(options, props.team) })}
 			</h3>
-			<ul aria-labelledby={id} className="flex flex-col gap-1.5">
+			<ul aria-labelledby={id} className="flex flex-col gap-1 short:gap-0">
 				{props.games.map(({ game, champions }) => {
 					const playedIn = t("draft.side.playedIn", { game });
 					return (
@@ -222,7 +222,7 @@ export function SideScreen() {
 				})}
 			</p>
 			<div className="grid grid-cols-[2fr_1fr] items-start gap-gap">
-				<div className="flex min-w-0 flex-col gap-3">
+				<div className="flex min-w-0 flex-col gap-3 short:gap-1">
 					<ol
 						aria-label={t("draft.side.decisions")}
 						className="grid grid-cols-2 gap-gap"
@@ -232,7 +232,7 @@ export function SideScreen() {
 							return (
 								<li
 									key={team}
-									className="min-w-0 border-l-2 border-line bg-panel px-3 py-2"
+									className="min-w-0 border-l-2 border-line bg-panel px-3 py-2 short:py-1"
 								>
 									<p className="text-sm text-muted">
 										{t(
@@ -272,7 +272,7 @@ export function SideScreen() {
 							aria-label={t("draft.side.label", {
 								team: teamName(options, turn.team),
 							})}
-							className="grid grid-cols-2 gap-2"
+							className="grid grid-cols-2 gap-2 short:gap-1"
 						>
 							{choices.map((option) => (
 								<ChoiceCard

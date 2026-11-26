@@ -2,6 +2,7 @@ import type { Role, Side } from "@rift-legends/contracts";
 import { pick } from "../../rng/helpers";
 import { attribute } from "../attribution/attribute";
 import { aliveRoles, gameSecond } from "../player-state";
+import { presenceOf, upAt, weightsOf } from "../presence";
 import { type MatchState, other } from "../state";
 import { type Contest, type ContestEvent, paid, roll } from "./contest";
 import { edge, outcome } from "./edge";
@@ -52,9 +53,15 @@ const laneContest = (lane: Lane, id: number): Contest => ({
 	id,
 	due: (state) => LANE_MINUTES.has(state.minute),
 	resolve(state, rng, second) {
-		const result = edge(state, "lane", {}, lane);
-		const winner: Side = roll(rng, result.blue) ? "blue" : "red";
 		const at = gameSecond(state.minute, second);
+		const result = edge(state, "lane", {}, lane, at);
+		// With both laners down there is nothing to contest.
+		const weights = weightsOf(state.context.rules, "lane", lane);
+		const up = upAt(state, at);
+		if (presenceOf(weights, up.blue) + presenceOf(weights, up.red) === 0) {
+			return [];
+		}
+		const winner: Side = roll(rng, result.blue) ? "blue" : "red";
 		const duo = lane === "bot";
 		const mine = aliveRoles(state, winner, at);
 		// The kill needs the loser's laner up and someone of the winner's lane.
@@ -93,10 +100,10 @@ const gank: Contest = {
 	id: 4,
 	due: (state) => GANK_MINUTES.has(state.minute),
 	resolve(state, rng, second) {
-		const result = edge(state, "jungle");
+		const at = gameSecond(state.minute, second);
+		const result = edge(state, "jungle", {}, undefined, at);
 		const winner: Side = roll(rng, result.blue) ? "blue" : "red";
 		const lane = pick(rng, ["top", "mid", "bot"] as const);
-		const at = gameSecond(state.minute, second);
 		const mine = aliveRoles(state, winner, at);
 		// A gank needs the winner's jungler and the loser's laner up.
 		const kills =
