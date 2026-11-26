@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { draftCommandSchemas, draftQuerySchemas } from "../draft/index";
 import { defineCommands, defineQueries, position } from "../envelope";
 import type { CoreError } from "../errors";
 import { defineFacts } from "../facts";
@@ -49,12 +50,38 @@ const seasonBody = {
 	seed: uint32,
 	competitions: z.array(competitionSchema).min(1).max(16),
 	teams: z.array(team).max(256),
+	/** The team the user manages: its series wait for the user (plan 31, Q7). */
+	humanTeam: teamId.optional(),
 };
+
+/**
+ * While the user's series is on, the draft commands that follow `series.start`
+ * and the queries of its screens go to the season, so the series is played
+ * with the quick-draft flow and recorded in the calendar (plan 31, Q8).
+ */
+const { "series.start": _start, ...humanSeriesCommands } = draftCommandSchemas;
+export const HUMAN_SERIES_COMMANDS = Object.keys(humanSeriesCommands);
+export const HUMAN_SERIES_QUERIES = [
+	"draft.view",
+	"match.plan",
+	"match.view",
+	"series.summary",
+];
 
 export const competitionCommands = defineCommands({
 	"season.create": z.strictObject(seasonBody),
-	/** Plays every series scheduled for the given day, counted from the season start. */
+	/**
+	 * Plays every series scheduled for the given day, counted from the season
+	 * start, except the one of `humanTeam`, which is announced as pending.
+	 */
 	"season.playDay": z.strictObject({ day: z.int().min(0).max(1000) }),
+	/** Starts the pending series of `humanTeam`, by the id the schedule gives it. */
+	"season.playSeries": z.strictObject({
+		series: id,
+		/** The timer setting of the app; the AI series never use it. */
+		timer: z.boolean().default(false),
+	}),
+	...humanSeriesCommands,
 });
 
 const competitionRef = z.strictObject({ competition: id });
@@ -77,8 +104,10 @@ export const competitionQueries = defineQueries({
 	 * that `competition.schedule` gives it. With `series` they are answered
 	 * from the season, not from a draft series.
 	 */
-	"series.summary": z.strictObject({ series: id }),
-	"match.view": z.strictObject({ series: id, game: position }),
+	"series.summary": z.strictObject({ series: id.optional() }),
+	"match.view": z.strictObject({ series: id.optional(), game: position }),
+	"draft.view": draftQuerySchemas["draft.view"],
+	"match.plan": draftQuerySchemas["match.plan"],
 });
 
 const count = z.int().min(0);
@@ -106,6 +135,15 @@ const factCatalog = defineFacts({
 		score: pair(count),
 		winner: teamId,
 		tiebreaker: z.boolean(),
+	},
+	/** The user's series of a day is ready to play; `series` is its schedule id. */
+	"competition.seriesPending": {
+		competition: id,
+		stage: id,
+		day: count,
+		round: count,
+		series: id,
+		teams: pair(teamId),
 	},
 	"competition.stageFinished": {
 		competition: id,
