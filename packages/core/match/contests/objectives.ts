@@ -1,5 +1,6 @@
 import type { Side } from "@rift-legends/contracts";
 import type { MatchCause } from "../cause-keys";
+import { gameSecond } from "../player-state";
 import { GRUBS, type MatchState, minuteOf, SOUL } from "../state";
 import { type Contest, paid, roll } from "./contest";
 import { edge, outcome } from "./edge";
@@ -38,17 +39,26 @@ const objective = (kind: Objective, id: number): Contest => ({
 			state.context[side].strategy.objectives === FAVOURED_BY[kind]
 				? { key: "strategy", points: PRIORITY_POINTS }
 				: undefined;
-		const result = edge(state, "objective", {
-			blue: priority("blue"),
-			red: priority("red"),
-		});
+		const at = gameSecond(state.minute, second);
+		const result = edge(
+			state,
+			"objective",
+			{
+				blue: priority("blue"),
+				red: priority("red"),
+			},
+			undefined,
+			at,
+		);
 		const controlling: Side = roll(rng, result.blue) ? "blue" : "red";
 		const stolen =
-			kind === "elder" ? undefined : trySteal(state, controlling, id);
-		const award = stolen ?? {
-			side: controlling,
-			...outcome(result, controlling),
-		};
+			kind === "elder" ? undefined : trySteal(state, controlling, id, at);
+		const award = stolen
+			? { ...stolen, ...(result.down ? { down: result.down } : {}) }
+			: {
+					side: controlling,
+					...outcome(result, controlling),
+				};
 		return [
 			{
 				kind,
@@ -82,10 +92,16 @@ const grub: Contest = {
 			state.context[side].strategy.objectives === FAVOURED_BY.herald
 				? { key: "strategy", points: PRIORITY_POINTS }
 				: undefined;
-		const result = edge(state, "objective", {
-			blue: priority("blue"),
-			red: priority("red"),
-		});
+		const result = edge(
+			state,
+			"objective",
+			{
+				blue: priority("blue"),
+				red: priority("red"),
+			},
+			undefined,
+			gameSecond(state.minute, second),
+		);
 		const winner: Side = roll(rng, result.blue) ? "blue" : "red";
 		const split = roll(rng, GRUB_SPLIT);
 		const grubs = { blue: 0, red: 0, [winner]: split ? GRUBS - 1 : GRUBS };

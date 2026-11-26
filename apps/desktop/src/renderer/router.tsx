@@ -7,13 +7,16 @@ import {
 } from "@tanstack/react-router";
 import { StartupGate } from "./assets/startup-gate";
 import { ChampionsScreen } from "./champions-screen";
+import { CalendarScreen } from "./competition/calendar-screen";
 import { CompetitionHub, parseHubSearch } from "./competition/competition-hub";
 import { CompetitionScreen } from "./competition/competition-screen";
+import { parseCalendarSearch } from "./competition/schedule-view";
 import { SeriesScreen } from "./competition/series-screen";
 import { CreditsScreen } from "./credits/credits-screen";
 import { DatabaseScreen } from "./database/database-screen";
 import { DraftScreen, MarketScreen, SettingsScreen } from "./screens";
 import { Shell } from "./shell";
+import { TournamentScreen } from "./tournament/tournament-screen";
 
 // A desktop app has no URLs: the router keeps its history in memory, so the
 // window location never changes (plan 02, T7).
@@ -34,10 +37,32 @@ const indexRoute = createRoute({
 	},
 });
 
+const calendarRoute = createRoute({
+	getParentRoute: () => rootRoute,
+	path: "calendario",
+	validateSearch: parseCalendarSearch,
+	component: function Calendar() {
+		const search = calendarRoute.useSearch();
+		const navigate = calendarRoute.useNavigate();
+		return (
+			<CalendarScreen
+				search={search}
+				onSearch={(next) => void navigate({ search: next, replace: true })}
+			/>
+		);
+	},
+});
+
 const draftRoute = createRoute({
 	getParentRoute: () => rootRoute,
 	path: "draft",
 	component: DraftScreen,
+});
+
+const tournamentRoute = createRoute({
+	getParentRoute: () => rootRoute,
+	path: "torneo",
+	component: TournamentScreen,
 });
 
 const championsRoute = createRoute({
@@ -106,7 +131,9 @@ const creditsRoute = createRoute({
 
 const routeTree = rootRoute.addChildren([
 	indexRoute,
+	calendarRoute,
 	draftRoute,
+	tournamentRoute,
 	championsRoute,
 	databaseRoute,
 	marketRoute,

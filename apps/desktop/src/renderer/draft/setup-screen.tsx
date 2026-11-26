@@ -44,7 +44,7 @@ function Rule(props: {
 }
 
 /** The teams grouped by league, each group by seed; without leagues, one group. */
-function teamGroups(
+export function teamGroups(
 	teams: readonly Team[],
 	seedLabel: (n: number) => string,
 ): SearchSelectGroup[] {

@@ -275,7 +275,7 @@ describe("stage names (#583)", () => {
 		expect(row.textContent).not.toContain("Regular");
 	});
 
-	it("the hub lists the stages and the advance hint names them", async () => {
+	it("the hub's stage selector and the advance hint name the stages", async () => {
 		const { user } = await open(namedCore());
 		expect(
 			screen.getByRole("button", { name: "Until end of stage" }),
@@ -285,9 +285,9 @@ describe("stage names (#583)", () => {
 				name: "Open Rift League",
 			}),
 		);
-		const list = await screen.findByRole("list");
-		expect(within(list).getAllByText("Winter Split").length).toBe(1);
-		expect(within(list).getByText("Groups")).toBeTruthy();
-		expect(within(list).getByText("Playoffs")).toBeTruthy();
+		const stage = await screen.findByRole("combobox", { name: "Stage" });
+		expect(stage.textContent).toContain("Winter Split, Groups");
+		expect(stage.textContent).not.toContain("Regular");
+		expect(stage.textContent).not.toContain("·");
 	});
 });

@@ -1,4 +1,8 @@
-import { type BracketView, CONTRACT_VERSION } from "@rift-legends/contracts";
+import {
+	type BracketView,
+	CONTRACT_VERSION,
+	type ScheduleView as ScheduleList,
+} from "@rift-legends/contracts";
 import { SearchSelect } from "@rift-legends/ui-kit/components/search-select";
 import {
 	Select,
@@ -17,22 +21,55 @@ import {
 	useFacts,
 } from "../core";
 import { bracketLabels, originText } from "./bracket/bracket-labels";
-import { competitionName, stageRowOf } from "./names";
-import { ScheduleDays, type ScheduleSlot } from "./schedule-days";
-import { type SeasonOverview, useTeamNames } from "./season";
+import { Calendar, type CalendarMode } from "./calendar/calendar";
+import { competitionName, stageRowOf, stageText } from "./names";
+import { type SeasonOverview, useTeams } from "./season";
 
-// The «Schedule» view of a competition hub (plan 31, U4): its series by day,
-// filtered by competition and team. Filters live in the route, so coming back
-// from a series finds them as they were (U5).
+// The season calendar with its filters (plan 31, U4; #593): the «Schedule» tab
+// of a competition hub and the sidebar «Calendar». Filters, view and day live in
+// the route, so coming back from a series finds them as they were (U5).
 
-const ALL = "all";
+/** One series of `competition.schedule`. */
+export type ScheduleSlot = ScheduleList[number];
+
+export const ALL = "all";
 
 export interface ScheduleFilters {
 	/** A competition id, or `ALL`. */
 	readonly scope: string;
 	readonly team?: string | undefined;
-	/** The day to bring into view, left there when a series was opened. */
+	readonly mode: CalendarMode;
+	/** The chosen day; without one the calendar follows today. */
 	readonly day?: number | undefined;
+}
+
+/** Where the calendar is, in a route's search. */
+export interface CalendarSearch {
+	/** Schedule filters: a competition id or `all`, and a team. */
+	readonly scope?: string | undefined;
+	readonly team?: string | undefined;
+	/** The calendar view; week when missing. */
+	readonly calendar?: CalendarMode | undefined;
+	/** The chosen day; without one the calendar follows today. */
+	readonly day?: number | undefined;
+}
+
+const text = (value: unknown) =>
+	typeof value === "string" && value.length > 0 ? value : undefined;
+const modes = new Set<unknown>(["day", "week", "month"]);
+
+/** The calendar's part of a route's search, from whatever the route receives. */
+export function parseCalendarSearch(
+	search: Record<string, unknown>,
+): CalendarSearch {
+	return {
+		scope: text(search.scope),
+		team: text(search.team),
+		calendar: modes.has(search.calendar)
+			? (search.calendar as CalendarMode)
+			: undefined,
+		day: Number.isSafeInteger(search.day) ? (search.day as number) : undefined,
+	};
 }
 
 const seasonFact = (fact: { type: string }) =>
@@ -52,7 +89,7 @@ export function ScheduleView({
 	onOpen: (slot: ScheduleSlot) => void;
 }) {
 	const { t } = useTranslation();
-	const teamName = useTeamNames(sessionId);
+	const team = useTeams(sessionId);
 	const scoped = filters.scope === ALL ? undefined : filters.scope;
 	const schedule = useCoreQuery<ScheduleSlot[]>(
 		{
@@ -73,9 +110,9 @@ export function ScheduleView({
 					slots.flatMap(({ teams }) => teams.filter((id) => id !== null)),
 				),
 			]
-				.map((id) => ({ value: id, label: teamName(id) }))
+				.map((id) => ({ value: id, label: team(id).name }))
 				.sort((a, b) => a.label.localeCompare(b.label)),
-		[slots, teamName],
+		[slots, team],
 	);
 	const shown = filters.team
 		? slots.filter(({ teams }) => teams.includes(filters.team as string))
@@ -89,74 +126,62 @@ export function ScheduleView({
 		})),
 	];
 
+	if (schedule.error) return <CoreErrorMessage error={schedule.error} />;
+	if (!schedule.data) return null;
 	return (
-		<section
-			aria-label={t("competition.schedule.label")}
-			className="flex min-h-0 flex-1 flex-col gap-3"
+		<Calendar
+			slots={shown}
+			year={overview.year}
+			today={overview.day}
+			place={filters}
+			onPlace={({ mode, day }) => onFilters({ ...filters, mode, day })}
+			showCompetition={filters.scope === ALL}
+			team={team}
+			competition={(id) => competitionName(t, id)}
+			stage={(slot) => stageText(t, stageRowOf(overview, slot))}
+			origin={origin}
+			onOpen={onOpen}
 		>
-			<div className="flex flex-wrap items-center gap-3">
-				<Select
-					items={competitions}
-					value={filters.scope}
-					onValueChange={(scope) =>
-						onFilters({ scope: scope as string, team: undefined })
-					}
+			<Select
+				items={competitions}
+				value={filters.scope}
+				onValueChange={(scope) =>
+					onFilters({ ...filters, scope: scope as string, team: undefined })
+				}
+			>
+				<SelectTrigger
+					aria-label={t("competition.schedule.competition")}
+					className="w-52"
 				>
-					<SelectTrigger
-						aria-label={t("competition.schedule.competition")}
-						className="w-52"
-					>
-						<SelectValue />
-					</SelectTrigger>
-					<SelectContent>
-						{competitions.map(({ value, label }) => (
-							<SelectItem key={value} value={value}>
-								{label}
-							</SelectItem>
-						))}
-					</SelectContent>
-				</Select>
-				<SearchSelect
-					label={t("competition.schedule.team")}
-					searchLabel={t("competition.schedule.teamSearch")}
-					empty={t("competition.schedule.teamEmpty")}
-					groups={[
-						{
-							items: [
-								{ value: ALL, label: t("competition.schedule.allTeams") },
-								...teams,
-							],
-						},
-					]}
-					value={filters.team ?? ALL}
-					onChange={(team) =>
-						onFilters({
-							scope: filters.scope,
-							team: team === ALL ? undefined : team,
-						})
-					}
-					className="w-56"
-				/>
-			</div>
-			{schedule.error ? (
-				<CoreErrorMessage error={schedule.error} />
-			) : (
-				schedule.data && (
-					<ScheduleDays
-						slots={shown}
-						year={overview.year}
-						today={overview.day}
-						focusDay={filters.day}
-						showCompetition={filters.scope === ALL}
-						team={teamName}
-						competition={(id) => competitionName(t, id)}
-						stageRow={(slot) => stageRowOf(overview, slot)}
-						origin={origin}
-						onOpen={onOpen}
-					/>
-				)
-			)}
-		</section>
+					<SelectValue />
+				</SelectTrigger>
+				<SelectContent>
+					{competitions.map(({ value, label }) => (
+						<SelectItem key={value} value={value}>
+							{label}
+						</SelectItem>
+					))}
+				</SelectContent>
+			</Select>
+			<SearchSelect
+				label={t("competition.schedule.team")}
+				searchLabel={t("competition.schedule.teamSearch")}
+				empty={t("competition.schedule.teamEmpty")}
+				groups={[
+					{
+						items: [
+							{ value: ALL, label: t("competition.schedule.allTeams") },
+							...teams,
+						],
+					},
+				]}
+				value={filters.team ?? ALL}
+				onChange={(next) =>
+					onFilters({ ...filters, team: next === ALL ? undefined : next })
+				}
+				className="w-56"
+			/>
+		</Calendar>
 	);
 }
 
@@ -203,12 +228,12 @@ function useOrigins(sessionId: number, slots: readonly ScheduleSlot[]) {
 			labels: bracketLabels(bracket?.matches ?? []),
 		};
 	});
-	return (slot: ScheduleSlot, index: 0 | 1) => {
+	return (slot: ScheduleSlot, index: 0 | 1, short: boolean) => {
 		const source = sources.find(
 			(s) => s.competition === slot.competition && s.stage === slot.stage,
 		);
 		const match = slot.match ? source?.matches.get(slot.match) : undefined;
 		const from = match?.from[index];
-		return source && from ? originText(t, source.labels, from, false) : "";
+		return source && from ? originText(t, source.labels, from, short) : "";
 	};
 }

@@ -1,13 +1,11 @@
 import { ROLES, type Role } from "@rift-legends/contracts";
 import { DRAFT_ORDER, phaseAt } from "../draft/order";
 import { SCALE } from "../math";
-import { comfort } from "./components/comfort";
 import { compositionFor } from "./components/composition";
 import { fearlessReserve } from "./components/fearless-reserve";
 import { flex } from "./components/flex";
 import { identityFor } from "./components/identity";
 import { rivalsInRole, worstMatchup } from "./components/matchup";
-import { meta } from "./components/meta";
 import { synergy } from "./components/synergy";
 import {
 	type Champion,
@@ -15,14 +13,8 @@ import {
 	selectedChampions,
 } from "./content-index";
 import type { AiContext } from "./context";
+import { type Lane, lanesOf } from "./lanes";
 import { canAssign } from "./positions";
-
-interface Lane {
-	readonly role: Role;
-	readonly meta: number;
-	readonly comfort: number;
-	readonly row: ReadonlyMap<string, number> | undefined;
-}
 
 /** What a free champion scores whatever the opponent picked last. */
 interface Fixed {
@@ -115,16 +107,9 @@ export function replyScorer(base: AiContext, free: readonly string[]) {
 				bound: 0,
 			};
 		}
-		const lanes: Lane[] = [];
-		for (const { role, tier } of candidate.positions) {
-			if (!canTake(role)) continue;
-			lanes.push({
-				role,
-				meta: meta(tier),
-				comfort: comfort(roster?.get(role), champion),
-				row: index.matchups.get(champion)?.get(role),
-			});
-		}
+		const lanes = lanesOf(index, base.team, champion).filter((lane) =>
+			canTake(lane.role),
+		);
 		const flexRoles =
 			trusted && lanes.length > 1 ? lanes.map((l) => l.role) : undefined;
 		const trustedRoles = flexRoles

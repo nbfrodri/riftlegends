@@ -9,7 +9,7 @@ type Archetype = (typeof ARCHETYPES)[number];
 /** Base weights per role, in order top, jungle, mid, bot, support (plan 08, R1). */
 export const KILL_BASE: Readonly<Record<Role, number>> = {
 	top: 36,
-	jungle: 31,
+	jungle: 34,
 	mid: 50,
 	bot: 64,
 	support: 10,
