@@ -16,6 +16,7 @@ import { CreditsScreen } from "./credits/credits-screen";
 import { DatabaseScreen } from "./database/database-screen";
 import { DraftScreen, MarketScreen, SettingsScreen } from "./screens";
 import { Shell } from "./shell";
+import { TournamentScreen } from "./tournament/tournament-screen";
 
 // A desktop app has no URLs: the router keeps its history in memory, so the
 // window location never changes (plan 02, T7).
@@ -56,6 +57,12 @@ const draftRoute = createRoute({
 	getParentRoute: () => rootRoute,
 	path: "draft",
 	component: DraftScreen,
+});
+
+const tournamentRoute = createRoute({
+	getParentRoute: () => rootRoute,
+	path: "torneo",
+	component: TournamentScreen,
 });
 
 const championsRoute = createRoute({
@@ -126,6 +133,7 @@ const routeTree = rootRoute.addChildren([
 	indexRoute,
 	calendarRoute,
 	draftRoute,
+	tournamentRoute,
 	championsRoute,
 	databaseRoute,
 	marketRoute,

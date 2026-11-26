@@ -151,6 +151,38 @@ describe("schedule (U4, #593)", () => {
 		expect(screen.getByRole("heading", { level: 2 }).textContent).toBe(day);
 	});
 
+	it("switching tabs keeps both the stage and the calendar's view and day", async () => {
+		const { user } = await openSchedule();
+		await user.click(
+			await screen.findByRole("button", { name: "Open Rift League" }),
+		);
+		await user.click(
+			await screen.findByRole(
+				"combobox",
+				{ name: "Stage" },
+				{ timeout: 30_000 },
+			),
+		);
+		await user.click(await screen.findByRole("option", { name: "Playoffs" }));
+		await user.click(screen.getByRole("radio", { name: "Schedule" }));
+		await screen.findByRole("grid");
+		await user.click(screen.getByRole("radio", { name: "Month" }));
+		await user.click(screen.getByRole("button", { name: "Next" }));
+		const month = screen.getByRole("heading", { level: 2 }).textContent;
+
+		await user.click(screen.getByRole("radio", { name: "Standings" }));
+		expect(
+			(await screen.findByRole("combobox", { name: "Stage" })).textContent,
+		).toContain("Playoffs");
+		await user.click(screen.getByRole("radio", { name: "Schedule" }));
+		await screen.findByRole("grid");
+		expect(
+			(screen.getByRole("radio", { name: "Month" }) as HTMLInputElement)
+				.checked,
+		).toBe(true);
+		expect(screen.getByRole("heading", { level: 2 }).textContent).toBe(month);
+	});
+
 	it("the sidebar Calendar shows every competition of the season", async () => {
 		await renderWithCore(
 			<RouterProvider router={createAppRouter("/calendario")} />,

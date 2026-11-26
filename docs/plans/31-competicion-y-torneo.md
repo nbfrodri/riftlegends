@@ -79,10 +79,10 @@ Un clic en cualquier logo o nombre de equipo abre su página.
 
 | Consulta | Origen | Uso |
 | --- | --- | --- |
-| `competition.standings` | Plan 12 (#428); aquí se pide en curso (Q2) | Clasificación, grupos y Swiss |
+| `competition.standings` | Plan 12 (#428); aquí se pide en curso (Q2) y con `destinations` (#484) | Clasificación, grupos, Swiss y columna «Destino» |
 | `competition.bracket` | Plan 12 (#428) | Cuadros |
 | `competition.schedule` | Plan 12 (#428) + filtro `team` (Q4) | Calendario, página de equipo |
-| `competition.qualified` | Plan 12 (#428) | Columna «Destino» y plazas internacionales |
+| `competition.qualified` | Plan 12 (#428) | Plazas internacionales ya ganadas |
 | `season.overview` | **Nueva** (Q1) | Resumen |
 | `team.profile` | **Nueva** (Q5), agregada de `competition.seriesRecorded` y `match.*` | Página de equipo |
 | `series.summary`, `match.view` | Draft rápido, ampliadas con id de serie (Q6) | Resultado de una serie |
@@ -160,6 +160,17 @@ Página de equipo:
 3. **Final:** pantalla de campeón (logo y MVP de la final) y «Nuevo torneo».
 
 El torneo vive en memoria; salir de la pantalla lo conserva mientras la app esté abierta.
+
+#### `tournament.create` y configuración (#489)
+
+| Pieza | Diseño |
+| --- | --- |
+| `tournament.preset` | Lista las plazas del preset (fase, liga, puesto) con el mejor sembrado de esa liga |
+| `tournament.create` | Preset o editor, `teams` en orden de sembrado (en un preset, uno por plaza; sin `teams`, las plazas llenas), `humanTeam` opcional, `fearless` (hard por defecto), `seed` y `year`. Crea una temporada de una competición (`msi`, `worlds`, `first-stand` o `custom`) con entrantes `fixed` |
+| `tournament.check` | Responde el error que daría `tournament.create`, o `null`, sin crear nada; la pantalla lo usa para marcar el campo y desactivar «Empezar torneo» |
+| Editor simple | Fase 1: liga (una vuelta), grupos (2 o 4), Swiss (3 victorias o derrotas, menos con pocos equipos) o eliminación simple o doble, con un Bo; juega con todos los equipos. Fase 2 opcional, solo tras liga, grupos o Swiss: eliminación simple o doble con los mejores 2, 4, 8 o 16 y su Bo. La doble solo con 4, 8, 16 o 32 equipos. Ventanas fijas: 8 semanas la fase 1 y 3 la fase 2 |
+| Errores | Los del plan 12. Un equipo repetido es `invalid-format` en `teams.N`; un equipo desconocido, `unknown-team`. Con un torneo en curso, `format-locked`: uno nuevo abre otra sesión |
+| Pantalla `/torneo` | Sesión propia. Reglas (formato, editor, fearless, semilla) a la izquierda; equipos (mi equipo o «Solo ver» y las plazas o la lista editable) a la derecha. Cada error va bajo su campo |
 
 ## 4. Entregables (un issue por fila · milestone «Fase 4 — Competición»)
 

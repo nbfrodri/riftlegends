@@ -12,6 +12,7 @@ import {
 	History,
 	House,
 	type LucideIcon,
+	Medal,
 	Mountain,
 	Newspaper,
 	PanelLeftClose,
@@ -28,6 +29,7 @@ import { placeholderToday } from "./placeholder-players";
 type SectionPath =
 	| "/calendario"
 	| "/draft"
+	| "/torneo"
 	| "/campeones"
 	| "/base-de-datos"
 	| "/mercado"
@@ -39,6 +41,7 @@ interface Section {
 		| "shell.nav.home"
 		| "shell.nav.calendar"
 		| "shell.nav.draft"
+		| "shell.nav.tournament"
 		| "shell.nav.champions"
 		| "shell.nav.database"
 		| "shell.nav.roster"
@@ -58,6 +61,7 @@ const sections: readonly Section[] = [
 	{ label: "shell.nav.home", icon: House },
 	{ label: "shell.nav.calendar", icon: CalendarDays, to: "/calendario" },
 	{ label: "shell.nav.draft", icon: Columns2, to: "/draft" },
+	{ label: "shell.nav.tournament", icon: Medal, to: "/torneo" },
 	{ label: "shell.nav.champions", icon: Swords, to: "/campeones" },
 	{ label: "shell.nav.database", icon: Database, to: "/base-de-datos" },
 	{ label: "shell.nav.roster", icon: Users },
