@@ -116,3 +116,28 @@ test("#555: offline with an incomplete cache shows a notice and lets the player 
 		),
 	).toBeTruthy();
 });
+
+// #570: main sends progress events and answers status polls on different
+// pipes, so a progress event sent just before "ready" can arrive after it.
+test("#570: a late progress event after the offline notice does not open the app", async () => {
+	const assets = fakeAssets(
+		{ state: "ready", version: "16.23", incomplete: true },
+		testCatalog(ids),
+	);
+	await open(assets);
+	expect(await screen.findByText(/official images and sounds/i)).toBeTruthy();
+	await act(async () =>
+		assets.progress({ completed: 0, total: 5, incomplete: true }),
+	);
+	expect(screen.queryByRole("navigation")).toBeNull();
+	// The status poll then answers what main really has: ready, offline.
+	assets.api.status.mockResolvedValue({
+		state: "ready",
+		version: "16.23",
+		incomplete: true,
+	});
+	expect(
+		await screen.findByRole("button", { name: "Continue" }, { timeout: 4000 }),
+	).toBeTruthy();
+	expect(screen.queryByRole("navigation")).toBeNull();
+});
