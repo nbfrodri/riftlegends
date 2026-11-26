@@ -28,6 +28,7 @@ const sectionsEs = [
 const pendingEs = sectionsEs.filter(
 	(name) =>
 		![
+			"Calendario",
 			"Draft",
 			"Torneo",
 			"Campeones",
@@ -122,6 +123,7 @@ describe("T5: sidebar sections", () => {
 	test("available sections are not described as coming soon", async () => {
 		await renderShell();
 		for (const name of [
+			"Calendario",
 			"Draft",
 			"Torneo",
 			"Campeones",
@@ -165,7 +167,7 @@ describe("T5: sidebar sections", () => {
 		]);
 		expect(
 			within(nav).getByRole("button", {
-				name: "Calendar",
+				name: "Roster",
 				description: "Coming soon",
 			}),
 		).toBeTruthy();
@@ -227,8 +229,8 @@ describe("T6: collapsing and keyboard", () => {
 		await user.hover(section("Ajustes"));
 		expect(await screen.findByText("Ajustes")).toBeTruthy();
 		await user.unhover(section("Ajustes"));
-		await user.hover(section("Calendario"));
-		const label = await screen.findByText("Calendario");
+		await user.hover(section("Plantilla"));
+		const label = await screen.findByText("Plantilla");
 		expect(label.parentElement?.textContent).toContain("Próximamente");
 	});
 
@@ -240,11 +242,11 @@ describe("T6: collapsing and keyboard", () => {
 		await user.keyboard("{ArrowDown}");
 		expect(document.activeElement).toBe(section("Ajustes"));
 		await user.keyboard("{ArrowDown}");
-		expect(document.activeElement).toBe(section("Draft"));
+		expect(document.activeElement).toBe(section("Calendario"));
 		await user.keyboard("{ArrowUp}");
 		expect(document.activeElement).toBe(section("Ajustes"));
 		await user.keyboard("{Home}");
-		expect(document.activeElement).toBe(section("Draft"));
+		expect(document.activeElement).toBe(section("Calendario"));
 		await user.keyboard("{End}");
 		expect(document.activeElement).toBe(section("Ajustes"));
 		await user.keyboard("{Enter}");

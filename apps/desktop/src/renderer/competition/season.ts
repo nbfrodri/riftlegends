@@ -137,8 +137,8 @@ export function useSeasonSchedule(sessionId: number): SeasonSchedule {
 	}, [schedule.data]);
 }
 
-/** Display names of the content's teams, by id. */
-export function useTeamNames(sessionId: number) {
+/** The content's teams by id: name and, when it has one, short name. */
+export function useTeams(sessionId: number) {
 	const database = useCoreQuery<ContentDatabase>(
 		{
 			v: CONTRACT_VERSION,
@@ -149,8 +149,16 @@ export function useTeamNames(sessionId: number) {
 		{ affectedBy: noFact },
 	);
 	return useCallback(
-		(id: string) =>
-			database.data?.teams.find((team) => team.id === id)?.name ?? id,
+		(id: string): { name: string; short?: string | undefined } => {
+			const team = database.data?.teams.find((team) => team.id === id);
+			return team ? { name: team.name, short: team.short } : { name: id };
+		},
 		[database.data],
 	);
+}
+
+/** Display names of the content's teams, by id. */
+export function useTeamNames(sessionId: number) {
+	const team = useTeams(sessionId);
+	return useCallback((id: string) => team(id).name, [team]);
 }
