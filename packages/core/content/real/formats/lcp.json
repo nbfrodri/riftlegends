@@ -324,6 +324,7 @@
 		"draw"
 	],
 	"tiebreakerBestOf": 3,
+	"fearless": "hard",
 	"slots": [
 		{
 			"to": "first-stand",
