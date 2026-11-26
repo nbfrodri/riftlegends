@@ -77,12 +77,22 @@ const Context = createContext<DraftSession | null>(null);
 // Apart from the session: its value changes with every fact, and a reader of
 // only the content set (every champion portrait) must not re-render for that.
 const ContentContext = createContext<ContentSet | null>(null);
+// Teams and champions of a series: the draft flow and a read-only season
+// series both offer them to the result screens.
+const OptionsContext = createContext<SeriesOptions | null>(null);
 
 /** The state of the quick-draft flow, for every sub-screen. */
 export function useDraftSession() {
 	const session = use(Context);
 	if (!session) throw new Error("useDraftSession needs a DraftSessionProvider");
 	return session;
+}
+
+/** Teams (name, coach and players) and champions of the series on screen. */
+export function useSeriesOptions(): SeriesOptions {
+	const options = use(OptionsContext);
+	if (!options) throw new Error("useSeriesOptions needs a series provider");
+	return options;
 }
 
 /** The session's content set; fictional outside a session (e.g. a lone board column). */
@@ -104,28 +114,10 @@ export const championLabel = (options: SeriesOptions, id: string) =>
 const everyFact = () => true;
 const noFact = () => false;
 
-function LoadedSession(props: {
-	sessionId: number;
-	content: ContentSet;
-	onLost: () => void;
-	children: ReactNode;
-}) {
-	const { sessionId, onLost, content } = props;
+/** `series.options` of `content`; with real content, champions carry their cached name in the UI language (R4). */
+function useShownOptions(sessionId: number, content: ContentSet) {
 	const { i18n } = useTranslation();
 	const catalog = useOptionalAssets()?.champions;
-	const { mutateAsync } = useCoreCommand();
-	const position = useRef(0);
-	const { timer, rules, sideChoosers, lock, applyFacts } = useSeriesFacts();
-	const claimedTurn = useRef<DraftView | null>(null);
-	const [error, setError] = useState<CoreRequestError | null>(null);
-	const [mine, setMine] = useState<string | null>(null);
-	const [presentation, present] = useState<Presentation | null>(null);
-	const [strategy, setStrategy] = useState<TeamStrategy | null>(null);
-
-	const view = useCoreQuery<DraftView | null>(
-		{ v: CONTRACT_VERSION, kind: "draft.view", sessionId, params: {} },
-		{ affectedBy: everyFact },
-	);
 	const options = useCoreQuery<SeriesOptions>(
 		{
 			v: CONTRACT_VERSION,
@@ -142,6 +134,30 @@ function LoadedSession(props: {
 				: options.data,
 		[options.data, content, catalog, i18n.language],
 	);
+	return { options, shown };
+}
+
+function LoadedSession(props: {
+	sessionId: number;
+	content: ContentSet;
+	onLost: () => void;
+	children: ReactNode;
+}) {
+	const { sessionId, onLost, content } = props;
+	const { mutateAsync } = useCoreCommand();
+	const position = useRef(0);
+	const { timer, rules, sideChoosers, lock, applyFacts } = useSeriesFacts();
+	const claimedTurn = useRef<DraftView | null>(null);
+	const [error, setError] = useState<CoreRequestError | null>(null);
+	const [mine, setMine] = useState<string | null>(null);
+	const [presentation, present] = useState<Presentation | null>(null);
+	const [strategy, setStrategy] = useState<TeamStrategy | null>(null);
+
+	const view = useCoreQuery<DraftView | null>(
+		{ v: CONTRACT_VERSION, kind: "draft.view", sessionId, params: {} },
+		{ affectedBy: everyFact },
+	);
+	const { options, shown } = useShownOptions(sessionId, content);
 
 	const send = useCallback(
 		async (kind: string, payload: unknown) => {
@@ -216,7 +232,9 @@ function LoadedSession(props: {
 		<>
 			{value && (
 				<ContentContext value={content}>
-					<Context value={value}>{props.children}</Context>
+					<OptionsContext value={value.options}>
+						<Context value={value}>{props.children}</Context>
+					</OptionsContext>
 				</ContentContext>
 			)}
 			{failure && <CoreErrorMessage error={failure} />}
@@ -264,5 +282,27 @@ export function DraftSessionProvider({ children }: { children: ReactNode }) {
 		>
 			{children}
 		</LoadedSession>
+	);
+}
+
+/**
+ * Content set and series options for the result screens outside the draft
+ * flow: a series of the season, read-only (plan 31, U5), on `sessionId`.
+ */
+export function SeriesContentProvider({
+	sessionId,
+	children,
+}: {
+	sessionId: number;
+	children: ReactNode;
+}) {
+	const content = appContent();
+	const { options, shown } = useShownOptions(sessionId, content);
+	if (options.error) return <CoreErrorMessage error={options.error} />;
+	if (!shown) return null;
+	return (
+		<ContentContext value={content}>
+			<OptionsContext value={shown}>{children}</OptionsContext>
+		</ContentContext>
 	);
 }

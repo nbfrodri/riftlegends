@@ -13,6 +13,7 @@ import { buildCalendar, type CalendarStage } from "./calendar";
 import { exhibitionSeason } from "./exhibition";
 import type { StageOutcome } from "./qualification";
 import { buildStageGraph } from "./season";
+import { playDay } from "./season-day";
 import {
 	humanMatch,
 	humanSeriesCommands,
@@ -21,27 +22,19 @@ import {
 	playSeries,
 } from "./season-human";
 import { seasonOverview } from "./season-overview";
-import {
-	closeDay,
-	openDayLog,
-	recordSeries,
-	type Slot,
-	type SlotSeries,
-	slotSeries,
-} from "./season-play";
+import type { DayLog, Slot, SlotSeries } from "./season-play";
 import {
 	type SeriesRecord,
 	seriesMatch,
 	seriesSummary,
 } from "./season-records";
-import { playSeasonSeries } from "./season-series";
 import type { StageProgress } from "./season-stages";
 import { updateStages } from "./season-update";
 import { projectSchedule, stageView } from "./season-views";
 import type { StageGraph, StageRef } from "./stage-model";
 import { teamProfile } from "./team-profile";
 
-type Command<K> = Extract<
+export type Command<K> = Extract<
 	ReturnType<typeof competitionCommands.schema.parse>,
 	{ kind: K }
 >["payload"];
@@ -78,6 +71,8 @@ export interface SeasonSession {
 	readonly season?: RunningSeason;
 	/** The user's series in play, with the draft state it runs on. */
 	readonly human?: HumanSeries;
+	/** A day played in batches that has not closed yet. */
+	readonly dayLog?: { readonly day: number; readonly log: DayLog };
 }
 
 interface HumanSeries {
@@ -161,62 +156,6 @@ function createSeason(
 	return started.ok
 		? { ok: true, state: { ...state, season: started.season }, facts }
 		: started;
-}
-
-function playDay(
-	state: SeasonSession,
-	{ day }: Command<"season.playDay">,
-): Outcome<SeasonSession> {
-	const { season } = state;
-	if (!season) return reject("wrong-action", { expected: "season.create" });
-	const schedule = projectSchedule(season).filter(
-		({ status }) => status !== "played",
-	);
-	const nextDay = schedule[0]?.day;
-	if (nextDay !== day)
-		return reject("wrong-action", { expected: nextDay ?? "season.create" });
-	const log = openDayLog(season);
-	let waiting: Slot | undefined;
-	for (const slot of schedule.filter((slot) => slot.day === day)) {
-		const { competition, stage } = slot;
-		const series = slotSeries(season, slot);
-		if (!series) return reject("invalid-stage-ref", { competition, stage });
-		if (season.humanTeam && series.fixture.teams.includes(season.humanTeam)) {
-			waiting = slot;
-			continue;
-		}
-		const played = playSeasonSeries(
-			season.content,
-			series.fixture,
-			series.seed,
-			series.fearless,
-		);
-		if (!played.ok) return played;
-		recordSeries(log, slot, series, played);
-	}
-	if (waiting?.id === season.pending && !log.facts.length)
-		return reject("wrong-action", { expected: "season.playSeries" });
-	const fixture = waiting && slotSeries(season, waiting)?.fixture;
-	if (waiting && fixture)
-		log.facts.push({
-			type: "competition.seriesPending",
-			competition: waiting.competition,
-			stage: waiting.stage,
-			day,
-			round: fixture.round,
-			series: waiting.id,
-			teams: fixture.teams,
-		});
-	const closed = closeDay(season, log, day);
-	if (!closed.ok) return closed;
-	return {
-		ok: true,
-		state: {
-			...state,
-			season: { ...closed.season, pending: waiting?.id },
-		},
-		facts: log.facts,
-	};
 }
 
 export const seasonDispatcher = createDispatcher<SeasonSession>({

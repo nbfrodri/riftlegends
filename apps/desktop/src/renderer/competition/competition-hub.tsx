@@ -1,14 +1,7 @@
 import { Button } from "@rift-legends/ui-kit/components/button";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@rift-legends/ui-kit/components/select";
+import { SegmentedControl } from "@rift-legends/ui-kit/components/segmented-control";
 import { cn } from "@rift-legends/ui-kit/lib/utils";
 import { useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { LeagueLogo } from "../assets/league-logo";
 import { CoreErrorMessage } from "../core";
@@ -18,16 +11,36 @@ import {
 	dayDate,
 	stageName,
 } from "./names";
-import {
-	type CompetitionOverview,
-	useExhibitionSeason,
-	useSeasonOverview,
-} from "./season";
-import { StageStandings } from "./standings/stage-standings";
+import { ScheduleView } from "./schedule-view";
+import { useExhibitionSeason, useSeasonOverview } from "./season";
 
-// `/competicion/$competition`: the hub of one competition (plan 31). It shows
-// the standings of a stage (U3); calendar and bracket come with their own
-// issues (U4–U7).
+// `/competicion/$competition`: the hub of one competition (plan 31), with a
+// view per tab: its stages and its schedule (U4). What the hub shows lives in
+// the route's search, so coming back from a series finds it as it was (U5).
+
+type HubView = "stages" | "schedule";
+
+export interface HubSearch {
+	readonly view?: HubView | undefined;
+	/** Schedule filters: a competition id or `all`, and a team. */
+	readonly scope?: string | undefined;
+	readonly team?: string | undefined;
+	/** The schedule day to bring into view. */
+	readonly day?: number | undefined;
+}
+
+const text = (value: unknown) =>
+	typeof value === "string" && value.length > 0 ? value : undefined;
+
+/** The hub's search, from whatever the route receives. */
+export function parseHubSearch(search: Record<string, unknown>): HubSearch {
+	return {
+		view: search.view === "schedule" ? "schedule" : undefined,
+		scope: text(search.scope),
+		team: text(search.team),
+		day: Number.isSafeInteger(search.day) ? (search.day as number) : undefined,
+	};
+}
 
 const tone = {
 	pending: "text-muted",
@@ -35,11 +48,21 @@ const tone = {
 	finished: "text-muted",
 } as const;
 
-export function CompetitionHub({ competition }: { competition: string }) {
+export function CompetitionHub({
+	competition,
+	search = {},
+	onSearch,
+}: {
+	competition: string;
+	search?: HubSearch;
+	/** Replaces the hub's search in place (no new history entry). */
+	onSearch: (search: HubSearch) => Promise<void>;
+}) {
 	const { t } = useTranslation();
 	const navigate = useNavigate();
 	const season = useExhibitionSeason();
 	const name = competitionName(t, competition);
+	const view = search.view ?? "stages";
 	return (
 		<section className="flex h-full min-h-0 flex-col gap-[clamp(10px,1.6vh,20px)] px-[clamp(14px,1.35vw,28px)] py-[clamp(14px,2.1vh,24px)]">
 			<header className="flex flex-wrap items-center justify-between gap-3">
@@ -60,29 +83,82 @@ export function CompetitionHub({ competition }: { competition: string }) {
 					{t("competition.hub.back")}
 				</Button>
 			</header>
-			{season.data && (
-				<StandingsPanel
-					sessionId={season.data.sessionId}
-					competition={competition}
-				/>
-			)}
+			<SegmentedControl
+				label={t("competition.hub.view")}
+				options={[
+					{ value: "stages", label: t("competition.hub.stages") },
+					{ value: "schedule", label: t("competition.schedule.label") },
+				]}
+				value={view}
+				onChange={(next) =>
+					void onSearch({
+						...search,
+						view: next === "stages" ? undefined : next,
+						day: undefined,
+					})
+				}
+				className="self-start"
+			/>
+			{season.data &&
+				(view === "schedule" ? (
+					<Schedule
+						sessionId={season.data.sessionId}
+						competition={competition}
+						search={search}
+						onSearch={onSearch}
+					/>
+				) : (
+					<Stages sessionId={season.data.sessionId} competition={competition} />
+				))}
 			{season.error && <CoreErrorMessage error={season.error} />}
 		</section>
 	);
 }
 
-type Stage = CompetitionOverview["stages"][number];
+function Schedule({
+	sessionId,
+	competition,
+	search,
+	onSearch,
+}: {
+	sessionId: number;
+	competition: string;
+	search: HubSearch;
+	onSearch: (search: HubSearch) => Promise<void>;
+}) {
+	const navigate = useNavigate();
+	const overview = useSeasonOverview(sessionId);
+	if (!overview.data) return null;
+	return (
+		<ScheduleView
+			sessionId={sessionId}
+			overview={overview.data}
+			filters={{
+				scope: search.scope ?? competition,
+				team: search.team,
+				day: search.day,
+			}}
+			onFilters={({ scope, team }) =>
+				void onSearch({
+					view: "schedule",
+					scope: scope === competition ? undefined : scope,
+					team,
+				})
+			}
+			onOpen={(slot) => {
+				// Remember the day, so Back brings it into view again.
+				void onSearch({ ...search, view: "schedule", day: slot.day }).then(() =>
+					navigate({
+						to: "/competicion/serie/$series",
+						params: { series: slot.id },
+					}),
+				);
+			}}
+		/>
+	);
+}
 
-/** The stage in play; between stages the last one played; before any, the first. */
-const defaultStage = (stages: readonly Stage[]) =>
-	(
-		stages.find(({ status }) => status === "live") ??
-		[...stages].reverse().find(({ status }) => status === "finished") ??
-		stages[0]
-	)?.stage;
-
-/** The standings of the chosen stage, with the stage selector (U3). */
-function StandingsPanel({
+function Stages({
 	sessionId,
 	competition,
 }: {
@@ -91,62 +167,41 @@ function StandingsPanel({
 }) {
 	const { t, i18n } = useTranslation();
 	const overview = useSeasonOverview(sessionId);
-	const [chosen, setChosen] = useState<string>();
 	const view = overview.data;
 	const stages = view?.competitions.find(
 		({ id }) => id === competition,
 	)?.stages;
 	if (!view || !stages) return null;
-	const selected =
-		stages.find(({ stage }) => stage === chosen) ??
-		stages.find(({ stage }) => stage === defaultStage(stages));
-	if (!selected) return null;
 	const date = (day: number) => dayDate(view.year, day, i18n.language);
-	const items = stages.map(({ stage }) => ({
-		value: stage,
-		label: stageName(stage),
-	}));
 	return (
-		<section
-			aria-label={t("competition.standings.title")}
-			className="flex min-h-0 flex-1 flex-col gap-[clamp(8px,1.2vh,14px)]"
-		>
-			<div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-[14px]">
-				<Select
-					items={items}
-					value={selected.stage}
-					onValueChange={(value) => value && setChosen(value)}
-				>
-					<SelectTrigger
-						aria-label={t("competition.hub.stage")}
-						className="min-w-[14rem]"
+		<section aria-labelledby="competition-stages" className="min-h-0">
+			<h2
+				id="competition-stages"
+				className="mb-2 font-bold font-display text-[clamp(16px,1.45vw,23px)] tracking-[-0.045em]"
+			>
+				{t("competition.hub.stages")}
+			</h2>
+			<ol className="grid max-h-full gap-1 overflow-y-auto scroll-edge">
+				{stages.map(({ stage, status, startDay, endDay }) => (
+					<li
+						key={stage}
+						className="grid grid-cols-[1fr_auto_auto] items-center gap-4 bg-panel px-3 py-2 text-[14px]"
 					>
-						<SelectValue />
-					</SelectTrigger>
-					<SelectContent>
-						{items.map(({ value, label }) => (
-							<SelectItem key={value} value={value}>
-								{label}
-							</SelectItem>
-						))}
-					</SelectContent>
-				</Select>
-				<span className="text-muted tabular-nums">
-					{t("competition.hub.days", {
-						start: date(selected.startDay),
-						end: date(selected.endDay),
-					})}
-				</span>
-				<span className={cn("font-semibold", tone[selected.status])}>
-					{t(`competition.status.${selected.status}`)}
-				</span>
-			</div>
-			<StageStandings
-				key={selected.stage}
-				sessionId={sessionId}
-				competition={competition}
-				stage={selected.stage}
-			/>
+						<span className="min-w-0 truncate font-semibold">
+							{stageName(stage)}
+						</span>
+						<span className="text-muted tabular-nums">
+							{t("competition.hub.days", {
+								start: date(startDay),
+								end: date(endDay),
+							})}
+						</span>
+						<span className={cn("w-24 text-right font-semibold", tone[status])}>
+							{t(`competition.status.${status}`)}
+						</span>
+					</li>
+				))}
+			</ol>
 		</section>
 	);
 }

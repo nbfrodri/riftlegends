@@ -184,9 +184,33 @@ const standings = z.strictObject({
 
 export type StandingsView = z.infer<typeof standings>;
 
+/**
+ * One series of `competition.schedule`. Open: the core may add detail (its
+ * allocation explanation, priority) that the views do not read.
+ */
+const scheduleSlot = z.object({
+	/** Opens the series once played (`series.summary`, `match.view`). */
+	id,
+	competition: id,
+	stage: id,
+	day: count,
+	/** `null` while the team is not known yet. */
+	teams: z.tuple([id.nullable(), id.nullable()]),
+	bestOf: z.int().min(1).max(5).optional(),
+	status: z.enum(["played", "ready", "pending"]),
+	winner: id.optional(),
+	/** Games won by each team, in the order of `teams`. */
+	score: z.tuple([count, count]).optional(),
+	/** In a bracket stage, the id of its series in `competition.bracket`. */
+	match: id.optional(),
+});
+
+export type ScheduleView = z.infer<typeof scheduleSlot>[];
+
 export const competitionViews = {
 	overview: seasonOverview,
 	teamProfile,
 	bracket,
 	standings,
+	schedule: z.array(scheduleSlot),
 };
