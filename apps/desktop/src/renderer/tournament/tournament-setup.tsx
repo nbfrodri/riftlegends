@@ -210,11 +210,11 @@ export function TournamentSetup(props: {
 		errorAt({ kind: "general" }) ?? errorAt({ kind: "teams" });
 	return (
 		<>
-			<div className="grid min-h-0 flex-1 grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] gap-gap">
-				<section className="min-w-0 bg-panel p-[clamp(14px,1.5vw,24px)]">
-					<h2 className="mb-2 font-bold font-display text-xl tracking-heading">
-						{t("tournament.rules")}
-					</h2>
+			<div className="grid min-h-0 flex-1 grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] grid-rows-[minmax(0,1fr)] gap-gap">
+				<section
+					aria-label={t("tournament.rules")}
+					className="min-h-0 min-w-0 scroll-edge bg-panel p-5 short:p-4"
+				>
 					<Setting
 						title={t("tournament.format")}
 						note={t(`tournament.formatNote.${preset ? "preset" : "custom"}`)}
@@ -223,10 +223,14 @@ export function TournamentSetup(props: {
 							label={t("tournament.format")}
 							options={modes.map((value) => ({
 								value,
-								label: t(
-									value === "custom"
-										? "tournament.custom"
-										: `tournament.preset.${value}`,
+								label: (
+									<span className="whitespace-nowrap">
+										{t(
+											value === "custom"
+												? "tournament.custom"
+												: `tournament.preset.${value}`,
+										)}
+									</span>
 								),
 								disabled: value !== "custom" && !leagues,
 							}))}
@@ -289,8 +293,8 @@ export function TournamentSetup(props: {
 						</div>
 					</Setting>
 				</section>
-				<section className="flex min-h-0 min-w-0 flex-col bg-panel py-[clamp(14px,1.5vw,24px)] pl-[clamp(14px,1.5vw,24px)]">
-					<div className="flex items-baseline justify-between gap-3 pr-[clamp(14px,1.5vw,24px)]">
+				<section className="flex min-h-0 min-w-0 flex-col bg-panel p-5 short:p-4">
+					<div className="flex items-baseline justify-between gap-3">
 						<h2 className="font-bold font-display text-xl tracking-heading">
 							{t("tournament.teams")}
 						</h2>
@@ -298,7 +302,7 @@ export function TournamentSetup(props: {
 							{t("tournament.teamCount", { count: teams.length })}
 						</span>
 					</div>
-					<div className="mt-2 flex items-center gap-3 border-line border-b pr-[clamp(14px,1.5vw,24px)] pb-[clamp(7px,1.1vh,12px)]">
+					<div className="mt-2 flex items-center gap-3">
 						<span className="w-[118px] shrink-0 font-semibold">
 							{t("tournament.myTeam")}
 						</span>
@@ -313,10 +317,13 @@ export function TournamentSetup(props: {
 							describedBy={humanId}
 						/>
 					</div>
-					<p id={humanId} className="mt-1 pr-4 text-[13px] text-muted">
+					<p
+						id={humanId}
+						className="mt-1 border-line border-b pr-4 pb-[clamp(6px,1vh,10px)] text-[13px] text-muted"
+					>
 						{errorAt({ kind: "humanTeam" }) ?? t("tournament.myTeamNote")}
 					</p>
-					<div className="mt-1 min-h-0 flex-1 scroll-edge-[clamp(14px,1.5vw,24px)]">
+					<div className="mt-1 min-h-0 flex-1 scroll-edge-[20px] short:scroll-edge-[16px]">
 						{preset === null ? (
 							<CustomTeams
 								teams={teams}

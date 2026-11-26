@@ -31,7 +31,7 @@ export function TournamentScreen() {
 	}, [openSession, round]);
 
 	return (
-		<section className="flex min-h-full flex-col gap-gap px-gutter py-[clamp(16px,2.5vh,26px)] short:gap-3 short:py-3.5">
+		<section className="flex h-full flex-col gap-gap px-gutter py-[clamp(16px,2.5vh,26px)] short:gap-3 short:py-3.5">
 			<header>
 				<h1 className="font-bold font-display text-[clamp(29px,2.5vw,48px)] leading-none tracking-heading">
 					{t("tournament.title")}

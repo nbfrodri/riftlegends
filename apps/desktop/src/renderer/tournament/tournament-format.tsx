@@ -30,14 +30,14 @@ export function Setting(props: {
 	children: ReactNode;
 }) {
 	return (
-		<div className="flex items-center justify-between gap-4 border-line border-t py-[clamp(7px,1.1vh,14px)]">
-			<div className="min-w-0">
+		<div className="border-line border-t py-[clamp(6px,1vh,12px)] first:border-t-0 first:pt-0">
+			<div className="flex items-center justify-between gap-4">
 				<h3 className="font-semibold">{props.title}</h3>
-				{props.note && (
-					<p className="mt-0.5 text-[13px] text-muted">{props.note}</p>
-				)}
+				{props.children}
 			</div>
-			{props.children}
+			{props.note && (
+				<p className="mt-1 text-[13px] text-muted">{props.note}</p>
+			)}
 		</div>
 	);
 }
@@ -70,9 +70,9 @@ function StageFieldset(props: {
 	return (
 		<fieldset
 			aria-describedby={props.error ? errorId : undefined}
-			className="m-0 min-w-0 border-0 border-line border-t p-0 py-[clamp(7px,1.1vh,14px)]"
+			className="m-0 min-w-0 border-0 border-line border-t p-0 py-[clamp(6px,1vh,12px)]"
 		>
-			<legend className="float-left mb-1.5 w-full font-semibold">
+			<legend className="float-left mb-1 w-full font-semibold">
 				{props.legend}
 			</legend>
 			<div className="clear-left flex flex-wrap items-center gap-x-4 gap-y-2">
