@@ -491,12 +491,12 @@ describe("U6: the bracket in the competition hub (#605)", () => {
 				payload: { day },
 			});
 		});
-		const played = await screen.findByRole(
+		const [played] = await screen.findAllByRole(
 			"button",
 			{ name: /^Semifinal \d: \S.* \d–\d \S/ },
 			{ timeout: 30_000 },
 		);
-		await user.click(played);
+		await user.click(played as HTMLElement);
 		await waitFor(() =>
 			expect(router.state.location.pathname).toMatch(
 				/^\/competicion\/serie\/.+/,

@@ -25,6 +25,14 @@ const seasonOverview = z.strictObject({
 			stages: z.array(
 				z.strictObject({
 					stage: id,
+					/** How the stage is played: a bracket has `competition.bracket`. */
+					play: z.enum([
+						"roundRobin",
+						"groups",
+						"swiss",
+						"singleElim",
+						"doubleElim",
+					]),
 					status,
 					startDay: count,
 					endDay: count,
