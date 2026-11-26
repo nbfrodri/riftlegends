@@ -68,6 +68,8 @@ test("T6: arrow keys move a visible focus between sections", async ({
 	await nav.getByRole("button", { name: "Draft" }).focus();
 	await appWindow.keyboard.press("ArrowDown");
 	const market = nav.getByRole("button", { name: "Market" });
+	await expect(nav.getByRole("button", { name: "Tournament" })).toBeFocused();
+	await appWindow.keyboard.press("ArrowDown");
 	await expect(nav.getByRole("button", { name: "Champions" })).toBeFocused();
 	await appWindow.keyboard.press("ArrowDown");
 	await expect(nav.getByRole("button", { name: "Database" })).toBeFocused();
