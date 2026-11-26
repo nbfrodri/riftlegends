@@ -13,15 +13,22 @@ import { SCOPES } from "../rng/scopes";
 import { deriveSeed } from "../rng/seeds";
 import { createRng } from "../rng/streams";
 import { roleWeights } from "./attribution/weights";
-import { farmed, paidByRole, type Slot } from "./economy";
+import { markEconomy, type SideEconomy, type Slot } from "./economy";
 import { type MatchPlays, startPlays } from "./events";
+import { markStructure, type SideMap } from "./map-state";
 import type { MentalEdge } from "./mental";
+import {
+	markObjective,
+	type ObjectiveTimers,
+	type SideObjectives,
+	startObjectives,
+} from "./objective-state";
 import { type Lineup, type Profile, profiles } from "./profile";
 
-/** Minutes each buff lasts after its objective falls. */
-const BUFF_MINUTES = { herald: 2, baron: 3, elder: 2 } as const;
-/** The counter each buffing objective adds to. */
-const TAKEN = { herald: "heralds", baron: "barons", elder: "elders" } as const;
+export { earnPassive } from "./economy";
+export { inhibitorDown, LANES, type Lane } from "./map-state";
+export { GRUBS, minuteOf, SOUL } from "./objective-state";
+
 /** Range of the form of the day, in points (F10 tunes it). */
 const FORM = 600_000;
 
@@ -69,38 +76,7 @@ interface MatchContext {
 	readonly slots: ReadonlyMap<string, Slot>;
 }
 
-export type Lane = "top" | "mid" | "bot";
-export const LANES: readonly Lane[] = ["top", "mid", "bot"];
-type Objective = "dragon" | "herald" | "baron" | "elder";
-
-/** A side's dragons that complete its soul and end the dragons. */
-export const SOUL = 4;
-
-/** Void grubs in the one group; with all of them a side gets the voidmites. */
-export const GRUBS = 3;
-
-interface SideState {
-	readonly gold: number;
-	/** Gold each player earned, by role: events and passive income. */
-	readonly paid: readonly number[];
-	readonly kills: number;
-	readonly dragons: number;
-	/** Void grubs this side has taken; the stacks never wear off. */
-	readonly grubs: number;
-	/** Objectives this side has taken. */
-	readonly heralds: number;
-	readonly barons: number;
-	readonly elders: number;
-	/** Towers this side has lost in each lane (0–3) and at its nexus (0–2). */
-	readonly towers: Readonly<Record<Lane, number>>;
-	readonly nexusTowers: number;
-	/** Minute the side can press its advantage after a fight. */
-	readonly fightPushAt: number;
-	/** Minute each lost inhibitor is back; it is down while that is later. */
-	readonly inhibitors: Readonly<Record<Lane, number>>;
-	/** Minute each buff wears off; 0 if the side never had it. */
-	readonly buffs: Readonly<Record<keyof typeof BUFF_MINUTES, number>>;
-}
+type SideState = SideEconomy & SideObjectives & SideMap;
 
 export interface MatchState {
 	readonly context: MatchContext;
@@ -109,29 +85,10 @@ export interface MatchState {
 	readonly blue: SideState;
 	readonly red: SideState;
 	/** Minute from which each objective can be taken. */
-	readonly objectives: Readonly<Record<Objective | "grub", number>>;
+	readonly objectives: ObjectiveTimers;
 	readonly winner: Side | null;
 	readonly plays: MatchPlays;
 }
-
-/** The minute in which `seconds` falls: an objective at 5:00 is up in minute 5. */
-export const minuteOf = (seconds: number) =>
-	(seconds + 59 - ((seconds + 59) % 60)) / 60;
-
-/** Adds one minute of passive income to a side, by role. */
-export function earnPassive(state: MatchState, side: Side): SideState {
-	const own = state[side];
-	const income = state.context.rules.economy.passive;
-	const farm = farmed(income);
-	return {
-		...own,
-		gold: own.gold + income,
-		paid: own.paid.map((gold, i) => gold + (farm[i] as number)),
-	};
-}
-
-export const inhibitorDown = (side: SideState, minute: number) =>
-	LANES.some((lane) => side.inhibitors[lane] > minute);
 
 export const other = (side: Side): Side => (side === "blue" ? "red" : "blue");
 
@@ -255,98 +212,39 @@ export function createMatch(setup: MatchSetup): MatchState {
 		minute: 0,
 		blue: start,
 		red: start,
-		objectives: {
-			grub: minuteOf(objectives.grub.first),
-			dragon: minuteOf(objectives.dragon.first),
-			herald: minuteOf(objectives.herald.first),
-			baron: minuteOf(objectives.baron.first),
-			elder: minuteOf(objectives.elder.first),
-		},
+		objectives: startObjectives(objectives),
 		winner: null,
 		plays: startPlays(),
 	};
 }
 
-const lane = (event: MatchEvent) => event.zone.slice("lane-".length) as Lane;
-
 /** One event's mark on the side that won it and on the other side. */
 function mark(state: MatchState, e: MatchEvent): MatchState {
 	const { rules } = state.context;
-	const winner = state[e.side];
 	const loserSide = other(e.side);
-	const loser = state[loserSide];
-	let loserKills = 0;
-	if (e.kind === "fight") {
-		const loserPlayers = Object.values(state.context[loserSide].players);
-		loserKills = e.kills.filter((kill) =>
-			loserPlayers.includes(kill.killer),
-		).length;
-	}
-	const paid = paidByRole(e, state.context.slots, rules.economy);
-	const earned = (own: SideState, side: Side) =>
-		own.paid.map((gold, i) => gold + (paid[side][i] as number));
-	let won: SideState = {
-		...winner,
-		gold: winner.gold + e.gold[e.side],
-		paid: earned(winner, e.side),
-		kills: winner.kills + e.kills.length - loserKills,
-	};
-	let lost: SideState = {
-		...loser,
-		gold: loser.gold + e.gold[loserSide],
-		paid: earned(loser, loserSide),
-		kills: loser.kills + loserKills,
-	};
+	let { won, lost } = markEconomy(state, e, loserSide);
 	let objectives = state.objectives;
-	const respawn = (kind: Objective) => ({
-		...objectives,
-		[kind]: e.minute + minuteOf(rules.objectives[kind].respawn),
-	});
-	const buff = (kind: keyof typeof BUFF_MINUTES) => ({
-		...won.buffs,
-		[kind]: e.minute + BUFF_MINUTES[kind],
-	});
 	switch (e.kind) {
 		case "fight":
 			won = { ...won, fightPushAt: e.minute + 1 };
 			break;
 		case "tower":
-			lost =
-				e.tier === 4
-					? { ...lost, nexusTowers: lost.nexusTowers + 1 }
-					: {
-							...lost,
-							towers: { ...lost.towers, [lane(e)]: lost.towers[lane(e)] + 1 },
-						};
-			break;
 		case "inhibitor":
-			lost = {
-				...lost,
-				inhibitors: {
-					...lost.inhibitors,
-					[lane(e)]: e.minute + minuteOf(rules.inhibitorRespawn),
-				},
-			};
+			lost = markStructure(lost, e, rules.inhibitorRespawn);
 			break;
 		case "grub":
-			// One group, so there is nothing to respawn; a split gives the
-			// other side its share.
-			won = { ...won, grubs: won.grubs + (e.grubs?.[e.side] ?? 0) };
-			lost = { ...lost, grubs: lost.grubs + (e.grubs?.[loserSide] ?? 0) };
-			break;
 		case "dragon":
-			won = { ...won, dragons: won.dragons + 1 };
-			objectives = respawn("dragon");
-			break;
 		case "herald":
 		case "baron":
 		case "elder":
-			won = {
-				...won,
-				[TAKEN[e.kind]]: won[TAKEN[e.kind]] + 1,
-				buffs: buff(e.kind),
-			};
-			objectives = respawn(e.kind);
+			({ won, lost, objectives } = markObjective(
+				won,
+				lost,
+				objectives,
+				e,
+				loserSide,
+				rules.objectives,
+			));
 			break;
 	}
 	return {
