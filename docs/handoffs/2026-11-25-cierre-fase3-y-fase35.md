@@ -89,3 +89,12 @@ Estado 26-11 ~05:00:
 - PR #581 (#486): aprobado con cambio: logo real y nombre corto en cada tarjeta, nombre completo en tooltip; subagente Opus aplicándolo.
 - Issues nuevos: #583 (nombres reales de fase ES/EN), #584 (rendimiento del año IA contra IA; subagente Sonnet en `../riftlegends-584`, perf/584-season-speed, sin tocar `packages/core/match` por #528).
 - Siguen: #528 (Sonnet), #489 (Opus).
+
+Estado 26-11 tarde:
+- #581 (#486) aprobado y en la cola (`queue-581.log`).
+- PR #587 (#489 torneo): decisiones aprobadas; falta quitar «·» de las plazas («LCK 2.º»), subagente Opus aplicándolo; después encolar (conflicto esperado con #582 en `router.tsx` y `sidebar.tsx`: mantener ambos).
+- PR #585 (#528): F13/K4 aligerados a 15 s; arreglando el E2E de #536 que dependía de la simulación vieja.
+- PR #582 (#483): rediseño sin punto ni «En juego», sin «·».
+- #586 (quitar «·» en toda la app): subagente Opus en `../riftlegends-586`.
+- Reglas nuevas del usuario (26-11): sin «·» en textos; nada de estética «AI slop» (puntos de estado, pastillas, brillos); splits «Winter/Spring/Summer Split» en inglés (#583).
+- Stryker de las 05:00 abortó (C2 superó 60 s con la máquina cargada). Relanzar con la máquina libre: `~/.cache/rift-tmp/stryker-night.sh`.
