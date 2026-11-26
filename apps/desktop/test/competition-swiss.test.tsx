@@ -264,6 +264,37 @@ describe("U7: Swiss by balance", () => {
 		);
 	});
 
+	test("a pool's winners leave from the top half and its losers from the bottom half, on elbow lines told apart by style", async () => {
+		const { container } = await show();
+		const path = (id: string) =>
+			container.querySelector(`[data-flow="${id}"]`) as SVGPathElement;
+		const points = (id: string) =>
+			[...(path(id).getAttribute("d") ?? "").matchAll(/-?[\d.]+/g)].map(Number);
+		// Only horizontal and vertical segments, as in the bracket.
+		for (const line of container.querySelectorAll("[data-flow]"))
+			expect(line.getAttribute("d")).toMatch(
+				/^M-?[\d.]+ -?[\d.]+( [HV]-?[\d.]+)+$/,
+			);
+		const pool = within(round("Round 1")).getByRole("group", { name: "0-0" });
+		const top = Number.parseFloat(pool.style.top);
+		const middle = top + Number.parseFloat(pool.style.height) / 2;
+		const [, winY] = points("1:0-0>2:1-0");
+		const [, lossY] = points("1:0-0>2:0-1");
+		expect(winY).toBeLessThan(middle);
+		expect(lossY).toBeGreaterThan(middle);
+		expect(path("1:0-0>2:1-0").dataset.result).toBe("win");
+		expect(path("1:0-0>2:0-1").dataset.result).toBe("loss");
+		expect(path("1:0-0>2:1-0").getAttribute("stroke-dasharray")).toBeNull();
+		expect(path("1:0-0>2:0-1").getAttribute("stroke-dasharray")).not.toBeNull();
+		// Two pools that feed one pool enter it at the same point.
+		const entry = (id: string) => {
+			const d = path(id).getAttribute("d") ?? "";
+			const y = [...d.matchAll(/V(-?[\d.]+)/g)].at(-1)?.[1];
+			return [Number(d.match(/H(-?[\d.]+)$/)?.[1]), Number(y)];
+		};
+		expect(entry("2:1-0>3:1-1")).toEqual(entry("2:0-1>3:1-1"));
+	});
+
 	test("Spanish names the rounds, the lists and the notices", async () => {
 		await show(undefined, "es-ES");
 		expect(card(/^Ronda 3, 1-1: Delta contra Charlie$/)).toBeTruthy();
