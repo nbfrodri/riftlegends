@@ -1,4 +1,5 @@
 import type { DraftView } from "@rift-legends/contracts";
+import { Tooltip } from "@rift-legends/ui-kit/components/tooltip";
 import { ChevronRight } from "lucide-react";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
@@ -33,9 +34,11 @@ function Score({ view, stage }: { view: ScoreView | null; stage: DraftStage }) {
 			className="m-0 grid min-w-0 border-0 p-0 grid-cols-[1fr_auto_1fr] items-center gap-x-3 text-center"
 		>
 			<span className="flex min-w-0 items-center justify-end gap-2 font-bold">
-				<span className={`truncate ${neutral ? "" : "text-side-blue"}`}>
-					{teamName(options, left.team)}
-				</span>
+				<Tooltip content={teamName(options, left.team)}>
+					<span className={`truncate ${neutral ? "" : "text-side-blue"}`}>
+						{teamName(options, left.team)}
+					</span>
+				</Tooltip>
 				{stage !== "match" && (
 					<span className={`${crest} ${neutral ? "" : "text-side-blue"}`}>
 						<TeamCrest id={left.team} name={teamName(options, left.team)} />
@@ -51,9 +54,11 @@ function Score({ view, stage }: { view: ScoreView | null; stage: DraftStage }) {
 						<TeamCrest id={right.team} name={teamName(options, right.team)} />
 					</span>
 				)}
-				<span className={`truncate ${neutral ? "" : "text-side-red"}`}>
-					{teamName(options, right.team)}
-				</span>
+				<Tooltip content={teamName(options, right.team)}>
+					<span className={`truncate ${neutral ? "" : "text-side-red"}`}>
+						{teamName(options, right.team)}
+					</span>
+				</Tooltip>
 			</span>
 			<small className="col-span-3 mt-1 text-muted">
 				{t("draft.score.game", {
@@ -76,6 +81,8 @@ export function PageHeader({
 }) {
 	const { view } = useDraftSession();
 	const { t } = useTranslation();
+	// #572: the title and the side content keep their width; long team names
+	// in the score are cut instead of wrapping the title.
 	return (
 		<header
 			className={
@@ -83,7 +90,7 @@ export function PageHeader({
 				stage === "draft" ||
 				stage === "roles" ||
 				stage === "side"
-					? "grid grid-cols-[1fr_auto_1fr] items-center gap-4"
+					? "grid grid-cols-[minmax(max-content,1fr)_minmax(0,auto)_minmax(max-content,1fr)] items-center gap-4"
 					: "flex items-center justify-between gap-4"
 			}
 		>

@@ -340,3 +340,35 @@ test("#536: the key moments read whole with the longest team names", async ({
 	);
 	expect(checked).toBe(true);
 });
+
+test("#572: the match fits with the longest team names", async ({
+	electronApp,
+	appWindow,
+}) => {
+	test.setTimeout(240_000);
+	await useLongNames(electronApp, longTeamNames);
+	await appWindow.reload();
+	await appWindow.setViewportSize({ width: 1366, height: 768 });
+	let checked = false;
+	await playQuickDraftBo5(
+		electronApp,
+		appWindow,
+		async (screen) => {
+			if (screen !== "match") return;
+			for (const size of sizes) {
+				await appWindow.setViewportSize(size);
+				await expectToFit(appWindow);
+				for (const team of Object.values(longTeamNames))
+					await expect(
+						appWindow.getByRole("region", {
+							name: `${team} · estructuras y objetivos`,
+						}),
+					).toBeInViewport({ ratio: 1 });
+			}
+			checked = true;
+		},
+		undefined,
+		[longTeamNames.Forge ?? "", longTeamNames.Shoal ?? ""],
+	);
+	expect(checked).toBe(true);
+});

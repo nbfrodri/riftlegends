@@ -189,5 +189,6 @@
 		"draw"
 	],
 	"tiebreakerBestOf": 3,
+	"fearless": "hard",
 	"verified": false
 }

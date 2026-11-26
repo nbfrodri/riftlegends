@@ -119,3 +119,66 @@ test.describe("with the fictional set (test seam)", () => {
 		expect(Math.abs(offset)).toBeLessThanOrEqual(1.5);
 	});
 });
+
+test.describe("with the real content", () => {
+	test.use({
+		appEnv: { RIFT_E2E_CONTENT: "real" },
+		seedAssetCache: true,
+	});
+
+	// #578: the table is virtualised, so the rows on screen change while it
+	// scrolls. Column widths must not follow them.
+	test("columns keep their width and position while the players scroll at 1280x720", async ({
+		appWindow,
+	}) => {
+		await appWindow.setViewportSize({ width: 1280, height: 720 });
+		// The seeded cache lacks the official sounds and the network is off (#555).
+		await appWindow
+			.getByRole("button", { name: "Continue", exact: true })
+			.click({ timeout: 15_000 });
+		await appWindow
+			.getByRole("navigation", { name: "Club sections" })
+			.getByRole("button", { name: "Database" })
+			.click();
+		const table = appWindow.getByRole("table", { name: "All players" });
+		await expect(table.locator("tbody tr[data-row-id]").first()).toBeVisible();
+		const region = appWindow.getByRole("region", { name: "All players" });
+
+		// Every header and every cell of the last mounted row, as [x, width]. The
+		// first mounted row is pinned (it is the tab stop), the last one moves.
+		const layout = () =>
+			table.evaluate((el) => {
+				const boxes = (cells: Iterable<Element>) =>
+					[...cells].map((cell) => {
+						const { x, width } = cell.getBoundingClientRect();
+						return [Math.round(x), Math.round(width)];
+					});
+				const row = [...el.querySelectorAll("tbody tr[data-row-id]")].at(-1);
+				return {
+					headers: boxes(el.querySelectorAll("thead th")),
+					cells: boxes(row?.children ?? []),
+				};
+			});
+
+		const top = await layout();
+		const lastId = await table
+			.locator("tbody tr[data-row-id]")
+			.last()
+			.getAttribute("data-row-id");
+		await region.evaluate((el) => {
+			el.scrollTop = el.scrollHeight;
+		});
+		await expect(
+			table.locator("tbody tr[data-row-id]").last(),
+		).not.toHaveAttribute("data-row-id", lastId ?? "");
+		const bottom = await layout();
+
+		expect(bottom.headers).toEqual(top.headers);
+		expect(bottom.cells).toEqual(top.cells);
+		expect(top.cells).toEqual(top.headers);
+		// It still fits: the table never scrolls sideways.
+		expect(
+			await region.evaluate((el) => el.scrollWidth <= el.clientWidth),
+		).toBe(true);
+	});
+});
