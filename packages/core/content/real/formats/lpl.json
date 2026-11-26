@@ -4,6 +4,10 @@
 	"stages": [
 		{
 			"id": "split-1-high",
+			"name": {
+				"split": "winter",
+				"stage": "upperGroup"
+			},
 			"window": {
 				"startWeek": 1,
 				"weeks": 5,
@@ -31,6 +35,10 @@
 		},
 		{
 			"id": "split-1-mid",
+			"name": {
+				"split": "winter",
+				"stage": "middleGroup"
+			},
 			"window": {
 				"startWeek": 2,
 				"weeks": 4,
@@ -56,6 +64,10 @@
 		},
 		{
 			"id": "split-1-low",
+			"name": {
+				"split": "winter",
+				"stage": "lowerGroup"
+			},
 			"window": {
 				"startWeek": 2,
 				"weeks": 3,
@@ -81,6 +93,10 @@
 		},
 		{
 			"id": "split-1-ladder-a",
+			"name": {
+				"split": "winter",
+				"stage": "playInGroupA"
+			},
 			"window": {
 				"startWeek": 5,
 				"weeks": 1,
@@ -138,6 +154,10 @@
 		},
 		{
 			"id": "split-1-ladder-b",
+			"name": {
+				"split": "winter",
+				"stage": "playInGroupB"
+			},
 			"window": {
 				"startWeek": 5,
 				"weeks": 1,
@@ -195,6 +215,10 @@
 		},
 		{
 			"id": "split-1-playoffs",
+			"name": {
+				"split": "winter",
+				"stage": "playoffs"
+			},
 			"window": {
 				"startWeek": 7,
 				"weeks": 3,
@@ -269,6 +293,10 @@
 		},
 		{
 			"id": "split-2-high",
+			"name": {
+				"split": "spring",
+				"stage": "upperGroup"
+			},
 			"window": {
 				"startWeek": 13,
 				"weeks": 7,
@@ -299,6 +327,10 @@
 		},
 		{
 			"id": "split-2-low",
+			"name": {
+				"split": "spring",
+				"stage": "lowerGroup"
+			},
 			"window": {
 				"startWeek": 14,
 				"weeks": 6,
@@ -329,6 +361,10 @@
 		},
 		{
 			"id": "split-2-playin-1",
+			"name": {
+				"split": "spring",
+				"stage": "playInMatch1"
+			},
 			"window": {
 				"startWeek": 20,
 				"weeks": 1,
@@ -360,6 +396,10 @@
 		},
 		{
 			"id": "split-2-playin-2",
+			"name": {
+				"split": "spring",
+				"stage": "playInMatch2"
+			},
 			"window": {
 				"startWeek": 20,
 				"weeks": 1,
@@ -391,6 +431,10 @@
 		},
 		{
 			"id": "split-2-playin-3",
+			"name": {
+				"split": "spring",
+				"stage": "playInMatch3"
+			},
 			"window": {
 				"startWeek": 20,
 				"weeks": 1,
@@ -422,6 +466,10 @@
 		},
 		{
 			"id": "split-2-playin-4",
+			"name": {
+				"split": "spring",
+				"stage": "playInMatch4"
+			},
 			"window": {
 				"startWeek": 20,
 				"weeks": 1,
@@ -453,6 +501,10 @@
 		},
 		{
 			"id": "split-2-playoffs",
+			"name": {
+				"split": "spring",
+				"stage": "playoffs"
+			},
 			"window": {
 				"startWeek": 21,
 				"weeks": 3,
@@ -527,6 +579,10 @@
 		},
 		{
 			"id": "split-3-high",
+			"name": {
+				"split": "summer",
+				"stage": "upperGroup"
+			},
 			"window": {
 				"startWeek": 28,
 				"weeks": 6,
@@ -549,6 +605,10 @@
 		},
 		{
 			"id": "split-3-low",
+			"name": {
+				"split": "summer",
+				"stage": "lowerGroup"
+			},
 			"window": {
 				"startWeek": 29,
 				"weeks": 5,
@@ -591,6 +651,10 @@
 		},
 		{
 			"id": "knights-road-1",
+			"name": {
+				"split": "summer",
+				"stage": "knightsRoadMatch1"
+			},
 			"window": {
 				"startWeek": 34,
 				"weeks": 1,
@@ -622,6 +686,10 @@
 		},
 		{
 			"id": "knights-road-2",
+			"name": {
+				"split": "summer",
+				"stage": "knightsRoadMatch2"
+			},
 			"window": {
 				"startWeek": 34,
 				"weeks": 1,
@@ -653,6 +721,10 @@
 		},
 		{
 			"id": "grand-finals",
+			"name": {
+				"split": "summer",
+				"stage": "grandFinals"
+			},
 			"window": {
 				"startWeek": 34,
 				"weeks": 3,

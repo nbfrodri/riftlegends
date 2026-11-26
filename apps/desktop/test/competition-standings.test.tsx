@@ -82,9 +82,21 @@ const cells = (tr: HTMLElement) =>
 const bodyRows = (name: string) =>
 	within(table(name)).getAllByRole("row").slice(1);
 
+const STAGES: Record<string, string> = {
+	playoffs: "Playoffs",
+	"play-in": "Play-in",
+	"road-to-msi": "Road to MSI",
+	"rounds-3-4": "Rounds 3-4",
+};
+
 async function show(view: StandingsView, locale = "en-US") {
 	await renderInLocale(
-		<StandingsTables standings={view} stage="regular" teamName={teamName} />,
+		<StandingsTables
+			standings={view}
+			stageLabel="Regular"
+			stageOf={(_competition, stage) => STAGES[stage] ?? stage}
+			teamName={teamName}
+		/>,
 		locale,
 	);
 }
@@ -208,7 +220,7 @@ describe("standings table (U3)", () => {
 		});
 		const [first, second] = bodyRows("Standings: Regular");
 		expect(cells(first as HTMLElement).at(-1)).toBe(
-			"Road to msi, Rounds 3-4, and MSI",
+			"Road to MSI, Rounds 3-4, and MSI",
 		);
 		expect(cells(second as HTMLElement).at(-1)).toBe("Rounds 3-4");
 	});
@@ -263,8 +275,8 @@ describe("standings table (U3)", () => {
 			"Eliminated",
 		]);
 		expect(bodyRows("Losing group").map((tr) => cells(tr).at(-1))).toEqual([
-			"Play in",
-			"Play in",
+			"Play-in",
+			"Play-in",
 		]);
 	});
 

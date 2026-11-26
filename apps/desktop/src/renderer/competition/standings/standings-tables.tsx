@@ -9,7 +9,6 @@ import { Info } from "lucide-react";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { TeamCrest } from "../../draft/team-crest";
-import { stageName } from "../names";
 import {
 	destinationsOf,
 	destinationText,
@@ -24,17 +23,21 @@ import {
 
 type Row = StandingsView["rows"][number];
 type Destination = StandingsView["destinations"][number];
+type StageOf = (competition: string, stage: string) => string;
 
 const GROUPS: readonly Group[] = ["winner", "loser"];
 
 export function StandingsTables({
 	standings,
-	stage,
+	stageLabel,
+	stageOf,
 	teamName,
 	onOpenTeam,
 }: {
 	standings: StandingsView;
-	stage: string;
+	/** The stage as titled, with its split. */
+	stageLabel: string;
+	stageOf: StageOf;
 	teamName: (id: string) => string;
 	/** Opens a team's page from its row (U8). */
 	onOpenTeam?: (team: string) => void;
@@ -44,10 +47,11 @@ export function StandingsTables({
 	if (!groups)
 		return (
 			<StandingsTable
-				label={t("competition.standings.label", { stage: stageName(stage) })}
+				label={t("competition.standings.label", { stage: stageLabel })}
 				rows={standings.rows}
 				destinations={destinationsOf(destinations)}
 				showDestination={destinations.length > 0}
+				stageOf={stageOf}
 				teamName={teamName}
 				onOpenTeam={onOpenTeam}
 			/>
@@ -77,6 +81,7 @@ export function StandingsTables({
 							rows={groups[group].rows}
 							destinations={destinationsOf(destinations, group)}
 							showDestination={destinations.length > 0}
+							stageOf={stageOf}
 							teamName={teamName}
 							onOpenTeam={onOpenTeam}
 						/>
@@ -92,6 +97,7 @@ function StandingsTable({
 	rows,
 	destinations,
 	showDestination,
+	stageOf,
 	teamName,
 	onOpenTeam,
 }: {
@@ -99,6 +105,7 @@ function StandingsTable({
 	rows: readonly Row[];
 	destinations: readonly Destination[];
 	showDestination: boolean;
+	stageOf: StageOf;
 	teamName: (id: string) => string;
 	onOpenTeam: ((team: string) => void) | undefined;
 }) {
@@ -160,12 +167,13 @@ function StandingsTable({
 			{
 				id: "destination",
 				header: t("competition.standings.column.destination"),
-				value: (row) => destinationText(t, language, destinations, row.rank),
+				value: (row) =>
+					destinationText(t, language, destinations, row.rank, stageOf),
 				width: "clamp(10rem, 22vw, 22rem)",
 			},
 		];
 		return showDestination ? all : all.slice(0, -1);
-	}, [rows, destinations, showDestination, t, language, teamName]);
+	}, [rows, destinations, showDestination, stageOf, t, language, teamName]);
 	return (
 		<DataTable
 			className="min-h-0 flex-1"

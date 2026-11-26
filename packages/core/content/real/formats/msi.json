@@ -4,6 +4,9 @@
 	"stages": [
 		{
 			"id": "playin",
+			"name": {
+				"stage": "playIn"
+			},
 			"window": {
 				"startWeek": 25,
 				"weeks": 1,
@@ -59,6 +62,9 @@
 		},
 		{
 			"id": "bracket",
+			"name": {
+				"stage": "bracket"
+			},
 			"window": {
 				"startWeek": 26,
 				"weeks": 2,

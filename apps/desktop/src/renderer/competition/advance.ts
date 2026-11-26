@@ -16,6 +16,7 @@ export type AdvanceMode = "day" | "stage" | "season";
 export interface StageTarget {
 	readonly competition: string;
 	readonly stage: string;
+	readonly name?: SeasonOverview["competitions"][number]["stages"][number]["name"];
 	readonly endDay: number;
 }
 
@@ -57,6 +58,7 @@ export function stageTarget(overview: SeasonOverview): StageTarget | null {
 		? {
 				competition: target.competition,
 				stage: target.stage,
+				...(target.name && { name: target.name }),
 				endDay: target.endDay,
 			}
 		: null;

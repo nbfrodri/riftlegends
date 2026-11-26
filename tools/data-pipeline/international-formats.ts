@@ -6,6 +6,7 @@ import type {
 	InternationalMatch,
 	RealInternationals,
 } from "@rift-legends/contracts/real-internationals";
+import { internationalStageName } from "./stage-names.ts";
 
 // First Stand, MSI and Worlds as data (plan 12, deliverable 9). The structure
 // is curated from what Leaguepedia shows; `international-check.ts` replays
@@ -288,6 +289,7 @@ export function buildInternationalFormats(
 			kind: "international",
 			stages: def.stages.map((stage) => ({
 				id: stage.id,
+				name: internationalStageName(stage.id),
 				window: windowOf(stage.id, stageMatches(event, stage)),
 				entrants: stage.entrants,
 				play: stage.play,

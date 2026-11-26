@@ -20,7 +20,7 @@ import {
 	useSeriesOptions,
 } from "../draft/session";
 import { TeamCrest } from "../draft/team-crest";
-import { competitionName, dayDate, stageName } from "./names";
+import { competitionName, dayDate, stageRowOf, stageText } from "./names";
 import type { ScheduleSlot } from "./schedule-view";
 import { useExhibitionSeason, useSeasonOverview } from "./season";
 
@@ -143,7 +143,7 @@ function Header({
 					<p className="mt-1 text-muted">
 						{t("competition.series.where", {
 							competition: competitionName(t, slot.competition),
-							stage: stageName(slot.stage),
+							stage: stageText(t, stageRowOf(overview.data, slot)),
 							date: dayDate(year, slot.day, i18n.language),
 						})}
 					</p>

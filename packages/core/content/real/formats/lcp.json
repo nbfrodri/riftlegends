@@ -4,6 +4,10 @@
 	"stages": [
 		{
 			"id": "split-1",
+			"name": {
+				"split": "winter",
+				"stage": "regularSeason"
+			},
 			"window": {
 				"startWeek": 2,
 				"weeks": 4,
@@ -32,6 +36,10 @@
 		},
 		{
 			"id": "split-1-playoffs",
+			"name": {
+				"split": "winter",
+				"stage": "playoffs"
+			},
 			"window": {
 				"startWeek": 6,
 				"weeks": 3,
@@ -76,6 +84,10 @@
 		},
 		{
 			"id": "split-2",
+			"name": {
+				"split": "spring",
+				"stage": "regularSeason"
+			},
 			"window": {
 				"startWeek": 13,
 				"weeks": 7,
@@ -104,6 +116,10 @@
 		},
 		{
 			"id": "split-2-playoffs",
+			"name": {
+				"split": "spring",
+				"stage": "playoffs"
+			},
 			"window": {
 				"startWeek": 20,
 				"weeks": 3,
@@ -148,6 +164,10 @@
 		},
 		{
 			"id": "split-3-swiss",
+			"name": {
+				"split": "summer",
+				"stage": "swiss"
+			},
 			"window": {
 				"startWeek": 29,
 				"weeks": 4,
@@ -182,6 +202,10 @@
 		},
 		{
 			"id": "split-3-seed-high",
+			"name": {
+				"split": "summer",
+				"stage": "upperSeeding"
+			},
 			"window": {
 				"startWeek": 32,
 				"weeks": 1,
@@ -205,6 +229,10 @@
 		},
 		{
 			"id": "split-3-seed-low",
+			"name": {
+				"split": "summer",
+				"stage": "lowerSeeding"
+			},
 			"window": {
 				"startWeek": 32,
 				"weeks": 1,
@@ -228,6 +256,10 @@
 		},
 		{
 			"id": "split-3-seed-final",
+			"name": {
+				"split": "summer",
+				"stage": "finalSeeding"
+			},
 			"window": {
 				"startWeek": 32,
 				"weeks": 1,
@@ -258,6 +290,10 @@
 		},
 		{
 			"id": "split-3-playoffs",
+			"name": {
+				"split": "summer",
+				"stage": "playoffs"
+			},
 			"window": {
 				"startWeek": 33,
 				"weeks": 2,
