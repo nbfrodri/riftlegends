@@ -69,3 +69,7 @@ Para Codex: leer `r<N>.json`, comprobar con `tack codex-used <thread_id>` (prime
 | #578 columnas de la tabla se mueven al hacer scroll (Base de datos) | Opus medium | `../riftlegends-578`, fix/578-table-columns | main |
 
 Estado 26-11 ~01:00: fusionados #574, #575, #573. En la cola: #576 (#481, decisiones aprobadas por el usuario). PR #577 (#572) esperando visto bueno con capturas `~/.cache/rift-tmp/572-*.png`. #528 puede abrir PR (avisado).
+| #482 serie del usuario en la temporada (humanTeam) | Sonnet medium | `../riftlegends-482`, feat/482-human-series | main |
+| #483 ruta /competicion y controles de avance | Opus medium | `../riftlegends-483`, feat/483-competition-route | main |
+
+Estado 26-11 ~02:00: fusionado también #576 (#481). Cola vacía. #429 espera al final de la 3.5 (su golden cambia con cada `SIM_VERSION`).
