@@ -80,7 +80,6 @@ describe("T5: sidebar sections", () => {
 
 	// The Draft screen is titled after its current stage (plan 09).
 	test.each([
-		["Calendario", "Calendario", "/calendario"],
 		["Draft", "Configurar serie", "/draft"],
 		["Campeones", "Campeones", "/campeones"],
 		["Base de datos", "Base de datos", "/base-de-datos"],

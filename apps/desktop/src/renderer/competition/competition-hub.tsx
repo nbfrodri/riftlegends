@@ -11,7 +11,11 @@ import {
 	dayDate,
 	stageName,
 } from "./names";
-import { ScheduleView } from "./schedule-view";
+import {
+	type CalendarSearch,
+	parseCalendarSearch,
+	ScheduleView,
+} from "./schedule-view";
 import { useExhibitionSeason, useSeasonOverview } from "./season";
 
 // `/competicion/$competition`: the hub of one competition (plan 31), with a
@@ -20,25 +24,15 @@ import { useExhibitionSeason, useSeasonOverview } from "./season";
 
 type HubView = "stages" | "schedule";
 
-export interface HubSearch {
+export interface HubSearch extends CalendarSearch {
 	readonly view?: HubView | undefined;
-	/** Schedule filters: a competition id or `all`, and a team. */
-	readonly scope?: string | undefined;
-	readonly team?: string | undefined;
-	/** The schedule day to bring into view. */
-	readonly day?: number | undefined;
 }
-
-const text = (value: unknown) =>
-	typeof value === "string" && value.length > 0 ? value : undefined;
 
 /** The hub's search, from whatever the route receives. */
 export function parseHubSearch(search: Record<string, unknown>): HubSearch {
 	return {
 		view: search.view === "schedule" ? "schedule" : undefined,
-		scope: text(search.scope),
-		team: text(search.team),
-		day: Number.isSafeInteger(search.day) ? (search.day as number) : undefined,
+		...parseCalendarSearch(search),
 	};
 }
 
@@ -94,7 +88,6 @@ export function CompetitionHub({
 					void onSearch({
 						...search,
 						view: next === "stages" ? undefined : next,
-						day: undefined,
 					})
 				}
 				className="self-start"
@@ -136,24 +129,24 @@ function Schedule({
 			filters={{
 				scope: search.scope ?? competition,
 				team: search.team,
+				mode: search.calendar ?? "week",
 				day: search.day,
 			}}
-			onFilters={({ scope, team }) =>
+			onFilters={({ scope, team, mode, day }) =>
 				void onSearch({
 					view: "schedule",
 					scope: scope === competition ? undefined : scope,
 					team,
+					calendar: mode === "week" ? undefined : mode,
+					day,
 				})
 			}
-			onOpen={(slot) => {
-				// Remember the day, so Back brings it into view again.
-				void onSearch({ ...search, view: "schedule", day: slot.day }).then(() =>
-					navigate({
-						to: "/competicion/serie/$series",
-						params: { series: slot.id },
-					}),
-				);
-			}}
+			onOpen={(slot) =>
+				void navigate({
+					to: "/competicion/serie/$series",
+					params: { series: slot.id },
+				})
+			}
 		/>
 	);
 }

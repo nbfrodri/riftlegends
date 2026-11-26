@@ -128,9 +128,11 @@ describe("schedule (U4, #593)", () => {
 			expect(screen.getByText(/^Matchday 1 of \d+$/)).toBeTruthy(),
 		);
 		await toSchedule(user);
-		await user.click(screen.getByRole("radio", { name: "Day" }));
 		await user.click(screen.getByRole("combobox", { name: "Team" }));
 		await user.click(await screen.findByRole("option", { name: "Forge" }));
+		// Today has moved on: choose the day played, then its day view.
+		await user.click(cell(7) as HTMLElement);
+		await user.click(screen.getByRole("radio", { name: "Day" }));
 		const open = await screen.findByRole("button", {
 			name: /^Open series: .*Forge/,
 		});

@@ -51,17 +51,17 @@ const teams: Record<string, { name: string; short?: string }> = {
 };
 
 function Harness({
-	start,
+	mode,
+	day,
 	onOpen = () => {},
 	today = 40,
 	showCompetition = true,
-}: {
-	start: CalendarPlace;
+}: CalendarPlace & {
 	onOpen?: (slot: ScheduleSlot) => void;
 	today?: number | null;
 	showCompetition?: boolean;
 }) {
-	const [place, setPlace] = useState(start);
+	const [place, setPlace] = useState<CalendarPlace>({ mode, day });
 	return (
 		<Calendar
 			slots={slots}
@@ -73,7 +73,7 @@ function Harness({
 			team={(id) => teams[id] ?? { name: id }}
 			competition={(id) => id.toUpperCase()}
 			origin={(_slot, index, short) =>
-				index === 0 ? (short ? "Winner SF1" : "Winner of Semifinal 1") : ""
+				index === 0 ? (short ? "Ganador SF1" : "Ganador de Semifinal 1") : ""
 			}
 			onOpen={onOpen}
 		/>

@@ -7,8 +7,10 @@ import {
 } from "@tanstack/react-router";
 import { StartupGate } from "./assets/startup-gate";
 import { ChampionsScreen } from "./champions-screen";
+import { CalendarScreen } from "./competition/calendar-screen";
 import { CompetitionHub, parseHubSearch } from "./competition/competition-hub";
 import { CompetitionScreen } from "./competition/competition-screen";
+import { parseCalendarSearch } from "./competition/schedule-view";
 import { SeriesScreen } from "./competition/series-screen";
 import { CreditsScreen } from "./credits/credits-screen";
 import { DatabaseScreen } from "./database/database-screen";
@@ -31,6 +33,22 @@ const indexRoute = createRoute({
 	path: "/",
 	beforeLoad: () => {
 		throw redirect({ to: "/draft" });
+	},
+});
+
+const calendarRoute = createRoute({
+	getParentRoute: () => rootRoute,
+	path: "calendario",
+	validateSearch: parseCalendarSearch,
+	component: function Calendar() {
+		const search = calendarRoute.useSearch();
+		const navigate = calendarRoute.useNavigate();
+		return (
+			<CalendarScreen
+				search={search}
+				onSearch={(next) => void navigate({ search: next, replace: true })}
+			/>
+		);
 	},
 });
 
@@ -106,6 +124,7 @@ const creditsRoute = createRoute({
 
 const routeTree = rootRoute.addChildren([
 	indexRoute,
+	calendarRoute,
 	draftRoute,
 	championsRoute,
 	databaseRoute,

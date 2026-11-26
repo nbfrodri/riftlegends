@@ -26,6 +26,7 @@ import { useTranslation } from "react-i18next";
 import { placeholderToday } from "./placeholder-players";
 
 type SectionPath =
+	| "/calendario"
 	| "/draft"
 	| "/campeones"
 	| "/base-de-datos"
@@ -55,7 +56,7 @@ interface Section {
 
 const sections: readonly Section[] = [
 	{ label: "shell.nav.home", icon: House },
-	{ label: "shell.nav.calendar", icon: CalendarDays },
+	{ label: "shell.nav.calendar", icon: CalendarDays, to: "/calendario" },
 	{ label: "shell.nav.draft", icon: Columns2, to: "/draft" },
 	{ label: "shell.nav.champions", icon: Swords, to: "/campeones" },
 	{ label: "shell.nav.database", icon: Database, to: "/base-de-datos" },
