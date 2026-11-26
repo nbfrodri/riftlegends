@@ -182,6 +182,27 @@ describe("U6: bracket", () => {
 		).not.toBeNull();
 	});
 
+	test("each round is headed by its name and its Bo as a separate muted label, without middle dots", async () => {
+		const { container } = await renderInLocale(
+			<Bracket bracket={doubleElim("lower")} team={team} />,
+		);
+		const headers = [...container.querySelectorAll("[data-round-header]")];
+		expect(headers.map((h) => h.firstElementChild?.textContent)).toContain(
+			"Upper round 1",
+		);
+		const bo = headers[0]?.querySelector("[data-best-of]");
+		expect(bo?.textContent).toBe("Bo3");
+		expect(bo?.className).toContain("text-muted");
+		const text = [container, ...container.querySelectorAll("[data-tooltip]")]
+			.map((node) =>
+				node instanceof HTMLElement
+					? `${node.textContent} ${node.dataset.tooltip ?? ""} ${node.getAttribute("aria-label") ?? ""}`
+					: "",
+			)
+			.join(" ");
+		expect(text).not.toContain("·");
+	});
+
 	test("each series shows its teams and score, with the winner marked", async () => {
 		await renderInLocale(<Bracket bracket={sixTeams} team={team} />);
 		expect(series()).toHaveLength(5);
