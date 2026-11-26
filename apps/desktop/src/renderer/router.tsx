@@ -7,8 +7,9 @@ import {
 } from "@tanstack/react-router";
 import { StartupGate } from "./assets/startup-gate";
 import { ChampionsScreen } from "./champions-screen";
-import { CompetitionHub } from "./competition/competition-hub";
+import { CompetitionHub, parseHubSearch } from "./competition/competition-hub";
 import { CompetitionScreen } from "./competition/competition-screen";
+import { SeriesScreen } from "./competition/series-screen";
 import { CreditsScreen } from "./credits/credits-screen";
 import { DatabaseScreen } from "./database/database-screen";
 import { DraftScreen, MarketScreen, SettingsScreen } from "./screens";
@@ -66,9 +67,28 @@ const competitionRoute = createRoute({
 const competitionHubRoute = createRoute({
 	getParentRoute: () => rootRoute,
 	path: "competicion/$competition",
+	validateSearch: parseHubSearch,
 	component: function Hub() {
 		const { competition } = competitionHubRoute.useParams();
-		return <CompetitionHub key={competition} competition={competition} />;
+		const search = competitionHubRoute.useSearch();
+		const navigate = competitionHubRoute.useNavigate();
+		return (
+			<CompetitionHub
+				key={competition}
+				competition={competition}
+				search={search}
+				onSearch={(next) => navigate({ search: next, replace: true })}
+			/>
+		);
+	},
+});
+
+const seriesRoute = createRoute({
+	getParentRoute: () => rootRoute,
+	path: "competicion/serie/$series",
+	component: function Series() {
+		const { series } = seriesRoute.useParams();
+		return <SeriesScreen key={series} series={series} />;
 	},
 });
 
@@ -92,6 +112,7 @@ const routeTree = rootRoute.addChildren([
 	marketRoute,
 	competitionRoute,
 	competitionHubRoute,
+	seriesRoute,
 	settingsRoute,
 	creditsRoute,
 ]);

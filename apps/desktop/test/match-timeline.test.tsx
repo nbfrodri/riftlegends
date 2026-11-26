@@ -175,39 +175,41 @@ vi.mock("../src/renderer/core", async (original) => ({
 }));
 vi.mock("../src/renderer/draft/session", async (original) => ({
 	...(await original<typeof import("../src/renderer/draft/session")>()),
-	useDraftSession: () => ({
-		view: {
-			game: 1,
-			phase: "over",
-			wins: [1, 0],
-			blue: { team: "forge" },
-			red: { team: "shoal" },
-		},
-		mine: "forge",
-		presentation: "match",
-		present,
-		sessionId: 1,
-		options: {
-			champions: [
-				{ id: "c2", name: "Silver Tide" },
-				{ id: "c1", name: "Ember Crown" },
-				{ id: "c3", name: "Bright Moon" },
-			],
-			teams: [
-				{
-					id: "forge",
-					name: "Forge",
-					players: [{ id: "b-top", handle: "Bluetop" }],
-				},
-				{
-					id: "shoal",
-					name: "Shoal",
-					players: [{ id: "r-top", handle: "Redtop" }],
-				},
-			],
-		},
-	}),
+	useDraftSession: () => session,
+	useSeriesOptions: () => session.options,
 }));
+const session = {
+	view: {
+		game: 1,
+		phase: "over",
+		wins: [1, 0],
+		blue: { team: "forge" },
+		red: { team: "shoal" },
+	},
+	mine: "forge",
+	presentation: "match",
+	present,
+	sessionId: 1,
+	options: {
+		champions: [
+			{ id: "c2", name: "Silver Tide" },
+			{ id: "c1", name: "Ember Crown" },
+			{ id: "c3", name: "Bright Moon" },
+		],
+		teams: [
+			{
+				id: "forge",
+				name: "Forge",
+				players: [{ id: "b-top", handle: "Bluetop" }],
+			},
+			{
+				id: "shoal",
+				name: "Shoal",
+				players: [{ id: "r-top", handle: "Redtop" }],
+			},
+		],
+	},
+};
 
 beforeEach(() => vi.useFakeTimers());
 afterEach(() => {
