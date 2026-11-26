@@ -127,7 +127,7 @@ function Mvp(props: {
 			</div>
 			<div className="min-w-0">
 				<p className="font-semibold text-[12px] text-muted uppercase tracking-[0.055em]">
-					{t("draft.result.mvp.label", { team: name })}
+					{t("draft.result.mvp.label")}
 				</p>
 				<h2 className="mt-2 flex items-baseline gap-2.5 font-bold font-display text-[28px] leading-none tracking-heading">
 					{role && (

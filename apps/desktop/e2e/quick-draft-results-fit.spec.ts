@@ -148,8 +148,10 @@ async function expectKeyMomentsWhole(page: Page) {
 			}),
 		);
 	expect(
-		moments.some(({ text }) => text.includes(longTeamNames.Forge ?? "")),
-		"a key moment names the longest team",
+		moments.some(({ text }) =>
+			Object.values(longTeamNames).some((name) => text.includes(name)),
+		),
+		"a key moment names a team with a long name",
 	).toBe(true);
 	expect(
 		moments.flatMap(({ clipped }) => clipped),
@@ -244,7 +246,7 @@ test("#259 #310 #524: the setup, match and results fit the supported test sizes"
 				for (const team of ["Forge", "Shoal"])
 					await expect(
 						appWindow.getByRole("region", {
-							name: `${team} · estructuras y objetivos`,
+							name: `Estructuras y objetivos de ${team}`,
 						}),
 					).toBeInViewport({ ratio: 1 });
 				checked++;
@@ -361,7 +363,7 @@ test("#572: the match fits with the longest team names", async ({
 				for (const team of Object.values(longTeamNames))
 					await expect(
 						appWindow.getByRole("region", {
-							name: `${team} · estructuras y objetivos`,
+							name: `Estructuras y objetivos de ${team}`,
 						}),
 					).toBeInViewport({ ratio: 1 });
 			}

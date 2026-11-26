@@ -55,5 +55,5 @@ export async function toFirstPick(user: User) {
 		await user.click(firstAvailable());
 		await confirmAndWaitForRival();
 	}
-	await screen.findByText("B1 · Forge pick");
+	await screen.findByText("Forge pick B1");
 }
