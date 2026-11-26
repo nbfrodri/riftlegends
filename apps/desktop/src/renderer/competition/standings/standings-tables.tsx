@@ -166,12 +166,8 @@ function StandingsTable({
 			data={rows}
 			columns={columns}
 			getRowId={(row) => row.team}
-			filterLabel={t("market.filter.label")}
-			filterPlaceholder={t("competition.standings.filter")}
+			filterable={false}
 			emptyText={t("competition.standings.empty")}
-			countLabel={(shown) =>
-				t("competition.standings.count", { shown, total: rows.length })
-			}
 			locale={language}
 		/>
 	);
