@@ -93,4 +93,46 @@ const teamProfile = z.strictObject({
 	}),
 });
 
-export const competitionViews = { overview: seasonOverview, teamProfile };
+/** Where a team of a bracket series comes from (`rank` is 1-based). */
+const bracketSlot = z.discriminatedUnion("kind", [
+	z.strictObject({ kind: z.literal("seed"), rank: z.int().min(1) }),
+	z.strictObject({ kind: z.enum(["winner", "loser"]), match: id }),
+]);
+
+const bracket = z.strictObject({
+	/** In play order: every series comes after the ones that feed it. */
+	matches: z.array(
+		z.strictObject({
+			id,
+			side: z.enum(["upper", "lower", "final", "reset"]),
+			/** 1-based round inside its side. */
+			round: z.int().min(1),
+			bestOf: z.int().min(1).max(5),
+			teamA: id.nullable(),
+			teamB: id.nullable(),
+			priority: z
+				.strictObject({ team: id, seed: z.int(), otherSeed: z.int() })
+				.nullable(),
+			/** `skipped`: a reset final that the upper team made unnecessary. */
+			status: z.enum(["waiting", "ready", "done", "skipped"]),
+			winner: id.nullable(),
+			loser: id.nullable(),
+			from: z.tuple([bracketSlot, bracketSlot]),
+			/** Once played: the id of `competition.schedule` that opens it. */
+			series: id.optional(),
+			/** Once played: games won by `teamA`, then by `teamB`. */
+			score: z.tuple([count, count]).optional(),
+		}),
+	),
+	champion: id.nullable(),
+	/** Series lost by each team so far. */
+	losses: z.record(id, count),
+});
+
+export type BracketView = z.infer<typeof bracket>;
+
+export const competitionViews = {
+	overview: seasonOverview,
+	teamProfile,
+	bracket,
+};
