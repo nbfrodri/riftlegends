@@ -11,7 +11,7 @@ import {
 	useSeasonAdvance,
 } from "./advance";
 import { CompetitionCard } from "./competition-card";
-import { competitionName, dayDate, stageName } from "./names";
+import { competitionName, dayDate, isInternational, stageName } from "./names";
 import {
 	type SeasonHandle,
 	useExhibitionSeason,
@@ -96,6 +96,19 @@ function Season({
 	const busy = run !== null || pending !== null || over;
 	const target = stageTarget(view);
 	const play = (mode: AdvanceMode) => () => void start(mode);
+	const leagues = view.competitions.filter(({ id }) => !isInternational(id));
+	const events = view.competitions.filter(({ id }) => isInternational(id));
+	const groups = (
+		leagues.length && events.length
+			? [
+					{ key: "leagues", competitions: leagues },
+					{ key: "international", competitions: events },
+				]
+			: [{ key: "all", competitions: view.competitions }]
+	) as {
+		key: "leagues" | "international" | "all";
+		competitions: typeof leagues;
+	}[];
 
 	return (
 		<>
@@ -171,41 +184,76 @@ function Season({
 					)}
 				</fieldset>
 			</header>
-			{run && <RunProgress run={run} />}
+			{run && <RunProgress run={run} year={view.year} />}
 			{error && <CoreErrorMessage error={error} />}
-			<h2 id={listId} className="sr-only">
-				{t("competition.cards")}
-			</h2>
-			<ul
-				aria-labelledby={listId}
-				className="grid min-h-0 flex-1 auto-rows-fr grid-cols-[repeat(auto-fill,minmax(clamp(190px,17vw,300px),1fr))] content-start gap-[clamp(8px,0.8vw,14px)] overflow-y-auto"
-			>
-				{view.competitions.map((competition) => (
-					<CompetitionCard
-						key={competition.id}
-						competition={competition}
-						year={view.year}
-						nextDay={nextDays.get(competition.id)}
-						teamName={teamName}
-						onOpen={() =>
-							void navigate({
-								to: "/competicion/$competition",
-								params: { competition: competition.id },
-							})
-						}
-					/>
+			<div className="flex min-h-0 flex-1 flex-col gap-[clamp(10px,1.6vh,18px)] overflow-y-auto scroll-edge">
+				{groups.map(({ key, competitions }) => (
+					<section key={key} aria-labelledby={`${listId}-${key}`}>
+						<h2
+							id={`${listId}-${key}`}
+							className={
+								groups.length > 1
+									? "mb-2 font-bold font-display text-[13px] text-muted uppercase tracking-[0.04em]"
+									: "sr-only"
+							}
+						>
+							{t(`competition.group.${key}`)}
+						</h2>
+						<ul
+							aria-labelledby={`${listId}-${key}`}
+							className="grid grid-cols-[repeat(auto-fill,minmax(clamp(250px,24vw,400px),1fr))] gap-[clamp(8px,0.8vw,14px)]"
+						>
+							{competitions.map((competition) => (
+								<CompetitionCard
+									key={competition.id}
+									competition={competition}
+									year={view.year}
+									today={view.day}
+									nextDay={nextDays.get(competition.id)}
+									teamName={teamName}
+									onOpen={() =>
+										void navigate({
+											to: "/competicion/$competition",
+											params: { competition: competition.id },
+										})
+									}
+								/>
+							))}
+						</ul>
+					</section>
 				))}
-			</ul>
+			</div>
 		</>
 	);
 }
 
-function RunProgress({ run }: { run: AdvanceRun }) {
-	const { t } = useTranslation();
+function RunProgress({ run, year }: { run: AdvanceRun; year: number }) {
+	const { t, i18n } = useTranslation();
 	const total = Math.max(1, run.toDay - run.fromDay);
 	const done = Math.min(total, Math.max(0, run.day - run.fromDay));
+	const goal =
+		run.mode === "season"
+			? t("competition.advance.until.season")
+			: run.mode === "day"
+				? t("competition.advance.until.day")
+				: t("competition.advance.until.stage", {
+						competition: competitionName(t, run.target?.competition ?? ""),
+						stage: stageName(run.target?.stage ?? ""),
+					});
 	return (
-		<div>
+		<div className="border border-line bg-panel px-[clamp(10px,1vw,16px)] py-[clamp(8px,1.2vh,12px)]">
+			<p className="mb-2 flex min-w-0 items-baseline gap-3 text-[13px]">
+				<b className="shrink-0 font-semibold text-text">
+					{t("competition.advance.playingDay", {
+						day: run.day,
+						date: dayDate(year, run.day, i18n.language),
+					})}
+				</b>
+				<span className="min-w-0 truncate text-muted">{goal}</span>
+				<span className="ml-auto shrink-0 text-muted tabular-nums">
+					{t("competition.advance.days", { done, total })}
+				</span>
+			</p>
 			<div
 				role="progressbar"
 				aria-label={t("competition.advance.progress")}
@@ -216,19 +264,13 @@ function RunProgress({ run }: { run: AdvanceRun }) {
 					day: run.day,
 					end: run.toDay,
 				})}
-				className="h-1.5 overflow-hidden rounded-control bg-line"
+				className="h-2 overflow-hidden rounded-control bg-canvas"
 			>
 				<div
-					className="h-full bg-action transition-[width] duration-300 ease-lock motion-reduce:transition-none"
+					className="h-full bg-action shadow-[inset_-2px_0_0_var(--color-text)] transition-[width] duration-[420ms] ease-lock motion-reduce:transition-none"
 					style={{ width: `${(done / total) * 100}%` }}
 				/>
 			</div>
-			<p
-				aria-hidden="true"
-				className="mt-1.5 text-[13px] text-muted tabular-nums"
-			>
-				{t("competition.advance.playing", { day: run.day, end: run.toDay })}
-			</p>
 		</div>
 	);
 }

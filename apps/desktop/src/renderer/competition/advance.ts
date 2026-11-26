@@ -27,6 +27,8 @@ export interface AdvanceRun {
 	readonly toDay: number;
 	/** The day being played. */
 	readonly day: number;
+	/** The stage «Hasta fin de fase» plays to the end. */
+	readonly target: StageTarget | null;
 }
 
 /**
@@ -104,7 +106,7 @@ export function useSeasonAdvance(season: SeasonHandle) {
 				const target = mode === "stage" ? stageTarget(current) : null;
 				const toDay =
 					mode === "day" ? fromDay + 1 : (target?.endDay ?? seasonEnd(current));
-				setRun({ mode, fromDay, toDay, day: fromDay });
+				setRun({ mode, fromDay, toDay, day: fromDay, target });
 				while (current.day !== null) {
 					const result = await core.send({
 						v: CONTRACT_VERSION,

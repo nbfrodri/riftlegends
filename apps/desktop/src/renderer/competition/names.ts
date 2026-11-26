@@ -5,6 +5,10 @@ type Translate = (key: `competition.name.${NamedId}`) => string;
 // international events and the fictional league have catalog names.
 
 const named = new Set<string>(["first-stand", "msi", "worlds", "rift-league"]);
+const INTERNATIONAL = new Set(["first-stand", "msi", "worlds"]);
+/** First Stand, MSI and Worlds, as opposed to the leagues. */
+export const isInternational = (id: string) => INTERNATIONAL.has(id);
+
 const isNamed = (id: string): id is NamedId => named.has(id);
 
 export const competitionName = (t: Translate, id: string): string =>

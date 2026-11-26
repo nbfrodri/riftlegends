@@ -870,7 +870,6 @@
 	"competition.today": "Día {{day}} · {{date}}",
 	"competition.over": "Temporada terminada",
 	"competition.newSeason": "Nueva temporada",
-	"competition.cards": "Competiciones",
 	"competition.open": "Abrir {{name}}",
 	"competition.status.pending": "Por empezar",
 	"competition.status.live": "En juego",
@@ -896,5 +895,17 @@
 	"competition.advance.mySeries": "Jugar mi serie",
 	"competition.hub.back": "Volver a Competición",
 	"competition.hub.stages": "Fases",
-	"competition.hub.days": "{{start}} – {{end}}"
+	"competition.hub.days": "{{start}} – {{end}}",
+	"competition.group.all": "Competiciones",
+	"competition.group.leagues": "Ligas",
+	"competition.group.international": "Internacionales",
+	"competition.stageOf": "Fase {{index}} de {{total}}",
+	"competition.startsToday": "Hoy",
+	"competition.startsIn_one": "Falta {{count}} día",
+	"competition.startsIn_other": "Faltan {{count}} días",
+	"competition.advance.playingDay": "Jugando el día {{day}} · {{date}}",
+	"competition.advance.days": "{{done}} de {{total}} días",
+	"competition.advance.until.day": "Un día",
+	"competition.advance.until.stage": "Hasta el fin de {{competition}} · {{stage}}",
+	"competition.advance.until.season": "Hasta el final de la temporada"
 }
