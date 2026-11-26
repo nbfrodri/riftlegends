@@ -288,27 +288,68 @@ describe("standings table (U3)", () => {
 });
 
 describe("standings in the competition hub (U3)", () => {
-	test("opens on the stage in play and switches stage with the selector", async () => {
-		await renderWithCore(
-			<RouterProvider router={createAppRouter("/competicion/rift-league")} />,
-			hostCore(),
-		);
+	async function openHub(path = "/competicion/rift-league") {
+		const router = createAppRouter(path);
+		await renderWithCore(<RouterProvider router={router} />, hostCore());
+		return { router, user: userEvent.setup() };
+	}
+
+	test("opens on the Standings tab with the stage in play", async () => {
+		await openHub();
 		const regular = await screen.findByRole(
 			"table",
 			{ name: "Standings: Regular" },
 			{ timeout: 30_000 },
 		);
+		const views = screen.getByRole("radiogroup", { name: "View" });
+		expect(
+			within(views)
+				.getAllByRole("radio")
+				.map((radio) => radio.textContent),
+		).toEqual(["Standings", "Schedule"]);
+		expect(
+			within(views).getByRole("radio", { name: "Standings" }),
+		).toHaveProperty("checked", true);
 		const rows = within(regular).getAllByRole("row").slice(1);
 		expect(rows).toHaveLength(8);
 		expect(rows.map((tr) => cells(tr).at(-1))).toEqual([
 			...Array(4).fill("Playoffs"),
 			...Array(4).fill("Eliminated"),
 		]);
-		const user = userEvent.setup();
+	});
+
+	test("the chosen stage lives in the route search, so it comes back", async () => {
+		const { router, user } = await openHub();
+		await screen.findByRole(
+			"table",
+			{ name: "Standings: Regular" },
+			{ timeout: 30_000 },
+		);
 		await user.click(screen.getByRole("combobox", { name: "Stage" }));
 		await user.click(await screen.findByRole("option", { name: "Playoffs" }));
 		await waitFor(() =>
 			expect(screen.getByText("This stage has not started yet")).toBeTruthy(),
 		);
+		expect(router.state.location.search).toMatchObject({ stage: "playoffs" });
+		// The schedule tab and back keep the stage.
+		await user.click(screen.getByRole("radio", { name: "Schedule" }));
+		await user.click(screen.getByRole("radio", { name: "Standings" }));
+		expect(
+			await screen.findByText("This stage has not started yet"),
+		).toBeTruthy();
+	});
+
+	test("a link with a stage opens that stage", async () => {
+		await openHub("/competicion/rift-league?stage=playoffs");
+		expect(
+			await screen.findByText(
+				"This stage has not started yet",
+				{},
+				{ timeout: 30_000 },
+			),
+		).toBeTruthy();
+		expect(
+			screen.getByRole("combobox", { name: "Stage" }).textContent,
+		).toContain("Playoffs");
 	});
 });
