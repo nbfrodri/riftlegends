@@ -41,6 +41,7 @@ export function deadNow(
 	farm: readonly number[],
 ): Record<Side, number[]> {
 	const lost = emptyLoss();
+	if (event.kills.length === 0) return lost;
 	for (const kill of event.kills) {
 		const slot = slots.get(kill.victim);
 		if (!slot || kill.respawnAt === undefined) continue;
@@ -54,6 +55,66 @@ export function deadNow(
 	return lost;
 }
 
+interface Down {
+	readonly side: Side;
+	readonly index: number;
+	readonly died: number;
+	readonly back: number;
+	/** The next minute whose slice has not been added yet. */
+	next: number;
+}
+
+/**
+ * Adds up what the kills take, minute by minute, as the state pays it. Asking
+ * for later minutes only adds the new slices; asking for an earlier one starts
+ * over.
+ */
+export function trackDown(
+	slots: ReadonlyMap<string, Slot>,
+	farm: readonly number[],
+) {
+	const downs: Down[] = [];
+	let through = 0;
+	let total = emptyLoss();
+	return {
+		add(event: MatchEvent) {
+			for (const kill of event.kills) {
+				const slot = slots.get(kill.victim);
+				if (!slot || kill.respawnAt === undefined) continue;
+				const died = killSecond(event, kill);
+				downs.push({
+					side: slot.side,
+					index: slot.index,
+					died,
+					back: kill.respawnAt,
+					next: minuteOfSecond(died),
+				});
+			}
+		},
+		/** Everything taken through `minutes`. */
+		through(minutes: number): Record<Side, number[]> {
+			if (minutes < through) {
+				total = emptyLoss();
+				for (const down of downs) down.next = minuteOfSecond(down.died);
+			}
+			through = minutes;
+			for (const down of downs) {
+				for (; down.next <= minutes; down.next++) {
+					total[down.side][down.index] =
+						(total[down.side][down.index] as number) +
+						lostInMinute(
+							farm[down.index] as number,
+							down.died,
+							down.back,
+							down.next,
+						);
+				}
+			}
+			return total;
+		},
+	};
+}
+
 /** Everything the kills of `events` take through `minutes`, as the state pays it. */
 export function deadThrough(
 	events: readonly MatchEvent[],
@@ -61,23 +122,7 @@ export function deadThrough(
 	farm: readonly number[],
 	minutes: number,
 ): Record<Side, number[]> {
-	const lost = emptyLoss();
-	for (const event of events) {
-		for (const kill of event.kills) {
-			const slot = slots.get(kill.victim);
-			if (!slot || kill.respawnAt === undefined) continue;
-			const died = killSecond(event, kill);
-			for (let minute = minuteOfSecond(died); minute <= minutes; minute++) {
-				lost[slot.side][slot.index] =
-					(lost[slot.side][slot.index] as number) +
-					lostInMinute(
-						farm[slot.index] as number,
-						died,
-						kill.respawnAt,
-						minute,
-					);
-			}
-		}
-	}
-	return lost;
+	const down = trackDown(slots, farm);
+	for (const event of events) down.add(event);
+	return down.through(minutes);
 }

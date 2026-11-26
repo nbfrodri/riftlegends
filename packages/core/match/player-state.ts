@@ -17,26 +17,38 @@ export interface PlayerState {
 	readonly respawnAt: number;
 	/** Second of the game of the last death; it prices the passive gold lost. */
 	readonly diedAt: number;
+	/**
+	 * Second of the game of the last kill the player took part in. Another
+	 * contest of the minute that starts earlier leaves him out: he is still in
+	 * the exchange that resolved before it.
+	 */
+	readonly busyUntil: number;
 }
 
 export type SidePlayers = Readonly<Record<Role, PlayerState>>;
 
 export const startPlayers = (): SidePlayers =>
 	Object.fromEntries(
-		ROLES.map((role) => [role, { respawnAt: 0, diedAt: 0 }]),
+		ROLES.map((role) => [role, { respawnAt: 0, diedAt: 0, busyUntil: 0 }]),
 	) as Record<Role, PlayerState>;
 
 /** Second of the game of `second` in `minute` (minutes count from 1). */
 export const gameSecond = (minute: number, second: number) =>
 	(minute - 1) * 60 + second;
 
-/** Whether the player takes part in anything at `second` of the game. */
+/**
+ * Whether the player can take part in something at `second` of the game: he is
+ * back from his last death and out of the last exchange he was in.
+ */
 export const isAlive = (
 	state: MatchState,
 	side: Side,
 	role: Role,
 	second: number,
-) => state[side].players[role].respawnAt <= second;
+) => {
+	const player = state[side].players[role];
+	return player.respawnAt <= second && player.busyUntil <= second;
+};
 
 /** The roles of `side` that are alive at `second`, in `ROLES` order. */
 export const aliveRoles = (state: MatchState, side: Side, second: number) =>
@@ -71,22 +83,41 @@ export function timeDeaths(state: MatchState, event: MatchEvent): MatchEvent {
 	};
 }
 
-/** Marks the victims of an event as down until they come back. */
+/** Marks the victims of an event as down, and everyone in it as busy until then. */
 export function markDeaths(
 	state: MatchState,
 	event: MatchEvent,
 ): Record<Side, SidePlayers> {
+	if (event.kills.length === 0) {
+		return { blue: state.blue.players, red: state.red.players };
+	}
 	const players = {
 		blue: { ...state.blue.players },
 		red: { ...state.red.players },
 	};
+	const take = (
+		id: string,
+		change: (own: PlayerState) => Partial<PlayerState>,
+	) => {
+		const slot: Slot | undefined = state.context.slots.get(id);
+		if (!slot) return;
+		const role = ROLES[slot.index] as Role;
+		const own = players[slot.side][role];
+		players[slot.side][role] = { ...own, ...change(own) };
+	};
 	for (const kill of event.kills) {
-		const slot: Slot | undefined = state.context.slots.get(kill.victim);
-		if (!slot || kill.respawnAt === undefined) continue;
-		players[slot.side][ROLES[slot.index] as Role] = {
-			respawnAt: kill.respawnAt,
-			diedAt: killSecond(event, kill),
-		};
+		const second = killSecond(event, kill);
+		const busy = (own: PlayerState) => ({
+			busyUntil: own.busyUntil > second ? own.busyUntil : second,
+		});
+		take(kill.killer, busy);
+		for (const id of kill.assists) take(id, busy);
+		take(kill.victim, (own) => ({
+			...busy(own),
+			...(kill.respawnAt === undefined
+				? {}
+				: { respawnAt: kill.respawnAt, diedAt: second }),
+		}));
 	}
 	return players;
 }

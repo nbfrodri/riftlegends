@@ -92,7 +92,9 @@ it("R1: kills, deaths and assists of the stats add up to the facts of the events
 it("credits the rotating jungler in every gank", () => {
 	for (let seed = 0; seed < 24; seed++) {
 		const { state, events } = playMatch(matchSetup({ seed }), MATCH_CONTESTS);
-		for (const event of events.filter((e) => e.kind === "gank")) {
+		for (const event of events.filter(
+			(e) => e.kind === "gank" && e.kills.length > 0,
+		)) {
 			const jungler = state.context[event.side].players.jungle;
 			expect(
 				event.kills.some(

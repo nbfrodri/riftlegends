@@ -304,7 +304,12 @@ describe.each(["control", "packaged", "real-champions", "real"] as const)(
 
 			it.each(ROLES)("%s kill share is within 3.5 pp of the pros", (role) => {
 				// Edges are 1/16 steps of a team's kills; 6.5 admits one step over 6 (#401).
-				within(share(role, false), KILL_SHARE[role], [3.5, 6.5]);
+				// The jungle edge is 7.5: with players down more kills fit in a game
+				// (#528), which lifts the floor of its P10 a step (pro P10 is 0).
+				within(share(role, false), KILL_SHARE[role], [
+					3.5,
+					role === "jungle" ? 7.5 : 6.5,
+				]);
 			});
 
 			it.each(ROLES)("%s participation is within 6 pp of the pros", (role) => {

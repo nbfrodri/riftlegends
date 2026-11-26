@@ -15,6 +15,8 @@ import { kill } from "./lane";
 const TEMPO_CHANCE = { slow: 1300, balanced: 2200, fast: 3200 } as const;
 const PITS: ReadonlySet<string> = new Set(["dragon-pit", "baron-pit"]);
 const EXCHANGE_CHANCE = 2300;
+/** Percent of the base fight chance at full teams; the shorthanded fights it removes. */
+const FULL_TEAM_BOOST = 145;
 const AGGRESSION_POINTS = 25;
 const POSITIONING_POINTS = 30;
 const ZONES = [
@@ -52,7 +54,12 @@ function casualties(
 	rng: Rng,
 	engagement: Engagement,
 	first: number,
-	pool: { victims: readonly Role[]; killers: readonly Role[] },
+	pool: {
+		victims: readonly Role[];
+		killers: readonly Role[];
+		/** Who may assist the kill at this place in the fight. */
+		helpers?: (index: number) => readonly Role[];
+	},
 	streaker?: Role,
 ) {
 	return shuffle(rng, ROLES)
@@ -67,6 +74,7 @@ function casualties(
 				engagement,
 				{ contest: FIGHT_ID, event: 0, kill: first + index },
 				pool.killers,
+				pool.helpers?.(index),
 			);
 			// A rampage: one player takes every kill of the winning side.
 			const { killer, assists } = streaker
@@ -82,7 +90,7 @@ function casualties(
 const FIGHT_ID = 30;
 
 /** Chance per 10,000 that a fight won 5–0 or 4–0 is one player's rampage (K18). */
-const RAMPAGE_CHANCE = { 4: 1000, 5: 3600 } as const;
+const RAMPAGE_CHANCE = { 4: 800, 5: 2100 } as const;
 /** Slot of the rampage draws in the attribution stream, past every kill slot. */
 const RAMPAGE_SLOT = 99;
 /**
@@ -129,34 +137,43 @@ function rampage(
 	return ROLES[weighted(rng, odds)];
 }
 
-/** Place casualties within the exchange without consuming resolution or attribution draws. */
-function timeKills(
+/**
+ * Seconds since the opening kill of each kill of a fight, the loser's `lost`
+ * first and the winner's `won` after them. A separate stream, so placing them
+ * never moves the resolution or attribution draws.
+ */
+function killTimes(
 	state: MatchState,
-	kills: ReturnType<typeof casualties>,
 	won: number,
+	lost: number,
 	streak: boolean,
-) {
+): number[] {
 	const { seed, game } = state.context;
 	const rng = createRng(
 		deriveSeed(seed, SCOPES.matchFightTiming, game, state.minute, FIGHT_ID),
 	);
 	let fightSecond = 0;
-	return kills.map((kill, index) => {
+	return Array.from({ length: lost + won }, (_, index) => {
+		// `place` counts the winner's kills from 0.
+		const place = index - lost;
 		if (index > 0) {
-			const fifth = index === ROLES.length - 1 && won === ROLES.length;
+			const fifth = place === ROLES.length - 1 && won === ROLES.length;
 			// A rampage keeps to the windows of the game: 10 s, 30 s for the fifth.
 			const longest = fifth
 				? streak
 					? 30
 					: 32
-				: streak && index < won
+				: streak && place > 0
 					? 10
 					: 12;
 			fightSecond += int(rng, 1, longest);
 		}
-		return { ...kill, fightSecond };
+		return fightSecond;
 	});
 }
+
+/** A player who died up to this many seconds before a kill still assists it. */
+export const ASSIST_WINDOW = 10;
 
 export const FIGHT_CONTEST: Contest = {
 	id: FIGHT_ID,
@@ -166,7 +183,21 @@ export const FIGHT_CONTEST: Contest = {
 		const frequency =
 			(TEMPO_CHANCE[blue.strategy.tempo] + TEMPO_CHANCE[red.strategy.tempo]) /
 			2;
-		if (!roll(rng, frequency)) return [];
+		// Nobody starts a fight shorthanded: the chance follows the side with
+		// fewer players up, over the base tuned for full teams (`FULL_TEAM_BOOST`).
+		const now = gameSecond(state.minute, second);
+		const present = min(
+			aliveRoles(state, "blue", now).length,
+			aliveRoles(state, "red", now).length,
+		);
+		if (
+			!roll(
+				rng,
+				(frequency * present * present * FULL_TEAM_BOOST) /
+					(ROLES.length * ROLES.length * 100),
+			)
+		)
+			return [];
 
 		const result = edge(state, "fight");
 		const winner = roll(rng, result.blue) ? "blue" : "red";
@@ -182,34 +213,49 @@ export const FIGHT_CONTEST: Contest = {
 		// A fight needs someone up on each side; nobody dies twice.
 		if (up.winner.length === 0 || up.loser.length === 0) return [];
 		const won = min(drawn, up.loser.length);
-		// The loser's kills come after the winner's: his killers are the ones
-		// still up, and each victim of his is a winner who is up.
-		const lost = min(min(wanted, up.loser.length - won), up.winner.length);
+		// The loser's kills come first, while all of his team is up, and the
+		// winner's after them: his killers are the ones they left standing.
+		const lost = min(min(wanted, up.winner.length - 1), won - 1);
 		// A team fight is at an objective pit or leaves four or more dead.
 		const engagement: Engagement =
 			PITS.has(zone) || won + lost >= 4
 				? { kind: "teamfight" }
 				: { kind: "skirmish" };
-		const streaker = rampage(state, winner, won, up.winner);
-		const kills = [
+		const kills = casualties(state, loser, lost, rng, engagement, 0, {
+			victims: up.winner,
+			killers: up.loser,
+		});
+		const winnerNames = state.context[winner].players;
+		const fell = new Map(
+			kills.map(({ victim }, index) => [victim, index] as const),
+		);
+		const standing = up.winner.filter((role) => !fell.has(winnerNames[role]));
+		const streaker = rampage(state, winner, won, standing);
+		const times = killTimes(state, won, lost, streaker !== undefined);
+		kills.push(
 			...casualties(
 				state,
 				winner,
 				won,
 				rng,
 				engagement,
-				0,
-				{ victims: up.loser, killers: up.winner },
+				lost,
+				{
+					victims: up.loser,
+					killers: standing,
+					// The ones killed a moment ago still get their assists.
+					helpers: (index) =>
+						up.winner.filter((role) => {
+							const died = fell.get(winnerNames[role]);
+							return (
+								died === undefined ||
+								(times[lost + index] as number) - (times[died] as number) <=
+									ASSIST_WINDOW
+							);
+						}),
+				},
 				streaker,
 			),
-		];
-		const dead = new Set(kills.map(({ victim }) => victim));
-		const loserNames = state.context[loser].players;
-		kills.push(
-			...casualties(state, loser, lost, rng, engagement, won, {
-				victims: up.winner,
-				killers: up.loser.filter((role) => !dead.has(loserNames[role])),
-			}),
 		);
 		const { kill: killGold, assist } = rules.economy;
 		const wonGold = won * (killGold + assist);
@@ -220,7 +266,10 @@ export const FIGHT_CONTEST: Contest = {
 				side: winner,
 				zone,
 				second,
-				kills: timeKills(state, kills, won, streaker !== undefined),
+				kills: kills.map((kill, index) => ({
+					...kill,
+					fightSecond: times[index] as number,
+				})),
 				gold:
 					winner === "blue"
 						? { blue: wonGold, red: lostGold }

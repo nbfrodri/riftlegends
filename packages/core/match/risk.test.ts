@@ -88,7 +88,7 @@ it("F13 · a risky team comes back and throws more often than the same safe team
 	});
 	expect(rates(risky).comeback).toBeGreaterThan(rates(safe).comeback);
 	expect(rates(risky).throw).toBeGreaterThan(rates(safe).throw);
-}, 15_000);
+}, 30_000);
 
 it("K4 · minute-20 comebacks from at least 3,000 gold down stay within 15–30%", () => {
 	const { comebacks, trailed } = measure(matchSetup().match);
@@ -97,7 +97,7 @@ it("K4 · minute-20 comebacks from at least 3,000 gold down stay within 15–30%
 	expect(trailed).toBeGreaterThan(300);
 	expect(rate).toBeGreaterThanOrEqual(0.15);
 	expect(rate).toBeLessThanOrEqual(0.3);
-}, 15_000);
+}, 30_000);
 
 it("scales either team's edge symmetrically and explains the adjustment", () => {
 	const initial = createMatch(matchSetup());

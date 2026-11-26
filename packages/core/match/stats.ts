@@ -7,7 +7,7 @@ import {
 } from "@rift-legends/contracts";
 import { SCALE } from "../math";
 import { clamp } from "../math/int";
-import { deadThrough } from "./dead-passive";
+import { trackDown } from "./dead-passive";
 import { farmed, paidByRole, type Slot, splitDamage } from "./economy";
 import { per30, rate, share } from "./rating";
 import { minuteOf } from "./state";
@@ -97,7 +97,7 @@ export function trackPlayerStats(
 		blue: ROLES.map(() => 0),
 		red: ROLES.map(() => 0),
 	};
-	const seen: MatchEvent[] = [];
+	const down = trackDown(slotOf, farmed(rules.economy.passive));
 	const teamKills = { blue: 0, red: 0 };
 	// What each side won of the objectives, top-lane and jungle contests (R3).
 	const chances = Object.fromEntries(
@@ -125,7 +125,7 @@ export function trackPlayerStats(
 			contest("pressure", winner);
 		if (isVisionZone(event.zone)) contest("vision", winner);
 		const paid = paidByRole(event, slotOf, rules.economy);
-		seen.push(event);
+		down.add(event);
 		for (const side of SIDES) {
 			paid[side].forEach((gold, i) => {
 				rest[side][i] = (rest[side][i] as number) + gold;
@@ -173,7 +173,7 @@ export function trackPlayerStats(
 		const farm = farmed(rules.economy.passive);
 		const income = farm.map((gold) => gold * minutes);
 		// What a victim does not farm while he is down (plan 08, #528).
-		const down = deadThrough(seen, slotOf, farm, minutes);
+		const lost = down.through(minutes);
 		const bySide = Object.fromEntries(
 			SIDES.map((side) => [
 				side,
@@ -192,7 +192,7 @@ export function trackPlayerStats(
 			const gold =
 				(rest[slot.side][i] as number) +
 				(income[i] as number) -
-				(down[slot.side][i] as number);
+				(lost[slot.side][i] as number);
 			return project(slot, line, gold, bySide[slot.side][i] as number);
 		});
 	};

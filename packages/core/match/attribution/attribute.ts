@@ -26,9 +26,9 @@ export interface KillSlot {
  */
 const COUNTS = {
 	duo: { first: 0, weights: [5, 95] },
-	gank: { first: 1, weights: [20, 80] },
-	skirmish: { first: 1, weights: [20, 80] },
-	teamfight: { first: 2, weights: [5, 30, 65] },
+	gank: { first: 1, weights: [8, 92] },
+	skirmish: { first: 1, weights: [4, 96] },
+	teamfight: { first: 2, weights: [0, 8, 92] },
 } as const;
 /** Gankers score twice as often as the laner they visit. */
 const GANKER = 1;
@@ -75,6 +75,8 @@ export function attribute(
 	engagement: Engagement,
 	slot: KillSlot,
 	alive: readonly Role[] = ROLES,
+	/** Who may assist: a player who just died still can (see `ASSIST_WINDOW`). */
+	helpers: readonly Role[] = alive,
 ): { killer: Role; assists: Role[] } {
 	const { seed, game } = state.context;
 	const weights = state.context[side].attribution;
@@ -104,7 +106,9 @@ export function attribute(
 	// A gank always brings the jungler into that lane. Reserve their assist
 	// when the normal draw would omit them, keeping the size of the assist bag.
 	const assists: Role[] = [];
-	let rest = author.rest;
+	let rest = local(engagement).filter(
+		(role) => role !== author.role && helpers.includes(role),
+	);
 	while (assists.length < asked && rest.length > 0) {
 		const next = draw(rng, rest, (role) => weights[role].assist);
 		assists.push(next.role);

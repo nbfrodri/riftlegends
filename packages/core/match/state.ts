@@ -13,7 +13,7 @@ import { SCOPES } from "../rng/scopes";
 import { deriveSeed } from "../rng/seeds";
 import { createRng } from "../rng/streams";
 import { roleWeights } from "./attribution/weights";
-import { markEconomy, type SideEconomy, type Slot } from "./economy";
+import { farmed, markEconomy, type SideEconomy, type Slot } from "./economy";
 import { type MatchPlays, startPlays } from "./events";
 import { markStructure, type SideMap } from "./map-state";
 import type { MentalEdge } from "./mental";
@@ -75,6 +75,8 @@ interface MatchContext {
 	readonly red: SideContext;
 	/** Side and role of each player, to pay the gold of an event. */
 	readonly slots: ReadonlyMap<string, Slot>;
+	/** Passive income each role farms in a minute. */
+	readonly farm: readonly number[];
 }
 
 type SideState = SideEconomy &
@@ -215,6 +217,7 @@ export function createMatch(setup: MatchSetup): MatchState {
 			blue,
 			red,
 			slots,
+			farm: farmed(setup.match.rules.economy.passive),
 		},
 		minute: 0,
 		blue: start,

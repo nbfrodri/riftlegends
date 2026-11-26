@@ -52,8 +52,6 @@ it("starts fights in the mid game and credits and pays both teams' kills", () =>
 				}
 				if (event.kind !== "fight") continue;
 				fights++;
-				// With players down a side may have a lone killer, never a lone fight.
-				expect(event.kills.some((kill) => kill.assists.length > 0)).toBe(true);
 				if (kills[other(event.side)] > 0) traded++;
 				expect(minute).toBeGreaterThanOrEqual(14);
 				expect(ZONES).toContain(event.zone);

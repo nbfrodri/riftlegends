@@ -185,7 +185,7 @@ export function earnPassive(
 ): MatchState[Side] {
 	const own = state[side];
 	const income = state.context.rules.economy.passive;
-	const farm = farmed(income);
+	const { farm } = state.context;
 	const down = ROLES.map((role, i) =>
 		lostInMinute(
 			farm[i] as number,
@@ -216,7 +216,7 @@ export function markEconomy(state: MatchState, e: MatchEvent, loserSide: Side) {
 	}
 	const { slots, rules } = state.context;
 	const paid = paidByRole(e, slots, rules.economy);
-	const down = deadNow(e, slots, farmed(rules.economy.passive));
+	const down = deadNow(e, slots, state.context.farm);
 	const earned = (own: SideEconomy, side: Side) =>
 		own.paid.map(
 			(gold, i) => gold + (paid[side][i] as number) - (down[side][i] as number),

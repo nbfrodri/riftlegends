@@ -5,6 +5,7 @@ import { SCOPES } from "../rng/scopes";
 import { deriveSeed } from "../rng/seeds";
 import { createRng } from "../rng/streams";
 import type { Contest, ContestEvent } from "./contests/contest";
+import { ASSIST_WINDOW } from "./contests/fights";
 import { kill } from "./contests/lane";
 import { levelAt, respawnTime } from "./death-timer";
 import { farmed } from "./economy";
@@ -56,7 +57,10 @@ describe("D2 · every kill sets when the victim comes back (#528)", () => {
 			...base,
 			blue: {
 				...base.blue,
-				players: { ...base.blue.players, mid: { respawnAt: 100, diedAt: 40 } },
+				players: {
+					...base.blue.players,
+					mid: { respawnAt: 100, diedAt: 40, busyUntil: 40 },
+				},
 			},
 		};
 		expect(isAlive(dead, "blue", "mid", 99)).toBe(false);
@@ -89,10 +93,17 @@ describe("D3 · victims, killers and assistants are always alive (#528)", () => 
 			for (const event of events) {
 				for (const k of event.kills) {
 					const at = killSecond(event, k.fightSecond);
-					for (const who of [k.killer, ...k.assists, k.victim]) {
+					for (const who of [k.killer, k.victim]) {
 						expect(isDown(who, at), `seed ${seed}, ${who} at ${at}`).toBe(
 							false,
 						);
+					}
+					// An assistant who died up to ASSIST_WINDOW seconds ago still assists.
+					for (const who of k.assists) {
+						expect(
+							isDown(who, at) && isDown(who, at - ASSIST_WINDOW - 1),
+							`seed ${seed}, ${who} at ${at}`,
+						).toBe(false);
 					}
 					down.set(k.victim, [
 						...(down.get(k.victim) ?? []),
