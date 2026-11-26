@@ -90,7 +90,7 @@ function TeamLineup(props: {
 					// biome-ignore lint/a11y/useKeyWithClickEvents: the row's swap button is the keyboard path; the row click only widens the pointer target.
 					<article
 						key={role}
-						aria-label={`${roleName} · ${player?.handle ?? ""}`}
+						aria-label={`${roleName}, ${player?.handle ?? ""}`}
 						data-swap={swap}
 						onClick={
 							props.pending && !props.disabled

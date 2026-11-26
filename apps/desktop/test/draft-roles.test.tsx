@@ -250,7 +250,7 @@ test("every row of both lineups shows the player's photo or its silhouette", asy
 		);
 		expect(rows).toHaveLength(5);
 		for (const row of rows) {
-			const handle = row.getAttribute("aria-label")?.split(" · ")[1];
+			const handle = row.getAttribute("aria-label")?.split(", ")[1];
 			expect(handle).toBeTruthy();
 			within(row).getByRole("img", { name: `Portrait of ${handle}` });
 		}

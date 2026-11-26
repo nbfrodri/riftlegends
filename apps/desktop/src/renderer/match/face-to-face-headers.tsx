@@ -50,11 +50,10 @@ function StatHeader({
 }) {
 	const { t } = useTranslation();
 	return (
-		// Icon over label with a 4 px gap (#509), on the same edge as the figures (#548).
+		// Icon centred over its label with a 4 px gap (#509, #589). The block is
+		// as wide as the label and sits on the same edge as the figures (#548).
 		<th scope="col" className={`py-1! ${statCellAlign[side]}`}>
-			<span
-				className={`flex flex-col gap-1 ${side === "blue" ? "items-start" : "items-end"}`}
-			>
+			<span className="inline-flex flex-col items-center gap-1">
 				<StatIcon stat={column} size={18} />
 				{t(`draft.match.faceToFace.${column}`)}
 			</span>
