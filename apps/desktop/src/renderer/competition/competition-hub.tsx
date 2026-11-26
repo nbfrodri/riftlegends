@@ -1,4 +1,5 @@
 import { Button } from "@rift-legends/ui-kit/components/button";
+import { SegmentedControl } from "@rift-legends/ui-kit/components/segmented-control";
 import { cn } from "@rift-legends/ui-kit/lib/utils";
 import { useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
@@ -10,11 +11,36 @@ import {
 	dayDate,
 	stageName,
 } from "./names";
+import { ScheduleView } from "./schedule-view";
 import { useExhibitionSeason, useSeasonOverview } from "./season";
 
-// `/competicion/$competition`: the hub of one competition (plan 31). This
-// first version lists its stages; standings, calendar and bracket come with
-// their own issues (U3–U7).
+// `/competicion/$competition`: the hub of one competition (plan 31), with a
+// view per tab: its stages and its schedule (U4). What the hub shows lives in
+// the route's search, so coming back from a series finds it as it was (U5).
+
+export type HubView = "stages" | "schedule";
+
+export interface HubSearch {
+	readonly view?: HubView | undefined;
+	/** Schedule filters: a competition id or `all`, and a team. */
+	readonly scope?: string | undefined;
+	readonly team?: string | undefined;
+	/** The schedule day to bring into view. */
+	readonly day?: number | undefined;
+}
+
+const text = (value: unknown) =>
+	typeof value === "string" && value.length > 0 ? value : undefined;
+
+/** The hub's search, from whatever the route receives. */
+export function parseHubSearch(search: Record<string, unknown>): HubSearch {
+	return {
+		view: search.view === "schedule" ? "schedule" : undefined,
+		scope: text(search.scope),
+		team: text(search.team),
+		day: Number.isSafeInteger(search.day) ? (search.day as number) : undefined,
+	};
+}
 
 const tone = {
 	pending: "text-muted",
@@ -22,11 +48,21 @@ const tone = {
 	finished: "text-muted",
 } as const;
 
-export function CompetitionHub({ competition }: { competition: string }) {
+export function CompetitionHub({
+	competition,
+	search = {},
+	onSearch,
+}: {
+	competition: string;
+	search?: HubSearch;
+	/** Replaces the hub's search in place (no new history entry). */
+	onSearch: (search: HubSearch) => Promise<void>;
+}) {
 	const { t } = useTranslation();
 	const navigate = useNavigate();
 	const season = useExhibitionSeason();
 	const name = competitionName(t, competition);
+	const view = search.view ?? "stages";
 	return (
 		<section className="flex h-full min-h-0 flex-col gap-[clamp(10px,1.6vh,20px)] px-[clamp(14px,1.35vw,28px)] py-[clamp(14px,2.1vh,24px)]">
 			<header className="flex flex-wrap items-center justify-between gap-3">
@@ -47,11 +83,78 @@ export function CompetitionHub({ competition }: { competition: string }) {
 					{t("competition.hub.back")}
 				</Button>
 			</header>
-			{season.data && (
-				<Stages sessionId={season.data.sessionId} competition={competition} />
-			)}
+			<SegmentedControl
+				label={t("competition.hub.view")}
+				options={[
+					{ value: "stages", label: t("competition.hub.stages") },
+					{ value: "schedule", label: t("competition.schedule.label") },
+				]}
+				value={view}
+				onChange={(next) =>
+					void onSearch({
+						...search,
+						view: next === "stages" ? undefined : next,
+						day: undefined,
+					})
+				}
+				className="self-start"
+			/>
+			{season.data &&
+				(view === "schedule" ? (
+					<Schedule
+						sessionId={season.data.sessionId}
+						competition={competition}
+						search={search}
+						onSearch={onSearch}
+					/>
+				) : (
+					<Stages sessionId={season.data.sessionId} competition={competition} />
+				))}
 			{season.error && <CoreErrorMessage error={season.error} />}
 		</section>
+	);
+}
+
+function Schedule({
+	sessionId,
+	competition,
+	search,
+	onSearch,
+}: {
+	sessionId: number;
+	competition: string;
+	search: HubSearch;
+	onSearch: (search: HubSearch) => Promise<void>;
+}) {
+	const navigate = useNavigate();
+	const overview = useSeasonOverview(sessionId);
+	if (!overview.data) return null;
+	return (
+		<ScheduleView
+			sessionId={sessionId}
+			overview={overview.data}
+			filters={{
+				scope: search.scope ?? competition,
+				team: search.team,
+				day: search.day,
+			}}
+			onFilters={({ scope, team }) =>
+				void onSearch({
+					view: "schedule",
+					scope: scope === competition ? undefined : scope,
+					team,
+				})
+			}
+			onOpen={(slot) => {
+				// Remember the day, so Back brings it into view again.
+				void onSearch({ ...search, view: "schedule", day: slot.day }).then(() =>
+					navigate({
+						to: "/competicion/serie/$series",
+						params: { series: slot.id },
+					}),
+				);
+			}}
+		/>
 	);
 }
 

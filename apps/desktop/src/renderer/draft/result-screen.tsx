@@ -4,7 +4,8 @@ import {
 	type SeriesSummary,
 } from "@rift-legends/contracts";
 import { Button } from "@rift-legends/ui-kit/components/button";
-import { type KeyboardEvent, useRef, useState } from "react";
+import { RotateCcw } from "lucide-react";
+import { type KeyboardEvent, type ReactNode, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
 	CoreErrorMessage,
@@ -15,7 +16,7 @@ import {
 import { type GameResult, readGame } from "./result-data";
 import { GameReport, Victory } from "./result-game";
 import { SeriesBanner, SeriesReport } from "./result-series";
-import { teamName, useDraftSession } from "./session";
+import { teamName, useDraftSession, useSeriesOptions } from "./session";
 
 const SERIES = "series";
 type TabId = typeof SERIES | number;
@@ -78,21 +79,21 @@ function Tabs(props: {
 	);
 }
 
-function SeriesResult(props: {
+/** A finished series: its banner, then a tab for the whole series and one per map. */
+export function SeriesResult(props: {
 	games: readonly GameResult[];
 	summary: SeriesSummary | undefined;
+	/** Offered in the banner, next to the score. */
+	action?: ReactNode;
 }) {
-	const { view } = useDraftSession();
 	const [selected, setSelected] = useState<TabId>(SERIES);
-	const last = props.games.at(-1);
-	const first = props.games[0];
-	if (!view || !last || !first) return null;
+	if (props.games.length === 0) return null;
 
 	const game = typeof selected === "number" ? props.games[selected - 1] : null;
 
 	return (
 		<>
-			<SeriesBanner games={props.games} />
+			<SeriesBanner games={props.games} action={props.action} />
 			<div className="grid min-w-0 gap-2">
 				<Tabs games={props.games} selected={selected} onSelect={setSelected} />
 				<section
@@ -123,7 +124,8 @@ function GameResultScreen(props: {
 	summary: SeriesSummary | undefined;
 }) {
 	const { t } = useTranslation();
-	const { options, present } = useDraftSession();
+	const { present } = useDraftSession();
+	const options = useSeriesOptions();
 	const { game } = props;
 	return (
 		<>
@@ -144,7 +146,8 @@ function GameResultScreen(props: {
 }
 
 function LoadedResult(props: { played: number; over: boolean }) {
-	const { sessionId } = useDraftSession();
+	const { t } = useTranslation();
+	const { sessionId, restart } = useDraftSession();
 	const queries = useCoreQueries<MatchView>(
 		Array.from({ length: props.played }, (_, i) => ({
 			v: CONTRACT_VERSION,
@@ -167,7 +170,16 @@ function LoadedResult(props: { played: number; over: boolean }) {
 	const last = played.at(-1);
 	if (!last) return null;
 	return props.over ? (
-		<SeriesResult games={played} summary={summary.data} />
+		<SeriesResult
+			games={played}
+			summary={summary.data}
+			action={
+				<Button onClick={restart}>
+					{t("draft.result.newSeries")}
+					<RotateCcw aria-hidden="true" className="size-4" />
+				</Button>
+			}
+		/>
 	) : (
 		<GameResultScreen game={last} summary={summary.data} />
 	);

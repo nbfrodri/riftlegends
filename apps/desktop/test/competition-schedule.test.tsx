@@ -132,11 +132,11 @@ describe("schedule (U4)", () => {
 			await screen.findByRole("tab", { name: "Full series" }),
 		).toBeTruthy();
 		expect(screen.getByRole("tab", { name: "Map 1" })).toBeTruthy();
-		expect(screen.getByText("Series MVP")).toBeTruthy();
+		expect(screen.getByRole("region", { name: "Series MVP" })).toBeTruthy();
 		// Read-only: nothing to play again.
 		expect(screen.queryByRole("button", { name: /New series/ })).toBeNull();
 		await user.click(screen.getByRole("tab", { name: "Map 1" }));
-		expect(await screen.findByText(/^Map 1/)).toBeTruthy();
+		expect(await screen.findByRole("tabpanel", { name: "Map 1" })).toBeTruthy();
 	});
 
 	it("Back returns to the schedule as it was: filter and day", async () => {
@@ -199,6 +199,7 @@ describe("pending rivals (U4)", () => {
 			index === 0 ? "Ganador de Semifinal 1" : "";
 		await renderInLocale(
 			<ScheduleDays
+				year={2026}
 				slots={[
 					slot({ id: "a", teams: [null, "geng"], status: "pending" }),
 					slot({

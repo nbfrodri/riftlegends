@@ -1,7 +1,7 @@
 import type { SeriesSummary } from "@rift-legends/contracts";
 import { Button } from "@rift-legends/ui-kit/components/button";
 import { Tooltip } from "@rift-legends/ui-kit/components/tooltip";
-import { RotateCcw } from "lucide-react";
+import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { GameRoleIcon } from "../assets/game-role-icon";
 import { isObjectiveKind, MapIcon } from "../assets/map-icon";
@@ -21,13 +21,13 @@ import {
 	championLabel,
 	playerProfile,
 	teamName,
-	useDraftSession,
+	useSeriesOptions,
 } from "./session";
 import { TeamCrest } from "./team-crest";
 
 /** A team's logo (its own crest without one) in a fixed box. */
 function Crest(props: { team: string; className: string }) {
-	const { options } = useDraftSession();
+	const options = useSeriesOptions();
 	return (
 		<span data-crest className="flex shrink-0">
 			<TeamCrest
@@ -39,10 +39,14 @@ function Crest(props: { team: string; className: string }) {
 	);
 }
 
-/** The series banner: the winner with its logo, the final score and a new series (#437). */
-export function SeriesBanner(props: { games: readonly GameResult[] }) {
+/** The series banner: the winner with its logo and the final score (#437). */
+export function SeriesBanner(props: {
+	games: readonly GameResult[];
+	/** What the banner offers next to the score (a new series in the quick draft). */
+	action?: ReactNode;
+}) {
 	const { t } = useTranslation();
-	const { options, restart } = useDraftSession();
+	const options = useSeriesOptions();
 	const first = props.games[0];
 	const last = props.games.at(-1);
 	if (!first || !last) return null;
@@ -65,10 +69,7 @@ export function SeriesBanner(props: { games: readonly GameResult[] }) {
 					</strong>{" "}
 					{teamName(options, first.red)}
 				</p>
-				<Button onClick={restart}>
-					{t("draft.result.newSeries")}
-					<RotateCcw aria-hidden="true" className="size-4" />
-				</Button>
+				{props.action}
 			</div>
 		</Victory>
 	);
@@ -80,7 +81,7 @@ function Mvp(props: {
 	sideOf: (team: string) => "blue" | "red";
 }) {
 	const { t, i18n } = useTranslation();
-	const { options } = useDraftSession();
+	const options = useSeriesOptions();
 	const { mvp } = props;
 	const player = playerProfile(options, mvp.player);
 	const role = props.games[0]?.lines.find((l) => l.player === mvp.player)?.role;
@@ -174,7 +175,7 @@ function Mvp(props: {
 /** The decisive dispute that weighed the most, as the core ranked them. */
 function KeyMoment({ game }: { game: GameResult }) {
 	const { t } = useTranslation();
-	const { options } = useDraftSession();
+	const options = useSeriesOptions();
 	const event = game.disputes[0];
 	if (!event) return <span className="text-muted">–</span>;
 	const text = t(`draft.result.event.${event.kind}`, {
@@ -203,7 +204,7 @@ function Recap(props: {
 	onOpen: (game: number) => void;
 }) {
 	const { t } = useTranslation();
-	const { options } = useDraftSession();
+	const options = useSeriesOptions();
 	const { games, teamA } = props;
 	const teamB =
 		games[0]?.blue === teamA ? games[0].red : (games[0]?.blue ?? "");
@@ -301,7 +302,7 @@ export function SeriesReport(props: {
 	onOpen: (game: number) => void;
 }) {
 	const { t } = useTranslation();
-	const { options } = useDraftSession();
+	const options = useSeriesOptions();
 	const teamA = props.games[0]?.blue ?? "";
 	const sideOf = (team: string) => (team === teamA ? "blue" : "red");
 	return (

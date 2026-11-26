@@ -19,7 +19,7 @@ import {
 	championLabel,
 	playerProfile,
 	teamName,
-	useDraftSession,
+	useSeriesOptions,
 } from "./session";
 
 /** Banner with the winner's name, as in the approved mockup. */
@@ -112,7 +112,7 @@ function Stats({
 	showWinner: boolean;
 }) {
 	const { t, i18n } = useTranslation();
-	const { options } = useDraftSession();
+	const options = useSeriesOptions();
 	const grouped = new Intl.NumberFormat(i18n.language);
 	const headers = [
 		"player",
@@ -265,7 +265,7 @@ const causePhrase = (t: ReturnType<typeof useTranslation>["t"], key: string) =>
 
 function Disputes({ game }: { game: GameResult }) {
 	const { t, i18n } = useTranslation();
-	const { options } = useDraftSession();
+	const options = useSeriesOptions();
 	const list = new Intl.ListFormat(i18n.language, {
 		style: "long",
 		type: "conjunction",
@@ -318,7 +318,7 @@ export function GameReport(props: {
 	showWinner: boolean;
 }) {
 	const { t } = useTranslation();
-	const { options } = useDraftSession();
+	const options = useSeriesOptions();
 	const { game } = props;
 	return (
 		<div className="grid min-w-0 grid-cols-[minmax(0,1.17fr)_minmax(0,1fr)] items-stretch gap-3">
