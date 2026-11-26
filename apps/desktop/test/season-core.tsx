@@ -13,12 +13,12 @@ type Send = CoreApi["send"];
 
 /**
  * The game's real core host behind the renderer's `CoreApi`, as the utility
- * process runs it. `around` can delay or change the answer to a command.
+ * process runs it. `around` can delay a command or change it.
  */
 export function hostCore(
 	around: (
 		command: CoreCommand,
-		send: () => ReturnType<Send>,
+		send: (changed?: CoreCommand) => ReturnType<Send>,
 	) => ReturnType<Send> = (_command, send) => send(),
 ) {
 	const host = createCoreHost();
@@ -29,10 +29,9 @@ export function hostCore(
 	const api = {
 		open: vi.fn(async () => receive({ op: "open" })),
 		send: vi.fn((command: CoreCommand) =>
-			around(command, async () => {
-				const result = receive({ op: "send", body: JSON.stringify(command) });
-				return result;
-			}).then((result) => {
+			around(command, async (changed = command) =>
+				receive({ op: "send", body: JSON.stringify(changed) }),
+			).then((result) => {
 				if (result.ok) for (const listener of listeners) listener(result.facts);
 				return result;
 			}),

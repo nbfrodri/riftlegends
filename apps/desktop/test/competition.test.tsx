@@ -3,7 +3,6 @@ import { act, cleanup, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { createAppRouter } from "../src/renderer/router";
-import type { CoreCommand, CoreFact } from "../src/shared/bridge";
 import { hostCore, renderWithCore } from "./season-core";
 
 // Plan 31, U1 and U2: the «Competición» route with the exhibition season.
@@ -174,33 +173,27 @@ describe("advancing the season (U2)", () => {
 	});
 
 	it("stops at the user's series and offers «Play my series»", async () => {
-		let played = 0;
-		const pending = (command: CoreCommand): CoreFact => ({
-			type: "competition.seriesPending",
-			position: 999,
-			competition: "rift-league",
-			stage: "regular",
-			day: (command.payload as { day: number }).day,
-			round: 1,
-			series: "rift-league/regular/1",
-			teams: ["forge", "shoal"],
-		});
-		const api = hostCore(async (command, send) => {
-			const result = await send();
-			if (command.kind !== "season.playDay" || !result.ok) return result;
-			played += 1;
-			return played === 2
-				? { ...result, facts: [...result.facts, pending(command)] }
-				: result;
-		});
+		// The exhibition has no user team: the test gives it one (#482).
+		const api = hostCore((command, send) =>
+			send(
+				command.kind === "season.create"
+					? {
+							...command,
+							payload: { ...(command.payload as object), humanTeam: "forge" },
+						}
+					: command,
+			),
+		);
 		const { user } = await open(api);
 		await user.click(button("Whole season"));
 		const play = await within(advance()).findByRole("button", {
 			name: "Play my series",
 		});
 		expect(play).toBeTruthy();
-		expect(screen.getByText("Your series: Forge vs Shoal")).toBeTruthy();
-		expect(days(api)).toBe(2);
+		expect(
+			screen.getByText(/^Your series: (Forge vs \w+|\w+ vs Forge)$/),
+		).toBeTruthy();
+		expect(days(api)).toBe(1);
 		for (const name of ["Play day", "Until end of stage", "Whole season"])
 			expect(button(name).hasAttribute("disabled")).toBe(true);
 	});
