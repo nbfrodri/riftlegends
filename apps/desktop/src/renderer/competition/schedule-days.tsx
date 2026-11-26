@@ -1,3 +1,4 @@
+import type { ScheduleView } from "@rift-legends/contracts";
 import { cn } from "@rift-legends/ui-kit/lib/utils";
 import { useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
@@ -7,22 +8,8 @@ import { dayDate, stageName } from "./names";
 // The schedule of plan 31 (U4): the series grouped by day, with the result of
 // those already played. A played series opens on click; the others are text.
 
-export interface ScheduleSlot {
-	/** The id of `competition.schedule`, which opens the series once played. */
-	readonly id: string;
-	readonly competition: string;
-	readonly stage: string;
-	readonly day: number;
-	/** `null` while the team is not known yet. */
-	readonly teams: readonly [string | null, string | null];
-	readonly bestOf?: number | undefined;
-	readonly status: "played" | "ready" | "pending";
-	readonly winner?: string | undefined;
-	/** Games won by each team, in the order of `teams`. */
-	readonly score?: readonly [number, number] | undefined;
-	/** In a bracket stage, the id of the series in `competition.bracket`. */
-	readonly match?: string | undefined;
-}
+/** One series of `competition.schedule`. */
+export type ScheduleSlot = ScheduleView[number];
 
 export function ScheduleDays({
 	slots,
