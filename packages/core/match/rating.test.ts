@@ -195,7 +195,9 @@ describe("R3 · common rating scale", () => {
 			["assists", "deaths", "kp", "vision"].sort(),
 		);
 		const total = parts.reduce((sum, p) => sum + p.score * p.weight, 0);
-		expect(abs(rating - total / 10_000)).toBeLessThanOrEqual(0.5);
+		const diff = rating - total / 10_000;
+		expect(diff).toBeLessThanOrEqual(0.5);
+		expect(diff).toBeGreaterThanOrEqual(-0.5);
 		for (const p of parts) expect(p.weight).toBe(WEIGHTS.support[p.metric]);
 	});
 });

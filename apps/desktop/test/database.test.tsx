@@ -146,7 +146,7 @@ it("shows every team with league, seed, coach and roster", async () => {
 	);
 	const t1 = within(list.getByRole("listitem", { name: "T1" }));
 	const seed = teams.find((t) => t.id === "T1")?.seed;
-	expect(t1.getByText(`LCK · seed ${seed}`)).toBeTruthy();
+	expect(t1.getByText(`LCK, seed ${seed}`)).toBeTruthy();
 	expect(t1.getByText(/Coach: /)).toBeTruthy();
 	await user.click(t1.getByRole("button", { name: /Faker/ }));
 	expect(

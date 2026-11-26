@@ -1,6 +1,8 @@
 import type { MatchContent, MatchEvent } from "@rift-legends/contracts";
 import { describe, expect, it } from "vitest";
 import { fictionalContent } from "../ai/fixtures/content";
+import { deadThrough } from "./dead-passive";
+import { farmed } from "./economy";
 import { fictionalMatchContent } from "./fixtures/content";
 import { matchSetup } from "./fixtures/setup";
 import { type Contest, LANE_CONTESTS, playMatch, playMinute } from "./loop";
@@ -144,7 +146,14 @@ describe("lanes and jungle", () => {
 		const { passive } = fictionalMatchContent.rules.economy;
 		for (const side of ["blue", "red"] as const) {
 			const fromEvents = events.reduce((sum, e) => sum + e.gold[side], 0);
-			expect(state[side].gold).toBe(passive * state.minute + fromEvents);
+			// A player down loses the passive income of those seconds (#528).
+			const down = deadThrough(
+				events,
+				state.context.slots,
+				farmed(passive),
+				state.minute,
+			)[side].reduce((sum, gold) => sum + gold, 0);
+			expect(state[side].gold).toBe(passive * state.minute + fromEvents - down);
 			const kills = events
 				.filter((e) => e.side === side)
 				.reduce((sum, e) => sum + e.kills.length, 0);

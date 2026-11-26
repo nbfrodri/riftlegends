@@ -149,12 +149,12 @@ function LibraryGroups() {
 										<Outbound
 											href={library.url}
 											className={cn(
-												"inline-flex items-center gap-1 rounded-control border border-line bg-panel px-2 py-[5px] text-[13px] text-text leading-none",
+												"inline-flex items-center gap-1.5 rounded-control border border-line bg-panel px-2 py-[5px] text-[13px] text-text leading-none",
 												hoverable,
 											)}
 										>
 											{library.name}{" "}
-											<span className="text-muted">· {library.licence}</span>
+											<span className="text-muted">{library.licence}</span>
 										</Outbound>
 									</li>
 								),

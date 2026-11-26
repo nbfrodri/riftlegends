@@ -10,6 +10,7 @@ import {
 import fc from "fast-check";
 import { describe, expect, it } from "vitest";
 import { fictionalContent } from "../ai/fixtures/content";
+import { deadThrough } from "./dead-passive";
 import { farmed } from "./economy";
 
 import { decisive } from "./explain";
@@ -220,9 +221,24 @@ describe("M4 · gold and kills add up", () => {
 				sum(stats.filter((p) => p.team === team).map((p) => p[key]));
 			expect(by("forge", "kills")).toBe(by("shoal", "deaths"));
 			expect(by("shoal", "kills")).toBe(by("forge", "deaths"));
+			const slots = new Map(
+				(["blue", "red"] as const).flatMap((side) =>
+					ROLES.map(
+						(role, index) =>
+							[game.teams[side].players[role], { side, index }] as const,
+					),
+				),
+			);
+			// A victim does not farm while he is down (plan 08, #528).
+			const down = deadThrough(
+				game.events,
+				slots,
+				farmed(rules.economy.passive),
+				20,
+			);
 			const gold = (team: string, side: Side) =>
 				sum(stats.filter((p) => p.team === team).map((p) => p.gold)) -
-				total(game.events, side, 20);
+				(total(game.events, side, 20) - sum(down[side]));
 			expect(gold("forge", "blue")).toBe(0);
 			expect(gold("shoal", "red")).toBe(0);
 		}
