@@ -184,3 +184,35 @@ test("Q8: same seed and same decisions give the same log of facts", () => {
 		"competition.seriesRecorded",
 	);
 });
+
+test("series use the competition's fearless mode, hard by default", () => {
+	const { core, day } = dayZero();
+	const ai = day.find(({ type }) => type === "series.started");
+	expect(ai).toMatchObject({ fearless: "hard", timer: false });
+	const [slot] = schedule(core);
+	const facts = playHuman(core, slot?.id as string);
+	expect(facts[0]).toMatchObject({ fearless: "hard", timer: false });
+	const soft = client();
+	const [first] = season.competitions;
+	accepted(
+		soft.send("season.create", {
+			...human,
+			competitions: [{ ...first, fearless: "soft" }],
+		}),
+	);
+	expect(
+		factsOf(soft, "season.playDay", { day: 0 }).find(
+			({ type }) => type === "series.started",
+		),
+	).toMatchObject({ fearless: "soft" });
+});
+
+test("season.playSeries passes the timer setting of the app", () => {
+	const { core } = dayZero();
+	const [slot] = schedule(core);
+	const started = factsOf(core, "season.playSeries", {
+		series: slot?.id,
+		timer: true,
+	});
+	expect(started[0]).toMatchObject({ type: "series.started", timer: true });
+});
