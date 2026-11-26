@@ -13,6 +13,8 @@ import { SCOPES } from "../rng/scopes";
 import { deriveSeed } from "../rng/seeds";
 import { createRng } from "../rng/streams";
 import { roleWeights } from "./attribution/weights";
+import type { ConversionWindow } from "./conversion-window";
+import { openWindow } from "./conversion-window";
 import { farmed, markEconomy, type SideEconomy, type Slot } from "./economy";
 import { type MatchPlays, startPlays } from "./events";
 import { markStructure, type SideMap } from "./map-state";
@@ -96,6 +98,8 @@ export interface MatchState {
 	readonly objectives: ObjectiveTimers;
 	readonly winner: Side | null;
 	readonly plays: MatchPlays;
+	/** What a won fight lets its winner take before the rival is level (#530). */
+	readonly window: ConversionWindow | null;
 }
 
 export const other = (side: Side): Side => (side === "blue" ? "red" : "blue");
@@ -192,7 +196,6 @@ export function createMatch(setup: MatchSetup): MatchState {
 		elders: 0,
 		towers: { top: 0, mid: 0, bot: 0 },
 		nexusTowers: 0,
-		fightPushAt: 0,
 		inhibitors: { top: 0, mid: 0, bot: 0 },
 		buffs: { herald: 0, baron: 0, elder: 0 },
 		players: startPlayers(),
@@ -225,6 +228,7 @@ export function createMatch(setup: MatchSetup): MatchState {
 		objectives: startObjectives(objectives),
 		winner: null,
 		plays: startPlays(),
+		window: null,
 	};
 }
 
@@ -235,9 +239,6 @@ function mark(state: MatchState, e: MatchEvent): MatchState {
 	let { won, lost } = markEconomy(state, e, loserSide);
 	let objectives = state.objectives;
 	switch (e.kind) {
-		case "fight":
-			won = { ...won, fightPushAt: e.minute + 1 };
-			break;
 		case "tower":
 		case "inhibitor":
 			lost = markStructure(lost, e, rules.inhibitorRespawn);
@@ -263,6 +264,7 @@ function mark(state: MatchState, e: MatchEvent): MatchState {
 		[e.side]: { ...won, players: players[e.side] },
 		[loserSide]: { ...lost, players: players[loserSide] },
 		objectives,
+		window: e.kind === "fight" ? openWindow(players, e) : state.window,
 		winner: e.kind === "nexus" ? e.side : state.winner,
 	};
 }

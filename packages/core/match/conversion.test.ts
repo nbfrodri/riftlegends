@@ -52,6 +52,25 @@ function fight(
 
 const at = (minute: number, second: number) => gameSecond(minute, second);
 
+/** The state with the rival of the window down until it ends, as a won fight leaves it. */
+const dead = (state: MatchState): MatchState => {
+	const { window } = state;
+	if (!window) return state;
+	const loser = other(window.side);
+	return {
+		...state,
+		[loser]: {
+			...state[loser],
+			players: Object.fromEntries(
+				ROLES.map((role) => [
+					role,
+					{ respawnAt: window.until, diedAt: 0, busyUntil: 0 },
+				]),
+			) as typeof state.red.players,
+		},
+	};
+};
+
 /** The window a fight leaves, through the state that applies it. */
 const windowOf = (event: MatchEvent) =>
 	applyEvents({ ...base, minute: event.minute - 1 }, [event]).window;
@@ -145,7 +164,7 @@ describe("D7 · the window after a fight won in numbers (#530)", () => {
 			objectives: NEVER,
 			window: open,
 		};
-		const { events, window } = stepWindow(state, createRng(1));
+		const { events, window } = stepWindow(dead(state), createRng(1));
 		expect(events).toHaveLength(1);
 		expect(events[0]).toMatchObject({
 			kind: "tower",
@@ -170,7 +189,7 @@ describe("D7 · the window after a fight won in numbers (#530)", () => {
 			objectives: { ...NEVER, baron: 20 },
 			window: open,
 		};
-		const { events } = stepWindow(state, createRng(1));
+		const { events } = stepWindow(dead(state), createRng(1));
 		expect(events[0]).toMatchObject({
 			kind: "baron",
 			side: "blue",
@@ -191,7 +210,7 @@ describe("D7 · the window after a fight won in numbers (#530)", () => {
 				started: false,
 			},
 		};
-		expect(stepWindow(state, createRng(1))).toEqual({
+		expect(stepWindow(dead(state), createRng(1))).toEqual({
 			events: [],
 			window: null,
 		});
@@ -201,7 +220,7 @@ describe("D7 · the window after a fight won in numbers (#530)", () => {
 		const open: ConversionWindow = {
 			side: "blue",
 			at: at(31, 10),
-			until: at(31, 10) + 40,
+			until: at(31, 10) + COST.tower + 1,
 			lead: 5,
 			started: false,
 		};
@@ -211,7 +230,7 @@ describe("D7 · the window after a fight won in numbers (#530)", () => {
 			objectives: NEVER,
 			window: open,
 		};
-		const next = playMinute(state, []);
+		const next = playMinute(dead(state), []);
 		expect(next.events.map((e) => [e.minute, e.kind, e.second])).toEqual([
 			[31, "tower", 10],
 			[31, "tower", 10 + COST.tower],
@@ -233,7 +252,7 @@ describe("D7 · the window after a fight won in numbers (#530)", () => {
 			objectives: NEVER,
 			window: open,
 		};
-		const first = playMinute(state, []);
+		const first = playMinute(dead(state), []);
 		expect(first.events).toHaveLength(1);
 		expect(first.state.window?.at).toBeGreaterThanOrEqual(at(32, 0));
 		const second = playMinute(first.state, []);
@@ -277,7 +296,7 @@ const openBase = (state: MatchState, minute: number): MatchState => ({
 
 /** Plays the window out, minute by minute, and lists what it took. */
 function chain(state: MatchState) {
-	let current = state;
+	let current = dead(state);
 	const kinds: string[] = [];
 	for (let i = 0; i < 4 && current.window && current.winner === null; i++) {
 		const next = playMinute(current, []);
@@ -337,7 +356,7 @@ describe("D8 · closing the game after an ace (#530)", () => {
 		expect(end.winner).toBe("blue");
 		const short = chain({
 			...closed,
-			window: { ...long, until: at(30, 0) + 10 },
+			window: { ...long, until: at(30, 0) + COST.inhibitor },
 		});
 		expect(short.kinds).toEqual(["inhibitor"]);
 	});

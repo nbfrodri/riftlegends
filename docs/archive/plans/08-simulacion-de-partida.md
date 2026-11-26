@@ -806,6 +806,13 @@ Sustituye a `fightPushAt`. Al terminar una pelea en la que el ganador queda con 
 
 La vieja ventaja de `fightPushAt` desaparece del perfil; su efecto lo dan las muertes. **Un muerto pierde su oro de farmeo:** la parte proporcional de su oro pasivo por los segundos que está muerto. K7 y K16 siguen en verde.
 
+##### Implementada (#530, 26-11-2026)
+
+- La ventana vive en `MatchState.window` (`conversion-window.ts`) y cada intento es un paso del bucle del minuto (`contests/conversion.ts`, ID 46, flujo `(…, minuto, 46, segundo)`) que entra en el orden (segundo, ID). Un intento nunca empieza antes de un hecho ya contado del minuto.
+- Constantes de código, no de `rules`: tiempos por cosa (torre 11 s, inhibidor y nexo 9 s, dragón 11 s, heraldo 9 s, barón y elder 14 s), decisión de ir según la ventaja (1 vivo más 60 %, 2 vivos 90 %, 3 o más siempre) y el nexo solo con el rival en 2 vivos o menos y desde el minuto 21.
+- Un empuje normal ya no se lleva el nexo salvo con una probabilidad mínima que crece pasado el minuto 30 (válvula contra partidas eternas). Para que K19 se cumpla las tomas ocurren sobre todo en ventana: empuje 2.200, inhibidor al 58 %, barón y elder sin pelea con 25 % por minuto y la pelea cuenta el 160 % de los puntos de estructura del rival abierto.
+- Economía retocada para K4, K7 y K16: `passive` 1.230, torre 1.600, inhibidor 500, barón 1.100. `SIM_VERSION` 18.
+
 #### Hechos, reproducción y cara a cara
 
 - Cada baja del hecho (`kills[]`) lleva `respawnAt` (segundo de partida), opcional en el contrato para leer logs antiguos. Con eso el cliente calcula vivos y cuenta atrás en **cualquier segundo** sin snapshots por segundo.

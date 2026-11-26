@@ -267,11 +267,9 @@ export function sample(games: number, edge: number, pool: Pool) {
 			),
 		);
 		const takes = structureTakes(state, events);
-		const { fights, deadAtEnd } = fightOutcomes(state, events);
 		return {
 			takes,
-			fights,
-			deadAtEnd,
+			...fightOutcomes(state, events),
 			deaths,
 			streaks,
 			plays: {

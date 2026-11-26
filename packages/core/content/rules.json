@@ -110,15 +110,15 @@
 		]
 	},
 	"economy": {
-		"passive": 1000,
+		"passive": 1230,
 		"kill": 100,
 		"assist": 50,
-		"tower": 1900,
-		"inhibitor": 950,
+		"tower": 1600,
+		"inhibitor": 500,
 		"grub": 150,
 		"dragon": 400,
 		"herald": 500,
-		"baron": 1500,
+		"baron": 1100,
 		"elder": 400
 	},
 	"fullBuildGold": 17000,
