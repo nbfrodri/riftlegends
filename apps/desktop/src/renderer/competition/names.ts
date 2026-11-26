@@ -48,7 +48,7 @@ export function stageText(
  * hyphen between digits stays («rounds-1-2» reads «Rounds 1-2»). Formats carry
  * no stage names yet.
  */
-export function stageName(id: string) {
+function stageName(id: string) {
 	const text = id.replace(/(?<!\d)-|-(?!\d)/g, " ");
 	return text.charAt(0).toUpperCase() + text.slice(1);
 }
