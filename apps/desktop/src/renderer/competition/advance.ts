@@ -4,8 +4,12 @@ import { CoreRequestError, useCore } from "../core";
 import type { SeasonHandle, SeasonOverview } from "./season";
 
 // «Jugar día», «Hasta fin de fase» and «Toda la temporada» (plan 31, U2): the
-// renderer sends one `season.playDay` at a time, so the progress moves day by
-// day while the core plays in its own process (E3).
+// renderer plays each day a few series at a time (`season.playDay` with
+// `maxSeries`), so no request keeps the core busy for long and «Parar» takes
+// effect after the current batch, while the core plays in its own process (E3).
+
+/** Series per request: a busy day of a real season takes seconds (#584). */
+const BATCH_SERIES = 2;
 
 export type AdvanceMode = "day" | "stage" | "season";
 
@@ -113,13 +117,14 @@ export function useSeasonAdvance(season: SeasonHandle) {
 						kind: "season.playDay",
 						sessionId: season.sessionId,
 						expectedPosition: season.position.current,
-						payload: { day: current.day },
+						payload: { day: current.day, maxSeries: BATCH_SERIES },
 					});
 					if (!result.ok) throw new CoreRequestError(result.error);
 					season.position.current = result.position;
 					const waiting = result.facts.find(
 						({ type }) => type === "competition.seriesPending",
 					);
+					const playing = current.day;
 					current = await overview();
 					if (!mounted.current) return;
 					const day = current.day ?? toDay;
@@ -131,10 +136,12 @@ export function useSeasonAdvance(season: SeasonHandle) {
 						});
 						break;
 					}
+					// A day that is not closed yet goes on after «Parar»; the run ends at a batch.
+					const closed = current.day !== playing;
 					if (
-						mode === "day" ||
 						stopped.current ||
-						(target && finished(current, target))
+						(closed &&
+							(mode === "day" || (target && finished(current, target))))
 					)
 						break;
 				}

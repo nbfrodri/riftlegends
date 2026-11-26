@@ -29,6 +29,8 @@ export function replayDigest(
 	body: object,
 	days = Number.POSITIVE_INFINITY,
 	onDay?: (ms: number) => void,
+	/** Plays each day this many series at a time; `onBatch` times each call. */
+	batch?: { size: number; onBatch?: (ms: number) => void },
 ) {
 	const core = client();
 	const hash = createHash("sha256");
@@ -41,7 +43,15 @@ export function replayDigest(
 	let played = 0;
 	for (let day = overview(); day !== null && played < days; day = overview()) {
 		const started = performance.now();
-		const { facts } = accepted(core.send("season.playDay", { day }));
+		const facts: unknown[] = [];
+		do {
+			const from = performance.now();
+			const result = accepted(
+				core.send("season.playDay", { day, maxSeries: batch?.size }),
+			);
+			batch?.onBatch?.(performance.now() - from);
+			facts.push(...result.facts);
+		} while (batch && overview() === day);
 		onDay?.(performance.now() - started);
 		hash.update(JSON.stringify(facts));
 		played++;
