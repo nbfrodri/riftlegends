@@ -25,6 +25,7 @@ export const season = {
 			kind: "league",
 			verified: false,
 			tiebreakerBestOf: 3,
+			fearless: "hard",
 			tiebreak: ["seriesWins", "gameDiff", "headToHead"],
 			stages: [
 				{

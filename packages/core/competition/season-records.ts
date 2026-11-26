@@ -3,7 +3,11 @@ import { summarizeSeries } from "../draft/summary";
 import type { Emitted } from "../server/dispatcher";
 import { QueryRejection } from "../server/dispatcher";
 import type { SeasonSession } from "./handlers";
-import { playSeasonSeries, type SeasonFixture } from "./season-series";
+import {
+	type Fearless,
+	playSeasonSeries,
+	type SeasonFixture,
+} from "./season-series";
 
 /** A player's line in a game, as `match.ended` writes it. */
 interface GameLine {
@@ -30,6 +34,7 @@ export interface SeriesRecord {
 	readonly winner: string;
 	readonly fixture: SeasonFixture;
 	readonly seed: number;
+	readonly fearless: Fearless;
 	readonly games: readonly {
 		readonly duration: number;
 		readonly lines: readonly GameLine[];
@@ -54,7 +59,12 @@ function replay(state: SeasonSession, series: string) {
 	const record = season?.records.get(series);
 	if (!season || !record)
 		return new QueryRejection({ code: "unknown-series", params: { series } });
-	const played = playSeasonSeries(season.content, record.fixture, record.seed);
+	const played = playSeasonSeries(
+		season.content,
+		record.fixture,
+		record.seed,
+		record.fearless,
+	);
 	if (!played.ok)
 		return new QueryRejection({ code: played.error.code, params: {} });
 	return played.state;

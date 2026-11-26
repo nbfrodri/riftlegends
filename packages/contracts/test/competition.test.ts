@@ -32,6 +32,7 @@ const league = (): Competition => ({
 		"draw",
 	],
 	tiebreakerBestOf: 3,
+	fearless: "hard",
 	stages: [
 		{
 			id: "regular",
