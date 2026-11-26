@@ -116,7 +116,15 @@ describe("U7: Swiss by balance", () => {
 			within(screen.getByRole("group", { name: "Swiss" }))
 				.getAllByRole("region")
 				.map((region) => region.getAttribute("aria-label")),
-		).toEqual(["Round 1", "Round 2", "Round 3", "Qualified", "Eliminated"]);
+		).toEqual([
+			"Round 1",
+			"Round 2",
+			"Round 3",
+			"Qualified at 2-0",
+			"Eliminated at 0-2",
+			"Qualified at 2-1",
+			"Eliminated at 1-2",
+		]);
 		const pools = (name: string) =>
 			within(round(name))
 				.getAllByRole("group")
@@ -145,15 +153,31 @@ describe("U7: Swiss by balance", () => {
 		expect(played.dataset.tooltip).toBe(played.getAttribute("aria-label"));
 	});
 
-	test("qualified and eliminated teams are listed at the end with their record", async () => {
-		await show();
-		expect(within(round("Qualified")).getByText("Alpha")).toBeTruthy();
-		expect(within(round("Qualified")).getByText("2-0")).toBeTruthy();
-		expect(within(round("Eliminated")).getByText("Bravo")).toBeTruthy();
-		expect(within(round("Eliminated")).getByText("0-2")).toBeTruthy();
-		// Teams still playing are in neither list.
-		expect(within(round("Qualified")).queryByText("Charlie")).toBeNull();
-		expect(within(round("Eliminated")).queryByText("DEL")).toBeNull();
+	test("teams that qualify or are eliminated appear after the round that decides it, under their record", async () => {
+		const { container } = await show();
+		const box = (name: string) => screen.getByRole("region", { name });
+		expect(within(box("Qualified at 2-0")).getByText("Alpha")).toBeTruthy();
+		expect(within(box("Eliminated at 0-2")).getByText("Bravo")).toBeTruthy();
+		// The record heads the box; the state is its title and place, not a badge.
+		expect(within(box("Qualified at 2-0")).getByText("Qualified")).toBeTruthy();
+		expect(within(box("Qualified at 2-0")).getByText("2-0")).toBeTruthy();
+		// The qualified sit above the round's pools and the eliminated below.
+		const top = (name: string) => Number.parseFloat(box(name).style.top);
+		const pool = within(round("Round 3")).getByRole("group", { name: "1-1" });
+		expect(top("Qualified at 2-0")).toBeLessThan(
+			Number.parseFloat(pool.style.top),
+		);
+		expect(top("Eliminated at 0-2")).toBeGreaterThan(
+			Number.parseFloat(pool.style.top),
+		);
+		// Charlie and Delta still play: the last boxes wait for them.
+		expect(
+			within(box("Qualified at 2-1")).getByText("To be decided"),
+		).toBeTruthy();
+		expect(
+			within(box("Eliminated at 1-2")).getByText("To be decided"),
+		).toBeTruthy();
+		expect(container.textContent).not.toMatch(/[·•|]/);
 	});
 
 	test("a round that relaxed its constraints says so in words", async () => {
@@ -214,10 +238,14 @@ describe("U7: Swiss by balance", () => {
 		).toBeTruthy();
 		// Nothing to open or focus there.
 		expect(within(round("Round 2")).queryAllByRole("button")).toHaveLength(0);
-		expect(within(round("Qualified")).getByText("None yet")).toBeTruthy();
+		expect(
+			within(
+				screen.getByRole("region", { name: "Qualified at 2-0" }),
+			).getByText("To be decided"),
+		).toBeTruthy();
 	});
 
-	test("lines join each balance to the two it leads to, and the last ones to the end lists", async () => {
+	test("lines join each balance to the two it leads to in the next column", async () => {
 		const { container } = await show();
 		const lines = [...container.querySelectorAll("[data-flow]")].map((path) =>
 			path.getAttribute("data-flow"),
@@ -226,12 +254,12 @@ describe("U7: Swiss by balance", () => {
 			[
 				"1:0-0>2:1-0",
 				"1:0-0>2:0-1",
-				"2:1-0>qualified",
+				"2:1-0>3:qualified",
 				"2:1-0>3:1-1",
 				"2:0-1>3:1-1",
-				"2:0-1>eliminated",
-				"3:1-1>qualified",
-				"3:1-1>eliminated",
+				"2:0-1>3:eliminated",
+				"3:1-1>4:qualified",
+				"3:1-1>4:eliminated",
 			].sort(),
 		);
 	});
@@ -239,8 +267,12 @@ describe("U7: Swiss by balance", () => {
 	test("Spanish names the rounds, the lists and the notices", async () => {
 		await show(undefined, "es-ES");
 		expect(card(/^Ronda 3, 1-1: Delta contra Charlie$/)).toBeTruthy();
-		expect(screen.getByRole("region", { name: "Clasificados" })).toBeTruthy();
-		expect(screen.getByRole("region", { name: "Eliminados" })).toBeTruthy();
+		expect(
+			screen.getByRole("region", { name: "Clasificados con 2-0" }),
+		).toBeTruthy();
+		expect(
+			screen.getByRole("region", { name: "Eliminados con 0-2" }),
+		).toBeTruthy();
 		expect(
 			screen.getByText("Cruce de la misma región: no había otro posible"),
 		).toBeTruthy();
