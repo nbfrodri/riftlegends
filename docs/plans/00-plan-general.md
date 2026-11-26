@@ -102,6 +102,7 @@ Cada fase termina con un hito verificable y un commit o PR fusionado en `main`. 
 
 ### Fase 5 — Carrera v1
 - Elección de equipo, avance de calendario, bucle diario (IDEA §4), objetivos de directiva (sin despido), guardado y carga con migraciones y versionado de carreras.
+- **Menú principal y carrera separados (decisión del 26-11-2026):** fuera de cualquier carrera, un menú principal con Carrera (nueva o cargar), Draft rápido, Torneo y Sandbox. Dentro de una carrera, la barra lateral solo muestra lo de la carrera (Inicio, Calendario, Plantilla, Mercado, Competición, Entrenamiento…); el usuario juega lo que le toca y practica con scrims (plan 20). Hasta esta fase la barra lateral mezcla ambos.
 - **Gestor de carreras:** carreras ilimitadas (un SQLite por carrera, cada una con su propio equipo), pantalla de cargar y crear carrera, autoguardado, modo ironman opcional, backups rotativos con restauración, y exportar e importar el fichero de una carrera.
 - Proyecciones: clasificación, estadísticas, palmarés y head-to-head.
 - Pantallas densas: plantilla, calendario, clasificación y perfil de jugador o equipo.
