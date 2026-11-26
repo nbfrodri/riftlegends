@@ -76,17 +76,29 @@ const syncCutText = (row: HTMLTableRowElement) => {
 	}
 };
 
-export type DataTableProps<Row extends RowData> = {
+/** The text filter and its result count; a short table can leave them out. */
+type FilterProps =
+	| {
+			filterable?: true;
+			filterLabel: string;
+			filterPlaceholder: string;
+			/** Result count for the status line, announced while filtering. */
+			countLabel: (shown: number, total: number) => string;
+	  }
+	| {
+			filterable: false;
+			filterLabel?: never;
+			filterPlaceholder?: never;
+			countLabel?: never;
+	  };
+
+export type DataTableProps<Row extends RowData> = FilterProps & {
 	/** Names the table and its scrolling region. */
 	label: string;
 	data: readonly Row[];
 	columns: readonly DataTableColumn<Row>[];
 	getRowId: (row: Row) => string;
-	filterLabel: string;
-	filterPlaceholder: string;
 	emptyText: string;
-	/** Result count for the status line, announced while filtering. */
-	countLabel: (shown: number, total: number) => string;
 	/** Locale for text sorting; defaults to the runtime's. */
 	locale?: string;
 	className?: string;
@@ -125,6 +137,7 @@ export function DataTable<Row extends RowData>({
 	data,
 	columns,
 	getRowId,
+	filterable = true,
 	filterLabel,
 	filterPlaceholder,
 	emptyText,
@@ -256,22 +269,24 @@ export function DataTable<Row extends RowData>({
 
 	return (
 		<section className={cn("flex min-h-0 flex-col bg-panel", className)}>
-			<div className="flex flex-wrap items-center gap-x-3.5 gap-y-2 px-3.5 py-2.5 text-table">
-				<label htmlFor={filterId} className="flex items-center gap-2">
-					<span className="text-muted">{filterLabel}</span>
-					<input
-						id={filterId}
-						type="search"
-						value={String(table.state.globalFilter ?? "")}
-						placeholder={filterPlaceholder}
-						onChange={(event) => table.setGlobalFilter(event.target.value)}
-						className="h-7 w-52 rounded-control border border-line bg-surface px-2 text-text placeholder:text-muted"
-					/>
-				</label>
-				<span role="status" className="ml-auto text-[13px] text-muted">
-					{countLabel(rows.length, data.length)}
-				</span>
-			</div>
+			{filterable && (
+				<div className="flex flex-wrap items-center gap-x-3.5 gap-y-2 px-3.5 py-2.5 text-table">
+					<label htmlFor={filterId} className="flex items-center gap-2">
+						<span className="text-muted">{filterLabel}</span>
+						<input
+							id={filterId}
+							type="search"
+							value={String(table.state.globalFilter ?? "")}
+							placeholder={filterPlaceholder}
+							onChange={(event) => table.setGlobalFilter(event.target.value)}
+							className="h-7 w-52 rounded-control border border-line bg-surface px-2 text-text placeholder:text-muted"
+						/>
+					</label>
+					<span role="status" className="ml-auto text-[13px] text-muted">
+						{countLabel?.(rows.length, data.length)}
+					</span>
+				</div>
+			)}
 			<ScrollArea
 				className="flex-1"
 				viewportProps={{

@@ -173,6 +173,22 @@ test("shows the empty state for a table without rows", () => {
 	expect(screen.getByText("No player matches the filter")).toBeTruthy();
 });
 
+test("a short table can go without the search box and its count", () => {
+	render(
+		<DataTable
+			label="Players"
+			data={players.slice(0, 5)}
+			columns={columns}
+			getRowId={(row) => row.id}
+			filterable={false}
+			emptyText="No player"
+		/>,
+	);
+	expect(screen.queryByRole("searchbox")).toBeNull();
+	expect(screen.queryByRole("status")).toBeNull();
+	expect(rows()).toHaveLength(5);
+});
+
 test("moves between rows with the arrow keys, Home and End", async () => {
 	const user = userEvent.setup();
 	render(<Table />);
