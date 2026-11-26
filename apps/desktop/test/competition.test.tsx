@@ -23,7 +23,7 @@ async function open(api = hostCore(), locale = "en-US") {
 	);
 	await screen.findByRole(
 		"list",
-		{ name: "Competitions" },
+		{ name: locale === "es-ES" ? "Competiciones" : "Competitions" },
 		{ timeout: 30_000 },
 	);
 	return { user: userEvent.setup(), api };
