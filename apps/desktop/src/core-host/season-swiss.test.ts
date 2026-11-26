@@ -61,6 +61,8 @@ test("U7: before any series, round 1 pairs everyone at 0-0 and says it relaxed t
 	expect(standings(core).swiss).toEqual({
 		wins: 2,
 		losses: 2,
+		// Rounds the stage plays at most: 2 wins or 2 losses take three.
+		totalRounds: 3,
 		rounds: [
 			{
 				round: 1,

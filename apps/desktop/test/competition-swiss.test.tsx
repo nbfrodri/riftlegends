@@ -45,6 +45,7 @@ const team = (id: string) => names[id] ?? { name: id };
 const swiss: Swiss = {
 	wins: 2,
 	losses: 2,
+	totalRounds: 3,
 	rounds: [
 		{
 			round: 1,
@@ -179,6 +180,60 @@ describe("U7: Swiss by balance", () => {
 		expect(waiting.getAttribute("aria-disabled")).toBe("true");
 		fireEvent.click(waiting);
 		expect(open).toHaveBeenCalledTimes(1);
+	});
+
+	test("rounds not paired yet show their balances, waiting to be paired", async () => {
+		const [first] = swiss.rounds;
+		await renderInLocale(
+			<SwissRounds
+				swiss={{
+					...swiss,
+					rounds: first ? [first] : [],
+					teams: swiss.teams.map((row) => ({
+						...row,
+						wins: row.team === "a" || row.team === "d" ? 1 : 0,
+						losses: row.team === "a" || row.team === "d" ? 0 : 1,
+						status: "active",
+					})),
+				}}
+				team={team}
+			/>,
+		);
+		const pool = (round: string, balance: string) =>
+			within(screen.getByRole("region", { name: round })).getByRole("group", {
+				name: balance,
+			});
+		expect(
+			within(pool("Round 2", "1-0")).getByText("To be paired"),
+		).toBeTruthy();
+		expect(
+			within(pool("Round 2", "0-1")).getByText("To be paired"),
+		).toBeTruthy();
+		expect(
+			within(pool("Round 3", "1-1")).getByText("To be paired"),
+		).toBeTruthy();
+		// Nothing to open or focus there.
+		expect(within(round("Round 2")).queryAllByRole("button")).toHaveLength(0);
+		expect(within(round("Qualified")).getByText("None yet")).toBeTruthy();
+	});
+
+	test("lines join each balance to the two it leads to, and the last ones to the end lists", async () => {
+		const { container } = await show();
+		const lines = [...container.querySelectorAll("[data-flow]")].map((path) =>
+			path.getAttribute("data-flow"),
+		);
+		expect(lines.sort()).toEqual(
+			[
+				"1:0-0>2:1-0",
+				"1:0-0>2:0-1",
+				"2:1-0>qualified",
+				"2:1-0>3:1-1",
+				"2:0-1>3:1-1",
+				"2:0-1>eliminated",
+				"3:1-1>qualified",
+				"3:1-1>eliminated",
+			].sort(),
+		);
 	});
 
 	test("Spanish names the rounds, the lists and the notices", async () => {
