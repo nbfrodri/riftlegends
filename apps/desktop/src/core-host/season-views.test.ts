@@ -66,6 +66,7 @@ test("Q1: before day 0 every competition and stage is pending, without a leader"
 				stages: [
 					{
 						stage: "split",
+						play: "roundRobin",
 						status: "pending",
 						startDay: expect.any(Number),
 						endDay: expect.any(Number),
