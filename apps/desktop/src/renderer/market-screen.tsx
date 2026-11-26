@@ -1,4 +1,5 @@
 import {
+	CellText,
 	DataTable,
 	type DataTableColumn,
 } from "@rift-legends/ui-kit/components/data-table";
@@ -50,7 +51,7 @@ function CellFilter(props: {
 				type="button"
 				tabIndex={-1}
 				onClick={props.onClick}
-				className="press -mx-1 inline-flex cursor-pointer items-center gap-2 rounded-control px-1 align-middle hover:bg-panel hover:text-action"
+				className="press -mx-1 inline-flex max-w-full cursor-pointer items-center gap-2 rounded-control px-1 align-middle hover:bg-panel hover:text-action"
 			>
 				{props.children}
 			</button>
@@ -129,10 +130,11 @@ export function MarketScreen({
 							}
 						>
 							<GameRoleIcon role={player.role} size={16} />
-							{role}
+							<CellText>{role}</CellText>
 						</CellFilter>
 					);
 				},
+				width: "6.5rem",
 			},
 			{
 				id: "team",
@@ -143,7 +145,7 @@ export function MarketScreen({
 						label={t("market.filterBy", { value: player.team })}
 						onClick={() => setFilters((f) => ({ ...f, team: player.team }))}
 					>
-						{player.team}
+						<CellText>{player.team}</CellText>
 					</CellFilter>
 				),
 			},
@@ -153,11 +155,13 @@ export function MarketScreen({
 				value: (player) => player.age,
 				cell: (player) => integer.format(player.age),
 				numeric: true,
+				width: "4rem",
 			},
 			{
 				id: "rating",
 				header: t("market.column.rating"),
 				value: (player) => player.rating,
+				width: "4.5rem",
 				// The player card scale (#360): color plus the level in words.
 				cell: (player) => {
 					const level = levelOf(player.rating);
@@ -177,6 +181,7 @@ export function MarketScreen({
 				id: "form",
 				header: t("market.column.form"),
 				value: (player) => player.form,
+				width: "4.5rem",
 				// No sign: the icon, the color and the words say the direction.
 				cell: (player) => {
 					const { key, Icon, color } = formTrend(player.form);
@@ -195,6 +200,7 @@ export function MarketScreen({
 				header: t("market.column.contractEnd"),
 				value: (player) => player.contractEnd,
 				cell: (player) => month.format(new Date(player.contractEnd)),
+				width: "7.5rem",
 			},
 			{
 				id: "salary",
@@ -202,6 +208,7 @@ export function MarketScreen({
 				value: (player) => player.salary,
 				cell: (player) => euros.format(player.salary),
 				numeric: true,
+				width: "8.5rem",
 			},
 		];
 	}, [t, language, euros]);
