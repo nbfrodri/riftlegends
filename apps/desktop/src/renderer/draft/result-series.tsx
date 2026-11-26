@@ -126,7 +126,7 @@ function Mvp(props: {
 			</div>
 			<div className="min-w-0">
 				<p className="font-semibold text-[12px] text-muted uppercase tracking-[0.055em]">
-					{t("draft.result.mvp.label", { team: name })}
+					{t("draft.result.mvp.label")}
 				</p>
 				<h2 className="mt-2 flex items-baseline gap-2.5 font-bold font-display text-[28px] leading-none tracking-heading">
 					{role && (
@@ -136,6 +136,9 @@ function Mvp(props: {
 					)}
 					<CountryFlag country={player?.nationality} />
 					{player?.handle ?? mvp.player}
+					<span className="min-w-0 truncate font-sans font-semibold text-[15px] text-muted tracking-normal">
+						{name}
+					</span>
 				</h2>
 				<p className="mt-1 text-[14px] text-muted">
 					{new Intl.ListFormat(i18n.language, {

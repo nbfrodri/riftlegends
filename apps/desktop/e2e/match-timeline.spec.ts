@@ -88,7 +88,7 @@ function prepareDraft() {
 async function expectTeamPanelsInView(page: Page) {
 	for (const team of ["Forge", "Shoal"])
 		await expect(
-			page.getByRole("region", { name: `${team} · estructuras y objetivos` }),
+			page.getByRole("region", { name: `Estructuras y objetivos de ${team}` }),
 		).toBeInViewport({ ratio: 1 });
 }
 
@@ -327,7 +327,7 @@ test("replays a drafted game and continues to its result", async ({
 		await expectTeamPanelsInView(page);
 		for (const team of ["Forge", "Shoal"]) {
 			const panel = page.getByRole("region", {
-				name: `${team} · estructuras y objetivos`,
+				name: `Estructuras y objetivos de ${team}`,
 			});
 			const unused = await panel.evaluate((section) => {
 				const effects = section.lastElementChild;
