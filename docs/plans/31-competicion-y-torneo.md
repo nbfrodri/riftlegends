@@ -41,7 +41,7 @@ La app muestra una **temporada competitiva completa** (seis ligas, First Stand, 
 | U1 | Resumen | Una tarjeta por competición: logo, fase actual, líder o campeón y próximo día; un clic la abre | Competición terminada: campeón con su logo; sin empezar: fecha de inicio |
 | U2 | Avance | «Jugar día», «Hasta fin de fase» y «Toda la temporada» con progreso; desactivados mientras se juega | Si hay una serie del usuario, el avance se para y aparece «Jugar mi serie» |
 | U3 | Clasificación | `DataTable` con puesto, logo, equipo, series, games y diferencia; columna «Destino» (playoffs, play-in, eliminado) con texto | El tooltip del puesto explica el desempate en palabras; un grupo = una tabla |
-| U4 | Calendario | Series por día; filtros por competición y equipo; ganador en negrita y marcador; un clic abre la serie | Rival pendiente en texto («Ganador de SF1»); día de hoy visible al abrir |
+| U4 | Calendario | Vistas de día, semana y mes (#593), también en la sección «Calendario»; filtros por competición y equipo; ganador en negrita y marcador; un clic abre la serie | Rival pendiente en texto («Ganador de SF1»); día de hoy visible al abrir |
 | U5 | Serie | Abre el resultado del draft rápido en modo lectura (marcador, games, MVP y gaps) | Volver deja el calendario o el cuadro donde estaba |
 | U6 | Cuadro | Eliminación simple y doble con conectores; campeón destacado; un clic en una serie la abre | 6 equipos con byes; huecos pendientes; final con reset solo si se juega |
 | U7 | Swiss | Columnas por balance (0-0, 1-0, 0-1…), clasificados y eliminados al final | Ronda con restricciones relajadas: aviso en palabras |
