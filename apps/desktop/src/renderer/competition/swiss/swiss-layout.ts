@@ -9,6 +9,7 @@ import type { StandingsView } from "@rift-legends/contracts";
 type Swiss = NonNullable<StandingsView["swiss"]>;
 export type SwissSeries = Swiss["rounds"][number]["series"][number];
 type Outcome = "qualified" | "eliminated";
+type Result = "win" | "loss";
 
 export const CARD_H = 42;
 const CARD_GAP = 8;
@@ -181,36 +182,48 @@ export function layoutSwiss(swiss: Swiss, columnWidth: number) {
 			boxes,
 		};
 	});
-	const curve = (x1: number, y1: number, x2: number, y2: number) => {
-		const mid = (x1 + x2) / 2;
-		return `M${x1} ${y1} C${mid} ${y1} ${mid} ${y2} ${x2} ${y2}`;
-	};
+	// Elbow lines, as in the bracket: out of the pool's right edge, along the
+	// middle of the gap, into the target's left edge at its one entry point.
+	const elbow = (x1: number, y1: number, x2: number, y2: number) =>
+		`M${x1} ${y1} H${(x1 + x2) / 2} V${y2} H${x2}`;
 	const centre = ({ y, height }: { y: number; height: number }) =>
 		y + height / 2;
-	const flows: { id: string; d: string }[] = [];
+	/** Winners leave from the top half of the pool, losers from the bottom. */
+	const exit = (pool: PlacedPool, result: Result) =>
+		pool.y +
+		POOL_HEAD +
+		((pool.height - POOL_HEAD) * (result === "win" ? 1 : 3)) / 4;
+	const flows: { id: string; d: string; result: Result }[] = [];
 	for (const [index, column] of columns.entries()) {
 		const next = columns[index + 1];
 		if (!next) continue;
 		for (const pool of column.pools) {
 			const targets = [
-				pool.wins + 1 >= swiss.wins
-					? next.boxes.find((box) => box.outcome === "qualified")
-					: next.pools.find(
-							(p) => p.wins === pool.wins + 1 && p.losses === pool.losses,
-						),
-				pool.losses + 1 >= swiss.losses
-					? next.boxes.find((box) => box.outcome === "eliminated")
-					: next.pools.find(
-							(p) => p.wins === pool.wins && p.losses === pool.losses + 1,
-						),
-			];
-			for (const target of targets)
+				[
+					"win",
+					pool.wins + 1 >= swiss.wins
+						? next.boxes.find((box) => box.outcome === "qualified")
+						: next.pools.find(
+								(p) => p.wins === pool.wins + 1 && p.losses === pool.losses,
+							),
+				],
+				[
+					"loss",
+					pool.losses + 1 >= swiss.losses
+						? next.boxes.find((box) => box.outcome === "eliminated")
+						: next.pools.find(
+								(p) => p.wins === pool.wins && p.losses === pool.losses + 1,
+							),
+				],
+			] as const;
+			for (const [result, target] of targets)
 				if (target)
 					flows.push({
 						id: `${pool.id}>${target.id}`,
-						d: curve(
+						result,
+						d: elbow(
 							column.x + columnWidth,
-							centre(pool),
+							exit(pool, result),
 							next.x,
 							centre(target),
 						),

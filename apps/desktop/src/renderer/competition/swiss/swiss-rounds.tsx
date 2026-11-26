@@ -166,7 +166,12 @@ export function SwissRounds({
 							key={flow.id}
 							d={flow.d}
 							data-flow={flow.id}
-							className="stroke-[1.25] stroke-line"
+							data-result={flow.result}
+							strokeDasharray={flow.result === "loss" ? "4 3" : undefined}
+							className={cn(
+								"stroke-[1.25]",
+								flow.result === "win" ? "stroke-muted/70" : "stroke-line",
+							)}
 						/>
 					))}
 				</svg>
