@@ -8,7 +8,7 @@ export function StageTitle({ row }: { row: Parameters<typeof stageLabel>[1] }) {
 	return (
 		<span className="min-w-0">
 			{split && (
-				<span className="block truncate text-[11px] text-muted">{split}</span>
+				<span className="block truncate text-[12px] text-muted">{split}</span>
 			)}
 			<span className="block truncate font-semibold">{stage}</span>
 		</span>
