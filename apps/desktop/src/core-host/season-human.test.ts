@@ -216,3 +216,16 @@ test("season.playSeries passes the timer setting of the app", () => {
 	});
 	expect(started[0]).toMatchObject({ type: "series.started", timer: true });
 });
+
+test("U10: the finished series stays readable on the season until the next one starts", () => {
+	const { core } = dayZero();
+	const [slot] = schedule(core);
+	const facts = playHuman(core, slot?.id as string);
+	const games = facts.filter(({ type }) => type === "game.finished").length;
+	// The result screen of the flow reads the series without its id.
+	expect(draftView(core)).toMatchObject({ phase: "over" });
+	expect(core.query("series.summary", {})).toMatchObject({ ok: true });
+	expect(core.query("match.view", { game: games })).toMatchObject({ ok: true });
+	// Its commands are closed: the draft flow cannot go on with it.
+	expect(core.send("draft.ai", {})).toMatchObject({ ok: false });
+});
