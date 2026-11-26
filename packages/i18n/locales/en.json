@@ -1114,5 +1114,7 @@
 	"tournament.champion.mine": "Your team won the tournament.",
 	"tournament.champion.notMine": "{{team}} did not win it this time.",
 	"tournament.champion.hub": "See the tournament",
-	"tournament.championLine": "{{team}} is the champion."
+	"tournament.championLine": "{{team}} is the champion.",
+	"competition.stage.league": "League",
+	"competition.stage.elimination": "Playoffs"
 }
