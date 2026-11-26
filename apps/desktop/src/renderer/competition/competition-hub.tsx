@@ -18,7 +18,7 @@ import {
 	competitionLogoId,
 	competitionName,
 	dayDate,
-	stageName,
+	stageText,
 } from "./names";
 import {
 	type CalendarSearch,
@@ -214,9 +214,9 @@ function StandingsPanel({
 		stages.find(({ stage }) => stage === defaultStage(stages));
 	if (!selected) return null;
 	const date = (day: number) => dayDate(view.year, day, i18n.language);
-	const items = stages.map(({ stage }) => ({
-		value: stage,
-		label: stageName(stage),
+	const items = stages.map((row) => ({
+		value: row.stage,
+		label: stageText(t, row),
 	}));
 	return (
 		<section

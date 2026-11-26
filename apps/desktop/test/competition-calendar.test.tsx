@@ -72,6 +72,9 @@ function Harness({
 			showCompetition={showCompetition}
 			team={(id) => teams[id] ?? { name: id }}
 			competition={(id) => id.toUpperCase()}
+			stage={(slot) =>
+				slot.stage === "rounds-1-2" ? "Winter Split, Rounds 1-2" : slot.stage
+			}
 			origin={(_slot, index, short) =>
 				index === 0 ? (short ? "Ganador SF1" : "Ganador de Semifinal 1") : ""
 			}
@@ -209,7 +212,9 @@ describe("day view", () => {
 		expect(title().textContent).toBe("Monday, February 9, 2026");
 		const [played] = screen.getAllByRole("listitem");
 		expect(within(played as HTMLElement).getByText("LCK")).toBeTruthy();
-		expect(within(played as HTMLElement).getByText("Rounds 1-2")).toBeTruthy();
+		expect(
+			within(played as HTMLElement).getByText("Winter Split, Rounds 1-2"),
+		).toBeTruthy();
 		await user.click(
 			screen.getByRole("button", { name: "Open series: T1 1–2 Gen.G" }),
 		);

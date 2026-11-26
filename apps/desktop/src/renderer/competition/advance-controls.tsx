@@ -7,7 +7,7 @@ import {
 	type PendingSeries,
 	stageTarget,
 } from "./advance";
-import { competitionName, dayDate, stageName } from "./names";
+import { competitionName, dayDate, stageText } from "./names";
 import type { SeasonOverview } from "./season";
 
 // «Jugar día», «Hasta fin de fase» and «Toda la temporada» with their progress
@@ -83,7 +83,7 @@ export function AdvanceControls({
 					target
 						? t("competition.advance.stageHint", {
 								competition: competitionName(t, target.competition),
-								stage: stageName(target.stage),
+								stage: stageText(t, target),
 							})
 						: ""
 				}
@@ -132,7 +132,7 @@ export function RunProgress({
 				? t("competition.advance.until.day")
 				: t("competition.advance.until.stage", {
 						competition: competitionName(t, run.target?.competition ?? ""),
-						stage: stageName(run.target?.stage ?? ""),
+						stage: run.target ? stageText(t, run.target) : "",
 					});
 	return (
 		<div className="min-w-0">

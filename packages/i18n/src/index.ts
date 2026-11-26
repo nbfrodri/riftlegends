@@ -24,6 +24,28 @@ export function resolveLocale(systemLocale: string): Locale {
 	return systemLocale.toLowerCase().split(/[-_]/)[0] === "es" ? "es" : "en";
 }
 
+type StageNameKey = Extract<keyof typeof en, `competition.stage.${string}`>;
+type SplitNameKey = Extract<keyof typeof en, `competition.split.${string}`>;
+
+const isStageNameKey = (
+	key: `competition.stage.${string}`,
+): key is StageNameKey => Object.hasOwn(en, key);
+
+/** Resolves the two display parts of a stage from season.overview. */
+export function competitionStageName(
+	t: (key: StageNameKey | SplitNameKey) => string,
+	name:
+		| { split?: "winter" | "spring" | "summer" | undefined; stage: string }
+		| undefined,
+	fallback: string,
+) {
+	const key = `competition.stage.${name?.stage}` as const;
+	return {
+		split: name?.split ? t(`competition.split.${name.split}`) : undefined,
+		stage: isStageNameKey(key) ? t(key) : fallback,
+	};
+}
+
 /** Creates an initialised i18next instance; no detection, backends or persistence. */
 export async function createI18n(systemLocale: string): Promise<i18n> {
 	const instance = i18next.createInstance();
