@@ -442,3 +442,47 @@ test("Q3: a played bracket series gives its score in the order of its teams and 
 		expect((a ?? 0) > (b ?? 0) ? match.teamA : match.teamB).toBe(match.winner);
 	}
 });
+
+test("Q4: a bracket series names its bracket match, so a pending team can say where it comes from", () => {
+	const core = client();
+	accepted(
+		core.send("season.create", {
+			...season,
+			competitions: [
+				{
+					...league,
+					stages: [
+						{
+							...league.stages[0],
+							play: { type: "singleElim", size: 4, bestOf: [1, 1] },
+						},
+					],
+				},
+			],
+		}),
+	);
+	const schedule = competitionViews.schedule.parse(
+		view(core, "competition.schedule", {}),
+	);
+	const bracket = competitionViews.bracket.parse(
+		view(core, "competition.bracket", {
+			competition: "league",
+			stage: "split",
+		}),
+	);
+	expect(schedule.map(({ match }) => match).sort()).toEqual(
+		bracket.matches.map(({ id }) => id).sort(),
+	);
+	const final = schedule.find(({ teams }) => teams.includes(null));
+	expect(final?.match).toBe(bracket.matches.at(-1)?.id);
+});
+
+test("Q4: a round robin series has no bracket match", () => {
+	const core = client();
+	accepted(core.send("season.create", roundRobin));
+	const schedule = competitionViews.schedule.parse(
+		view(core, "competition.schedule", {}),
+	);
+	expect(schedule.length).toBeGreaterThan(0);
+	for (const slot of schedule) expect(slot.match).toBeUndefined();
+});

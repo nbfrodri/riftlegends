@@ -1,9 +1,9 @@
 import { type AiSettings, ROLES, type Role } from "@rift-legends/contracts";
 import { choose, DIFFICULTY, difficultyOf, type Scored } from "../ai/choose";
-import { scoreBan } from "../ai/components/ban";
+import { banScorer } from "../ai/components/ban";
 import { comfort } from "../ai/components/comfort";
 import { meta } from "../ai/components/meta";
-import { scorePick } from "../ai/components/pick";
+import { pickComponents } from "../ai/components/pick";
 import { indexContent } from "../ai/content-index";
 import type { AiContext } from "../ai/context";
 import { lookahead } from "../ai/lookahead";
@@ -166,10 +166,14 @@ export const aiTurn: CommandHandler<SeriesState> = (state) => {
 			.filter((entry) => entry.status === "free")
 			.map((entry) => entry.champion);
 
-	const score = next.action === "ban" ? scoreBan : scorePick;
+	const score = next.action === "ban" ? banScorer(ctx) : pickComponents(ctx);
 	const scored = free(next.team, input.picks)
-		.map((champion) => ({ champion, components: score(ctx, champion) }))
-		.sort((a, b) => total(b) - total(a) || (a.champion < b.champion ? -1 : 1));
+		.map((champion) => {
+			const components = score(champion);
+			return { champion, components, total: total({ champion, components }) };
+		})
+		.sort((a, b) => b.total - a.total || (a.champion < b.champion ? -1 : 1))
+		.map(({ champion, components }) => ({ champion, components }));
 	if (scored.length === 0) {
 		return apply(state, next.team, "ban", null, false);
 	}

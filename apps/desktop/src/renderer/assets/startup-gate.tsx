@@ -23,7 +23,13 @@ function RealStartup({ children }: { children: ReactNode }) {
 	// Official assets are missing and could not be downloaded (offline): the
 	// player decides to continue with the fallback art and sounds (#555).
 	const fallback = status?.state === "ready" && status.incomplete === true;
-	if (!entered && playable && !fallback) setEntered(true);
+	// Only a settled status opens the app. A progress event can arrive after the
+	// "ready" answer (#570) and would otherwise pair a stale catalog with a status
+	// that no longer says the cache is incomplete.
+	const settled =
+		status?.state === "ready" ||
+		(status?.state === "syncing" && !!status.progress.cachedVersion);
+	if (!entered && settled && playable && !fallback) setEntered(true);
 	const notice = !entered && playable && fallback;
 	const failure =
 		!notice &&
