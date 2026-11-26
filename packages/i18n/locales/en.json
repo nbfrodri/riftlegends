@@ -877,7 +877,6 @@
 	"competition.leader": "Leader",
 	"competition.champion": "Champion",
 	"competition.record": "{{wins}}-{{losses}}",
-	"competition.startsOn": "Starts on day {{day}} · {{date}}",
 	"competition.nextDay": "Next day: {{day}} · {{date}}",
 	"competition.name.first-stand": "First Stand",
 	"competition.name.msi": "MSI",
@@ -907,5 +906,7 @@
 	"competition.advance.days": "{{done}} of {{total}} days",
 	"competition.advance.until.day": "One day",
 	"competition.advance.until.stage": "Until the end of {{competition}} · {{stage}}",
-	"competition.advance.until.season": "Until the end of the season"
+	"competition.advance.until.season": "Until the end of the season",
+	"competition.startsOnDay": "Starts on day {{day}}",
+	"competition.nextDayNumber": "Next day: {{day}}"
 }

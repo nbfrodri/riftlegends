@@ -193,7 +193,7 @@ function Season({
 							id={`${listId}-${key}`}
 							className={
 								groups.length > 1
-									? "mb-2 font-bold font-display text-[13px] text-muted uppercase tracking-[0.04em]"
+									? "mb-1.5 font-bold font-display text-[13px] text-muted uppercase tracking-[0.04em]"
 									: "sr-only"
 							}
 						>
@@ -241,8 +241,8 @@ function RunProgress({ run, year }: { run: AdvanceRun; year: number }) {
 						stage: stageName(run.target?.stage ?? ""),
 					});
 	return (
-		<div className="border border-line bg-panel px-[clamp(10px,1vw,16px)] py-[clamp(8px,1.2vh,12px)]">
-			<p className="mb-2 flex min-w-0 items-baseline gap-3 text-[13px]">
+		<div className="border border-line bg-panel px-[clamp(10px,1vw,16px)] py-[clamp(6px,1vh,10px)]">
+			<p className="mb-1.5 flex min-w-0 items-baseline gap-3 text-[13px]">
 				<b className="shrink-0 font-semibold text-text">
 					{t("competition.advance.playingDay", {
 						day: run.day,

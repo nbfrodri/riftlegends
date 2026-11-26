@@ -58,11 +58,20 @@ export function CompetitionCard({
 	const { status, leader, champion, stages } = competition;
 	const date = (day: number) => dayDate(year, day, i18n.language);
 	const startDay = stages[0]?.startDay ?? 0;
+	// The day the card shows big: the start, or the next day of a stage without a table.
+	const dateDay =
+		status === "pending"
+			? startDay
+			: status === "live" && !leader
+				? nextDay
+				: undefined;
+	const footerDay =
+		status === "pending" ? startDay : status === "live" ? nextDay : undefined;
 
 	return (
-		<li className="group relative flex min-w-0 flex-col gap-[clamp(8px,1.2vh,12px)] border border-line bg-panel p-[clamp(10px,1vw,16px)] hover:border-text hover:bg-surface has-[button:active]:brightness-90 has-[button:focus-visible]:outline-2 has-[button:focus-visible]:outline-action">
+		<li className="group relative flex min-w-0 flex-col gap-[clamp(6px,1vh,10px)] border border-line bg-panel p-[clamp(10px,1vw,16px)] hover:border-text hover:bg-surface has-[button:active]:brightness-90 has-[button:focus-visible]:outline-2 has-[button:focus-visible]:outline-action">
 			<header className="grid min-w-0 grid-cols-[auto_1fr] items-center gap-x-3">
-				<span className="grid size-[clamp(44px,3.8vw,60px)] place-items-center border border-line bg-canvas">
+				<span className="grid size-[clamp(42px,3.6vw,60px)] place-items-center border border-line bg-canvas">
 					<LeagueLogo
 						id={competitionLogoId(competition.id)}
 						name={name}
@@ -105,7 +114,7 @@ export function CompetitionCard({
 				</div>
 			</header>
 			<StageBar competition={competition} />
-			<div className="flex min-h-[clamp(30px,4.2vh,40px)] min-w-0 items-center">
+			<div className="flex min-h-[clamp(28px,4vh,40px)] min-w-0 items-center">
 				{status === "finished" && champion ? (
 					<Team label={t("competition.champion")} highlight>
 						<Trophy
@@ -138,34 +147,32 @@ export function CompetitionCard({
 							})}
 						</span>
 					</Team>
-				) : status === "pending" && today !== null ? (
+				) : dateDay !== undefined && today !== null ? (
 					<p className="flex min-w-0 items-baseline gap-2.5">
 						<b className="font-bold font-display text-[clamp(18px,1.5vw,25px)] tracking-[-0.02em]">
-							{date(startDay)}
+							{date(dateDay)}
 						</b>
 						<span className="text-[13px] text-muted">
-							{startDay <= today
+							{dateDay <= today
 								? t("competition.startsToday")
-								: t("competition.startsIn", { count: startDay - today })}
+								: t("competition.startsIn", { count: dateDay - today })}
 						</span>
 					</p>
 				) : null}
 			</div>
-			{status !== "finished" &&
-				(status === "pending" || nextDay !== undefined) && (
-					<p className="mt-auto flex items-center gap-1.5 border-line border-t pt-[clamp(6px,0.9vh,10px)] text-[12px] text-muted tabular-nums">
-						<CalendarDays aria-hidden="true" className="size-3.5 shrink-0" />
-						{status === "pending" || nextDay === undefined
-							? t("competition.startsOn", {
-									day: startDay,
-									date: date(startDay),
+			{footerDay !== undefined && (
+				<p className="mt-auto flex items-center gap-1.5 text-[12px] text-muted tabular-nums">
+					<CalendarDays aria-hidden="true" className="size-3.5 shrink-0" />
+					{status === "pending"
+						? t("competition.startsOnDay", { day: footerDay })
+						: leader
+							? t("competition.nextDay", {
+									day: footerDay,
+									date: date(footerDay),
 								})
-							: t("competition.nextDay", {
-									day: nextDay,
-									date: date(nextDay),
-								})}
-					</p>
-				)}
+							: t("competition.nextDayNumber", { day: footerDay })}
+				</p>
+			)}
 			<button
 				type="button"
 				aria-label={t("competition.open", { name })}
