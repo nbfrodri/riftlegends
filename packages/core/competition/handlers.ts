@@ -254,6 +254,10 @@ export const seasonDispatcher = createDispatcher<SeasonSession>({
 			const slots = presetSlots(preset, state.loadContent);
 			return slots.ok ? slots.view : new QueryRejection(slots.error);
 		},
+		"tournament.check": ({ loadContent }, payload) => {
+			const outcome = createTournament({ loadContent }, payload);
+			return { error: outcome.ok ? null : outcome.error };
+		},
 		"series.summary": (state, params) =>
 			params.series ? seriesSummary(state, params) : humanSummary(state),
 		"match.view": (state, params) =>

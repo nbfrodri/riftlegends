@@ -105,6 +105,8 @@ export const competitionQueries = defineQueries({
 	"team.profile": z.strictObject({ team: teamId }),
 	/** The slots of a preset, each one filled with the best seed of its league. */
 	"tournament.preset": z.strictObject({ preset: tournamentPreset }),
+	/** The error `tournament.create` would answer, or `null`; it creates nothing. */
+	"tournament.check": tournamentCreate,
 	/**
 	 * `series.summary` and `match.view` of a series of the season, by the id
 	 * that `competition.schedule` gives it. With `series` they are answered

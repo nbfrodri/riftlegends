@@ -35,6 +35,8 @@ export function SearchSelect(props: {
 	value: string;
 	onChange: (value: string) => void;
 	className?: string;
+	/** Id of the text that describes the trigger, such as an error next to it. */
+	describedBy?: string | undefined;
 }) {
 	const selected =
 		props.groups
@@ -53,6 +55,7 @@ export function SearchSelect(props: {
 		>
 			<Combobox.Trigger
 				aria-label={props.label}
+				aria-describedby={props.describedBy}
 				className={withState(
 					"press inline-flex min-w-0 cursor-pointer items-center justify-between gap-2 whitespace-nowrap rounded-control border border-line bg-surface px-2 py-[5px] text-text select-none hover:not-data-disabled:border-muted data-popup-open:border-action data-disabled:cursor-default data-disabled:text-muted",
 					props.className,

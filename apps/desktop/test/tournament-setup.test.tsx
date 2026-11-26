@@ -104,6 +104,7 @@ describe("U9: tournament setup", () => {
 		expect(
 			await screen.findByRole("heading", { level: 1, name: "Tournament" }),
 		).toBeTruthy();
+		await screen.findByRole("radiogroup", { name: "Format" });
 		for (const name of ["First Stand", "MSI", "Worlds", "Custom"])
 			expect(radio(name, "Format")).toBeTruthy();
 		expect(radio("MSI", "Format").checked).toBe(true);
@@ -211,6 +212,7 @@ describe("U9: tournament setup", () => {
 		expect(
 			await screen.findByRole("heading", { level: 1, name: "Torneo" }),
 		).toBeTruthy();
+		await screen.findByRole("radiogroup", { name: "Formato" });
 		expect(radio("Personalizado", "Formato").checked).toBe(true);
 		expect(radio("MSI", "Formato").disabled).toBe(true);
 		expect(
