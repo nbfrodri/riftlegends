@@ -131,10 +131,11 @@ export function lookahead(
 		replies.set(candidate.champion, { champion: reply, points });
 
 		if (answerStep >= 0) {
-			const answer = bestPick(
-				{ ...ctx, step: answerStep, picks: withPick(rivalTurn, reply) },
-				free,
-			);
+			const withReply = withPick(rivalTurn, reply);
+			const answer = replyScorer(
+				{ ...ctx, step: answerStep, picks: rivalTurn.picks },
+				free(ctx.team, withReply),
+			)(reply);
 			if (answer !== undefined)
 				points += answerAdjustment(
 					pairMatchup(ctx, rivalTurn.picks, answer, reply),
