@@ -79,3 +79,7 @@ PR #577 (#572) aprobado y en la cola (`queue-577.log`).
 #482: PR #579; el usuario decidió (26-11) fearless de la competición (hard por defecto, configurable) para todas las series de la temporada, temporizador de Ajustes en la serie del usuario y sin abandonar; resto aprobado. El subagente lo está aplicando. #577 fusionado. #484, #485 y #487 esperan a #483 (misma ruta).
 PR #580 (#578) aprobado y en la cola (`queue-580.log`).
 PR #579 (#482) con las decisiones aplicadas, aprobado y en la cola (`queue-579.log`).
+
+Estado 26-11 ~04:00: fusionados #580 (#578) y #579 (#482). Cola vacía.
+| #489 tournament.create y pantalla de torneo | Opus medium | `../riftlegends-489`, feat/489-tournament-setup | main |
+Siguen: #528 (Sonnet), #483 (Opus, avisado de #579), #486 (Opus). Stryker a las 05:00: con agentes trabajando puede ir lento; revisar `~/.cache/rift-tmp/stryker.log`.
