@@ -325,8 +325,9 @@ Volumen de un año real: unas **2.400 partidas** de liga en el snapshot, más un
 | MSI, cuadro de 8 | Cuatro niveles de 2 equipos; nivel 1 contra 4 y 2 contra 3 | Misma región en mitades opuestas del cuadro |
 | Worlds, play-in de 4 | Sorteo libre | Ninguna |
 | Worlds, cuartos | Los 3-0 contra los 3-2; el resto, al azar | Sin revancha del Swiss |
+| First Stand, grupos | Bombos con el sorteo de grupos actual | Misma región nunca en el mismo grupo |
 
-Entregables: [#626](https://github.com/nbfrodri/riftlegends/issues/626) (núcleo), [#627](https://github.com/nbfrodri/riftlegends/issues/627) (formatos y pipeline) y [#628](https://github.com/nbfrodri/riftlegends/issues/628) (hub).
+Entregables: [#626](https://github.com/nbfrodri/riftlegends/issues/626) (núcleo), [#627](https://github.com/nbfrodri/riftlegends/issues/627) (formatos y pipeline) [#628](https://github.com/nbfrodri/riftlegends/issues/628) (hub) y [#631](https://github.com/nbfrodri/riftlegends/issues/631) (grupos de First Stand).
 
 ### Lista de tests
 
@@ -348,6 +349,7 @@ Entregables: [#626](https://github.com/nbfrodri/riftlegends/issues/626) (núcleo
 | SO14 | Hecho `competition.drawn` (fase, nivel de cada equipo, cruces y `relaxed`) el día en que termina la última fase de la que depende, antes de su primera serie | Consultar una serie ya jugada (`series.summary` con `series`) da el mismo detalle |
 | SO15 | El hub muestra el sorteo antes de la primera serie: cruces, nivel de cada equipo y, si se relajó algo, el motivo en palabras. El lector lo lee como frases («Cuartos: Gen.G, 3-0, contra Team Liquid, 3-2») | ES y EN, sin «·» |
 | SO16 | Play-in de Worlds: un solo nivel de 4 y sin `meet`, emparejamiento libre | |
+| SO17 | First Stand: los grupos salen del sorteo por bombos que ya existe (`pots`, `avoidSameLeague`); misma semilla, mismos grupos y sin dos equipos de la misma región en un grupo | R1 acepta los grupos reales de 2026 |
 
 ### Diseño
 
@@ -389,11 +391,14 @@ Los niveles usan puestos y no balances: con 16 equipos a 3-3 los balances de los
 | Repetir una serie (#481) | Sin cambio: el registro guarda el cruce y la semilla de la serie |
 | Hub (#628) | El sorteo se ve en el cuadro de la fase desde que se conocen sus equipos, con el nivel de cada uno, y en una línea por cruce para el lector |
 
-### Supuestos hasta el reglamento de 2026
+### Decisiones del usuario (27-11-2026)
 
-| Supuesto | Hoy |
+Aprobadas por el usuario con el PR #629.
+
+| Tema | Decisión |
 | --- | --- |
-| Qué equipos forman cada nivel del MSI | Los niveles siguen el orden de las plazas del formato (LCK1 y LPL1 en el nivel 1, y así hasta LPL2 y el ganador del play-in) |
-| Región en cuartos de Worlds | Sin restricción de región; solo sin revancha |
-| Mitades en cuartos de Worlds | Al azar |
-| Procedimiento | Resultado al azar entre los válidos, no la extracción bola a bola de la ceremonia |
+| Grupos de First Stand | Sorteo por bombos con `avoidSameLeague` (#631), en vez del reparto fijo por región |
+| Procedimiento | Resultado al azar entre los sorteos válidos, no la extracción equipo a equipo de la ceremonia |
+| Torneos personalizados | Solo los presets heredan el sorteo; el editor no lo ofrece por ahora |
+| Cuartos de Worlds | Sin restricción de región; solo sin revancha del Swiss. Mitades al azar |
+| Niveles del MSI | Siguen el orden de las plazas del formato (LCK1 y LPL1 en el nivel 1, y así hasta LPL2 y el ganador del play-in) hasta que se publique el reglamento de 2026 |
