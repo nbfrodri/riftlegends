@@ -176,6 +176,45 @@ const standings = z.strictObject({
 		})
 		.optional(),
 	/**
+	 * A Swiss stage, round by round (#487): each series with the balance its
+	 * teams brought to it, the constraints relaxed to pair the round and where
+	 * each team stands.
+	 */
+	swiss: z
+		.strictObject({
+			wins: count,
+			losses: count,
+			/** Rounds the stage plays at most, paired or not. */
+			totalRounds: z.int().min(1),
+			rounds: z.array(
+				z.strictObject({
+					round: z.int().min(1),
+					relaxed: z.array(z.enum(["region", "rematch"])),
+					series: z.array(
+						z.strictObject({
+							teams: z.tuple([id, id]),
+							/** Wins and losses of the first team before the series. */
+							record: z.tuple([count, count]),
+							winner: id.optional(),
+							/** Games won by each team, in the order of `teams`. */
+							score: z.tuple([count, count]).optional(),
+							/** The id of `competition.schedule` that opens it. */
+							series: id.optional(),
+						}),
+					),
+				}),
+			),
+			teams: z.array(
+				z.strictObject({
+					team: id,
+					wins: count,
+					losses: count,
+					status: z.enum(["active", "qualified", "eliminated"]),
+				}),
+			),
+		})
+		.optional(),
+	/**
 	 * Where the places of the table lead, from the formats: a later stage
 	 * (`stage`) or an international event (`competition` alone). `group`
 	 * reads the places of one group table.

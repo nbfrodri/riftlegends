@@ -17,6 +17,8 @@ export interface SeasonFixture {
 	readonly priority: string;
 	readonly groupPoints?: number | undefined;
 	readonly tiebreaker?: boolean;
+	/** In a Swiss round, the constraints relaxed to pair it. */
+	readonly relaxed?: readonly ("region" | "rematch")[];
 }
 
 /**

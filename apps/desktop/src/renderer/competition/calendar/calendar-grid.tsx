@@ -10,6 +10,7 @@ import {
 import { useTranslation } from "react-i18next";
 import { TeamCrest } from "../../draft/team-crest";
 import type { ScheduleSlot } from "../schedule-view";
+import { resultStyle } from "../series-result";
 import {
 	type CalendarMode,
 	clampDay,
@@ -370,18 +371,23 @@ function TeamLine({
 	const id = slot.teams[index];
 	const name = sideName(t, names, slot, index, true);
 	const won = slot.winner !== undefined && slot.winner === id;
-	const lost = slot.winner !== undefined && !won;
+	const result = slot.winner === undefined ? undefined : won ? "won" : "lost";
+	const style = resultStyle(result);
 	return (
-		<span className="grid grid-cols-[16px_minmax(0,1fr)_auto] items-center gap-1.5">
+		<span
+			data-result={result}
+			className={cn(
+				"grid grid-cols-[16px_minmax(0,1fr)_auto] items-center gap-1.5 pl-1.5",
+				style.row,
+			)}
+		>
 			{id ? <TeamCrest id={id} name={name} className="h-4 w-4" /> : <span />}
 			{won ? (
 				<strong className="truncate font-bold">{name}</strong>
 			) : (
-				<span className={cn("truncate", (lost || !id) && "text-muted")}>
-					{name}
-				</span>
+				<span className={cn("truncate", !id && "text-muted")}>{name}</span>
 			)}
-			<span className={cn("font-display tabular-nums", lost && "text-muted")}>
+			<span data-score className={cn("font-display tabular-nums", style.score)}>
 				{slot.score?.[index] ?? ""}
 			</span>
 		</span>

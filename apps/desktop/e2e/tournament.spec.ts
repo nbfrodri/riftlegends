@@ -63,9 +63,16 @@ test("E1: a custom tournament played with my team from start to finish", async (
 	const out = page.getByText(`${mine} queda fuera del torneo.`);
 	let series = 0;
 	let spectator = false;
+	const play = advance.getByRole("button", { name: "Jugar mi serie" });
+	const playDay = advance.getByRole("button", {
+		name: "Jugar día",
+		disabled: false,
+	});
 	for (let step = 0; step < 12; step++) {
+		// After a day the hub settles into one of three states; read it only
+		// then, or a pending series can still be on its way.
+		await expect(champion.or(play).or(playDay).first()).toBeVisible();
 		if (await champion.isVisible()) break;
-		const play = advance.getByRole("button", { name: "Jugar mi serie" });
 		if (await play.isVisible()) {
 			await play.click();
 			await playMySeries(page);
@@ -76,7 +83,7 @@ test("E1: a custom tournament played with my team from start to finish", async (
 			spectator ||= await out.isVisible();
 			continue;
 		}
-		await advance.getByRole("button", { name: "Jugar día" }).click();
+		await playDay.click();
 		await expect(advance.getByRole("button", { name: "Parar" })).toBeHidden();
 	}
 	await expect(champion).toBeVisible();
