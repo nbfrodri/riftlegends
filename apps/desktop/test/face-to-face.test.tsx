@@ -341,3 +341,95 @@ test("#510: every player's tooltip shows their vision score with the official ic
 		await user.unhover(name);
 	}
 });
+
+/** #531: r-top (index 5) and b-mid (index 2) are down; seconds until they respawn. */
+const down = new Map([
+	["r-top", 12],
+	["b-mid", 1],
+]);
+const renderDown = (locale = "en-US") =>
+	renderInLocale(
+		<FaceToFace
+			snapshot={snapshot}
+			lineup={lineup}
+			names={{ blue: "Forge", red: "Shoal" }}
+			down={down}
+		/>,
+		locale,
+	);
+const pictures = (cell: HTMLElement) =>
+	["photo", "champion"].map(
+		(part) => cell.querySelector<HTMLElement>(`[data-part=${part}]`)?.className,
+	);
+
+test("#531: a dead player's photo and champion are greyed, with the seconds to respawn over the photo", async () => {
+	await renderDown();
+	const [, , blueMid] = playerCells("blue");
+	const [redTop, redJungle] = playerCells("red");
+	for (const cell of [redTop, blueMid] as HTMLElement[]) {
+		expect(
+			cell.querySelector("[data-lane-player]")?.hasAttribute("data-dead"),
+		).toBe(true);
+		for (const picture of pictures(cell))
+			expect(picture).toMatch(/\bgrayscale\b/);
+	}
+	const countdown = redTop?.querySelector<HTMLElement>("[data-respawn]");
+	expect(countdown?.textContent).toBe("12");
+	expect(countdown?.getAttribute("aria-hidden")).toBe("true");
+	// Plain text: no badge, pill or glow behind the number.
+	expect(countdown?.className).not.toMatch(/\b(bg-|rounded|shadow|ring)/);
+	expect(blueMid?.querySelector("[data-respawn]")?.textContent).toBe("1");
+	// The living keep their colour and show no countdown.
+	const alive = redJungle as HTMLElement;
+	expect(
+		alive.querySelector("[data-lane-player]")?.hasAttribute("data-dead"),
+	).toBe(false);
+	for (const picture of pictures(alive))
+		expect(picture).not.toMatch(/\bgrayscale\b/);
+	expect(alive.querySelector("[data-respawn]")).toBeNull();
+});
+
+test("#531: being dead changes no track, so nothing moves", async () => {
+	await renderDown();
+	const grids = [...playerCells("blue"), ...playerCells("red")].map(
+		(cell) => cell.querySelector("[data-lane-player]")?.className,
+	);
+	expect(new Set(grids.slice(0, 5)).size).toBe(1);
+	expect(new Set(grids.slice(5)).size).toBe(1);
+	const [redTop] = playerCells("red");
+	expect(parts(redTop as HTMLElement)).toEqual(["name", "champion", "photo"]);
+	// The countdown sits over the photo, out of the flow.
+	expect(redTop?.querySelector("[data-respawn]")?.className).toMatch(
+		/\babsolute\b/,
+	);
+});
+
+test.each([
+	["en-US", "dead, respawns in 12 seconds", "dead, respawns in 1 second"],
+	[
+		"es-ES",
+		"muerto, reaparece en 12 segundos",
+		"muerto, reaparece en 1 segundo",
+	],
+])(
+	"#531: the %s screen reader hears the death and the respawn in words",
+	async (locale, twelve, one) => {
+		await renderDown(locale);
+		expect(screen.getByText(twelve).className).toMatch(/\bsr-only\b/);
+		expect(screen.getByText(one)).toBeTruthy();
+	},
+);
+
+test("#531: greying in and out has no transition with reduced motion", async () => {
+	await renderDown();
+	const [redTop] = playerCells("red");
+	for (const picture of pictures(redTop as HTMLElement))
+		expect(picture).toMatch(/\bmotion-reduce:transition-none\b/);
+});
+
+test("#531: without respawn data nobody is greyed", async () => {
+	await render();
+	expect(document.querySelector("[data-dead]")).toBeNull();
+	expect(document.querySelector("[data-respawn]")).toBeNull();
+	expect(document.querySelector(".grayscale")).toBeNull();
+});
