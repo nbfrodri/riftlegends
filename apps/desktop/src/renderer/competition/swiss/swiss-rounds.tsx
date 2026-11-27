@@ -12,6 +12,7 @@ import { useTranslation } from "react-i18next";
 import { TeamCrest } from "../../draft/team-crest";
 import { type TeamNames, TeamRow } from "../bracket/bracket-card";
 import {
+	BLOCK_PAD,
 	CARD_H,
 	COL_GAP,
 	cardTop,
@@ -167,10 +168,10 @@ export function SwissRounds({
 							d={flow.d}
 							data-flow={flow.id}
 							data-result={flow.result}
-							strokeDasharray={flow.result === "loss" ? "4 3" : undefined}
+							strokeDasharray={flow.result === "loss" ? "5 3" : undefined}
 							className={cn(
 								"stroke-[1.25]",
-								flow.result === "win" ? "stroke-muted/70" : "stroke-line",
+								flow.result === "win" ? "stroke-muted/80" : "stroke-muted/60",
 							)}
 						/>
 					))}
@@ -204,13 +205,16 @@ export function SwissRounds({
 								key={pool.id}
 								role="group"
 								aria-label={record(pool.wins, pool.losses)}
-								className="absolute inset-x-0"
+								className="absolute inset-x-0 rounded-control border border-line bg-panel/40"
 								style={{ top: pool.y, height: pool.height }}
 							>
 								<span
 									aria-hidden="true"
 									className="block font-semibold text-[12px] text-muted tabular-nums"
-									style={{ lineHeight: `${POOL_HEAD}px` }}
+									style={{
+										lineHeight: `${POOL_HEAD}px`,
+										paddingInline: BLOCK_PAD,
+									}}
 								>
 									{record(pool.wins, pool.losses)}
 								</span>
@@ -236,8 +240,13 @@ export function SwissRounds({
 										))
 								) : (
 									<p
-										className="absolute inset-x-0 flex items-center justify-center rounded-control border border-line border-dashed text-[12px] text-muted"
-										style={{ top: POOL_HEAD, height: CARD_H }}
+										className="absolute flex items-center justify-center rounded-control border border-line border-dashed text-[12px] text-muted"
+										style={{
+											top: POOL_HEAD,
+											height: CARD_H,
+											left: BLOCK_PAD,
+											right: BLOCK_PAD,
+										}}
 									>
 										{t("competition.swiss.toPair")}
 									</p>
@@ -290,7 +299,7 @@ function OutcomeBox({
 					: "competition.swiss.eliminatedAt",
 				{ record },
 			)}
-			className="absolute"
+			className="absolute rounded-control border border-line bg-panel/40"
 			style={{ left: x, top: box.y, width, height: box.height }}
 		>
 			<h3
@@ -298,7 +307,7 @@ function OutcomeBox({
 					"flex items-baseline justify-between font-semibold text-[11px] uppercase tracking-heading",
 					qualified ? "text-text" : "text-muted",
 				)}
-				style={{ lineHeight: `${POOL_HEAD}px` }}
+				style={{ lineHeight: `${POOL_HEAD}px`, paddingInline: BLOCK_PAD }}
 			>
 				<span>{t(`competition.swiss.${box.outcome}`)}</span>
 				<span className="text-[12px] tabular-nums tracking-normal">
@@ -307,8 +316,13 @@ function OutcomeBox({
 			</h3>
 			{box.teams.length === 0 ? (
 				<p
-					className="absolute inset-x-0 flex items-center justify-center rounded-control border border-line border-dashed text-[12px] text-muted"
-					style={{ top: POOL_HEAD, height: ROW_H }}
+					className="absolute flex items-center justify-center rounded-control border border-line border-dashed text-[12px] text-muted"
+					style={{
+						top: POOL_HEAD,
+						height: ROW_H,
+						left: BLOCK_PAD,
+						right: BLOCK_PAD,
+					}}
 				>
 					{t("competition.swiss.toDecide")}
 				</p>
@@ -318,12 +332,17 @@ function OutcomeBox({
 						<li
 							key={id}
 							className={cn(
-								"absolute inset-x-0 flex items-center gap-2 rounded-control border px-2.5 text-[13px]",
+								"absolute flex items-center gap-2 rounded-control border px-2.5 text-[13px]",
 								qualified
 									? "border-line bg-panel font-semibold text-text"
 									: "border-line/60 text-muted",
 							)}
-							style={{ top: rowTop(index), height: ROW_H }}
+							style={{
+								top: rowTop(index),
+								height: ROW_H,
+								left: BLOCK_PAD,
+								right: BLOCK_PAD,
+							}}
 						>
 							<TeamCrest
 								id={id}
@@ -380,9 +399,9 @@ function SwissCard({
 			onClick={onOpen}
 			onFocus={onFocus}
 			onKeyDown={onKeyDown}
-			style={{ top, height: CARD_H }}
+			style={{ top, height: CARD_H, left: BLOCK_PAD, right: BLOCK_PAD }}
 			className={cn(
-				"press absolute inset-x-0 flex cursor-pointer flex-col divide-y divide-line overflow-hidden rounded-control border border-line bg-panel text-left text-text outline-none focus-visible:ring-2 focus-visible:ring-action aria-disabled:cursor-default",
+				"press absolute flex cursor-pointer flex-col divide-y divide-line overflow-hidden rounded-control border border-line bg-panel text-left text-text outline-none focus-visible:ring-2 focus-visible:ring-action aria-disabled:cursor-default",
 				onOpen && "hover:border-muted hover:bg-surface",
 			)}
 		>

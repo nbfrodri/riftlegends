@@ -11,10 +11,13 @@ export type SwissSeries = Swiss["rounds"][number]["series"][number];
 type Outcome = "qualified" | "eliminated";
 type Result = "win" | "loss";
 
-export const CARD_H = 42;
+export const CARD_H = 40;
 const CARD_GAP = 8;
-export const POOL_HEAD = 18;
-const POOL_GAP = 14;
+/** Inner padding of a block around its cards and rows. */
+export const BLOCK_PAD = 6;
+/** The block header, inside the block: its balance (and outcome). */
+export const POOL_HEAD = 22;
+const POOL_GAP = 10;
 export const ROUND_HEAD = 24;
 export const NOTE_H = 30;
 export const ROW_H = 20;
@@ -54,7 +57,7 @@ interface PlacedColumn {
 }
 
 const stack = (count: number, size: number, gap: number) =>
-	POOL_HEAD + count * size + (count - 1) * gap;
+	POOL_HEAD + count * size + (count - 1) * gap + BLOCK_PAD;
 const poolHeight = (cards: number) => stack(cards, CARD_H, CARD_GAP);
 const boxHeight = (rows: number) => stack(Math.max(1, rows), ROW_H, ROW_GAP);
 export const cardTop = (index: number) =>
@@ -182,17 +185,15 @@ export function layoutSwiss(swiss: Swiss, columnWidth: number) {
 			boxes,
 		};
 	});
-	// Elbow lines, as in the bracket: out of the pool's right edge, along the
-	// middle of the gap, into the target's left edge at its one entry point.
+	// Elbow lines from block to block, as in the bracket: out of the block's
+	// right edge, along the middle of the gap, into the target block's header.
 	const elbow = (x1: number, y1: number, x2: number, y2: number) =>
 		`M${x1} ${y1} H${(x1 + x2) / 2} V${y2} H${x2}`;
-	const centre = ({ y, height }: { y: number; height: number }) =>
-		y + height / 2;
-	/** Winners leave from the top half of the pool, losers from the bottom. */
+	/** Lines enter a block at one fixed point: the middle of its header. */
+	const entry = ({ y }: { y: number }) => y + POOL_HEAD / 2;
+	/** Winners leave from the upper part of the block, losers from the lower. */
 	const exit = (pool: PlacedPool, result: Result) =>
-		pool.y +
-		POOL_HEAD +
-		((pool.height - POOL_HEAD) * (result === "win" ? 1 : 3)) / 4;
+		pool.y + (pool.height * (result === "win" ? 1 : 3)) / 4;
 	const flows: { id: string; d: string; result: Result }[] = [];
 	for (const [index, column] of columns.entries()) {
 		const next = columns[index + 1];
@@ -225,7 +226,7 @@ export function layoutSwiss(swiss: Swiss, columnWidth: number) {
 							column.x + columnWidth,
 							exit(pool, result),
 							next.x,
-							centre(target),
+							entry(target),
 						),
 					});
 		}
