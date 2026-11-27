@@ -12,7 +12,7 @@ const view = (core: Core, kind: string, params: object = {}) => {
 		throw new Error(`${kind}: ${JSON.stringify(result)}`);
 	return result.view;
 };
-const league = season.competitions[0];
+const [league] = season.competitions as [(typeof season.competitions)[0]];
 const drawn = {
 	...season,
 	competitions: [
@@ -43,7 +43,9 @@ test("SO14: competition.drawn comes once, after its source stage and before its 
 	const core = client();
 	const facts = [...accepted(core.send("season.create", drawn)).facts];
 	for (
-		let day = competitionViews.overview.parse(view(core, "season.overview")).day;
+		let day = competitionViews.overview.parse(
+			view(core, "season.overview"),
+		).day;
 		day !== null;
 		day = competitionViews.overview.parse(view(core, "season.overview")).day
 	)

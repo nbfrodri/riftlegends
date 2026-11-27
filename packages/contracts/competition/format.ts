@@ -151,6 +151,29 @@ const source = z.discriminatedUnion("kind", [
 	}),
 ]);
 
+const potsDraw = z.strictObject({
+	pots: z.int().min(1).max(8),
+	avoidSameLeague: z.boolean().optional(),
+});
+
+/** Bracket draw constraints, in the order they are relaxed (plan 12 §6). */
+export const DRAW_RULES = ["regionHalf", "region", "rematch"] as const;
+export const drawRule = z.enum(DRAW_RULES);
+
+const tierIndex = z.int().min(1).max(32);
+
+/**
+ * A first-round draw of an elimination bracket. Tiers hold 1-based places of
+ * the entry list, best first; each pair of `meet` crosses two tiers (the first
+ * one never after the second); the remaining teams are paired at random.
+ */
+const bracketDraw = z.strictObject({
+	tiers: z.array(z.array(tierIndex).min(1).max(32)).min(1).max(32),
+	meet: z.array(z.tuple([tierIndex, tierIndex])).max(16),
+	avoid: z.array(drawRule).max(DRAW_RULES.length),
+});
+export type BracketDraw = z.infer<typeof bracketDraw>;
+
 /** Display metadata for real formats. Stage IDs still identify stages. */
 export const stageNameSchema = z.strictObject({
 	split: z.enum(["winter", "spring", "summer"]).optional(),
@@ -169,12 +192,8 @@ const stage = z.strictObject({
 	/** Multiple sources fill the seed list in declaration order. */
 	entrants: z.union([source, z.array(source).min(1).max(32)]),
 	play,
-	draw: z
-		.strictObject({
-			pots: z.int().min(1).max(8),
-			avoidSameLeague: z.boolean().optional(),
-		})
-		.optional(),
+	/** Pots for groups and Swiss round 1, or a bracket draw (plan 12 §6). */
+	draw: z.union([potsDraw, bracketDraw]).optional(),
 });
 
 const CRITERIA = [
@@ -216,6 +235,49 @@ const issue = (
 	path: (string | number)[],
 	message: string,
 ) => ctx.addIssue({ code: "custom", path, message });
+
+type StageFormat = z.infer<typeof stage>;
+
+/** SO11: a bracket draw needs a full power-of-two upper bracket and coherent tiers. */
+function checkBracketDraw(
+	s: StageFormat,
+	path: (string | number)[],
+	ctx: z.RefinementCtx,
+) {
+	const draw = s.draw;
+	if (!draw || !("tiers" in draw)) return;
+	const play = s.play;
+	const size =
+		play.type === "singleElim" ||
+		(play.type === "doubleElim" && play.lowerSeeds.every((n) => n === 0))
+			? play.size
+			: 0;
+	if (size < 2 || (size & (size - 1)) !== 0)
+		return issue(
+			ctx,
+			path,
+			"needs an elimination bracket of 2, 4, 8, 16 or 32",
+		);
+	const places = draw.tiers.flat().sort((a, b) => a - b);
+	if (places.length !== size || places.some((place, i) => place !== i + 1))
+		return issue(ctx, [...path, "tiers"], "every place in one tier");
+	const used = new Set<number>();
+	for (const [a, b] of draw.meet) {
+		const [first, second] = [draw.tiers[a - 1], draw.tiers[b - 1]];
+		const fits =
+			first !== undefined &&
+			second !== undefined &&
+			a <= b &&
+			!used.has(a) &&
+			!used.has(b) &&
+			(a === b ? first.length % 2 === 0 : first.length <= second.length);
+		used.add(a).add(b);
+		if (!fits)
+			return issue(ctx, [...path, "meet"], "tiers that exist, once each");
+	}
+	if (new Set(draw.avoid).size !== draw.avoid.length)
+		issue(ctx, [...path, "avoid"], "repeated rule");
+}
 
 export const competitionSchema = z
 	.strictObject({
@@ -311,6 +373,7 @@ export const competitionSchema = z
 					if (!fits) issue(ctx, [...p, "drop"], "one drop per upper series");
 				}
 			}
+			checkBracketDraw(s, ["stages", i, "draw"], ctx);
 			const sources = Array.isArray(s.entrants) ? s.entrants : [s.entrants];
 			sources.forEach((entry, index) => {
 				if (entry.kind !== "standing" || entry.to >= entry.from) return;

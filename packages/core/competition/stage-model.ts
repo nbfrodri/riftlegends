@@ -101,5 +101,6 @@ export function selectedPlaces(
 
 export function drawPots(node: StageNode): number | undefined {
 	const pots = sourcesOf(node.stage).find((s) => s.kind === "pots")?.pots;
-	return node.stage.draw?.pots ?? pots;
+	const draw = node.stage.draw;
+	return (draw && "pots" in draw ? draw.pots : undefined) ?? pots;
 }

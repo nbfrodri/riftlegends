@@ -693,7 +693,15 @@ describe("bracket draw as stage data (#626, SO11)", () => {
 	it("needs tiers that cover every place once", () => {
 		invalidAt(
 			withPlayoffs({
-				draw: { ...msi, tiers: [[1, 2, 3], [3, 4], [5, 6], [7, 8]] },
+				draw: {
+					...msi,
+					tiers: [
+						[1, 2, 3],
+						[3, 4],
+						[5, 6],
+						[7, 8],
+					],
+				},
 			}),
 			"stages.1.draw.tiers",
 		);
@@ -702,7 +710,17 @@ describe("bracket draw as stage data (#626, SO11)", () => {
 			"stages.1.draw.tiers",
 		);
 		invalidAt(
-			withPlayoffs({ draw: { ...msi, tiers: [[1, 2], [3, 4], [5, 6], [7, 9]] } }),
+			withPlayoffs({
+				draw: {
+					...msi,
+					tiers: [
+						[1, 2],
+						[3, 4],
+						[5, 6],
+						[7, 9],
+					],
+				},
+			}),
 			"stages.1.draw.tiers",
 		);
 	});
@@ -720,10 +738,7 @@ describe("bracket draw as stage data (#626, SO11)", () => {
 				[1, 4],
 			],
 		])
-			invalidAt(
-				withPlayoffs({ draw: { ...msi, meet } }),
-				"stages.1.draw.meet",
-			);
+			invalidAt(withPlayoffs({ draw: { ...msi, meet } }), "stages.1.draw.meet");
 		// Tier 1 has more teams than tier 2 could take.
 		invalidAt(
 			withPlayoffs({
@@ -769,10 +784,7 @@ describe("bracket draw as stage data (#626, SO11)", () => {
 					size: 8,
 					upper: [3, 3],
 					lower: [3, 3, 3],
-					drop: [
-						[0, 0],
-						[1],
-					],
+					drop: [[0, 0], [1]],
 					lowerSeeds: [4],
 					grandFinal: 5,
 					reset: false,

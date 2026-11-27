@@ -2,8 +2,8 @@ import fc from "fast-check";
 import { describe, expect, it } from "vitest";
 import { createRng } from "../rng/streams";
 import { buildDoubleElim, buildSingleElim } from "./bracket";
-import { resolveBracket } from "./bracket-state";
 import { type BracketDrawRules, drawBracket } from "./bracket-draw";
+import { resolveBracket } from "./bracket-state";
 
 // Plan 12 §6: bracket draws as stage data (#626).
 
@@ -197,12 +197,9 @@ describe("drawBracket", () => {
 			const { order, pairs, tiers } = run(quarters, teams, seed);
 			expect(tiers.map(({ team }) => team)).toEqual(order);
 			for (const [a, b] of pairs) {
-				const key = (team: string) => [
-					tierOf(quarters, team),
-					Number(team.slice(1)),
-				];
-				const [ka, kb] = [key(a), key(b)];
-				expect(ka[0] < kb[0] || (ka[0] === kb[0] && ka[1] < kb[1])).toBe(true);
+				const key = (team: string) =>
+					tierOf(quarters, team) * 64 + Number(team.slice(1));
+				expect(key(a)).toBeLessThan(key(b));
 				expect(order.indexOf(a)).toBeLessThan(order.indexOf(b));
 			}
 			// Game 1 priority follows the seed, so the better tier has it.
@@ -298,7 +295,10 @@ describe("drawBracket", () => {
 					const single = buildSingleElim({
 						type: "singleElim",
 						size: n,
-						bestOf: Array.from({ length: Math.log2(n) }, () => 1 as const),
+						bestOf: Array.from(
+							{ length: { 4: 2, 8: 3, 16: 4 }[n] as number },
+							() => 1 as const,
+						),
 					});
 					const double = buildDoubleElim({
 						type: "doubleElim",
