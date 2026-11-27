@@ -86,6 +86,7 @@ describe("SCOPES", () => {
 			matchSteal: 8,
 			competition: 6,
 			schedule: 9,
+			stageDraw: 10,
 		});
 	});
 });

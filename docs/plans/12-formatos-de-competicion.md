@@ -374,20 +374,21 @@ Entregables: [#626](https://github.com/nbfrodri/riftlegends/issues/626) (núcleo
 
 Los niveles usan puestos y no balances: con 16 equipos a 3-3 los balances de los 8 que pasan son siempre 2, 3 y 3, y un torneo personalizado puede declarar los suyos.
 
-**Cómo se sortea** (`stage-draw.ts`, junto a `seedStage`, en `resolveStage`):
+**Cómo se sortea** (`bracket-draw.ts`, llamado desde `resolveStage` en lugar de `seedStage`):
 
 1. Se barajan los equipos con el flujo `stageDraw`.
 2. Se forman los cruces de `meet`; los sobrantes se cruzan entre sí.
 3. Los cruces se colocan en los huecos de la primera ronda (1-8, 4-5, 2-7, 3-6), que fijan las mitades.
 4. Una búsqueda con vuelta atrás exige `avoid`, como el Swiss. Si no hay solución, quita la primera restricción de la lista y repite; `relaxed` guarda lo que el resultado rompe.
-5. En cada cruce, el mejor nivel toma el mejor sembrado del hueco. La lista sembrada pasa al cuadro de siempre.
+5. En cada cruce, el mejor nivel toma el mejor sembrado del hueco. Dentro de cada subcuadro, la mitad con el mejor equipo va primero: los cruces y las mitades no cambian y el mejor nivel conserva la prioridad del game 1 en las rondas siguientes. La lista sembrada pasa al cuadro de siempre.
+6. Validación (SO11): solo `singleElim` o `doubleElim` sin `lowerSeeds`, de 2, 4, 8, 16 o 32 equipos; en `meet`, cada nivel una vez y el primero con como mucho tantos equipos como el segundo (o un número par si es el mismo nivel).
 
 **Efectos.**
 
 | Tema | Efecto |
 | --- | --- |
 | RNG | Ámbito nuevo `stageDraw = 10` en `SCOPES`, con ids (competición, temporada, fase). Los demás flujos no cambian (SO2) |
-| `SIM_VERSION` | Sube en #626: el cuadro de MSI y los cruces de Worlds cambian para la misma semilla y aparece `competition.drawn` |
+| `SIM_VERSION` | No sube en #626: ningún formato tiene aún sorteo de cuadro, así que los hechos no cambian. Sube en #627, al añadir el sorteo a MSI y Worlds: su cuadro cambia para la misma semilla y aparece `competition.drawn` |
 | Contenido | Los formatos reales cambian en #627. Una temporada empezada no cambia, porque copia sus formatos en el hecho que la crea (P4) |
 | Goldens | Los de draft y partida no cambian. El golden del año (#429) se genera después de #626 o se regenera en su PR |
 | #428 | Sin cambios de reglas: el sorteo vive en la resolución de la fase, que ya usa el dispatcher |

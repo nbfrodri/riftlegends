@@ -16,6 +16,8 @@ import { TeamPanel } from "../src/renderer/match/team-panel";
 import { renderInLocale } from "./render-in-locale";
 
 const present = vi.fn();
+/** The game `match.view` answers; the shared fixture unless a test sets one. */
+const served: { view?: MatchView } = {};
 const side = {
 	gold: 0,
 	kills: 0,
@@ -171,7 +173,7 @@ const match: MatchView = {
 };
 vi.mock("../src/renderer/core", async (original) => ({
 	...(await original<typeof import("../src/renderer/core")>()),
-	useCoreQuery: () => ({ data: match }),
+	useCoreQuery: () => ({ data: served.view ?? match }),
 }));
 vi.mock("../src/renderer/draft/session", async (original) => ({
 	...(await original<typeof import("../src/renderer/draft/session")>()),
@@ -214,6 +216,7 @@ const session = {
 beforeEach(() => vi.useFakeTimers());
 afterEach(() => {
 	cleanup();
+	delete served.view;
 	vi.useRealTimers();
 	vi.restoreAllMocks();
 });
@@ -793,3 +796,39 @@ test.each([
 		);
 	},
 );
+
+test("#531: during the replay a victim is greyed with his countdown until he respawns", async () => {
+	// The kill moves to 01:02 (minute 2, second 2), once the lanes are on screen.
+	served.view = {
+		...match,
+		facts: match.facts.map((fact) =>
+			fact.type === "match.event" && fact.kills.length > 0
+				? {
+						...fact,
+						minute: 2,
+						second: 2,
+						kills: fact.kills.map((k) => ({ ...k, respawnAt: 75 })),
+					}
+				: fact,
+		),
+	};
+	await renderInLocale(<Match />);
+	faceToFace();
+	const redTop = () =>
+		lane("Top")
+			.getByRole("img", { name: "Portrait of Redtop" })
+			.closest("[data-lane-player]");
+	// One game minute takes five seconds.
+	advance(5000);
+	expect(clock()).toBe("01:00");
+	expect(redTop()?.hasAttribute("data-dead")).toBe(false);
+	advance(250);
+	expect(clock()).toBe("01:03");
+	expect(redTop()?.hasAttribute("data-dead")).toBe(true);
+	expect(redTop()?.querySelector("[data-respawn]")?.textContent).toBe("12");
+	expect(lane("Top").getByText("dead, respawns in 12 seconds")).toBeTruthy();
+	advance(1000);
+	expect(clock()).toBe("01:15");
+	expect(redTop()?.hasAttribute("data-dead")).toBe(false);
+	expect(lane("Top").queryByText(/respawns/)).toBeNull();
+});

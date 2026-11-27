@@ -347,6 +347,8 @@
 	"draft.match.faceToFace.and": " and ",
 	"draft.match.faceToFace.moreCs": "{{amount}} CS more",
 	"draft.match.faceToFace.vision": "Vision {{value}}",
+	"draft.match.faceToFace.respawn_one": "dead, respawns in {{count}} second",
+	"draft.match.faceToFace.respawn_other": "dead, respawns in {{count}} seconds",
 	"draft.match.dragonCount": "{{count}} of 4",
 	"draft.match.soul": "Dragon soul",
 	"draft.match.killVerb": "kills",
