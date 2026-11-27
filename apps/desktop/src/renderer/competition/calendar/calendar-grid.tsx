@@ -116,7 +116,9 @@ export function CalendarGrid(props: GridProps) {
 				role="grid"
 				aria-label={title}
 				onKeyDown={onKeyDown}
-				className="h-full w-full table-fixed border-collapse"
+				// Separate borders, drawn by each cell: collapsed ones belong to the
+				// table, scroll away under the sticky day names and leave a gap (#608).
+				className="h-full w-full table-fixed border-separate border-spacing-0"
 			>
 				<thead>
 					<tr>
@@ -125,7 +127,7 @@ export function CalendarGrid(props: GridProps) {
 								key={d}
 								scope="col"
 								className={cn(
-									"sticky top-0 z-10 border border-line bg-panel px-2 py-1.5 text-left font-semibold text-[12px] text-muted uppercase tracking-[0.055em]",
+									"sticky top-0 z-10 border-line border-t border-r border-b bg-panel first:border-l px-2 py-1.5 text-left font-semibold text-[12px] text-muted uppercase tracking-[0.055em]",
 									d === props.today && "text-text",
 								)}
 							>
@@ -151,7 +153,7 @@ export function CalendarGrid(props: GridProps) {
 										role="gridcell"
 										data-day={d}
 										aria-disabled="true"
-										className="border border-line bg-bg"
+										className="border-line border-r border-b bg-bg first:border-l"
 									/>
 								) : (
 									<DayCell key={d} {...props} cell={d} />
@@ -209,7 +211,7 @@ function DayCell({
 			)}
 			onClick={() => onDay(cell)}
 			className={cn(
-				"cursor-pointer border border-line p-1.5 align-top outline-offset-[-2px] focus-visible:outline-2 focus-visible:outline-action",
+				"cursor-pointer border-line border-r border-b p-1.5 align-top first:border-l outline-offset-[-2px] focus-visible:outline-2 focus-visible:outline-action",
 				isToday ? "bg-surface" : "bg-panel",
 			)}
 		>
