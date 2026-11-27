@@ -481,6 +481,33 @@ test("#531: a dead player is greyed with a countdown in the face to face until h
 				),
 			);
 			for (const xs of spread) expect(xs).toBeLessThanOrEqual(1);
+			// On both sides the champion badge paints over the photo, not behind it.
+			const hidden = await faceToFace.evaluate((table) =>
+				[...table.querySelectorAll<HTMLElement>("[data-part=champion]")]
+					.filter((badge) => {
+						// The middle of the area the badge shares with the photo.
+						const box = badge.getBoundingClientRect();
+						const photo = badge
+							.closest("[data-lane-player]")
+							?.querySelector("[data-part=photo]")
+							?.getBoundingClientRect();
+						if (!photo) return true;
+						const left = Math.max(box.left, photo.left);
+						const right = Math.min(box.right, photo.right);
+						const top = Math.max(box.top, photo.top);
+						const bottom = Math.min(box.bottom, photo.bottom);
+						const hit = document.elementFromPoint(
+							(left + right) / 2,
+							(top + bottom) / 2,
+						);
+						return !(hit && badge.contains(hit));
+					})
+					.map((badge) => badge.closest("td")?.dataset.side),
+			);
+			expect(hidden).toEqual([]);
+			await page.screenshot({
+				path: testInfo.outputPath(`531-dead-${size.width}x${size.height}.png`),
+			});
 			await expectColumnsAligned(page);
 		}
 		// He comes back when the clock reaches his respawn.

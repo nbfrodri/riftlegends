@@ -84,7 +84,7 @@ function Player({
 			key="champion"
 			data-part="champion"
 			data-dim
-			className={`relative flex self-end ring-2 ring-panel [&_[role=img]]:size-7 ${side === "blue" ? "-ml-3" : "-mr-3"} ${dim}`}
+			className={`relative z-10 flex self-end ring-2 ring-panel [&_[role=img]]:size-7 ${side === "blue" ? "-ml-3" : "-mr-3"} ${dim}`}
 		>
 			<ChampionPortrait
 				id={player.champion}

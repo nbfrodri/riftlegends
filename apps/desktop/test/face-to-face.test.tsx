@@ -398,6 +398,19 @@ test("#531: a dead player's photo and champion are greyed, with the seconds to r
 	expect(alive.querySelector("[data-respawn]")).toBeNull();
 });
 
+test("#531: on both sides the champion badge paints over the player photo", async () => {
+	await renderDown();
+	// Red reverses the DOM order and the photo is positioned for the countdown,
+	// so without its own layer the badge would fall behind the photo.
+	for (const cell of [...playerCells("blue"), ...playerCells("red")]) {
+		const badge = cell.querySelector<HTMLElement>("[data-part=champion]");
+		expect(badge?.className).toMatch(/\bz-10\b/);
+		expect(
+			cell.querySelector<HTMLElement>("[data-part=photo]")?.className,
+		).not.toMatch(/\bz-/);
+	}
+});
+
 test("#531: being dead changes no track, so nothing moves", async () => {
 	await renderDown();
 	const grids = [...playerCells("blue"), ...playerCells("red")].map(
