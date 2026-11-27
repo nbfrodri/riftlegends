@@ -26,7 +26,7 @@ import { seasonOf } from "./season.ts";
 
 // Pinned patch of the CommunityDragon catalog. Only ids, numeric keys and
 // classes are read from it; names and titles never reach the repository.
-const communityDragonPatch = "16.23";
+export const communityDragonPatch = "16.23";
 export const catalogUrl = `https://raw.communitydragon.org/${communityDragonPatch}/plugins/rcp-be-lol-game-data/global/en_gb/v1/champion-summary.json`;
 
 interface ChampionOptions extends ClientOptions {

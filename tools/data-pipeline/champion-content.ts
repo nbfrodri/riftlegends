@@ -155,6 +155,9 @@ interface ContentOptions {
 	kits?: ReadonlyMap<string, ChampionKit> | undefined;
 }
 
+/** Ultimate cooldown by rank when the game data has none (#622). */
+const estimatedUltCooldown = [120, 100, 80] as const;
+
 export function deriveChampionContent(
 	catalog: readonly CatalogChampion[],
 	games: readonly Game[],
@@ -195,6 +198,7 @@ export function deriveChampionContent(
 	);
 	const entries = scored.map(({ id, profile, scores }) => {
 		const { damage, power, archetypes, cc, mobility, frontline } = profile;
+		const ultCooldown = kits.get(id)?.ultCooldown;
 		const champion: Champion = {
 			id,
 			name: id,
@@ -211,7 +215,9 @@ export function deriveChampionContent(
 			kit: [...profile.kit],
 			ccKinds: [...profile.ccKinds],
 			split: [...profile.split],
+			ultCooldown: ultCooldown ? [...ultCooldown] : [...estimatedUltCooldown],
 			traitSources: {
+				ultCooldown: ultCooldown ? "source" : "estimated",
 				ccKinds: profile.sources.cc,
 				split: profile.sources.split,
 				kit: profile.sources.kit,

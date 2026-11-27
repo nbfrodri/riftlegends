@@ -97,11 +97,27 @@ const kitFacts = {
 		])
 		.refine(([a, b, c]) => a + b + c === 100, "The split must add up to 100")
 		.optional(),
+	/**
+	 * Ultimate cooldown in seconds at ranks 1, 2 and 3 (levels 6, 11 and 16),
+	 * never longer at a higher rank (#622).
+	 */
+	ultCooldown: z
+		.tuple([
+			z.number().int().positive(),
+			z.number().int().positive(),
+			z.number().int().positive(),
+		])
+		.refine(
+			([a, b, c]) => a >= b && b >= c,
+			"The ultimate cooldown does not grow with the rank",
+		)
+		.optional(),
 	traitSources: z
 		.strictObject({
 			ccKinds: traitSource.optional(),
 			split: traitSource.optional(),
 			kit: traitSource.optional(),
+			ultCooldown: traitSource.optional(),
 		})
 		.optional(),
 };

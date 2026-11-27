@@ -15,6 +15,7 @@
 		"data:league-formats": "node tools/data-pipeline/cli.ts league-formats",
 		"data:internationals": "node tools/data-pipeline/cli.ts internationals",
 		"data:timelines": "node tools/data-pipeline/cli.ts timelines",
+		"data:summoners": "node tools/data-pipeline/cli.ts summoners",
 		"e2e": "pnpm --filter @rift-legends/desktop build && pnpm --filter @rift-legends/desktop e2e",
 		"e2e:visual": "pnpm --filter @rift-legends/desktop build && pnpm --filter @rift-legends/desktop e2e:visual",
 		"lint": "biome check .",
