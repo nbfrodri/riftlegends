@@ -5,20 +5,14 @@ Estado: en curso (25-11, 23:30). Fusionados hoy en esta sesión: #561, #534, #56
 Decisiones en el [registro](../decisions/README.md). Reglas del usuario: respuestas en español, claras y breves; **TDD estricto** (commit de test en rojo y después el de implementación); **nada de `git stash`** ni force-push; **títulos de PR en inglés** (Conventional; el squash los usa como commit) y cuerpo en español; visto bueno del usuario antes de fusionar, con capturas (vídeo si hay animación); vigilar el CI de cada PR y de `main` tras cada fusión; máximo 4–5 subagentes (Sonnet medium lógica, Opus medium visual); Codex `gpt-6.2-sol` medium para tareas sin red.
 
 
-## ▶ Estado para retomar (27-11, 02:20) — leer esto primero
+## ▶ Estado para retomar (27-11, 12:00) — leer esto primero
 
-- **En `main` (26-11 noche):** #604, #597, #606 (página de equipo), #611 (calendario sin hueco, logos en selectores, semilla sin +/−), #613 (cuadro en el hub), #607 (torneo con mi equipo). CI de `main` en verde tras #607.
-- **Cola** (una sola cadena, `~/.cache/rift-tmp/queue-630.log`): **#630** (E2E E1 del torneo tolerante; sigue a #617) → #610 → #612 → #615 → #618 → #620 (#427, First Stand verificado, «Refs #427») → #619 (plan de ultis y hechizos, aprobado). Todos aprobados.
-- **#612** (#530 ventana de conversión, `SIM_VERSION` 18, `../riftlegends-530`): **aprobado** por el usuario (capturas vistas). Falló `core-windows` por timeouts (runner lento, 9,5 min); relanzado y en verde (1,5 min): era el runner. **En la cola tras #610** (`queue-612b.log`), y después **#616** (#487 Swiss, aprobado; arreglado test U5 inestable, `queue-616b.log`).
-- **#615** (#614 Ajustes fijo en el pie de la barra lateral, `../riftlegends-settings`): **falta el visto bueno** del usuario (capturas `~/.cache/rift-tmp/614-sidebar-*.png`).
-- **#601** (Dependabot): pedido `@dependabot rebase`; se fusiona solo si pasa.
-- **Aprobado 27-11 (madrugada):** plan de ultis y hechizos #619 (issue de pipeline #622, bloquea #339/#374); **sorteos reales** de MSI y Worlds (cambia la decisión del 24-11; plan en PR #629, issues #626 núcleo, #627 formatos, #628 hub; código desde las 09:00); issues #623–#625 del cierre del plan 31; PR #621 (specs de capturas de Competición, `Refs #491`): generar sus capturas con «Visual baselines» desde las 09:00 y enseñarlas.
-- **Stryker:** relanzado el 27-11 a las 03:05 sobre `main` (el de las 03:00 abortó por F13 > 15 s); el patch excluye ahora también `match/risk.test.ts` (F13, K4; decisión del usuario). Log `~/.cache/rift-tmp/stryker.log`. Con el resultado: PR que cierra la Fase 3 (patch + nota en el plan 05).
-- **#618** (Contraer como icono en la cabecera): aprobado, en la cola tras #615 (`queue-618.log`).
-- **Subagentes ligeros (sin tests pesados por Stryker):** #427 reglamentos internacionales (Sonnet, `../riftlegends-427`), planes de #339/#374 (Opus, `../riftlegends-339-plan`), preparación de #491 (Sonnet, `../riftlegends-491`).
-- **Siguiente tras #612 (desde las 09:00, máx. 4–5 subagentes, el usuario elige modelo y effort):** #531 (muertos en gris en el cara a cara), abaratar la simulación para #584/#532 (año ≤ 60 s), #339/#374, #540; Fase 4: #491 (capturas y cierre del plan 31), #429 (al final de la 3.5), #427 (verificar internacionales).
-- **Reglas del usuario (26–27-11):** sin «·» ni otros separadores; nada de estética «AI slop»; no ensanchar bandas, no subir límites de tests **ni reducir muestras**; no ajustar constantes a la semilla; visto bueno con capturas antes de encolar; títulos de PR en inglés.
-- Limpieza 27-11: `~/.cache/rift-tmp` 2,3 GB → 1 GB; borrado `../riftlegends-stryker-fix` (diff en el scratchpad de la sesión) y ramas `test/stryker-timeouts`, `perf/584-day-batches`.
+- **En `main` (27-11):** #610, #612 (#530, `SIM_VERSION` 18), #615, #616 (Swiss), #617 y #630 (E2E E1 del torneo), #618, #619 (plan de ultis y hechizos), #620 (First Stand verificado, `Refs #427`), #629 (plan de sorteos reales). CI de `main` en verde. Cola: solo #619 si no ha entrado (`queue-619b.log`).
+- **Stryker:** 63,86 % < 70 % (08:33). competition 42,7 % con 1.828 mutantes sin cobertura; calibration 543 sin cobertura (sus tests están excluidos a propósito). Subagente Sonnet en `../riftlegends-mutation` (rama `test/stryker-phase3`): dejar de mutar calibración, averiguar la falta de cobertura de competition y llegar a ≥ 70 % sin bajar el umbral. Cierra la Fase 3.
+- **Subagentes en marcha (27-11, 12:00):** #531 muertos en el cara a cara (Opus, `../riftlegends-531`, capturas y vídeo), #584/#532 año ≤ 60 s sin cambiar resultados (Sonnet, `../riftlegends-584`), #626 sorteos reales en el núcleo (Opus, `../riftlegends-626`), #622 recargas de ultis y hechizos en el contenido (Sonnet, `../riftlegends-622`).
+- **#621** (capturas de Competición, `Refs #491`): «Visual baselines» lanzado en su rama (run 45986067067); arreglar selectores si fallan y enseñar las capturas al usuario.
+- **Pendiente después:** #627 y #628 (sorteos en formatos y hub) tras #626; #339 y #374 tras #622; #631 (grupos de First Stand por sorteo); #623–#625; #540; #429 al final de la 3.5.
+- **Reglas del usuario:** sin «·» ni otros separadores; nada de estética «AI slop»; no ensanchar bandas, no subir límites de tests ni reducir muestras; no ajustar constantes a la semilla; visto bueno con capturas antes de encolar; títulos de PR en inglés; el usuario elige modelo y effort de cada subagente.
 
 ## Cómo se fusiona
 
