@@ -111,7 +111,7 @@ function Mvp(props: {
 	return (
 		<section
 			aria-label={t("draft.result.mvp.name")}
-			className={`grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-5 border-t-[3px] bg-panel px-5 py-3 ${props.sideOf(mvp.team) === "blue" ? "border-side-blue" : "border-side-red"}`}
+			className={`grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-5 border-t-[3px] bg-panel px-5 py-2 ${props.sideOf(mvp.team) === "blue" ? "border-side-blue" : "border-side-red"}`}
 		>
 			<div className="flex items-end gap-1.5">
 				<PlayerPortrait id={mvp.player} handle={player?.handle ?? mvp.player} />
@@ -210,9 +210,9 @@ function Recap(props: {
 		games[0]?.blue === teamA ? games[0].red : (games[0]?.blue ?? "");
 	let winsA = 0;
 	let winsB = 0;
-	const cell = "px-1.5 py-1";
+	const cell = "px-1.5 py-0.5";
 	return (
-		<section className="bg-panel px-4 py-3">
+		<section className="bg-panel px-4 py-2">
 			<h2 className="font-bold font-display text-[19px] leading-tight tracking-heading">
 				{t("draft.result.recap.title")}
 			</h2>
