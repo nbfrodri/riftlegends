@@ -860,7 +860,7 @@ Sin bucle por segundo: las muertes son marcas de tiempo y se consultan al resolv
 
 ## Ampliación 27-11: definitivas y hechizos como recursos con recarga (#339, #374)
 
-- **Estado:** propuesta, pendiente de aprobar ([decisiones abiertas](#decisiones-abiertas-339-374)). Issues [#339](https://github.com/nbfrodri/riftlegends/issues/339) y [#374](https://github.com/nbfrodri/riftlegends/issues/374); la UI va con #358 y #531.
+- **Estado:** aprobado por el usuario (27-11-2026; [decisiones](#decisiones-del-usuario-27-11-2026)). Issues [#339](https://github.com/nbfrodri/riftlegends/issues/339) y [#374](https://github.com/nbfrodri/riftlegends/issues/374); la UI va con #358 y #531.
 - **Objetivo:** cada jugador lleva su definitiva y sus dos hechizos de invocador como recursos con recarga real. Un recurso listo ayuda a su lado en las disputas donde cuenta; al usarlo entra en recarga y el rival tiene una ventana.
 - **Qué cambia respecto al [diseño del 23-11](#disponibilidad-de-definitivas-339):** se apoya en el estado por jugador de #528, cuenta solo a los vivos (#529), mide la ventaja en fracciones de un jugador vivo en lugar de puntos sueltos, no añade tiradas y aplaza la tabla por identidad hasta que exista el selector de jugadas de #356. Donde las dos secciones difieran, manda esta.
 - **Base:** `SIM_VERSION` 18 (con #530, PR #612), `PlayerState` en `match/player-state.ts`, `rules.presence` y `rules.levelCurve`, y `ultCooldown` por rango ya en `content/real/champions/kits.json` (#340), aún sin publicar en el contrato de campeón.
@@ -891,7 +891,7 @@ Sin bucle por segundo: las muertes son marcas de tiempo y se consultan al resolv
 | K12 Ventaja de la definitiva | Se mantiene: con una definitiva relevante lista frente a la misma en recarga, la tasa sube **0–4 pp** (equilibrado) y **0–6 pp** (engage / wombo). |
 | K13 Ventana tras el uso | Se mantiene: con una definitiva rival recién gastada, el lado evaluado inicia peleas u objetivos **3–15 pp** más a menudo. |
 | K28 Flash en el gank | Pares de ganks con la misma semilla: contra un laner sin Flash, el gank gana **0–6 pp** más que contra el mismo con Flash. Estimada. |
-| K29 Usos por partida | Definitivas y Flash usados por jugador y 30 min, por rol, a ≤ 25 % de la mediana pro ([decisión 5](#decisiones-abiertas-339-374)). |
+| K29 Usos por partida | Definitivas y Flash usados por jugador y 30 min, por rol, a ≤ 25 % de la mediana pro, o banda estimada si el dato no existe ([decisión 5](#decisiones-del-usuario-27-11-2026)). |
 | Regresión | K1–K22 en verde. Se vigilan K2 (duración), K6 (bajas), K16 (oro) y K19–K21 (conversión). |
 
 ### Diseño
@@ -913,9 +913,9 @@ Sin bucle por segundo: las muertes son marcas de tiempo y se consultan al resolv
 | --- | --- | --- |
 | Recarga de la definitiva por rango | `ultCooldown` de CommunityDragon (#340), ya en `kits.json`; se publica como campo opcional del contrato de campeón. | 120 / 100 / 80 s marcado `estimated` (también en el contenido ficticio). |
 | Rango | Nivel por rol y minuto de `rules.levelCurve`; #338 lo sustituye por el nivel de cada jugador. | — |
-| Aceleración de definitiva | Objetos de #338. Hasta entonces, una curva por minuto en `rules.ultHaste` marcada `estimated` ([decisión 1](#decisiones-abiertas-339-374)). | 0 |
+| Aceleración de definitiva | Objetos de #338. Hasta entonces, una curva por minuto en `rules.ultHaste` marcada `estimated` ([decisión 1](#decisiones-del-usuario-27-11-2026)). | — |
 | Recarga de hechizos | `summoner-spells.json` de CommunityDragon (`cooldown`), en el pipeline con parche fijo, como los sonidos (#472). Sin aceleración de hechizos (botas y runas fuera). | El pipeline falla: no se inventan. |
-| Hechizos de cada jugador | Tabla por rol en `rules.summoners` (top Flash + Teleport, jungla Flash + Castigo, mid Flash + Ignite, ADC Flash + Heal, apoyo Flash + Ignite) y override por campeón y rol ([decisión 3](#decisiones-abiertas-339-374)). | Tabla por rol. |
+| Hechizos de cada jugador | Par más usado por campeón y rol en Leaguepedia (agregados, mínimo 20 partidas); si no llega, tabla por rol en `rules.summoners` (top Flash + Teleport, jungla Flash + Castigo, mid Flash + Ignite, ADC Flash + Heal, apoyo Flash + Ignite) ([decisión 3](#decisiones-del-usuario-27-11-2026)). | Tabla por rol. |
 
 #### Cómo los usa una disputa
 
@@ -935,11 +935,11 @@ Todo en enteros y punto fijo 10.000 ([plan 05](../../plans/05-rng-determinismo.m
 | Exhaust | Pelea, gank (defensa) | ⅛ | ×1,5 si el rival tiene `dive` o `engage` |
 | Heal / Barrier | Duelo de línea, pelea | 1⁄16 | — |
 | Cleanse | Pelea | 1⁄16 | ×1,5 con 2 o más tipos de CC duro rival (`ccKinds`) |
-| Castigo | Objetivo | — | Siempre listo con el jungla vivo; lo sigue modelando el robo de #508 ([decisión 4](#decisiones-abiertas-339-374)). |
+| Castigo | Objetivo | — | Siempre listo con el jungla vivo; lo sigue modelando el robo de #508 ([decisión 4](#decisiones-del-usuario-27-11-2026)). |
 
 Las fracciones son el punto de partida y viven en `rules.cooldowns`; se calibran con K12, K28 y K29. Cuando existan cazadas, dives e invasiones (#356), Flash, Exhaust y Cleanse se añaden a esas filas.
 
-**Ventana tras el gasto (U3).** Hoy no hay selector de jugadas: la pelea y los objetivos se deciden con una tirada de frecuencia. La ventaja de recursos sube ese umbral para el lado con más definitivas listas (+15 % por definitiva de diferencia, hasta +45 %), con **la misma tirada**. La tabla por identidad del 23-11 (cuándo fuerza y cuándo espera cada plan) entra con el selector de #356 ([decisión 2](#decisiones-abiertas-339-374)).
+**Ventana tras el gasto (U3).** Hoy no hay selector de jugadas: la pelea y los objetivos se deciden con una tirada de frecuencia. La ventaja de recursos sube ese umbral para el lado con más definitivas listas (+15 % por definitiva de diferencia, hasta +45 %), con **la misma tirada**. La tabla por identidad del 23-11 (cuándo fuerza y cuándo espera cada plan) entra con el selector de #356 ([decisión 2](#decisiones-del-usuario-27-11-2026)).
 
 #### Azar, versión y goldens
 
@@ -964,22 +964,22 @@ Sin bucle por segundo ni temporizadores: los recursos son marcas de tiempo que s
 
 Cabe en 1280×720 con las columnas de #502 y #548. Los textos nuevos no llevan flechas ni el punto medio como separador.
 
-### Decisiones abiertas (#339, #374)
+### Decisiones del usuario (27-11-2026)
 
-| # | Pregunta | Opciones | Recomendación |
-| --- | --- | --- | --- |
-| 1 | Aceleración de la definitiva hasta que llegue #338 | A: 0. B: curva por minuto estimada en `rules.ultHaste`. C: esperar a #338. | **B**: mismo patrón que `levelCurve`; #338 la sustituye sin cambiar el diseño. |
-| 2 | Ventana tras el gasto | A: genérica ya (umbral de frecuencia) y tabla por identidad con #356. B: esperar al selector de #356. | **A**: cierra #339 sin bloquearse y K13 se puede medir. |
-| 3 | Hechizos de cada jugador | A: solo tabla por rol. B: el par más usado por campeón y rol en Leaguepedia (`ScoreboardPlayers`, solo agregados, mínimo 20 partidas), con la tabla por rol de respaldo. | **B**: Teleport en mid o Ignite en top salen del pro, no de una suposición. |
-| 4 | Castigo | A: siempre listo con el jungla vivo. B: recarga con cargas. | **A**: en el pro casi siempre hay carga en los objetivos; evita duplicar el robo de #508. |
-| 5 | Referencia de K29 | A: usos pro de definitiva y Flash por rol desde las páginas `V5 data` de Leaguepedia (solo agregados; hay que comprobar que traen `spell4Casts` y `summoner1Casts`). B: banda estimada. | **A** si el dato existe; si no, B. |
-| 6 | Entregas | A: #339 y después #374, dos subidas de `SIM_VERSION`. B: juntas. | **A**: cada PR calibra una cosa y el fallo se localiza. |
+| # | Decisión |
+| --- | --- |
+| 1 | **Aceleración de la definitiva** hasta #338: curva por minuto estimada en `rules.ultHaste`; #338 la sustituye sin cambiar el diseño. |
+| 2 | **Ventana tras el gasto genérica ya** (umbral de la tirada de frecuencia); la tabla por identidad llega con el selector de #356. |
+| 3 | **Hechizos por campeón y rol desde Leaguepedia** (`ScoreboardPlayers`, solo agregados, mínimo 20 partidas), con la tabla por rol de respaldo. |
+| 4 | **Castigo siempre listo** con el jungla vivo; el robo de #508 no cambia. |
+| 5 | **Referencia de K29** desde las páginas `V5 data` de Leaguepedia (solo agregados) si traen los usos; si no, banda estimada. |
+| 6 | **Dos entregas:** #339 y después #374, con una subida de `SIM_VERSION` cada una. |
 
-### Troceado propuesto (milestone «Fase 3.5 — Simulación por composiciones»)
+### Troceado (milestone «Fase 3.5 — Simulación por composiciones»)
 
 | # | Issue | Área | Test que lo cierra | Depende de |
 | --- | --- | --- | --- | --- |
-| 1 | Nuevo: publicar `ultCooldown` en el contrato de campeón y traer hechizos (recargas e iconos; pares por campeón si se aprueba la decisión 3) | `area:data-pipeline` | H1, H2 y la parte de datos de U1 | — |
-| 2 | #339 Definitivas como recurso de pelea | `area:core` | U1–U5, C1, C2, C4, K12, K13 y regresión; `SIM_VERSION` 19 | 1 y #530 |
+| 1 | #622 Publicar `ultCooldown` en el contrato de campeón y traer hechizos (recargas, iconos y pares por campeón y rol) | `area:data-pipeline` | H1, H2 y la parte de datos de U1 | — |
+| 2 | #339 Definitivas como recurso de pelea | `area:core` | U1–U5, C1, C2, C4, K12, K13 y regresión; `SIM_VERSION` 19 | #622 y #530 |
 | 3 | #374 Hechizos de invocador | `area:core` | H3–H5, C1, C2, C4, K28, K29 y regresión; `SIM_VERSION` 20 | 2 |
 | 4 | #358 (parte de recursos) Iconos y recargas en el cara a cara y causas en el desglose | `area:ui` | C3 | 2, 3 y #531 |
