@@ -1,0 +1,893 @@
+{
+	"provenance": {
+		"cooldowns": {
+			"source": "CommunityDragon",
+			"patch": "16.23",
+			"url": "https://raw.communitydragon.org/16.23/plugins/rcp-be-lol-game-data/global/default/v1/summoner-spells.json",
+			"retrievedAt": "2026-11-27T11:03:15.131Z"
+		},
+		"pairs": {
+			"source": "Leaguepedia",
+			"domain": "lol.fandom.com",
+			"licence": "CC BY-SA 3.0",
+			"attribution": "Pares de hechizos agregados por campeón y rol desde los marcadores de Leaguepedia (https://lol.fandom.com/wiki/Leaguepedia), CC BY-SA 3.0 Unported. No se guardan datos por partida ni por jugador.",
+			"season": 2026,
+			"minGames": 20,
+			"rows": 23960
+		}
+	},
+	"spells": [
+		{
+			"id": "Barrier",
+			"cooldown": 180
+		},
+		{
+			"id": "Cleanse",
+			"cooldown": 240
+		},
+		{
+			"id": "Exhaust",
+			"cooldown": 240
+		},
+		{
+			"id": "Flash",
+			"cooldown": 300
+		},
+		{
+			"id": "Ghost",
+			"cooldown": 240
+		},
+		{
+			"id": "Heal",
+			"cooldown": 240
+		},
+		{
+			"id": "Ignite",
+			"cooldown": 180
+		},
+		{
+			"id": "Smite",
+			"cooldown": 15
+		},
+		{
+			"id": "Teleport",
+			"cooldown": 300
+		}
+	],
+	"roleDefaults": {
+		"top": {
+			"spells": ["Flash", "Teleport"],
+			"games": 4232
+		},
+		"jungle": {
+			"spells": ["Flash", "Smite"],
+			"games": 4787
+		},
+		"mid": {
+			"spells": ["Flash", "Teleport"],
+			"games": 3862
+		},
+		"bot": {
+			"spells": ["Barrier", "Flash"],
+			"games": 2498
+		},
+		"support": {
+			"spells": ["Flash", "Heal"],
+			"games": 4431
+		}
+	},
+	"pairs": [
+		{
+			"champion": "Aatrox",
+			"role": "jungle",
+			"spells": ["Flash", "Smite"],
+			"games": 95,
+			"pairGames": 95
+		},
+		{
+			"champion": "Aatrox",
+			"role": "top",
+			"spells": ["Flash", "Teleport"],
+			"games": 67,
+			"pairGames": 65
+		},
+		{
+			"champion": "Ahri",
+			"role": "mid",
+			"spells": ["Flash", "Teleport"],
+			"games": 321,
+			"pairGames": 297
+		},
+		{
+			"champion": "Akali",
+			"role": "mid",
+			"spells": ["Flash", "Teleport"],
+			"games": 243,
+			"pairGames": 240
+		},
+		{
+			"champion": "Alistar",
+			"role": "support",
+			"spells": ["Flash", "Heal"],
+			"games": 346,
+			"pairGames": 346
+		},
+		{
+			"champion": "Ambessa",
+			"role": "jungle",
+			"spells": ["Flash", "Smite"],
+			"games": 56,
+			"pairGames": 56
+		},
+		{
+			"champion": "Ambessa",
+			"role": "top",
+			"spells": ["Flash", "Teleport"],
+			"games": 447,
+			"pairGames": 446
+		},
+		{
+			"champion": "Anivia",
+			"role": "mid",
+			"spells": ["Flash", "Teleport"],
+			"games": 174,
+			"pairGames": 173
+		},
+		{
+			"champion": "Anivia",
+			"role": "support",
+			"spells": ["Flash", "Heal"],
+			"games": 29,
+			"pairGames": 29
+		},
+		{
+			"champion": "Anivia",
+			"role": "top",
+			"spells": ["Flash", "Teleport"],
+			"games": 37,
+			"pairGames": 37
+		},
+		{
+			"champion": "Annie",
+			"role": "mid",
+			"spells": ["Flash", "Teleport"],
+			"games": 265,
+			"pairGames": 261
+		},
+		{
+			"champion": "Aphelios",
+			"role": "bot",
+			"spells": ["Flash", "Ghost"],
+			"games": 136,
+			"pairGames": 61
+		},
+		{
+			"champion": "Ashe",
+			"role": "bot",
+			"spells": ["Barrier", "Flash"],
+			"games": 353,
+			"pairGames": 206
+		},
+		{
+			"champion": "Aurora",
+			"role": "mid",
+			"spells": ["Flash", "Teleport"],
+			"games": 287,
+			"pairGames": 270
+		},
+		{
+			"champion": "Aurora",
+			"role": "top",
+			"spells": ["Flash", "Teleport"],
+			"games": 61,
+			"pairGames": 60
+		},
+		{
+			"champion": "Azir",
+			"role": "mid",
+			"spells": ["Flash", "Teleport"],
+			"games": 345,
+			"pairGames": 345
+		},
+		{
+			"champion": "Bard",
+			"role": "support",
+			"spells": ["Flash", "Heal"],
+			"games": 478,
+			"pairGames": 473
+		},
+		{
+			"champion": "Braum",
+			"role": "support",
+			"spells": ["Flash", "Heal"],
+			"games": 69,
+			"pairGames": 67
+		},
+		{
+			"champion": "Caitlyn",
+			"role": "bot",
+			"spells": ["Barrier", "Flash"],
+			"games": 295,
+			"pairGames": 182
+		},
+		{
+			"champion": "Camille",
+			"role": "support",
+			"spells": ["Flash", "Ignite"],
+			"games": 91,
+			"pairGames": 88
+		},
+		{
+			"champion": "Camille",
+			"role": "top",
+			"spells": ["Flash", "Teleport"],
+			"games": 54,
+			"pairGames": 44
+		},
+		{
+			"champion": "Cassiopeia",
+			"role": "bot",
+			"spells": ["Flash", "Ghost"],
+			"games": 20,
+			"pairGames": 8
+		},
+		{
+			"champion": "Cassiopeia",
+			"role": "mid",
+			"spells": ["Flash", "Teleport"],
+			"games": 244,
+			"pairGames": 212
+		},
+		{
+			"champion": "Chogath",
+			"role": "jungle",
+			"spells": ["Flash", "Smite"],
+			"games": 24,
+			"pairGames": 24
+		},
+		{
+			"champion": "Corki",
+			"role": "bot",
+			"spells": ["Barrier", "Flash"],
+			"games": 434,
+			"pairGames": 330
+		},
+		{
+			"champion": "DrMundo",
+			"role": "jungle",
+			"spells": ["Flash", "Smite"],
+			"games": 97,
+			"pairGames": 96
+		},
+		{
+			"champion": "DrMundo",
+			"role": "top",
+			"spells": ["Flash", "Teleport"],
+			"games": 20,
+			"pairGames": 20
+		},
+		{
+			"champion": "Elise",
+			"role": "support",
+			"spells": ["Flash", "Ignite"],
+			"games": 24,
+			"pairGames": 19
+		},
+		{
+			"champion": "Ezreal",
+			"role": "bot",
+			"spells": ["Barrier", "Flash"],
+			"games": 585,
+			"pairGames": 311
+		},
+		{
+			"champion": "Galio",
+			"role": "mid",
+			"spells": ["Flash", "Teleport"],
+			"games": 199,
+			"pairGames": 193
+		},
+		{
+			"champion": "Galio",
+			"role": "top",
+			"spells": ["Flash", "Teleport"],
+			"games": 36,
+			"pairGames": 36
+		},
+		{
+			"champion": "Gnar",
+			"role": "top",
+			"spells": ["Flash", "Teleport"],
+			"games": 465,
+			"pairGames": 462
+		},
+		{
+			"champion": "Gragas",
+			"role": "top",
+			"spells": ["Flash", "Teleport"],
+			"games": 30,
+			"pairGames": 30
+		},
+		{
+			"champion": "Gwen",
+			"role": "top",
+			"spells": ["Flash", "Teleport"],
+			"games": 120,
+			"pairGames": 98
+		},
+		{
+			"champion": "Hwei",
+			"role": "mid",
+			"spells": ["Flash", "Teleport"],
+			"games": 40,
+			"pairGames": 40
+		},
+		{
+			"champion": "JarvanIV",
+			"role": "jungle",
+			"spells": ["Flash", "Smite"],
+			"games": 615,
+			"pairGames": 615
+		},
+		{
+			"champion": "Jax",
+			"role": "top",
+			"spells": ["Flash", "Teleport"],
+			"games": 127,
+			"pairGames": 109
+		},
+		{
+			"champion": "Jayce",
+			"role": "jungle",
+			"spells": ["Flash", "Smite"],
+			"games": 65,
+			"pairGames": 65
+		},
+		{
+			"champion": "Jayce",
+			"role": "top",
+			"spells": ["Flash", "Teleport"],
+			"games": 325,
+			"pairGames": 320
+		},
+		{
+			"champion": "Jhin",
+			"role": "bot",
+			"spells": ["Barrier", "Flash"],
+			"games": 416,
+			"pairGames": 238
+		},
+		{
+			"champion": "Jinx",
+			"role": "bot",
+			"spells": ["Cleanse", "Flash"],
+			"games": 30,
+			"pairGames": 13
+		},
+		{
+			"champion": "KSante",
+			"role": "top",
+			"spells": ["Flash", "Teleport"],
+			"games": 502,
+			"pairGames": 500
+		},
+		{
+			"champion": "Kaisa",
+			"role": "bot",
+			"spells": ["Barrier", "Flash"],
+			"games": 192,
+			"pairGames": 111
+		},
+		{
+			"champion": "Kalista",
+			"role": "bot",
+			"spells": ["Barrier", "Flash"],
+			"games": 117,
+			"pairGames": 55
+		},
+		{
+			"champion": "Karma",
+			"role": "support",
+			"spells": ["Flash", "Heal"],
+			"games": 356,
+			"pairGames": 353
+		},
+		{
+			"champion": "Kennen",
+			"role": "top",
+			"spells": ["Flash", "Teleport"],
+			"games": 59,
+			"pairGames": 35
+		},
+		{
+			"champion": "Kled",
+			"role": "top",
+			"spells": ["Flash", "Teleport"],
+			"games": 34,
+			"pairGames": 14
+		},
+		{
+			"champion": "Leblanc",
+			"role": "mid",
+			"spells": ["Flash", "Teleport"],
+			"games": 87,
+			"pairGames": 67
+		},
+		{
+			"champion": "LeeSin",
+			"role": "jungle",
+			"spells": ["Flash", "Smite"],
+			"games": 321,
+			"pairGames": 321
+		},
+		{
+			"champion": "Leona",
+			"role": "support",
+			"spells": ["Flash", "Heal"],
+			"games": 177,
+			"pairGames": 151
+		},
+		{
+			"champion": "Lissandra",
+			"role": "mid",
+			"spells": ["Flash", "Teleport"],
+			"games": 40,
+			"pairGames": 39
+		},
+		{
+			"champion": "Locke",
+			"role": "mid",
+			"spells": ["Flash", "Teleport"],
+			"games": 80,
+			"pairGames": 57
+		},
+		{
+			"champion": "Lucian",
+			"role": "bot",
+			"spells": ["Barrier", "Flash"],
+			"games": 383,
+			"pairGames": 303
+		},
+		{
+			"champion": "Lulu",
+			"role": "support",
+			"spells": ["Flash", "Heal"],
+			"games": 410,
+			"pairGames": 410
+		},
+		{
+			"champion": "Lux",
+			"role": "support",
+			"spells": ["Flash", "Heal"],
+			"games": 36,
+			"pairGames": 36
+		},
+		{
+			"champion": "Malphite",
+			"role": "jungle",
+			"spells": ["Flash", "Smite"],
+			"games": 44,
+			"pairGames": 44
+		},
+		{
+			"champion": "Maokai",
+			"role": "jungle",
+			"spells": ["Flash", "Smite"],
+			"games": 83,
+			"pairGames": 83
+		},
+		{
+			"champion": "Mel",
+			"role": "bot",
+			"spells": ["Flash", "Teleport"],
+			"games": 37,
+			"pairGames": 34
+		},
+		{
+			"champion": "Mel",
+			"role": "mid",
+			"spells": ["Flash", "Teleport"],
+			"games": 57,
+			"pairGames": 55
+		},
+		{
+			"champion": "Milio",
+			"role": "support",
+			"spells": ["Flash", "Heal"],
+			"games": 300,
+			"pairGames": 300
+		},
+		{
+			"champion": "MissFortune",
+			"role": "bot",
+			"spells": ["Barrier", "Flash"],
+			"games": 169,
+			"pairGames": 104
+		},
+		{
+			"champion": "MonkeyKing",
+			"role": "jungle",
+			"spells": ["Flash", "Smite"],
+			"games": 369,
+			"pairGames": 369
+		},
+		{
+			"champion": "Naafiri",
+			"role": "jungle",
+			"spells": ["Flash", "Smite"],
+			"games": 303,
+			"pairGames": 303
+		},
+		{
+			"champion": "Nami",
+			"role": "support",
+			"spells": ["Flash", "Heal"],
+			"games": 273,
+			"pairGames": 273
+		},
+		{
+			"champion": "Nautilus",
+			"role": "support",
+			"spells": ["Flash", "Heal"],
+			"games": 414,
+			"pairGames": 360
+		},
+		{
+			"champion": "Neeko",
+			"role": "support",
+			"spells": ["Flash", "Heal"],
+			"games": 314,
+			"pairGames": 314
+		},
+		{
+			"champion": "Nocturne",
+			"role": "jungle",
+			"spells": ["Flash", "Smite"],
+			"games": 323,
+			"pairGames": 323
+		},
+		{
+			"champion": "Olaf",
+			"role": "jungle",
+			"spells": ["Flash", "Smite"],
+			"games": 22,
+			"pairGames": 22
+		},
+		{
+			"champion": "Olaf",
+			"role": "top",
+			"spells": ["Flash", "Ghost"],
+			"games": 166,
+			"pairGames": 91
+		},
+		{
+			"champion": "Orianna",
+			"role": "mid",
+			"spells": ["Flash", "Teleport"],
+			"games": 420,
+			"pairGames": 418
+		},
+		{
+			"champion": "Ornn",
+			"role": "top",
+			"spells": ["Flash", "Teleport"],
+			"games": 101,
+			"pairGames": 101
+		},
+		{
+			"champion": "Pantheon",
+			"role": "jungle",
+			"spells": ["Flash", "Smite"],
+			"games": 495,
+			"pairGames": 495
+		},
+		{
+			"champion": "Poppy",
+			"role": "jungle",
+			"spells": ["Flash", "Smite"],
+			"games": 65,
+			"pairGames": 65
+		},
+		{
+			"champion": "Poppy",
+			"role": "support",
+			"spells": ["Flash", "Heal"],
+			"games": 52,
+			"pairGames": 49
+		},
+		{
+			"champion": "Pyke",
+			"role": "support",
+			"spells": ["Flash", "Ignite"],
+			"games": 41,
+			"pairGames": 36
+		},
+		{
+			"champion": "Qiyana",
+			"role": "jungle",
+			"spells": ["Flash", "Smite"],
+			"games": 130,
+			"pairGames": 130
+		},
+		{
+			"champion": "Rakan",
+			"role": "support",
+			"spells": ["Flash", "Heal"],
+			"games": 288,
+			"pairGames": 282
+		},
+		{
+			"champion": "RekSai",
+			"role": "top",
+			"spells": ["Flash", "Teleport"],
+			"games": 60,
+			"pairGames": 60
+		},
+		{
+			"champion": "Rell",
+			"role": "support",
+			"spells": ["Flash", "Heal"],
+			"games": 228,
+			"pairGames": 206
+		},
+		{
+			"champion": "Renata",
+			"role": "support",
+			"spells": ["Flash", "Heal"],
+			"games": 125,
+			"pairGames": 125
+		},
+		{
+			"champion": "Renekton",
+			"role": "top",
+			"spells": ["Flash", "Teleport"],
+			"games": 390,
+			"pairGames": 385
+		},
+		{
+			"champion": "Rumble",
+			"role": "top",
+			"spells": ["Flash", "Teleport"],
+			"games": 598,
+			"pairGames": 554
+		},
+		{
+			"champion": "Ryze",
+			"role": "mid",
+			"spells": ["Flash", "Ghost"],
+			"games": 655,
+			"pairGames": 553
+		},
+		{
+			"champion": "Sejuani",
+			"role": "jungle",
+			"spells": ["Flash", "Smite"],
+			"games": 68,
+			"pairGames": 68
+		},
+		{
+			"champion": "Senna",
+			"role": "bot",
+			"spells": ["Barrier", "Flash"],
+			"games": 40,
+			"pairGames": 19
+		},
+		{
+			"champion": "Seraphine",
+			"role": "support",
+			"spells": ["Flash", "Heal"],
+			"games": 385,
+			"pairGames": 385
+		},
+		{
+			"champion": "Shen",
+			"role": "support",
+			"spells": ["Flash", "Heal"],
+			"games": 155,
+			"pairGames": 129
+		},
+		{
+			"champion": "Shen",
+			"role": "top",
+			"spells": ["Flash", "Teleport"],
+			"games": 37,
+			"pairGames": 37
+		},
+		{
+			"champion": "Sion",
+			"role": "top",
+			"spells": ["Flash", "Teleport"],
+			"games": 372,
+			"pairGames": 370
+		},
+		{
+			"champion": "Sivir",
+			"role": "bot",
+			"spells": ["Barrier", "Flash"],
+			"games": 276,
+			"pairGames": 166
+		},
+		{
+			"champion": "Skarner",
+			"role": "jungle",
+			"spells": ["Flash", "Smite"],
+			"games": 187,
+			"pairGames": 187
+		},
+		{
+			"champion": "Sylas",
+			"role": "mid",
+			"spells": ["Flash", "Teleport"],
+			"games": 130,
+			"pairGames": 129
+		},
+		{
+			"champion": "Syndra",
+			"role": "bot",
+			"spells": ["Flash", "Teleport"],
+			"games": 22,
+			"pairGames": 21
+		},
+		{
+			"champion": "Syndra",
+			"role": "mid",
+			"spells": ["Flash", "Teleport"],
+			"games": 248,
+			"pairGames": 228
+		},
+		{
+			"champion": "Taliyah",
+			"role": "mid",
+			"spells": ["Flash", "Ghost"],
+			"games": 277,
+			"pairGames": 141
+		},
+		{
+			"champion": "Thresh",
+			"role": "support",
+			"spells": ["Flash", "Heal"],
+			"games": 76,
+			"pairGames": 71
+		},
+		{
+			"champion": "Trundle",
+			"role": "jungle",
+			"spells": ["Flash", "Smite"],
+			"games": 203,
+			"pairGames": 203
+		},
+		{
+			"champion": "TwistedFate",
+			"role": "mid",
+			"spells": ["Flash", "Teleport"],
+			"games": 121,
+			"pairGames": 119
+		},
+		{
+			"champion": "TwistedFate",
+			"role": "top",
+			"spells": ["Flash", "Ghost"],
+			"games": 31,
+			"pairGames": 28
+		},
+		{
+			"champion": "Varus",
+			"role": "bot",
+			"spells": ["Flash", "Teleport"],
+			"games": 294,
+			"pairGames": 190
+		},
+		{
+			"champion": "Varus",
+			"role": "top",
+			"spells": ["Exhaust", "Flash"],
+			"games": 65,
+			"pairGames": 37
+		},
+		{
+			"champion": "Vayne",
+			"role": "top",
+			"spells": ["Exhaust", "Flash"],
+			"games": 81,
+			"pairGames": 58
+		},
+		{
+			"champion": "Vi",
+			"role": "jungle",
+			"spells": ["Flash", "Smite"],
+			"games": 497,
+			"pairGames": 497
+		},
+		{
+			"champion": "Viktor",
+			"role": "bot",
+			"spells": ["Flash", "Teleport"],
+			"games": 40,
+			"pairGames": 39
+		},
+		{
+			"champion": "Viktor",
+			"role": "mid",
+			"spells": ["Flash", "Teleport"],
+			"games": 256,
+			"pairGames": 253
+		},
+		{
+			"champion": "Xayah",
+			"role": "bot",
+			"spells": ["Barrier", "Flash"],
+			"games": 144,
+			"pairGames": 58
+		},
+		{
+			"champion": "XinZhao",
+			"role": "jungle",
+			"spells": ["Flash", "Smite"],
+			"games": 550,
+			"pairGames": 550
+		},
+		{
+			"champion": "Yone",
+			"role": "mid",
+			"spells": ["Flash", "Teleport"],
+			"games": 131,
+			"pairGames": 120
+		},
+		{
+			"champion": "Yorick",
+			"role": "top",
+			"spells": ["Flash", "Teleport"],
+			"games": 175,
+			"pairGames": 174
+		},
+		{
+			"champion": "Yunara",
+			"role": "bot",
+			"spells": ["Barrier", "Flash"],
+			"games": 499,
+			"pairGames": 312
+		},
+		{
+			"champion": "Yuumi",
+			"role": "support",
+			"spells": ["Exhaust", "Heal"],
+			"games": 44,
+			"pairGames": 41
+		},
+		{
+			"champion": "Zaahen",
+			"role": "jungle",
+			"spells": ["Flash", "Smite"],
+			"games": 44,
+			"pairGames": 44
+		},
+		{
+			"champion": "Zaahen",
+			"role": "top",
+			"spells": ["Flash", "Teleport"],
+			"games": 121,
+			"pairGames": 120
+		},
+		{
+			"champion": "Zeri",
+			"role": "bot",
+			"spells": ["Cleanse", "Flash"],
+			"games": 56,
+			"pairGames": 27
+		},
+		{
+			"champion": "Ziggs",
+			"role": "bot",
+			"spells": ["Flash", "Teleport"],
+			"games": 131,
+			"pairGames": 131
+		},
+		{
+			"champion": "Zoe",
+			"role": "mid",
+			"spells": ["Flash", "Ignite"],
+			"games": 49,
+			"pairGames": 22
+		}
+	]
+}

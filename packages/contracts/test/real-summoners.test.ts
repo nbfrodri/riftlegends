@@ -35,7 +35,13 @@ const file = {
 	spells,
 	roleDefaults: defaults,
 	pairs: [
-		{ champion: "Aatrox", role: "jungle", spells: ["Flash", "Smite"], games: 30, pairGames: 25 },
+		{
+			champion: "Aatrox",
+			role: "jungle",
+			spells: ["Flash", "Smite"],
+			games: 30,
+			pairGames: 25,
+		},
 	],
 };
 
@@ -49,7 +55,9 @@ describe("realSummonersSchema", () => {
 	});
 	it("allows Smite only in the jungle and requires it there", () => {
 		const top = { ...file.pairs[0], role: "top" };
-		expect(() => realSummonersSchema.parse({ ...file, pairs: [top] })).toThrow();
+		expect(() =>
+			realSummonersSchema.parse({ ...file, pairs: [top] }),
+		).toThrow();
 		const noSmite = { ...file.pairs[0], spells: ["Flash", "Ignite"] };
 		expect(() =>
 			realSummonersSchema.parse({ ...file, pairs: [noSmite] }),
@@ -67,15 +75,24 @@ describe("realSummonersSchema", () => {
 			realSummonersSchema.parse({ ...file, pairs: [unsorted] }),
 		).toThrow();
 		const few = { ...file.pairs[0], games: 19, pairGames: 19 };
-		expect(() => realSummonersSchema.parse({ ...file, pairs: [few] })).toThrow();
+		expect(() =>
+			realSummonersSchema.parse({ ...file, pairs: [few] }),
+		).toThrow();
 	});
 	it("rejects pairs that use a spell without cooldown, duplicates and extra keys", () => {
-		const unknown = { ...file.pairs[0], spells: ["Flash", "Heal"], role: "mid" };
+		const unknown = {
+			...file.pairs[0],
+			spells: ["Flash", "Heal"],
+			role: "mid",
+		};
 		expect(() =>
 			realSummonersSchema.parse({ ...file, pairs: [unknown] }),
 		).toThrow();
 		expect(() =>
-			realSummonersSchema.parse({ ...file, pairs: [file.pairs[0], file.pairs[0]] }),
+			realSummonersSchema.parse({
+				...file,
+				pairs: [file.pairs[0], file.pairs[0]],
+			}),
 		).toThrow();
 		expect(() => realSummonersSchema.parse({ ...file, player: "x" })).toThrow();
 	});

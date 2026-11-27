@@ -156,7 +156,7 @@ interface ContentOptions {
 }
 
 /** Ultimate cooldown by rank when the game data has none (#622). */
-const estimatedUltCooldown = [120, 100, 80] as const;
+const estimatedUltCooldownTenths = [1200, 1000, 800] as const;
 
 export function deriveChampionContent(
 	catalog: readonly CatalogChampion[],
@@ -215,9 +215,15 @@ export function deriveChampionContent(
 			kit: [...profile.kit],
 			ccKinds: [...profile.ccKinds],
 			split: [...profile.split],
-			ultCooldown: ultCooldown ? [...ultCooldown] : [...estimatedUltCooldown],
+			ultCooldownTenths: ultCooldown
+				? (ultCooldown.map((seconds) => Math.round(seconds * 10)) as [
+						number,
+						number,
+						number,
+					])
+				: [...estimatedUltCooldownTenths],
 			traitSources: {
-				ultCooldown: ultCooldown ? "source" : "estimated",
+				ultCooldownTenths: ultCooldown ? "source" : "estimated",
 				ccKinds: profile.sources.cc,
 				split: profile.sources.split,
 				kit: profile.sources.kit,

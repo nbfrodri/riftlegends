@@ -185,20 +185,20 @@ describe("AiContent", () => {
 	it("publishes the ultimate cooldown by rank with its source (#622)", () => {
 		const known = {
 			...content.champions[0],
-			ultCooldown: [120, 100, 80],
-			traitSources: { ultCooldown: "source" },
+			ultCooldownTenths: [1200, 1000, 800],
+			traitSources: { ultCooldownTenths: "source" },
 		};
 		const parsed = aiContent.parse({ ...content, champions: withFirst(known) });
 		expect(parsed.champions[0]).toEqual(known);
 	});
 
 	it.each([
-		["a cooldown that grows with the rank", [80, 100, 120]],
-		["a zero cooldown", [120, 100, 0]],
-		["two ranks", [120, 100]],
-		["a fractional cooldown", [120.5, 100, 80]],
-	])("rejects %s", (_, ultCooldown) => {
-		const champions = withFirst({ ...content.champions[0], ultCooldown });
+		["a cooldown that grows with the rank", [800, 1000, 1200]],
+		["a zero cooldown", [1200, 1000, 0]],
+		["two ranks", [1200, 1000]],
+		["a fractional cooldown", [1200.5, 1000, 800]],
+	])("rejects %s", (_, ultCooldownTenths) => {
+		const champions = withFirst({ ...content.champions[0], ultCooldownTenths });
 		expect(aiContent.safeParse({ ...content, champions }).success).toBe(false);
 	});
 

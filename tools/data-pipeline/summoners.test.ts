@@ -37,19 +37,91 @@ const many = (n: number, ...args: [string, string, string | null]) =>
 	Array.from({ length: n }, () => row(...args));
 
 const cdragon = [
-	{ id: 4, name: "Flash", cooldown: 300, gameModes: ["CLASSIC", "ARAM"], iconPath: "/x/flash.png" },
-	{ id: 14, name: "Ignite", cooldown: 180, gameModes: ["CLASSIC"], iconPath: "/x/ignite.png" },
-	{ id: 11, name: "Smite", cooldown: 15, gameModes: ["CLASSIC"], iconPath: "/x/smite.png" },
-	{ id: 12, name: "Teleport", cooldown: 300, gameModes: ["CLASSIC"], iconPath: "/x/tp.png" },
-	{ id: 3, name: "Exhaust", cooldown: 210, gameModes: ["CLASSIC"], iconPath: "/x/e.png" },
-	{ id: 7, name: "Heal", cooldown: 240, gameModes: ["CLASSIC"], iconPath: "/x/h.png" },
-	{ id: 6, name: "Ghost", cooldown: 240, gameModes: ["CLASSIC"], iconPath: "/x/g.png" },
-	{ id: 21, name: "Barrier", cooldown: 180, gameModes: ["CLASSIC"], iconPath: "/x/b.png" },
-	{ id: 1, name: "Cleanse", cooldown: 240, gameModes: ["CLASSIC"], iconPath: "/x/c.png" },
+	{
+		id: 4,
+		name: "Flash",
+		cooldown: 300,
+		gameModes: ["CLASSIC", "ARAM"],
+		iconPath: "/x/flash.png",
+	},
+	{
+		id: 14,
+		name: "Ignite",
+		cooldown: 180,
+		gameModes: ["CLASSIC"],
+		iconPath: "/x/ignite.png",
+	},
+	{
+		id: 11,
+		name: "Smite",
+		cooldown: 15,
+		gameModes: ["CLASSIC"],
+		iconPath: "/x/smite.png",
+	},
+	{
+		id: 12,
+		name: "Teleport",
+		cooldown: 300,
+		gameModes: ["CLASSIC"],
+		iconPath: "/x/tp.png",
+	},
+	{
+		id: 3,
+		name: "Exhaust",
+		cooldown: 210,
+		gameModes: ["CLASSIC"],
+		iconPath: "/x/e.png",
+	},
+	{
+		id: 7,
+		name: "Heal",
+		cooldown: 240,
+		gameModes: ["CLASSIC"],
+		iconPath: "/x/h.png",
+	},
+	{
+		id: 6,
+		name: "Ghost",
+		cooldown: 240,
+		gameModes: ["CLASSIC"],
+		iconPath: "/x/g.png",
+	},
+	{
+		id: 21,
+		name: "Barrier",
+		cooldown: 180,
+		gameModes: ["CLASSIC"],
+		iconPath: "/x/b.png",
+	},
+	{
+		id: 1,
+		name: "Cleanse",
+		cooldown: 240,
+		gameModes: ["CLASSIC"],
+		iconPath: "/x/c.png",
+	},
 	// Not on the Rift or a variant of another mode: ignored.
-	{ id: 74, name: "Flash", cooldown: 300, gameModes: ["JADE"], iconPath: "/x/j.png" },
-	{ id: 32, name: "Mark", cooldown: 80, gameModes: ["ARAM"], iconPath: "/x/m.png" },
-	{ id: 54, name: "Placeholder", cooldown: 0, gameModes: [], iconPath: "/x/p.png" },
+	{
+		id: 74,
+		name: "Flash",
+		cooldown: 300,
+		gameModes: ["JADE"],
+		iconPath: "/x/j.png",
+	},
+	{
+		id: 32,
+		name: "Mark",
+		cooldown: 80,
+		gameModes: ["ARAM"],
+		iconPath: "/x/m.png",
+	},
+	{
+		id: 54,
+		name: "Placeholder",
+		cooldown: 0,
+		gameModes: [],
+		iconPath: "/x/p.png",
+	},
 ];
 
 test("reads the cooldowns of the Rift spells and keeps no icon", () => {
@@ -61,7 +133,9 @@ test("reads the cooldowns of the Rift spells and keeps no icon", () => {
 	});
 	expect(JSON.stringify(spells)).not.toContain("png");
 	expect(() => readSpells([])).toThrow();
-	expect(() => readSpells(cdragon.filter(({ name }) => name !== "Flash"))).toThrow();
+	expect(() =>
+		readSpells(cdragon.filter(({ name }) => name !== "Flash")),
+	).toThrow();
 });
 
 test("takes the usual pair of each champion and role, and counts its games", () => {
@@ -76,11 +150,23 @@ test("takes the usual pair of each champion and role, and counts its games", () 
 		catalog,
 	);
 	expect(pairs).toEqual([
-		{ champion: "Kaisa", role: "bot", spells: ["Flash", "Ignite"], games: 25, pairGames: 15 },
-		{ champion: "MonkeyKing", role: "jungle", spells: ["Flash", "Smite"], games: 25, pairGames: 25 },
+		{
+			champion: "Kaisa",
+			role: "bot",
+			spells: ["Flash", "Ignite"],
+			games: 25,
+			pairGames: 15,
+		},
+		{
+			champion: "MonkeyKing",
+			role: "jungle",
+			spells: ["Flash", "Smite"],
+			games: 25,
+			pairGames: 25,
+		},
 	]);
 	expect(roleDefaults.bot).toEqual({ spells: ["Flash", "Ignite"], games: 15 });
-	expect(roleDefaults.jungle.spells).toEqual(["Flash", "Smite"]);
+	expect(roleDefaults.jungle?.spells).toEqual(["Flash", "Smite"]);
 });
 
 test("skips rows without a valid pair, role swaps and unknown champions", () => {
@@ -99,7 +185,13 @@ test("skips rows without a valid pair, role swaps and unknown champions", () => 
 		catalog,
 	);
 	expect(pairs).toEqual([
-		{ champion: "Aatrox", role: "top", spells: ["Flash", "Teleport"], games: 20, pairGames: 20 },
+		{
+			champion: "Aatrox",
+			role: "top",
+			spells: ["Flash", "Teleport"],
+			games: 20,
+			pairGames: 20,
+		},
 	]);
 	expect(rows).toBe(20);
 	expect(skipped).toBe(35);
@@ -155,7 +247,13 @@ test("fetches politely, requests no personal data and caches only aggregates' in
 			now += ms;
 		},
 	});
-	const first = await acquireSummoners(client, catalog, 2026, "2026-11-27", "16.23");
+	const first = await acquireSummoners(
+		client,
+		catalog,
+		2026,
+		"2026-11-27",
+		"16.23",
+	);
 	expect(first.pairs).toHaveLength(2);
 	const cargo = urls.find((url) => url.hostname === "lol.fandom.com");
 	const fields = cargo?.searchParams.get("fields") ?? "";
@@ -166,7 +264,13 @@ test("fetches politely, requests no personal data and caches only aggregates' in
 	expect(cargo?.searchParams.get("where")).toContain("T.Year='2026'");
 	expect(cargo?.searchParams.get("where")).toContain("< '2026-11-27'");
 	expect(cargo?.searchParams.get("where")).toContain("LoL Champions Korea");
-	const again = await acquireSummoners(client, catalog, 2026, "2026-11-27", "16.23");
+	const again = await acquireSummoners(
+		client,
+		catalog,
+		2026,
+		"2026-11-27",
+		"16.23",
+	);
 	expect(again).toEqual(first);
 	expect(fetch).toHaveBeenCalledTimes(2);
 	for (const name of await readdir(dir))
@@ -225,5 +329,31 @@ test("the published summoners.json validates and has no per-game data", async ()
 		"spells",
 		"roleDefaults",
 		"pairs",
+	]);
+});
+
+test("the published data covers every champion's ultimate and every pair's champion", async () => {
+	const read = async (path: string) =>
+		JSON.parse(await readFile(new URL(path, import.meta.url), "utf8"));
+	const summoners = realSummonersSchema.parse(
+		await read("../../packages/core/content/real/summoners.json"),
+	);
+	const champions: { id: string; ultCooldownTenths?: number[] }[] = await read(
+		"../../packages/core/content/real/champions/champions.json",
+	);
+	const ids = new Set(champions.map(({ id }) => id));
+	expect(
+		champions.filter(({ ultCooldownTenths }) => !ultCooldownTenths?.length),
+	).toEqual([]);
+	expect(summoners.pairs.filter(({ champion }) => !ids.has(champion))).toEqual(
+		[],
+	);
+	expect(summoners.spells.every(({ cooldown }) => cooldown > 0)).toBe(true);
+	expect(Object.keys(summoners.roleDefaults).sort()).toEqual([
+		"bot",
+		"jungle",
+		"mid",
+		"support",
+		"top",
 	]);
 });

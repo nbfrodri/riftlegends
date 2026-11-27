@@ -301,10 +301,10 @@ it("publishes the ultimate cooldown of the kit, or the estimate without data (#6
 		{ kits },
 	);
 	const by = (id: string) => champions.find((champion) => champion.id === id);
-	expect(by("Yasuo")?.ultCooldown).toEqual([70, 50, 30]);
-	expect(by("Yasuo")?.traitSources?.ultCooldown).toBe("source");
-	expect(by("Galio")?.ultCooldown).toEqual([180, 160, 140]);
+	expect(by("Yasuo")?.ultCooldownTenths).toEqual([700, 500, 300]);
+	expect(by("Yasuo")?.traitSources?.ultCooldownTenths).toBe("source");
+	expect(by("Galio")?.ultCooldownTenths).toEqual([1800, 1600, 1400]);
 	// No kit at all (Jinx): the estimate says so.
-	expect(by("Jinx")?.ultCooldown).toEqual([120, 100, 80]);
-	expect(by("Jinx")?.traitSources?.ultCooldown).toBe("estimated");
+	expect(by("Jinx")?.ultCooldownTenths).toEqual([1200, 1000, 800]);
+	expect(by("Jinx")?.traitSources?.ultCooldownTenths).toBe("estimated");
 });

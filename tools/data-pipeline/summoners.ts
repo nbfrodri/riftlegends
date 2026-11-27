@@ -7,7 +7,7 @@ import {
 } from "@rift-legends/contracts/real-summoners";
 import type { CatalogChampion } from "./champion-content.ts";
 import { championResolver } from "./champion-history.ts";
-import { type Client, type ClientOptions } from "./client.ts";
+import type { Client, ClientOptions } from "./client.ts";
 import { roleOf } from "./normalization.ts";
 import { compare, inList } from "./queries.ts";
 import { leagues } from "./scope.ts";
@@ -24,7 +24,7 @@ type Pair = RealSummoners["pairs"][number];
 type Role = Pair["role"];
 type SpellId = (typeof SUMMONER_SPELLS)[number];
 
-export const summonerSpellsUrl = (patch: string) =>
+const summonerSpellsUrl = (patch: string) =>
 	`https://raw.communitydragon.org/${patch}/plugins/rcp-be-lol-game-data/global/default/v1/summoner-spells.json`;
 
 const known = new Set<string>(SUMMONER_SPELLS);
@@ -237,5 +237,9 @@ export async function writeSummoners(
 	const path = join(options.outputDir, "summoners.json");
 	await mkdir(dirname(path), { recursive: true });
 	await writeFile(path, serializeSummoners(file));
-	return { pairs: result.pairs.length, rows: result.rows, skipped: result.skipped };
+	return {
+		pairs: result.pairs.length,
+		rows: result.rows,
+		skipped: result.skipped,
+	};
 }
