@@ -77,4 +77,22 @@ test("SO14: competition.drawn comes once, after its source stage and before its 
 			.filter(({ round }) => round === 1)
 			.map(({ teamA, teamB }) => [teamA, teamB]),
 	).toEqual(fact.pairs);
+	// A drawn series reopens by its id with the detail that was recorded.
+	for (const match of bracket.matches.filter(({ round }) => round === 1)) {
+		const recorded = facts.find(
+			(f) =>
+				f.type === "competition.seriesRecorded" &&
+				f.stage === "playoffs" &&
+				(f as { teams?: string[] }).teams?.join() ===
+					[match.teamA, match.teamB].join(),
+		) as { winner: string; score: [number, number] } | undefined;
+		if (!recorded || !match.series) throw new Error("series not recorded");
+		const summary = view(core, "series.summary", { series: match.series }) as {
+			mvp: { team: string } | null;
+			lanes: unknown[];
+		};
+		expect(match.score).toEqual(recorded.score);
+		expect(summary.lanes).toHaveLength(recorded.score[0] + recorded.score[1]);
+		expect(summary.mvp?.team).toBe(recorded.winner);
+	}
 });
