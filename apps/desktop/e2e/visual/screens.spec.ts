@@ -1,4 +1,4 @@
-import type { Page } from "@playwright/test";
+import type { Locator, Page } from "@playwright/test";
 import { expect, test } from "../fixtures";
 import { playQuickDraftBo5, seedNextSeries } from "../quick-draft-flow";
 import { captureHovered, captureScreen } from "./capture";
@@ -321,5 +321,185 @@ test.describe("Quick draft", () => {
 				await appWindow.emulateMedia({ reducedMotion: "no-preference" });
 			}
 		});
+	});
+});
+
+// Plan 31, E2: the competition screens. The exhibition season takes its seed
+// from the renderer (a random one), so a fixed one is stubbed in before the
+// first visit; a tournament has a seed field of its own.
+const SEASON_SEED = 198;
+
+const pinSeasonSeed = (page: Page) =>
+	page.evaluate((seed) => {
+		const original = crypto.getRandomValues.bind(crypto) as (
+			array: ArrayBufferView,
+		) => ArrayBufferView;
+		const pinned = (array: ArrayBufferView) => {
+			if (array instanceof Uint32Array && array.length === 1) {
+				array[0] = seed;
+				return array;
+			}
+			return original(array);
+		};
+		crypto.getRandomValues = pinned as typeof crypto.getRandomValues;
+	}, SEASON_SEED);
+
+const nav = (page: Page) =>
+	page.getByRole("navigation", { name: "Secciones del club" });
+
+const checkRadio = (page: Page, group: string, name: string) =>
+	page
+		.getByRole("radiogroup", { name: group })
+		.getByRole("radio", { name })
+		.check({ force: true });
+
+test.describe("Competición", () => {
+	test.beforeEach(async ({ appWindow }) => {
+		await pinSeasonSeed(appWindow);
+		await nav(appWindow).getByRole("button", { name: "Competición" }).click();
+		await expect(
+			appWindow
+				.getByRole("list", { name: "Competitions" })
+				.getByRole("heading", { name: "Rift League" }),
+		).toBeVisible({ timeout: 30_000 });
+		// Play the regular stage so the standings, the calendar and the teams have results.
+		const advance = appWindow.getByRole("group", { name: "Avance" });
+		await advance.getByRole("button", { name: /^Hasta fin de fase/ }).click();
+		const progress = appWindow.getByRole("progressbar", {
+			name: "Avance de la temporada",
+		});
+		await expect(progress).toBeVisible();
+		await expect(progress).toBeHidden({ timeout: 60_000 });
+		await expect(
+			advance.getByRole("button", { name: "Jugar día" }),
+		).toBeEnabled();
+	});
+
+	const openHub = async (page: Page) => {
+		await page.getByRole("button", { name: "Abrir Rift League" }).click();
+		await expect(
+			page.getByRole("table", { name: /^Clasificación: / }),
+		).toBeVisible();
+	};
+
+	test("overview after the regular stage", async ({ appWindow }) => {
+		await appWindow.mouse.move(0, 0);
+		await captureScreen(appWindow, "competition-overview.png");
+	});
+
+	test("hub standings", async ({ appWindow }) => {
+		await openHub(appWindow);
+		await appWindow.mouse.move(0, 0);
+		await captureScreen(appWindow, "competition-standings.png");
+	});
+
+	for (const [view, label] of [
+		["day", "Día"],
+		["week", "Semana"],
+		["month", "Mes"],
+	] as const) {
+		test(`calendar, ${view} view`, async ({ appWindow }) => {
+			await appWindow.emulateMedia({ reducedMotion: "reduce" });
+			await openHub(appWindow);
+			await checkRadio(appWindow, "Vista", "Calendario");
+			await checkRadio(appWindow, "Vista del calendario", label);
+			await expect(
+				view === "day"
+					? appWindow.getByRole("list", { name: /\d{4}/ })
+					: appWindow.getByRole("grid"),
+			).toBeVisible();
+			await appWindow.mouse.move(0, 0);
+			await captureScreen(appWindow, `competition-calendar-${view}.png`);
+		});
+	}
+
+	test("team page", async ({ appWindow }) => {
+		await openHub(appWindow);
+		await appWindow
+			.getByRole("table", { name: /^Clasificación: / })
+			.getByRole("row", { name: /Forge/ })
+			.click();
+		await expect(
+			appWindow.getByRole("heading", { level: 1, name: "Forge" }),
+		).toBeVisible();
+		await expect(
+			appWindow.getByRole("table", { name: "Plantilla" }),
+		).toBeVisible();
+		await expect(appWindow.getByRole("list", { name: "Forma" })).toBeVisible();
+		await appWindow.mouse.move(0, 0);
+		await captureScreen(appWindow, "competition-team.png");
+	});
+});
+
+test.describe("Torneo", () => {
+	// A watch-only tournament with a fixed seed, played to its champion.
+	const playTournament = async (
+		page: Page,
+		block?: string,
+		knockout?: string,
+	) => {
+		await nav(page).getByRole("button", { name: "Torneo" }).click();
+		const start = page.getByRole("button", {
+			name: "Empezar torneo",
+			exact: true,
+		});
+		await expect(start).toBeVisible();
+		if (block) {
+			await page.getByRole("combobox", { name: "Bloque" }).click();
+			await page.getByRole("option", { name: block, exact: true }).click();
+		}
+		if (knockout) await checkRadio(page, "Eliminatoria", knockout);
+		const seed = page.getByRole("textbox", { name: "Semilla" });
+		await seed.fill(String(SEASON_SEED));
+		return start;
+	};
+
+	const runToChampion = async (page: Page, start: Locator) => {
+		await start.click();
+		await page
+			.getByRole("group", { name: "Avance" })
+			.getByRole("button", { name: /^Todo el torneo/ })
+			.click();
+		await expect(page.getByText(/^Campeón de /)).toBeVisible({
+			timeout: 120_000,
+		});
+		await expect(page.getByText("MVP de la serie")).toBeVisible();
+		await page.mouse.move(0, 0);
+	};
+
+	test.describe.configure({ timeout: 180_000 });
+
+	test("setup", async ({ appWindow }) => {
+		await playTournament(appWindow);
+		await appWindow.mouse.move(0, 0);
+		await captureScreen(appWindow, "tournament-setup.png");
+	});
+
+	test("double elimination: champion and bracket", async ({ appWindow }) => {
+		await appWindow.emulateMedia({ reducedMotion: "reduce" });
+		const start = await playTournament(appWindow, "Eliminación doble");
+		await runToChampion(appWindow, start);
+		await captureScreen(appWindow, "tournament-champion.png");
+		await appWindow.getByRole("button", { name: "Ver el torneo" }).click();
+		await checkRadio(appWindow, "Vista", "Cuadro");
+		await expect(
+			appWindow.getByRole("group", { name: "Cuadro" }),
+		).toBeVisible();
+		await appWindow.mouse.move(0, 0);
+		await captureScreen(appWindow, "competition-bracket-double.png");
+	});
+
+	test("Swiss by balance", async ({ appWindow }) => {
+		await appWindow.emulateMedia({ reducedMotion: "reduce" });
+		const start = await playTournament(appWindow, "Swiss", "Simple");
+		await runToChampion(appWindow, start);
+		await appWindow.getByRole("button", { name: "Ver el torneo" }).click();
+		// The hub opens on the last stage (the knockout): pick the Swiss one.
+		await appWindow.getByRole("combobox", { name: "Fase" }).click();
+		await appWindow.getByRole("option", { name: "Swiss", exact: true }).click();
+		await checkRadio(appWindow, "Vista", "Cuadro");
+		await expect(appWindow.getByRole("group", { name: "Swiss" })).toBeVisible();
+		await appWindow.mouse.move(0, 0);
+		await captureScreen(appWindow, "competition-swiss.png");
 	});
 });

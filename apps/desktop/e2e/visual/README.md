@@ -4,6 +4,8 @@ Capturas de pantalla (`toHaveScreenshot`) de cuatro pantallas del shell y de las
 
 El tablero del draft se captura también con la ficha de campeón fijada, con la ficha de jugador abierta, con la «Lectura de la IA» abierta y con un campeón elegido sin confirmar (vista previa en la fila del jugador), y en otra serie con el tiempo por turno activado (barra del temporizador llena: el test congela `performance.now`). «Lado y orden» se captura también antes del mapa 3, con los campeones bloqueados agrupados por mapa.
 
+Las pantallas de Competición y Torneo (plan 31, E2) se capturan con la semilla 198 (la de la temporada de exhibición se fija en el renderer; la del torneo, en su campo): resumen, clasificación, calendario (día, semana y mes), página de equipo, configuración del torneo, pantalla de campeón, cuadro de doble eliminación y Swiss por balance.
+
 ## Por qué solo en el CI
 
 La tipografía se rasteriza distinto en cada distribución, así que las capturas de referencia solo valen en la imagen del CI (`ubuntu-latest` bajo Xvfb). **No se generan ni se commitean desde una máquina local.** Las referencias viven en `__screenshots__/<spec>/` (`screens.spec.ts/` y `startup.spec.ts/`) (sin sufijo de plataforma, porque el test solo existe en Linux).
