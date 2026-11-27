@@ -11,7 +11,7 @@ import {
 	useSeasonAdvance,
 } from "./advance";
 import { CompetitionCard } from "./competition-card";
-import { competitionName, dayDate, isInternational, stageName } from "./names";
+import { competitionName, dayDate, isInternational, stageText } from "./names";
 import {
 	type SeasonHandle,
 	useExhibitionSeason,
@@ -168,7 +168,7 @@ function Season({
 							target
 								? t("competition.advance.stageHint", {
 										competition: competitionName(t, target.competition),
-										stage: stageName(target.stage),
+										stage: stageText(t, target),
 									})
 								: ""
 						}
@@ -242,7 +242,7 @@ function RunProgress({ run, year }: { run: AdvanceRun; year: number }) {
 				? t("competition.advance.until.day")
 				: t("competition.advance.until.stage", {
 						competition: competitionName(t, run.target?.competition ?? ""),
-						stage: stageName(run.target?.stage ?? ""),
+						stage: run.target ? stageText(t, run.target) : "",
 					});
 	return (
 		<div className="min-w-0">

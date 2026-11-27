@@ -10,6 +10,8 @@ export interface SearchSelectItem {
 	label: string;
 	/** Secondary text after the label, in the list only. */
 	detail?: ReactNode;
+	/** Decorative icon (a logo) before the label, in the list and the trigger. */
+	icon?: ReactNode;
 }
 
 export interface SearchSelectGroup {
@@ -35,6 +37,8 @@ export function SearchSelect(props: {
 	value: string;
 	onChange: (value: string) => void;
 	className?: string;
+	/** Id of the text that describes the trigger, such as an error next to it. */
+	describedBy?: string | undefined;
 }) {
 	const selected =
 		props.groups
@@ -53,13 +57,17 @@ export function SearchSelect(props: {
 		>
 			<Combobox.Trigger
 				aria-label={props.label}
+				aria-describedby={props.describedBy}
 				className={withState(
 					"press inline-flex min-w-0 cursor-pointer items-center justify-between gap-2 whitespace-nowrap rounded-control border border-line bg-surface px-2 py-[5px] text-text select-none hover:not-data-disabled:border-muted data-popup-open:border-action data-disabled:cursor-default data-disabled:text-muted",
 					props.className,
 				)}
 			>
-				<span className="truncate">
-					<Combobox.Value />
+				<span className="flex min-w-0 items-center gap-2">
+					{selected?.icon && <ItemIcon icon={selected.icon} />}
+					<span className="truncate">
+						<Combobox.Value />
+					</span>
 				</span>
 				<ChevronDown
 					aria-hidden="true"
@@ -115,7 +123,10 @@ export function SearchSelect(props: {
 													value={item}
 													className="flex cursor-pointer items-center justify-between gap-3 px-2 py-[5px] outline-none select-none data-highlighted:bg-surface data-highlighted:outline-2 data-highlighted:-outline-offset-2 data-highlighted:outline-solid data-highlighted:outline-action data-selected:font-semibold"
 												>
-													<span className="truncate">{item.label}</span>
+													<span className="flex min-w-0 items-center gap-2">
+														{item.icon && <ItemIcon icon={item.icon} />}
+														<span className="truncate">{item.label}</span>
+													</span>
 													<span className="flex shrink-0 items-center gap-2 text-[13px] text-muted">
 														{item.detail}
 														<Combobox.ItemIndicator className="flex">
@@ -136,5 +147,14 @@ export function SearchSelect(props: {
 				</Combobox.Portal>
 			</CSPProvider>
 		</Combobox.Root>
+	);
+}
+
+/** A decorative icon before an item's label, hidden from screen readers. */
+function ItemIcon({ icon }: { icon: ReactNode }) {
+	return (
+		<span aria-hidden="true" className="flex size-4 shrink-0 items-center">
+			{icon}
+		</span>
 	);
 }

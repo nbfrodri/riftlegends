@@ -4,6 +4,9 @@
 	"stages": [
 		{
 			"id": "groupA",
+			"name": {
+				"stage": "groupA"
+			},
 			"window": {
 				"startWeek": 10,
 				"weeks": 2,
@@ -59,6 +62,9 @@
 		},
 		{
 			"id": "groupB",
+			"name": {
+				"stage": "groupB"
+			},
 			"window": {
 				"startWeek": 10,
 				"weeks": 2,
@@ -114,6 +120,9 @@
 		},
 		{
 			"id": "knockout",
+			"name": {
+				"stage": "knockout"
+			},
 			"window": {
 				"startWeek": 11,
 				"weeks": 1,

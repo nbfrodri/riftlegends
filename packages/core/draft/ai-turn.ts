@@ -161,10 +161,21 @@ export const aiTurn: CommandHandler<SeriesState> = (state) => {
 		winsNeeded: WINS_NEEDED[config.format],
 		knowsRivalPools: rules.readsRival,
 	};
-	const free = (team: string, picks: AiContext["picks"]) =>
-		availability({ ...input, picks }, team)
-			.filter((entry) => entry.status === "free")
-			.map((entry) => entry.champion);
+	// What is locked for a team whatever the picks are; the picks only add to it.
+	const locked = new Map<string, ReadonlySet<string>>();
+	const free = (team: string, picks: AiContext["picks"]) => {
+		let lock = locked.get(team);
+		if (!lock) {
+			lock = new Set(
+				availability({ ...input, picks: {} }, team)
+					.filter((entry) => entry.status !== "free")
+					.map((entry) => entry.champion),
+			);
+			locked.set(team, lock);
+		}
+		const taken = new Set(Object.values(picks).flat());
+		return input.pool.filter((id) => !lock.has(id) && !taken.has(id));
+	};
 
 	const score = next.action === "ban" ? banScorer(ctx) : pickComponents(ctx);
 	const scored = free(next.team, input.picks)

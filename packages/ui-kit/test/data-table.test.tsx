@@ -173,6 +173,22 @@ test("shows the empty state for a table without rows", () => {
 	expect(screen.getByText("No player matches the filter")).toBeTruthy();
 });
 
+test("a short table can go without the search box and its count", () => {
+	render(
+		<DataTable
+			label="Players"
+			data={players.slice(0, 5)}
+			columns={columns}
+			getRowId={(row) => row.id}
+			filterable={false}
+			emptyText="No player"
+		/>,
+	);
+	expect(screen.queryByRole("searchbox")).toBeNull();
+	expect(screen.queryByRole("status")).toBeNull();
+	expect(rows()).toHaveLength(5);
+});
+
 test("moves between rows with the arrow keys, Home and End", async () => {
 	const user = userEvent.setup();
 	render(<Table />);
@@ -407,4 +423,22 @@ describe("text that does not fit its column", () => {
 		expect(short?.dataset.tooltip).toBeUndefined();
 		expect(long?.hasAttribute("title")).toBe(false);
 	});
+});
+
+test("a short table can ask for taller rows, which replace the default height", () => {
+	render(
+		<DataTable
+			label="Roster"
+			data={players.slice(0, 5)}
+			columns={columns}
+			getRowId={(row) => row.id}
+			filterable={false}
+			emptyText="No players"
+			rowHeight="h-12"
+		/>,
+	);
+	for (const row of rows()) {
+		expect(row.classList.contains("h-12")).toBe(true);
+		expect(row.className).not.toContain("h-[clamp(24px");
+	}
 });

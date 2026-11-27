@@ -179,7 +179,7 @@ export const createCoreHost = () =>
 		{
 			// `series.summary` and `match.view` of a season series name it with `series`.
 			owns: (kind, params) =>
-				/^(season|competition|team)\./.test(kind) ||
+				/^(season|competition|team|tournament)\./.test(kind) ||
 				((kind === "series.summary" || kind === "match.view") &&
 					isRecord(params) &&
 					"series" in params),

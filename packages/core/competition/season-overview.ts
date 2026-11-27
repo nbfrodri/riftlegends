@@ -29,6 +29,8 @@ export function seasonOverview(season: RunningSeason | undefined) {
 					: "pending";
 			return {
 				stage: node.ref.stage,
+				play: node.stage.play.type,
+				...(node.stage.name && { name: node.stage.name }),
 				status,
 				...(windows.get(key) ?? { startDay: 0, endDay: 0 }),
 			};

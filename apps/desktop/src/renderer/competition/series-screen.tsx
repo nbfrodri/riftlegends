@@ -20,8 +20,8 @@ import {
 	useSeriesOptions,
 } from "../draft/session";
 import { TeamCrest } from "../draft/team-crest";
-import { competitionName, dayDate, stageName } from "./names";
-import type { ScheduleSlot } from "./schedule-days";
+import { competitionName, dayDate, stageRowOf, stageText } from "./names";
+import type { ScheduleSlot } from "./schedule-view";
 import { useExhibitionSeason, useSeasonOverview } from "./season";
 
 // `/competicion/serie/$series` (plan 31, U5): a played series of the season,
@@ -125,11 +125,7 @@ function Header({
 			<div className="min-w-0">
 				<div className="flex min-w-0 items-center gap-3">
 					{first && (
-						<TeamCrest
-							id={first.blue}
-							name={teamName(options, first.blue)}
-							className="h-[clamp(28px,2.6vw,44px)] w-[clamp(36px,3.4vw,58px)] shrink-0"
-						/>
+						<TeamLink id={first.blue} name={teamName(options, first.blue)} />
 					)}
 					<h1 className="min-w-0 truncate font-bold font-display text-[clamp(24px,2.1vw,40px)] uppercase leading-none tracking-heading">
 						{first
@@ -140,18 +136,14 @@ function Header({
 							: t("competition.series.unknown")}
 					</h1>
 					{first && (
-						<TeamCrest
-							id={first.red}
-							name={teamName(options, first.red)}
-							className="h-[clamp(28px,2.6vw,44px)] w-[clamp(36px,3.4vw,58px)] shrink-0"
-						/>
+						<TeamLink id={first.red} name={teamName(options, first.red)} />
 					)}
 				</div>
 				{slot && year !== undefined && (
 					<p className="mt-1 text-muted">
 						{t("competition.series.where", {
 							competition: competitionName(t, slot.competition),
-							stage: stageName(slot.stage),
+							stage: stageText(t, stageRowOf(overview.data, slot)),
 							date: dayDate(year, slot.day, i18n.language),
 						})}
 					</p>
@@ -168,5 +160,27 @@ function Header({
 				{t("competition.series.back")}
 			</Button>
 		</header>
+	);
+}
+
+/** A team's crest, opening its page (U8). */
+function TeamLink({ id, name }: { id: string; name: string }) {
+	const { t } = useTranslation();
+	const navigate = useNavigate();
+	return (
+		<button
+			type="button"
+			aria-label={t("competition.open", { name })}
+			onClick={() =>
+				void navigate({ to: "/competicion/equipo/$team", params: { team: id } })
+			}
+			className="press shrink-0 cursor-pointer rounded-control p-0.5 hover:bg-surface focus-visible:outline-2 focus-visible:outline-action"
+		>
+			<TeamCrest
+				id={id}
+				name={name}
+				className="h-[clamp(28px,2.6vw,44px)] w-[clamp(36px,3.4vw,58px)]"
+			/>
+		</button>
 	);
 }

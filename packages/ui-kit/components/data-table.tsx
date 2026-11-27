@@ -76,17 +76,29 @@ const syncCutText = (row: HTMLTableRowElement) => {
 	}
 };
 
-export type DataTableProps<Row extends RowData> = {
+/** The text filter and its result count; a short table can leave them out. */
+type FilterProps =
+	| {
+			filterable?: true;
+			filterLabel: string;
+			filterPlaceholder: string;
+			/** Result count for the status line, announced while filtering. */
+			countLabel: (shown: number, total: number) => string;
+	  }
+	| {
+			filterable: false;
+			filterLabel?: never;
+			filterPlaceholder?: never;
+			countLabel?: never;
+	  };
+
+export type DataTableProps<Row extends RowData> = FilterProps & {
 	/** Names the table and its scrolling region. */
 	label: string;
 	data: readonly Row[];
 	columns: readonly DataTableColumn<Row>[];
 	getRowId: (row: Row) => string;
-	filterLabel: string;
-	filterPlaceholder: string;
 	emptyText: string;
-	/** Result count for the status line, announced while filtering. */
-	countLabel: (shown: number, total: number) => string;
 	/** Locale for text sorting; defaults to the runtime's. */
 	locale?: string;
 	className?: string;
@@ -94,6 +106,8 @@ export type DataTableProps<Row extends RowData> = {
 	onRowActivate?: (row: Row) => void;
 	/** What activating a row does, read after the row by screen readers. */
 	rowActionLabel?: (row: Row) => string;
+	/** Tailwind height of the body rows, for a short table that fills its panel. */
+	rowHeight?: string;
 };
 
 const features = tableFeatures({
@@ -125,6 +139,7 @@ export function DataTable<Row extends RowData>({
 	data,
 	columns,
 	getRowId,
+	filterable = true,
 	filterLabel,
 	filterPlaceholder,
 	emptyText,
@@ -133,6 +148,7 @@ export function DataTable<Row extends RowData>({
 	className,
 	onRowActivate,
 	rowActionLabel,
+	rowHeight = "h-[clamp(24px,3vh,30px)]",
 }: DataTableProps<Row>) {
 	const filterId = useId();
 	const [activeId, setActiveId] = useState<string>();
@@ -256,22 +272,24 @@ export function DataTable<Row extends RowData>({
 
 	return (
 		<section className={cn("flex min-h-0 flex-col bg-panel", className)}>
-			<div className="flex flex-wrap items-center gap-x-3.5 gap-y-2 px-3.5 py-2.5 text-table">
-				<label htmlFor={filterId} className="flex items-center gap-2">
-					<span className="text-muted">{filterLabel}</span>
-					<input
-						id={filterId}
-						type="search"
-						value={String(table.state.globalFilter ?? "")}
-						placeholder={filterPlaceholder}
-						onChange={(event) => table.setGlobalFilter(event.target.value)}
-						className="h-7 w-52 rounded-control border border-line bg-surface px-2 text-text placeholder:text-muted"
-					/>
-				</label>
-				<span role="status" className="ml-auto text-[13px] text-muted">
-					{countLabel(rows.length, data.length)}
-				</span>
-			</div>
+			{filterable && (
+				<div className="flex flex-wrap items-center gap-x-3.5 gap-y-2 px-3.5 py-2.5 text-table">
+					<label htmlFor={filterId} className="flex items-center gap-2">
+						<span className="text-muted">{filterLabel}</span>
+						<input
+							id={filterId}
+							type="search"
+							value={String(table.state.globalFilter ?? "")}
+							placeholder={filterPlaceholder}
+							onChange={(event) => table.setGlobalFilter(event.target.value)}
+							className="h-7 w-52 rounded-control border border-line bg-surface px-2 text-text placeholder:text-muted"
+						/>
+					</label>
+					<span role="status" className="ml-auto text-[13px] text-muted">
+						{countLabel?.(rows.length, data.length)}
+					</span>
+				</div>
+			)}
 			<ScrollArea
 				className="flex-1"
 				viewportProps={{
@@ -370,7 +388,8 @@ export function DataTable<Row extends RowData>({
 									// hold). The darker tone is a plain class so hover and the
 									// active row, both variants, still win over it.
 									className={cn(
-										"h-[clamp(24px,3vh,30px)] hover:bg-surface focus-visible:outline-3 focus-visible:outline-action focus-visible:-outline-offset-3 data-[active=true]:bg-surface data-[active=true]:[&>td:first-child]:shadow-[inset_3px_0_var(--color-action)]",
+										rowHeight,
+										"hover:bg-surface focus-visible:outline-3 focus-visible:outline-action focus-visible:-outline-offset-3 data-[active=true]:bg-surface data-[active=true]:[&>td:first-child]:shadow-[inset_3px_0_var(--color-action)]",
 										index % 2 === 1 && "bg-canvas/50",
 										onRowActivate && "cursor-pointer",
 									)}

@@ -1,27 +1,14 @@
 import { RouterProvider } from "@tanstack/react-router";
 import { cleanup, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import {
-	ScheduleDays,
-	type ScheduleSlot,
-} from "../src/renderer/competition/schedule-days";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { createAppRouter } from "../src/renderer/router";
-import { renderInLocale } from "./render-in-locale";
 import { hostCore, renderWithCore } from "./season-core";
 
-// Plan 31, U4 (schedule and results) and U5 (a played series, read-only).
+// Plan 31, U4 (schedule and results) and U5 (a played series, read-only), with
+// the calendar of #593. The calendar's own views: competition-calendar.test.
 
 vi.setConfig({ testTimeout: 60_000 });
-
-let scrolled: string[] = [];
-beforeEach(() => {
-	scrolled = [];
-	// jsdom has no layout: record which day the schedule brings into view.
-	Element.prototype.scrollIntoView = function (this: Element) {
-		scrolled.push(this.getAttribute("data-day") ?? "");
-	};
-});
 
 afterEach(() => {
 	cleanup();
@@ -44,54 +31,50 @@ async function toSchedule(user: ReturnType<typeof userEvent.setup>) {
 		await screen.findByRole("button", { name: "Open Rift League" }),
 	);
 	await user.click(await screen.findByRole("radio", { name: "Schedule" }));
-	return screen.findByRole("list", { name: "Match days" });
+	return screen.findByRole("grid");
 }
 
-const days = () =>
-	within(screen.getByRole("list", { name: "Match days" })).getAllByRole(
-		"listitem",
-		{ name: (_name, element) => element.hasAttribute("data-day") },
-	);
+const cell = (day: number) =>
+	screen
+		.getByRole("grid")
+		.querySelector<HTMLElement>(`[role="gridcell"][data-day="${day}"]`);
+const blocks = () => [
+	...screen.getByRole("grid").querySelectorAll<HTMLElement>("[data-series]"),
+];
 
-describe("schedule (U4)", () => {
-	it("lists the series by day, shows today and brings it into view", async () => {
+describe("schedule (U4, #593)", () => {
+	it("opens on today's week with today marked and the format of each series", async () => {
 		const { user } = await openSchedule();
 		await toSchedule(user);
-		const list = days();
-		expect(list.length).toBeGreaterThan(1);
-		const today = list.find((day) => day.getAttribute("aria-current"));
-		expect(today?.getAttribute("data-day")).toBe("7");
-		expect(within(today as HTMLElement).getByText("Today")).toBeTruthy();
-		expect(scrolled.at(-1)).toBe("7");
+		const today = cell(7) as HTMLElement;
+		expect(today.getAttribute("aria-current")).toBe("date");
+		expect(within(today).getByText("Today")).toBeTruthy();
+		expect(
+			(screen.getByRole("radio", { name: "Week" }) as HTMLInputElement).checked,
+		).toBe(true);
 		// Not played yet: the format instead of a score, and nothing to open.
-		expect(within(today as HTMLElement).getAllByText("Bo1").length).toBe(
-			within(today as HTMLElement).getAllByRole("listitem").length,
+		expect(within(today).getAllByText("Bo1").length).toBe(
+			today.querySelectorAll("[data-series]").length,
 		);
-		expect(within(today as HTMLElement).queryByRole("button")).toBeNull();
-		// Playoffs before their stage starts: the rival is a text, not an id.
-		expect(screen.getAllByText("To be decided").length).toBeGreaterThan(0);
+		expect(within(today).queryByRole("button")).toBeNull();
 	});
 
 	it("filters by team and by competition", async () => {
 		const { user } = await openSchedule();
 		await toSchedule(user);
-		const all = screen.getAllByText(/^(Bo1|To be decided)$/).length;
+		await user.click(screen.getByRole("radio", { name: "Month" }));
+		const all = blocks().length;
 		await user.click(screen.getByRole("combobox", { name: "Team" }));
 		await user.click(await screen.findByRole("option", { name: "Forge" }));
-		await waitFor(() =>
-			expect(screen.getAllByText(/^(Bo1|To be decided)$/).length).toBeLessThan(
-				all,
-			),
-		);
-		for (const day of days())
-			for (const series of within(day).getAllByRole("listitem"))
-				expect(series.textContent).toContain("Forge");
+		await waitFor(() => expect(blocks().length).toBeLessThan(all));
+		for (const block of blocks()) expect(block.textContent).toContain("Forge");
 
 		const competition = screen.getByRole("combobox", { name: "Competition" });
 		expect(competition.textContent).toContain("Rift League");
 		// With every competition, each series says which one it belongs to.
+		await user.click(screen.getByRole("radio", { name: "Week" }));
 		expect(
-			within(days()[0] as HTMLElement).queryByText("Rift League"),
+			within(cell(7) as HTMLElement).queryByText("Rift League"),
 		).toBeNull();
 		await user.click(competition);
 		await user.click(
@@ -99,7 +82,7 @@ describe("schedule (U4)", () => {
 		);
 		await waitFor(() =>
 			expect(
-				within(days()[0] as HTMLElement).getAllByText("Rift League").length,
+				within(cell(7) as HTMLElement).getAllByText("Rift League").length,
 			).toBeGreaterThan(0),
 		);
 	});
@@ -111,8 +94,7 @@ describe("schedule (U4)", () => {
 			expect(screen.getByText(/^Matchday 1 of \d+$/)).toBeTruthy(),
 		);
 		await toSchedule(user);
-		const played = days().find((day) => day.getAttribute("data-day") === "7");
-		const [open] = within(played as HTMLElement).getAllByRole("button", {
+		const [open] = within(cell(7) as HTMLElement).getAllByRole("button", {
 			name: /^Open series: \w+ 1–0 \w+$/,
 		});
 		if (!open) throw new Error("no played series");
@@ -139,7 +121,7 @@ describe("schedule (U4)", () => {
 		expect(await screen.findByRole("tabpanel", { name: "Map 1" })).toBeTruthy();
 	});
 
-	it("Back returns to the schedule as it was: filter and day", async () => {
+	it("Back returns to the calendar as it was: view, filter and day", async () => {
 		const { user } = await openSchedule();
 		await user.click(screen.getByRole("button", { name: "Play day" }));
 		await waitFor(() =>
@@ -148,23 +130,74 @@ describe("schedule (U4)", () => {
 		await toSchedule(user);
 		await user.click(screen.getByRole("combobox", { name: "Team" }));
 		await user.click(await screen.findByRole("option", { name: "Forge" }));
+		// Today has moved on: choose the day played, then its day view.
+		await user.click(cell(7) as HTMLElement);
+		await user.click(screen.getByRole("radio", { name: "Day" }));
 		const open = await screen.findByRole("button", {
 			name: /^Open series: .*Forge/,
 		});
+		const day = screen.getByRole("heading", { level: 2 }).textContent;
 		await user.click(open);
 		await screen.findByRole("tab", { name: "Full series" });
-		scrolled = [];
 
 		await user.click(screen.getByRole("button", { name: "Back" }));
-		await screen.findByRole("list", { name: "Match days" });
+		await screen.findByRole("button", { name: /^Open series: .*Forge/ });
 		expect(
-			(screen.getByRole("radio", { name: "Schedule" }) as HTMLInputElement)
-				.checked,
+			(screen.getByRole("radio", { name: "Day" }) as HTMLInputElement).checked,
 		).toBe(true);
 		expect(
 			screen.getByRole("combobox", { name: "Team" }).textContent,
 		).toContain("Forge");
-		await waitFor(() => expect(scrolled.at(-1)).toBe("7"));
+		expect(screen.getByRole("heading", { level: 2 }).textContent).toBe(day);
+	});
+
+	it("switching tabs keeps both the stage and the calendar's view and day", async () => {
+		const { user } = await openSchedule();
+		await user.click(
+			await screen.findByRole("button", { name: "Open Rift League" }),
+		);
+		await user.click(
+			await screen.findByRole(
+				"combobox",
+				{ name: "Stage" },
+				{ timeout: 30_000 },
+			),
+		);
+		await user.click(await screen.findByRole("option", { name: "Playoffs" }));
+		await user.click(screen.getByRole("radio", { name: "Schedule" }));
+		await screen.findByRole("grid");
+		await user.click(screen.getByRole("radio", { name: "Month" }));
+		await user.click(screen.getByRole("button", { name: "Next" }));
+		const month = screen.getByRole("heading", { level: 2 }).textContent;
+
+		await user.click(screen.getByRole("radio", { name: "Standings" }));
+		expect(
+			(await screen.findByRole("combobox", { name: "Stage" })).textContent,
+		).toContain("Playoffs");
+		await user.click(screen.getByRole("radio", { name: "Schedule" }));
+		await screen.findByRole("grid");
+		expect(
+			(screen.getByRole("radio", { name: "Month" }) as HTMLInputElement)
+				.checked,
+		).toBe(true);
+		expect(screen.getByRole("heading", { level: 2 }).textContent).toBe(month);
+	});
+
+	it("the sidebar Calendar shows every competition of the season", async () => {
+		await renderWithCore(
+			<RouterProvider router={createAppRouter("/calendario")} />,
+			hostCore(),
+		);
+		expect(
+			await screen.findByRole("heading", { level: 1, name: "Calendar" }),
+		).toBeTruthy();
+		await screen.findByRole("grid", undefined, { timeout: 30_000 });
+		expect(
+			screen.getByRole("combobox", { name: "Competition" }).textContent,
+		).toContain("All competitions");
+		expect(
+			within(cell(7) as HTMLElement).getAllByText("Rift League").length,
+		).toBeGreaterThan(0);
 	});
 
 	it("a series that does not exist says so in words", async () => {
@@ -182,51 +215,37 @@ describe("schedule (U4)", () => {
 	});
 });
 
-describe("pending rivals (U4)", () => {
-	const slot = (over: Partial<ScheduleSlot>): ScheduleSlot => ({
-		id: "x",
-		competition: "lck",
-		stage: "playoffs",
-		day: 40,
-		teams: ["t1", "geng"],
-		bestOf: 5,
-		status: "ready",
-		...over,
-	});
-
-	it("names where a pending team comes from, in Spanish too", async () => {
-		const origin = (_slot: ScheduleSlot, index: 0 | 1) =>
-			index === 0 ? "Ganador de Semifinal 1" : "";
-		await renderInLocale(
-			<ScheduleDays
-				year={2026}
-				slots={[
-					slot({ id: "a", teams: [null, "geng"], status: "pending" }),
-					slot({
-						id: "b",
-						day: 38,
-						status: "played",
-						winner: "geng",
-						score: [1, 3],
-					}),
-				]}
-				today={40}
-				showCompetition={false}
-				team={(id) => ({ t1: "T1", geng: "Gen.G" })[id] ?? id}
-				competition={(id) => id.toUpperCase()}
-				origin={origin}
-				onOpen={() => {}}
-			/>,
-			"es-ES",
-		);
-		expect(screen.getByText("Ganador de Semifinal 1")).toBeTruthy();
-		expect(screen.getByText("Hoy")).toBeTruthy();
-		const played = screen.getByRole("button", {
-			name: "Ver serie: T1 1–3 Gen.G",
-		});
-		expect(within(played).getByText("Gen.G").tagName).toBe("STRONG");
-		expect(within(played).getByText("T1").tagName).not.toBe("STRONG");
-		// No middle dot anywhere (user rule, 26-11).
-		expect(document.body.textContent).not.toContain("·");
+describe("stage names (#583)", () => {
+	it("each series names its split and stage, not the stage id", async () => {
+		const api = hostCore();
+		const query = api.query.getMockImplementation() as (
+			q: unknown,
+		) => Promise<{ ok: boolean; view?: unknown }>;
+		api.query.mockImplementation((async (q: { kind: string }) => {
+			const result = await query(q);
+			if (q.kind === "season.overview" && result.ok) {
+				const view = result.view as {
+					competitions: { stages: { stage: string }[] }[];
+				};
+				for (const competition of view.competitions)
+					for (const stage of competition.stages)
+						Object.assign(stage, {
+							name:
+								stage.stage === "regular"
+									? { split: "winter", stage: "groups" }
+									: { stage: "playoffs" },
+						});
+			}
+			return result;
+		}) as never);
+		const { user } = await openSchedule(api);
+		await toSchedule(user);
+		await user.click(screen.getByRole("radio", { name: "Day" }));
+		const list = await screen.findByRole("list", { name: /./ });
+		expect(
+			within(list).getAllByText("Winter Split, Groups").length,
+		).toBeGreaterThan(0);
+		expect(list.textContent).not.toContain("Regular");
+		expect(list.textContent).not.toContain("·");
 	});
 });

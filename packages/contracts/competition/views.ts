@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { ROLES } from "../draft/index";
+import { competitionCriterion, stageNameSchema } from "./format";
 
 // What the view queries of plan 31 answer (#481).
 
@@ -24,6 +25,15 @@ const seasonOverview = z.strictObject({
 			stages: z.array(
 				z.strictObject({
 					stage: id,
+					/** How the stage is played: a bracket has `competition.bracket`. */
+					play: z.enum([
+						"roundRobin",
+						"groups",
+						"swiss",
+						"singleElim",
+						"doubleElim",
+					]),
+					name: stageNameSchema.optional(),
 					status,
 					startDay: count,
 					endDay: count,
@@ -131,6 +141,58 @@ const bracket = z.strictObject({
 
 export type BracketView = z.infer<typeof bracket>;
 
+const standingRow = z.strictObject({
+	team: id,
+	rank: z.int().min(1),
+	seriesWins: count,
+	seriesLosses: count,
+	gameWins: count,
+	gameLosses: count,
+	/**
+	 * The criterion that split the team from the ones it was tied with (`tied`,
+	 * itself included) and each one's value. `none` with teams in `tied`: a
+	 * tiebreaker series is still to play.
+	 */
+	explanation: z.strictObject({
+		criterion: z.union([competitionCriterion, z.literal("none")]),
+		tied: z.array(id),
+		values: z.record(id, z.int()),
+	}),
+});
+
+const table = {
+	rows: z.array(standingRow),
+	/** Tiebreaker series still to play. */
+	pending: z.array(z.strictObject({ a: id, b: id })),
+};
+
+const standings = z.strictObject({
+	...table,
+	/** The two group tables of a cross-group stage (LCK Cup), by group result. */
+	groups: z
+		.strictObject({
+			winner: z.strictObject({ ...table, points: count }),
+			loser: z.strictObject({ ...table, points: count }),
+		})
+		.optional(),
+	/**
+	 * Where the places of the table lead, from the formats: a later stage
+	 * (`stage`) or an international event (`competition` alone). `group`
+	 * reads the places of one group table.
+	 */
+	destinations: z.array(
+		z.strictObject({
+			from: z.int().min(1),
+			to: z.int().min(1),
+			competition: id,
+			stage: id.optional(),
+			group: z.enum(["winner", "loser"]).optional(),
+		}),
+	),
+});
+
+export type StandingsView = z.infer<typeof standings>;
+
 /**
  * One series of `competition.schedule`. Open: the core may add detail (its
  * allocation explanation, priority) that the views do not read.
@@ -158,5 +220,6 @@ export const competitionViews = {
 	overview: seasonOverview,
 	teamProfile,
 	bracket,
+	standings,
 	schedule: z.array(scheduleSlot),
 };
