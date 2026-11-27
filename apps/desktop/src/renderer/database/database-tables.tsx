@@ -118,7 +118,7 @@ export function PlayerTable({
 						<CellText>{country(player.nationality)}</CellText>
 					</span>
 				),
-				width: "7.75rem",
+				width: "7.25rem",
 			},
 			{
 				id: "age",
@@ -128,7 +128,7 @@ export function PlayerTable({
 					playerAge(player.birthDate) ?? Number.MAX_SAFE_INTEGER,
 				cell: (player) => <PlayerAge birthDate={player.birthDate} />,
 				numeric: true,
-				width: "4.75rem",
+				width: "5.25rem",
 			},
 			{
 				id: "role",
