@@ -5,14 +5,23 @@ Estado: en curso (25-11, 23:30). Fusionados hoy en esta sesión: #561, #534, #56
 Decisiones en el [registro](../decisions/README.md). Reglas del usuario: respuestas en español, claras y breves; **TDD estricto** (commit de test en rojo y después el de implementación); **nada de `git stash`** ni force-push; **títulos de PR en inglés** (Conventional; el squash los usa como commit) y cuerpo en español; visto bueno del usuario antes de fusionar, con capturas (vídeo si hay animación); vigilar el CI de cada PR y de `main` tras cada fusión; máximo 4–5 subagentes (Sonnet medium lógica, Opus medium visual); Codex `gpt-6.2-sol` medium para tareas sin red.
 
 
-## ▶ Estado para retomar (27-11, 12:00) — leer esto primero
+## ▶ Estado para retomar (27-11, PAUSA pedida por el usuario) — leer esto primero
 
-- **En `main` (27-11):** #610, #612 (#530, `SIM_VERSION` 18), #615, #616 (Swiss), #617 y #630 (E2E E1 del torneo), #618, #619 (plan de ultis y hechizos), #620 (First Stand verificado, `Refs #427`), #629 (plan de sorteos reales). CI de `main` en verde. Cola: solo #619 si no ha entrado (`queue-619b.log`).
-- **Stryker:** 63,86 % < 70 % (08:33). competition 42,7 % con 1.828 mutantes sin cobertura; calibration 543 sin cobertura (sus tests están excluidos a propósito). Subagente Sonnet en `../riftlegends-mutation` (rama `test/stryker-phase3`): dejar de mutar calibración, averiguar la falta de cobertura de competition y llegar a ≥ 70 % sin bajar el umbral. Cierra la Fase 3.
-- **Subagentes en marcha (27-11, 12:00):** #531 muertos en el cara a cara (Opus, `../riftlegends-531`, capturas y vídeo), #584/#532 año ≤ 60 s sin cambiar resultados (Sonnet, `../riftlegends-584`), #626 sorteos reales en el núcleo (Opus, `../riftlegends-626`), #622 recargas de ultis y hechizos en el contenido (Sonnet, `../riftlegends-622`).
-- **#621** (capturas de Competición, `Refs #491`): «Visual baselines» lanzado en su rama (run 45986067067); arreglar selectores si fallan y enseñar las capturas al usuario.
-- **Pendiente después:** #627 y #628 (sorteos en formatos y hub) tras #626; #339 y #374 tras #622; #631 (grupos de First Stand por sorteo); #623–#625; #540; #429 al final de la 3.5.
-- **Reglas del usuario:** sin «·» ni otros separadores; nada de estética «AI slop»; no ensanchar bandas, no subir límites de tests ni reducir muestras; no ajustar constantes a la semilla; visto bueno con capturas antes de encolar; títulos de PR en inglés; el usuario elige modelo y effort de cada subagente.
+**Todo en pausa.** Cola de fusión parada (sin procesos `queue.sh`). Cada subagente dejó un commit WIP en su rama, sin PR salvo donde se indica. Al retomar: relanzar cada tarea con un subagente nuevo (el usuario elige modelo y effort) con estas notas.
+
+| Tarea | Rama y worktree | Estado | Siguiente |
+| --- | --- | --- | --- |
+| #619 plan de ultis y hechizos (aprobado) | `docs/339-374-plan`, `../riftlegends-339-plan` | conflicto con `main` resuelto y subido | encolar: `queue.sh 1 "619 docs/339-374-plan /home/phobos/Projects/riftlegends-339-plan"` |
+| Stryker ≥ 70 % (cierre Fase 3) | `test/stryker-phase3`, `../riftlegends-mutation` | causa hallada: los tests de competition están en `apps/desktop/src/core-host`; config incluye esos 9 archivos, excluye calibración del `mutate` (sin patch) | `nice -n 10 mise exec -- pnpm mutation --concurrency 6 --mutate 'packages/core/competition/*.ts,!packages/core/competition/*.test.ts' --reporters json,clear-text`; tests para supervivientes; run completo (~5 h); nota en plan 05; PR. Push con `git push origin test/stryker-phase3:test/stryker-phase3`; el hook rechaza el tipo «wip» |
+| #531 muertos en el cara a cara | `feat/531-dead-players`, `../riftlegends-531` | hecho y probado (gris y segundos en texto); WIP fc407e70 del E2E sin reejecutar. Decisiones en el registro por confirmar: lector «muerto, reaparece en 12 segundos»; gris en 200 ms | build + `e2e/match-timeline.spec.ts`; revisar capturas `531-dead-*.png` (puede que sin muerto); recortar vídeo (`ffmpeg -ss 22 -t 8 -i ~/.cache/rift-tmp/tmp/vid-531-Gc3nh7/*.webm ~/.cache/rift-tmp/531-respawn.webm`); verify; PR |
+| #584/#532 año ≤ 60 s | `perf/584-cheaper-edge`, `../riftlegends-584` | WIP 83230893 sin verificar: tabla precalculada en `liveCauses` (12,6 % → 3,4 %), `staticCauses` memoizado | `tsc -b`, `season-replay.test.ts` (huella 5946c1b7… sin cambios), verify, 3 tiempos contra `main`, PR `Refs #584` |
+| #626 sorteos reales (núcleo) | `feat/626-stage-draw`, `../riftlegends-626` | ver informe del subagente (pendiente al pausar) | — |
+| #622 recargas de ultis y hechizos | `data/622-cooldowns-spells`, `../riftlegends-622` | `ultCooldown` en 173 campeones (3 estimados); contrato y pipeline de hechizos hechos | `nice -n 10 mise exec -- pnpm data:summoners` (~10 min, con caché), cobertura de pares, fila del registro, verify, PR `Closes #622` |
+| #621 capturas de Competición (`Refs #491`) | `test/491-plan31-closure`, `../riftlegends-491` | arreglo de una línea («Competiciones») sin verificar | `nice -n 10 mise exec -- pnpm e2e:visual -g "Competición\|Torneo"`, arreglar, `gh workflow run visual-baselines.yml --ref test/491-plan31-closure`, enseñar `621-*.png` |
+
+- **En `main`:** hasta #620 y #629; CI en verde.
+- **Pendiente después:** #627/#628 tras #626; #339/#374 tras #622; #631; #623–#625; #540; #429 al final de la 3.5.
+- **Reglas del usuario:** sin «·» ni otros separadores; nada de «AI slop»; no ensanchar bandas, no subir límites ni reducir muestras; no ajustar constantes a la semilla; visto bueno con capturas antes de encolar; títulos de PR en inglés; el usuario elige modelo y effort; archivos temporales con nombre propio (el scratchpad es compartido).
 
 ## Cómo se fusiona
 
