@@ -25,6 +25,14 @@ const seasonOverview = z.strictObject({
 			stages: z.array(
 				z.strictObject({
 					stage: id,
+					/** How the stage is played: a bracket has `competition.bracket`. */
+					play: z.enum([
+						"roundRobin",
+						"groups",
+						"swiss",
+						"singleElim",
+						"doubleElim",
+					]),
 					name: stageNameSchema.optional(),
 					status,
 					startDay: count,
@@ -165,6 +173,45 @@ const standings = z.strictObject({
 		.strictObject({
 			winner: z.strictObject({ ...table, points: count }),
 			loser: z.strictObject({ ...table, points: count }),
+		})
+		.optional(),
+	/**
+	 * A Swiss stage, round by round (#487): each series with the balance its
+	 * teams brought to it, the constraints relaxed to pair the round and where
+	 * each team stands.
+	 */
+	swiss: z
+		.strictObject({
+			wins: count,
+			losses: count,
+			/** Rounds the stage plays at most, paired or not. */
+			totalRounds: z.int().min(1),
+			rounds: z.array(
+				z.strictObject({
+					round: z.int().min(1),
+					relaxed: z.array(z.enum(["region", "rematch"])),
+					series: z.array(
+						z.strictObject({
+							teams: z.tuple([id, id]),
+							/** Wins and losses of the first team before the series. */
+							record: z.tuple([count, count]),
+							winner: id.optional(),
+							/** Games won by each team, in the order of `teams`. */
+							score: z.tuple([count, count]).optional(),
+							/** The id of `competition.schedule` that opens it. */
+							series: id.optional(),
+						}),
+					),
+				}),
+			),
+			teams: z.array(
+				z.strictObject({
+					team: id,
+					wins: count,
+					losses: count,
+					status: z.enum(["active", "qualified", "eliminated"]),
+				}),
+			),
 		})
 		.optional(),
 	/**

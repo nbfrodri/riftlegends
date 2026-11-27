@@ -154,7 +154,7 @@ export async function playQuickDraftBo5(
 	throw new Error("The Bo5 should end after one team wins three games");
 }
 
-async function makeDraftMoves(
+export async function makeDraftMoves(
 	page: Page,
 	capture?: (screen: QuickDraftScreen) => Promise<void>,
 ) {

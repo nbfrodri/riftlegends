@@ -8,6 +8,7 @@ import {
 } from "../src/renderer/competition/calendar/calendar";
 import type { ScheduleSlot } from "../src/renderer/competition/schedule-view";
 import { renderInLocale } from "./render-in-locale";
+import { expectWinnerMarker } from "./result-marker";
 
 // #593: the calendar of the season in three views, day, week and month. Day 0
 // is the 1st of January 2026 (a Thursday); day 40 is Tuesday 10 February.
@@ -144,6 +145,7 @@ describe("week view", () => {
 		});
 		expect(within(played).getByText("GEN").tagName).toBe("STRONG");
 		expect(within(played).getByText("T1").tagName).not.toBe("STRONG");
+		expectWinnerMarker(played);
 		await user.click(played);
 		expect(open).toHaveBeenCalledWith(
 			expect.objectContaining({ id: "played" }),
@@ -281,4 +283,22 @@ describe("views", () => {
 		);
 		expect(document.body.textContent).not.toContain("·");
 	});
+});
+
+describe("sticky header", () => {
+	// #608: with collapsed borders the table paints them, so they scroll away
+	// under the sticky day names and leave a gap. Each cell draws its own.
+	it.each(["week", "month"] as const)(
+		"in the %s view each day name draws its own borders",
+		async (mode) => {
+			await show({ mode });
+			expect(grid().className).not.toContain("border-collapse");
+			expect(grid().className).toContain("border-separate");
+			for (const header of within(grid()).getAllByRole("columnheader")) {
+				expect(header.className).toContain("sticky");
+				expect(header.className).toMatch(/\bborder-t\b/);
+				expect(header.className).toMatch(/\bborder-b\b/);
+			}
+		},
+	);
 });

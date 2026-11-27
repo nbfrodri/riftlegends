@@ -4,11 +4,13 @@ import { awardPlaces } from "./qualification";
 import { isUnusedReservation, localFixtureId } from "./season-stages";
 import {
 	type StageGraph,
+	type StageNode,
 	type StageRef,
 	sourceRef,
 	sourcesOf,
 	stageKey,
 } from "./stage-model";
+import { swissView } from "./swiss-view";
 
 export function projectSchedule(
 	season: RunningSeason,
@@ -145,9 +147,16 @@ export function stageView(
 				}
 			: null;
 	}
+	const swiss = swissView(
+		state.season,
+		state.season.graph.nodes.get(key) as StageNode,
+		ref,
+		stage,
+	);
 	return {
 		...stage.standings,
 		...(stage.groups && { groups: stage.groups }),
+		...(swiss && { swiss }),
 		destinations: stageDestinations(state.season.graph, ref),
 	};
 }

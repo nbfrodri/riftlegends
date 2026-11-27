@@ -18,6 +18,7 @@ import {
 	useCoreQuery,
 } from "../core";
 import { teamGroups } from "../draft/setup-screen";
+import { TeamCrest } from "../draft/team-crest";
 import {
 	CUSTOM_TEAMS,
 	type CustomForm,
@@ -31,7 +32,6 @@ import {
 	sameField,
 } from "./tournament-form";
 import { CustomEditor, Setting } from "./tournament-format";
-import { TournamentReady } from "./tournament-ready";
 import { CustomTeams, FieldError, PresetSlots } from "./tournament-teams";
 
 const noFact = () => false;
@@ -72,7 +72,8 @@ function useErrorText() {
 /** U9: preset or custom, teams, my team or watch only, fearless and seed. */
 export function TournamentSetup(props: {
 	sessionId: number;
-	onNew: () => void;
+	/** The tournament exists: the session's position, and the user's team if any. */
+	onCreated: (position: number, humanTeam: string | null) => void;
 }) {
 	const { t } = useTranslation();
 	const { sessionId } = props;
@@ -109,7 +110,6 @@ export function TournamentSetup(props: {
 	const [human, setHuman] = useState("");
 	const [fearless, setFearless] = useState<(typeof FEARLESS)[number]>("hard");
 	const [seed, setSeed] = useState(randomSeed);
-	const [created, setCreated] = useState<number | null>(null);
 	const [rejected, setRejected] = useState<CoreRequestError | null>(null);
 	const { mutateAsync, isPending } = useCoreCommand();
 	const errorText = useErrorText();
@@ -146,7 +146,7 @@ export function TournamentSetup(props: {
 			sessionId,
 			params: payload ?? {},
 		},
-		{ affectedBy: noFact, enabled: payload !== null && created === null },
+		{ affectedBy: noFact, enabled: payload !== null },
 	);
 	const error = check.data?.error ?? null;
 	const stageIds = preset === null ? customStageIds(custom) : [];
@@ -165,7 +165,11 @@ export function TournamentSetup(props: {
 	const humanGroups = [
 		{ items: [{ value: "", label: t("tournament.watch") }] },
 		{
-			items: teams.map((id) => ({ value: id, label: nameOf(id) })),
+			items: teams.map((id) => ({
+				value: id,
+				label: nameOf(id),
+				icon: <TeamCrest id={id} name={nameOf(id)} className="size-4" />,
+			})),
 		},
 	];
 
@@ -187,7 +191,7 @@ export function TournamentSetup(props: {
 				expectedPosition: 0,
 				payload,
 			});
-			setCreated(result.position);
+			props.onCreated(result.position, humanTeam || null);
 		} catch (caught) {
 			if (!(caught instanceof CoreRequestError)) throw caught;
 			setRejected(caught);
@@ -195,15 +199,6 @@ export function TournamentSetup(props: {
 	}
 
 	if (!options.data) return null;
-	if (created !== null)
-		return (
-			<TournamentReady
-				name={t(preset ? `tournament.preset.${preset}` : "tournament.custom")}
-				count={teams.length}
-				team={humanTeam ? nameOf(humanTeam) : null}
-				onNew={props.onNew}
-			/>
-		);
 
 	const modes: Mode[] = [...TOURNAMENT_PRESETS, "custom"];
 	const generalError =
@@ -267,19 +262,15 @@ export function TournamentSetup(props: {
 					<Setting title={t("tournament.seed")} note={t("tournament.seedNote")}>
 						<div className="flex shrink-0 items-center gap-2">
 							<input
-								type="number"
-								min={0}
-								max={MAX_SEED}
+								type="text"
+								inputMode="numeric"
 								aria-label={t("tournament.seed")}
 								value={seed}
 								onChange={(event) => {
-									const value = Number(event.target.value);
-									if (
-										Number.isInteger(value) &&
-										value >= 0 &&
-										value <= MAX_SEED
-									)
-										setSeed(value);
+									// Digits only: a text field, without the +/- spin buttons (#608).
+									const text = event.target.value;
+									const value = Number(text);
+									if (/^\d*$/.test(text) && value <= MAX_SEED) setSeed(value);
 								}}
 								className="w-[128px] rounded-control border border-line bg-surface px-2 py-[5px] text-text tabular-nums hover:border-muted"
 							/>

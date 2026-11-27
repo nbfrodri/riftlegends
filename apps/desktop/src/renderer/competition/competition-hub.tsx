@@ -9,9 +9,12 @@ import {
 } from "@rift-legends/ui-kit/components/select";
 import { cn } from "@rift-legends/ui-kit/lib/utils";
 import { useNavigate } from "@tanstack/react-router";
+import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { LeagueLogo } from "../assets/league-logo";
 import { CoreErrorMessage } from "../core";
+import { useActiveSeason } from "./active-season";
+import { StageBracket } from "./bracket/stage-bracket";
 import {
 	competitionLogoId,
 	competitionName,
@@ -23,18 +26,17 @@ import {
 	parseCalendarSearch,
 	ScheduleView,
 } from "./schedule-view";
-import {
-	type CompetitionOverview,
-	useExhibitionSeason,
-	useSeasonOverview,
-} from "./season";
+import { type CompetitionOverview, useSeasonOverview } from "./season";
 import { StageStandings } from "./standings/stage-standings";
+import { StageSwiss } from "./swiss/stage-swiss";
 
 // `/competicion/$competition`: the hub of one competition (plan 31), with a
-// view per tab: the standings of a stage (U3) and its schedule (U4). What the hub shows lives in
-// the route's search, so coming back from a series finds it as it was (U5).
+// view per tab: the standings of a stage (U3), its schedule (U4) and, when the
+// stage is played as one, its bracket (U6, #605) or its Swiss rounds (U7,
+// #487). What the hub shows lives in the route's search, so coming back from
+// a series finds it as it was (U5).
 
-type HubView = "standings" | "schedule";
+type HubView = "standings" | "schedule" | "bracket";
 
 export interface HubSearch extends CalendarSearch {
 	readonly view?: HubView | undefined;
@@ -45,7 +47,10 @@ export interface HubSearch extends CalendarSearch {
 /** The hub's search, from whatever the route receives. */
 export function parseHubSearch(search: Record<string, unknown>): HubSearch {
 	return {
-		view: search.view === "schedule" ? "schedule" : undefined,
+		view:
+			search.view === "schedule" || search.view === "bracket"
+				? search.view
+				: undefined,
 		stage:
 			typeof search.stage === "string" && search.stage.length > 0
 				? search.stage
@@ -64,43 +69,90 @@ export function CompetitionHub({
 	competition,
 	search = {},
 	onSearch,
+	header,
 }: {
 	competition: string;
 	search?: HubSearch;
 	/** Replaces the hub's search in place (no new history entry). */
 	onSearch: (search: HubSearch) => Promise<void>;
+	/** Replaces the logo, name and back button (the tournament's own controls). */
+	header?: ReactNode;
 }) {
 	const { t } = useTranslation();
 	const navigate = useNavigate();
-	const season = useExhibitionSeason();
+	const season = useActiveSeason();
 	const name = competitionName(t, competition);
-	const view = search.view ?? "standings";
 	return (
 		<section className="flex h-full min-h-0 flex-col gap-[clamp(10px,1.6vh,20px)] px-[clamp(14px,1.35vw,28px)] py-[clamp(14px,2.1vh,24px)]">
-			<header className="flex flex-wrap items-center justify-between gap-3">
-				<div className="flex min-w-0 items-center gap-3">
-					<LeagueLogo
-						id={competitionLogoId(competition)}
-						name={name}
-						className="size-[clamp(32px,3vw,48px)]"
-					/>
-					<h1 className="min-w-0 truncate font-bold font-display text-[clamp(29px,2.5vw,48px)] uppercase leading-none tracking-heading">
-						{name}
-					</h1>
-				</div>
-				<Button
-					variant="secondary"
-					onClick={() => void navigate({ to: "/competicion" })}
-				>
-					{t("competition.hub.back")}
-				</Button>
-			</header>
+			{header ?? (
+				<header className="flex flex-wrap items-center justify-between gap-3">
+					<div className="flex min-w-0 items-center gap-3">
+						<LeagueLogo
+							id={competitionLogoId(competition)}
+							name={name}
+							className="size-[clamp(32px,3vw,48px)]"
+						/>
+						<h1 className="min-w-0 truncate font-bold font-display text-[clamp(29px,2.5vw,48px)] uppercase leading-none tracking-heading">
+							{name}
+						</h1>
+					</div>
+					<Button
+						variant="secondary"
+						onClick={() => void navigate({ to: "/competicion" })}
+					>
+						{t("competition.hub.back")}
+					</Button>
+				</header>
+			)}
+			{season.data && (
+				<HubViews
+					sessionId={season.data.sessionId}
+					competition={competition}
+					search={search}
+					onSearch={onSearch}
+				/>
+			)}
+			{season.error && <CoreErrorMessage error={season.error} />}
+		</section>
+	);
+}
+
+/** The view control and the chosen view; «Bracket» only for a bracket stage. */
+function HubViews({
+	sessionId,
+	competition,
+	search,
+	onSearch,
+}: {
+	sessionId: number;
+	competition: string;
+	search: HubSearch;
+	onSearch: (search: HubSearch) => Promise<void>;
+}) {
+	const { t } = useTranslation();
+	const overview = useSeasonOverview(sessionId);
+	const stages = overview.data?.competitions.find(
+		({ id }) => id === competition,
+	)?.stages;
+	const selected = stages && selectedStage(stages, search.stage);
+	const hasBracket = selected !== undefined && isBracket(selected);
+	// A bracket link to a stage without one shows its standings.
+	const view =
+		search.view === "bracket" && !hasBracket
+			? "standings"
+			: (search.view ?? "standings");
+	const options: { value: HubView; label: string }[] = [
+		{ value: "standings", label: t("competition.standings.title") },
+		{ value: "schedule", label: t("competition.schedule.label") },
+		...(hasBracket
+			? [{ value: "bracket" as const, label: t("competition.bracket.label") }]
+			: []),
+	];
+	return (
+		<>
 			<SegmentedControl
 				label={t("competition.hub.view")}
-				options={[
-					{ value: "standings", label: t("competition.standings.title") },
-					{ value: "schedule", label: t("competition.schedule.label") },
-				]}
+				options={options}
 				value={view}
 				onChange={(next) =>
 					void onSearch({
@@ -110,24 +162,29 @@ export function CompetitionHub({
 				}
 				className="self-start"
 			/>
-			{season.data &&
-				(view === "schedule" ? (
-					<Schedule
-						sessionId={season.data.sessionId}
+			{view === "schedule" ? (
+				<Schedule
+					sessionId={sessionId}
+					competition={competition}
+					search={search}
+					onSearch={onSearch}
+				/>
+			) : (
+				overview.data &&
+				stages &&
+				selected && (
+					<StagePanel
+						sessionId={sessionId}
 						competition={competition}
-						search={search}
-						onSearch={onSearch}
-					/>
-				) : (
-					<StandingsPanel
-						sessionId={season.data.sessionId}
-						competition={competition}
-						chosen={search.stage}
+						year={overview.data.year}
+						stages={stages}
+						selected={selected}
+						view={view}
 						onStage={(stage) => void onSearch({ ...search, stage })}
 					/>
-				))}
-			{season.error && <CoreErrorMessage error={season.error} />}
-		</section>
+				)
+			)}
+		</>
 	);
 }
 
@@ -143,6 +200,7 @@ function Schedule({
 	onSearch: (search: HubSearch) => Promise<void>;
 }) {
 	const navigate = useNavigate();
+	const { seriesRoute } = useActiveSeason();
 	const overview = useSeasonOverview(sessionId);
 	if (!overview.data) return null;
 	return (
@@ -167,7 +225,7 @@ function Schedule({
 			}
 			onOpen={(slot) =>
 				void navigate({
-					to: "/competicion/serie/$series",
+					to: seriesRoute,
 					params: { series: slot.id },
 				})
 			}
@@ -177,46 +235,51 @@ function Schedule({
 
 type Stage = CompetitionOverview["stages"][number];
 
-/** The stage in play; between stages the last one played; before any, the first. */
-const defaultStage = (stages: readonly Stage[]) =>
-	(
-		stages.find(({ status }) => status === "live") ??
-		[...stages].reverse().find(({ status }) => status === "finished") ??
-		stages[0]
-	)?.stage;
+/** Elimination brackets (U6) and Swiss rounds (U7) have the «Bracket» view. */
+const isBracket = ({ play }: Stage) =>
+	play === "singleElim" || play === "doubleElim" || play === "swiss";
 
-/** The standings of the chosen stage, with the stage selector (U3). */
-function StandingsPanel({
+/**
+ * The stage in the route search; otherwise the one in play, between stages
+ * the last one played and, before any, the first.
+ */
+const selectedStage = (stages: readonly Stage[], chosen: string | undefined) =>
+	stages.find(({ stage }) => stage === chosen) ??
+	stages.find(({ status }) => status === "live") ??
+	[...stages].reverse().find(({ status }) => status === "finished") ??
+	stages[0];
+
+/** The stage selector, then the chosen stage's standings (U3) or bracket (U6). */
+function StagePanel({
 	sessionId,
 	competition,
-	chosen,
+	year,
+	stages,
+	selected,
+	view,
 	onStage,
 }: {
 	sessionId: number;
 	competition: string;
-	/** The stage in the route search, if any. */
-	chosen: string | undefined;
+	year: number;
+	stages: readonly Stage[];
+	selected: Stage;
+	view: "standings" | "bracket";
 	onStage: (stage: string) => void;
 }) {
 	const { t, i18n } = useTranslation();
-	const overview = useSeasonOverview(sessionId);
-	const view = overview.data;
-	const stages = view?.competitions.find(
-		({ id }) => id === competition,
-	)?.stages;
-	if (!view || !stages) return null;
-	const selected =
-		stages.find(({ stage }) => stage === chosen) ??
-		stages.find(({ stage }) => stage === defaultStage(stages));
-	if (!selected) return null;
-	const date = (day: number) => dayDate(view.year, day, i18n.language);
+	const date = (day: number) => dayDate(year, day, i18n.language);
 	const items = stages.map((row) => ({
 		value: row.stage,
 		label: stageText(t, row),
 	}));
 	return (
 		<section
-			aria-label={t("competition.standings.title")}
+			aria-label={t(
+				view === "bracket"
+					? "competition.bracket.label"
+					: "competition.standings.title",
+			)}
 			className="flex min-h-0 flex-1 flex-col gap-[clamp(8px,1.2vh,14px)]"
 		>
 			<div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-[14px]">
@@ -249,12 +312,28 @@ function StandingsPanel({
 					{t(`competition.status.${selected.status}`)}
 				</span>
 			</div>
-			<StageStandings
-				key={selected.stage}
-				sessionId={sessionId}
-				competition={competition}
-				stage={selected.stage}
-			/>
+			{view === "bracket" && selected.play === "swiss" ? (
+				<StageSwiss
+					key={selected.stage}
+					sessionId={sessionId}
+					competition={competition}
+					stage={selected.stage}
+				/>
+			) : view === "bracket" ? (
+				<StageBracket
+					key={selected.stage}
+					sessionId={sessionId}
+					competition={competition}
+					stage={selected.stage}
+				/>
+			) : (
+				<StageStandings
+					key={selected.stage}
+					sessionId={sessionId}
+					competition={competition}
+					stage={selected.stage}
+				/>
+			)}
 		</section>
 	);
 }

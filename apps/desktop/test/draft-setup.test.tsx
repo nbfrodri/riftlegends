@@ -53,7 +53,14 @@ describe("series setup (U1)", () => {
 		await user.click(mine);
 		const options = await screen.findAllByRole("option");
 		expect(options).toHaveLength(8);
-		expect(options.map((o) => o.textContent)).toEqual(
+		// The text a reader gets: the team crest before each name is decorative.
+		const text = (option: HTMLElement) => {
+			const copy = option.cloneNode(true) as HTMLElement;
+			for (const hidden of copy.querySelectorAll('[aria-hidden="true"]'))
+				hidden.remove();
+			return copy.textContent;
+		};
+		expect(options.map(text)).toEqual(
 			packagedMatchContent.teams
 				.slice()
 				.sort((a, b) => a.seed - b.seed)

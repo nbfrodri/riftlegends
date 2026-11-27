@@ -183,11 +183,12 @@ export const createCoreHost = () =>
 				((kind === "series.summary" || kind === "match.view") &&
 					isRecord(params) &&
 					"series" in params),
-			// While the user's series is on, the draft flow runs on the season.
+			// While the user's series is on, the draft flow runs on the season;
+			// once it ends, its screens still read it until the next one starts.
 			claims: (kind, state) =>
-				isHumanSeriesOn(state) &&
-				(HUMAN_SERIES_COMMANDS.includes(kind) ||
-					HUMAN_SERIES_QUERIES.includes(kind)),
+				HUMAN_SERIES_COMMANDS.includes(kind)
+					? isHumanSeriesOn(state)
+					: HUMAN_SERIES_QUERIES.includes(kind) && state.human !== undefined,
 			commands: competitionCommands,
 			queries: competitionQueries,
 			dispatcher: seasonDispatcher,
