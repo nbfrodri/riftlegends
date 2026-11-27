@@ -9,7 +9,9 @@
 		"packages/core/**/*.ts",
 		"!packages/core/**/*.test.ts",
 		"!packages/core/test/**",
-		"!packages/core/**/fixtures/**"
+		"!packages/core/**/fixtures/**",
+		"!packages/core/calibration/**",
+		"!packages/core/match/calibration/**"
 	],
 	"reporters": ["clear-text", "progress", "html"],
 	"htmlReporter": {
