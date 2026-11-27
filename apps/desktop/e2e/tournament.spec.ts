@@ -68,7 +68,7 @@ test("E1: a custom tournament played with my team from start to finish", async (
 		name: "Jugar día",
 		disabled: false,
 	});
-	for (let step = 0; step < 12; step++) {
+	for (let step = 0; step < 30; step++) {
 		// After a day the hub settles into one of three states; read it only
 		// then, or a pending series can still be on its way.
 		await expect(champion.or(play).or(playDay).first()).toBeVisible();
@@ -83,7 +83,13 @@ test("E1: a custom tournament played with my team from start to finish", async (
 			spectator ||= await out.isVisible();
 			continue;
 		}
-		await playDay.click();
+		// «Jugar día» can be enabled for a moment after my series, before the
+		// next pending one arrives; if the click misses, read the hub again.
+		const clicked = await playDay
+			.click({ timeout: 5_000 })
+			.then(() => true)
+			.catch(() => false);
+		if (!clicked) continue;
 		await expect(advance.getByRole("button", { name: "Parar" })).toBeHidden();
 	}
 	await expect(champion).toBeVisible();

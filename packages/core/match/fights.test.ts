@@ -63,25 +63,16 @@ it("starts fights in the mid game and credits and pays both teams' kills", () =>
 				expect(event.chance).toBeGreaterThan(0);
 				expect(event.chance).toBeLessThan(10000);
 				expect(event.causes.length).toBeGreaterThan(0);
-				const siege = (offset: number) =>
-					edge({ ...next.state, minute: minute + offset }, "siege");
-				const points = siege(1).causes.find((cause) => cause.key === "fight");
-				// A side wiped out is still down a minute later (no contest, no push),
-				// nobody is up after a fight that runs into the next minute, and
-				// fights won by both sides in the minute cancel each other out.
-				const both = next.state.blue.fightPushAt === next.state.red.fightPushAt;
-				if (
-					!both &&
-					siege(1).causes.length > 0 &&
-					!siege(1).causes.some((cause) => cause.key === "numbers")
-				) {
+				// A won fight no longer lends a siege bonus: the conversion window
+				// (plan 08, #530) does what `fightPushAt` did, through the deaths.
+				for (const offset of [1, 2]) {
 					expect(
-						(points?.points ?? 0) * (event.side === "blue" ? 1 : -1),
-					).toBeGreaterThan(0);
+						edge(
+							{ ...next.state, minute: minute + offset },
+							"siege",
+						).causes.some((cause) => cause.key === "fight"),
+					).toBe(false);
 				}
-				expect(siege(2).causes.some((cause) => cause.key === "fight")).toBe(
-					false,
-				);
 			}
 			for (const side of ["blue", "red"] as const) {
 				expect(next.state[side].kills - state[side].kills).toBe(credited[side]);
