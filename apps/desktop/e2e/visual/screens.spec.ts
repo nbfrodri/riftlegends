@@ -360,7 +360,7 @@ test.describe("Competición", () => {
 		await expect(
 			appWindow
 				.getByRole("list", { name: "Competiciones" })
-				.getByRole("heading", { name: "Rift League" }),
+				.getByRole("heading", { name: "Liga Rift" }),
 		).toBeVisible({ timeout: 30_000 });
 		// Play the regular stage so the standings, the calendar and the teams have results.
 		const advance = appWindow.getByRole("group", { name: "Avance" });
@@ -376,7 +376,7 @@ test.describe("Competición", () => {
 	});
 
 	const openHub = async (page: Page) => {
-		await page.getByRole("button", { name: "Abrir Rift League" }).click();
+		await page.getByRole("button", { name: "Abrir Liga Rift" }).click();
 		await expect(
 			page.getByRole("table", { name: /^Clasificación: / }),
 		).toBeVisible();
@@ -417,7 +417,7 @@ test.describe("Competición", () => {
 		await openHub(appWindow);
 		await appWindow
 			.getByRole("table", { name: /^Clasificación: / })
-			.getByRole("row", { name: /Forge/ })
+			.locator('tr[data-row-id="forge"]')
 			.click();
 		await expect(
 			appWindow.getByRole("heading", { level: 1, name: "Forge" }),
