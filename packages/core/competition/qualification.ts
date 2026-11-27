@@ -16,6 +16,10 @@ export interface StageOutcome {
 	readonly bracket?: BracketState;
 	/** Season points earned up through this stage, supplied by the league. */
 	readonly points?: ReadonlyMap<string, number>;
+	/** Series played in the stage: a later bracket draw avoids rematches. */
+	readonly played?: readonly {
+		readonly fixture: { readonly teams: readonly [string, string] };
+	}[];
 }
 
 export type StageOutcomes = ReadonlyMap<string, StageOutcome>;

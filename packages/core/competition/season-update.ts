@@ -49,6 +49,7 @@ export function updateStages(
 			advanced = true;
 			updated.add(key);
 			stages.set(key, next.progress);
+			if (next.drawn) facts.push(next.drawn);
 			if (next.paired) facts.push(next.paired);
 			if (!next.progress.done) continue;
 			outcomes.set(key, next.progress);

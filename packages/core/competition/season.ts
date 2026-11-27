@@ -1,5 +1,6 @@
 import type { CoreError } from "@rift-legends/contracts";
 import { max } from "../math/int";
+import { type BracketDrawResult, drawStage } from "./bracket-draw";
 import {
 	awardPlaces,
 	type Qualification,
@@ -63,6 +64,8 @@ type Resolution =
 			entrants: readonly StageSeed[];
 			groups: readonly (readonly string[])[] | undefined;
 			relaxed: readonly "league"[];
+			/** The bracket draw that ordered the seeds, if the stage has one. */
+			draw?: Omit<BracketDrawResult, "order">;
 	  };
 
 type StageSource = ReturnType<typeof sourcesOf>[number];
@@ -212,7 +215,8 @@ export function resolveStage(
 			region: team.region,
 		};
 	});
-	const seeded = seedStage(node, ordered, rootSeed, season);
+	const drawn = drawStage(graph, node, ordered, outcomes, rootSeed, season);
+	const seeded = drawn?.entrants ?? seedStage(node, ordered, rootSeed, season);
 	const { groups, relaxed } = seedGroups(node, seeded);
 	const groupOf = new Map(
 		groups?.flatMap((teams, index) =>
@@ -227,5 +231,6 @@ export function resolveStage(
 		})),
 		groups,
 		relaxed,
+		...(drawn && { draw: drawn.draw }),
 	};
 }

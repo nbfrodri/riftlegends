@@ -174,7 +174,7 @@ export function seedGroups<T extends DrawTeam & { pot?: number }>(
 		teams.map(({ team }) => ({ id: team })),
 		{ count: play.count },
 	).map((group) => group.map((id) => byId.get(id) as T));
-	const avoid = draw?.avoidSameLeague ?? false;
+	const avoid = (draw && "pots" in draw && draw.avoidSameLeague) ?? false;
 	if (avoid) groups = separate(groups);
 	const position = new Map(teams.map((entry, index) => [entry.team, index]));
 	return {
