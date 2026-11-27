@@ -54,7 +54,7 @@ export const seedEntrants = (entrants: readonly Entrant[]): string[] =>
 		.map((e) => e.team);
 
 /** Seed order of a bracket of `n` (a power of two): 1-8, 4-5, 2-7, 3-6. */
-const seedOrder = (n: number): number[] => {
+export const seedOrder = (n: number): number[] => {
 	let order = [1];
 	while (order.length < n) {
 		const total = order.length * 2;

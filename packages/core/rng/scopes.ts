@@ -18,4 +18,6 @@ export const SCOPES = {
 	matchSteal: 8,
 	/** Scheduling draws within a season (plan 12). */
 	schedule: 9,
+	/** First-round draws of elimination brackets (plan 12 §6, #626). */
+	stageDraw: 10,
 } as const;
