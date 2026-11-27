@@ -14,6 +14,7 @@ import { afterEach, describe, expect, test, vi } from "vitest";
 import { Bracket } from "../src/renderer/competition/bracket/bracket";
 import { createAppRouter } from "../src/renderer/router";
 import { renderInLocale } from "./render-in-locale";
+import { expectWinnerMarker } from "./result-marker";
 import { hostCore, renderWithCore } from "./season-core";
 
 /** Downloaded team logos; a team without one shows the own shield. */
@@ -221,6 +222,11 @@ describe("U6: bracket", () => {
 		expect(
 			within(quarter).getByText("ECH").closest("[data-result]"),
 		).toHaveProperty("dataset.result", "lost");
+	});
+
+	test("the winner's row carries the shared winner marker: bar, full text and score in the action colour", async () => {
+		await renderInLocale(<Bracket bracket={sixTeams} team={team} />);
+		expectWinnerMarker(card(/Delta 2–0 Echo/));
 	});
 
 	test("with six teams the two best seeds get a bye into the semifinals", async () => {
