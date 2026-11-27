@@ -16,6 +16,7 @@ import {
 	useState,
 } from "react";
 import { useTranslation } from "react-i18next";
+import type { CoreFact } from "../../shared/bridge";
 import { useOptionalAssets } from "../assets";
 import { appContent } from "../content-set";
 import {
@@ -40,6 +41,15 @@ import {
  * - `result`: the finished game's result, shown until the user continues.
  */
 export type Presentation = "side" | "match" | "result";
+
+/** The user's series of a season (plan 31, U10): where it lives and how it is left. */
+interface InSeason {
+	/** The breadcrumb root, in place of «Draft rápido». */
+	readonly crumb: string;
+	/** The result screen's way out, in place of a new series. */
+	readonly exit: string;
+	onExit(): void;
+}
 
 interface DraftSession {
 	timer: boolean;
@@ -71,6 +81,8 @@ interface DraftSession {
 	present(stage: Presentation | null): void;
 	/** Throws the series away and starts over at the setup, with a fresh session. */
 	restart(): void;
+	/** Set when the series belongs to a season; `null` in the quick draft. */
+	inSeason: InSeason | null;
 }
 
 const Context = createContext<DraftSession | null>(null);
@@ -137,19 +149,38 @@ function useShownOptions(sessionId: number, content: ContentSet) {
 	return { options, shown };
 }
 
+interface SeasonSeries {
+	/** The season's position: the series' commands follow its facts. */
+	readonly position: { current: number };
+	/** The facts of the series so far, from `series.started` on. */
+	readonly facts: readonly CoreFact[];
+	readonly mine: string;
+	readonly inSeason: InSeason;
+	/** Each batch of facts the series' commands return. */
+	onFacts(facts: readonly CoreFact[]): void;
+}
+
 function LoadedSession(props: {
 	sessionId: number;
 	content: ContentSet;
 	onLost: () => void;
+	season?: SeasonSeries;
 	children: ReactNode;
 }) {
-	const { sessionId, onLost, content } = props;
+	const { sessionId, onLost, content, season } = props;
 	const { mutateAsync } = useCoreCommand();
-	const position = useRef(0);
+	const own = useRef(0);
+	const position = season?.position ?? own;
 	const { timer, rules, sideChoosers, lock, applyFacts } = useSeriesFacts();
 	const claimedTurn = useRef<DraftView | null>(null);
 	const [error, setError] = useState<CoreRequestError | null>(null);
-	const [mine, setMine] = useState<string | null>(null);
+	const [mine, setMine] = useState<string | null>(season?.mine ?? null);
+	const resumed = useRef(season?.facts);
+	useEffect(() => {
+		if (resumed.current) applyFacts(resumed.current);
+	}, [applyFacts]);
+	const onFacts = season?.onFacts;
+	const inSeason = season?.inSeason ?? null;
 	const [presentation, present] = useState<Presentation | null>(null);
 	const [strategy, setStrategy] = useState<TeamStrategy | null>(null);
 
@@ -175,6 +206,7 @@ function LoadedSession(props: {
 				});
 				position.current = result.position;
 				applyFacts(result.facts);
+				onFacts?.(result.facts);
 				setError(null);
 				return true;
 			} catch (caught) {
@@ -185,7 +217,7 @@ function LoadedSession(props: {
 				return false;
 			}
 		},
-		[mutateAsync, sessionId, onLost, view.data, applyFacts],
+		[mutateAsync, sessionId, onLost, view.data, applyFacts, position, onFacts],
 	);
 
 	const value = useMemo(
@@ -208,6 +240,7 @@ function LoadedSession(props: {
 						presentation,
 						present,
 						restart: onLost,
+						inSeason,
 					}
 				: null,
 		[
@@ -224,6 +257,7 @@ function LoadedSession(props: {
 			rules,
 			sideChoosers,
 			lock,
+			inSeason,
 		],
 	);
 
@@ -304,5 +338,32 @@ export function SeriesContentProvider({
 		<ContentContext value={content}>
 			<OptionsContext value={shown}>{children}</OptionsContext>
 		</ContentContext>
+	);
+}
+
+/**
+ * The draft flow on the user's series of a season (plan 31, U10): the series
+ * was started with `season.playSeries`, so its commands and views go to the
+ * season, and the result screen leaves it with `inSeason.onExit`.
+ */
+export function SeasonSeriesProvider({
+	sessionId,
+	onLost,
+	children,
+	...season
+}: SeasonSeries & {
+	sessionId: number;
+	onLost: () => void;
+	children: ReactNode;
+}) {
+	return (
+		<LoadedSession
+			sessionId={sessionId}
+			content={appContent()}
+			onLost={onLost}
+			season={season}
+		>
+			{children}
+		</LoadedSession>
 	);
 }

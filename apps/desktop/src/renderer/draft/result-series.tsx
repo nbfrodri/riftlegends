@@ -64,7 +64,7 @@ export function SeriesBanner(props: {
 			<div className="flex items-center gap-6">
 				<p className="font-bold">
 					{teamName(options, first.blue)}{" "}
-					<strong className="mx-2 font-display text-[28px]">
+					<strong className="mx-2 whitespace-nowrap font-display text-[28px]">
 						{winsOf(first.blue)} – {winsOf(first.red)}
 					</strong>{" "}
 					{teamName(options, first.red)}
@@ -75,7 +75,8 @@ export function SeriesBanner(props: {
 	);
 }
 
-function Mvp(props: {
+/** The MVP of a series: always of its winner (#437). */
+export function Mvp(props: {
 	mvp: NonNullable<SeriesSummary["mvp"]>;
 	games: readonly GameResult[];
 	sideOf: (team: string) => "blue" | "red";
