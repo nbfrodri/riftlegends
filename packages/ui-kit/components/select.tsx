@@ -1,17 +1,31 @@
 import { CSPProvider } from "@base-ui/react/csp-provider";
 import { Select as Primitive } from "@base-ui/react/select";
 import { Check, ChevronDown } from "lucide-react";
+import type { ReactNode } from "react";
 import { withState } from "../lib/utils";
 
-// Pass `items` to <Select> so <SelectValue> shows labels, not raw values.
+// Pass `items` to <Select> so <SelectValue> shows labels, not raw values. An
+// option may carry a decorative `icon` (a logo); pass the chosen option's icon
+// to <SelectTrigger> too. Icons never change the accessible names.
+
 export const Select = Primitive.Root;
 export const SelectValue = Primitive.Value;
+
+/** A decorative icon before an option's text, hidden from screen readers. */
+function OptionIcon({ icon }: { icon: ReactNode }) {
+	return (
+		<span aria-hidden="true" className="flex size-4 shrink-0 items-center">
+			{icon}
+		</span>
+	);
+}
 
 export function SelectTrigger({
 	className,
 	children,
+	icon,
 	...props
-}: Primitive.Trigger.Props) {
+}: Primitive.Trigger.Props & { icon?: ReactNode }) {
 	return (
 		<Primitive.Trigger
 			data-slot="select-trigger"
@@ -21,7 +35,14 @@ export function SelectTrigger({
 			)}
 			{...props}
 		>
-			{children}
+			{icon ? (
+				<span className="flex min-w-0 items-center gap-2">
+					<OptionIcon icon={icon} />
+					<span className="truncate">{children}</span>
+				</span>
+			) : (
+				children
+			)}
 			<Primitive.Icon
 				render={
 					<ChevronDown
@@ -69,8 +90,9 @@ export function SelectContent({
 export function SelectItem({
 	className,
 	children,
+	icon,
 	...props
-}: Primitive.Item.Props) {
+}: Primitive.Item.Props & { icon?: ReactNode }) {
 	return (
 		<Primitive.Item
 			data-slot="select-item"
@@ -80,7 +102,16 @@ export function SelectItem({
 			)}
 			{...props}
 		>
-			<Primitive.ItemText>{children}</Primitive.ItemText>
+			{icon ? (
+				<span className="flex min-w-0 items-center gap-2">
+					<OptionIcon icon={icon} />
+					<Primitive.ItemText className="truncate">
+						{children}
+					</Primitive.ItemText>
+				</span>
+			) : (
+				<Primitive.ItemText>{children}</Primitive.ItemText>
+			)}
 			<Primitive.ItemIndicator>
 				<Check aria-hidden="true" className="size-4 shrink-0 text-action" />
 			</Primitive.ItemIndicator>

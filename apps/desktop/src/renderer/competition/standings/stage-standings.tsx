@@ -1,4 +1,5 @@
 import { CONTRACT_VERSION, type StandingsView } from "@rift-legends/contracts";
+import { useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import type { CoreFact } from "../../../shared/bridge";
 import { CoreErrorMessage, useCoreQuery } from "../../core";
@@ -22,6 +23,7 @@ export function StageStandings({
 }) {
 	const { t } = useTranslation();
 	const teamName = useTeamNames(sessionId);
+	const navigate = useNavigate();
 	const overview = useSeasonOverview(sessionId);
 	const stageOf = (id: string, name: string) =>
 		stageText(t, stageRowOf(overview.data, { competition: id, stage: name }));
@@ -46,6 +48,9 @@ export function StageStandings({
 			stageLabel={stageOf(competition, stage)}
 			stageOf={stageOf}
 			teamName={teamName}
+			onOpenTeam={(team) =>
+				void navigate({ to: "/competicion/equipo/$team", params: { team } })
+			}
 		/>
 	);
 }
