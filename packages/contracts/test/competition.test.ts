@@ -639,3 +639,167 @@ describe("#535 competition rules", () => {
 		);
 	});
 });
+
+describe("bracket draw as stage data (#626, SO11)", () => {
+	const withPlayoffs = (stage: object) => {
+		const c = league();
+		return { ...c, stages: [c.stages[0], { ...c.stages[1], ...stage }] };
+	};
+	const msi = {
+		tiers: [
+			[1, 2],
+			[3, 4],
+			[5, 6],
+			[7, 8],
+		],
+		meet: [
+			[1, 4],
+			[2, 3],
+		],
+		avoid: ["regionHalf"],
+	};
+
+	it("accepts the MSI, Worlds play-in and Worlds quarterfinal draws", () => {
+		expect(validateFormat(withPlayoffs({ draw: msi })).ok).toBe(true);
+		expect(
+			validateFormat(
+				withPlayoffs({
+					draw: {
+						tiers: [
+							[1, 2],
+							[3, 4, 5],
+							[6, 7, 8],
+						],
+						meet: [[1, 3]],
+						avoid: ["rematch"],
+					},
+				}),
+			).ok,
+		).toBe(true);
+		expect(
+			validateFormat(
+				withPlayoffs({
+					play: { type: "singleElim", size: 4, bestOf: [5, 5] },
+					draw: { tiers: [[1, 2, 3, 4]], meet: [], avoid: [] },
+				}),
+			).ok,
+		).toBe(true);
+	});
+
+	it("keeps the pots draw valid", () => {
+		expect(validateFormat(withPlayoffs({ draw: { pots: 2 } })).ok).toBe(true);
+	});
+
+	it("needs tiers that cover every place once", () => {
+		invalidAt(
+			withPlayoffs({
+				draw: { ...msi, tiers: [[1, 2, 3], [3, 4], [5, 6], [7, 8]] },
+			}),
+			"stages.1.draw.tiers",
+		);
+		invalidAt(
+			withPlayoffs({ draw: { ...msi, tiers: [[1, 2], [3, 4], [5, 6], [7]] } }),
+			"stages.1.draw.tiers",
+		);
+		invalidAt(
+			withPlayoffs({ draw: { ...msi, tiers: [[1, 2], [3, 4], [5, 6], [7, 9]] } }),
+			"stages.1.draw.tiers",
+		);
+	});
+
+	it("needs meet pairs of existing tiers, first not after second, each tier once", () => {
+		for (const meet of [
+			[[1, 5]],
+			[[4, 1]],
+			[
+				[1, 4],
+				[1, 3],
+			],
+			[
+				[1, 4],
+				[1, 4],
+			],
+		])
+			invalidAt(
+				withPlayoffs({ draw: { ...msi, meet } }),
+				"stages.1.draw.meet",
+			);
+		// Tier 1 has more teams than tier 2 could take.
+		invalidAt(
+			withPlayoffs({
+				draw: {
+					tiers: [[1, 2, 3], [4], [5, 6, 7, 8]],
+					meet: [[1, 2]],
+					avoid: [],
+				},
+			}),
+			"stages.1.draw.meet",
+		);
+	});
+
+	it("rejects repeated or unknown avoid rules", () => {
+		invalidAt(
+			withPlayoffs({ draw: { ...msi, avoid: ["region", "region"] } }),
+			"stages.1.draw.avoid",
+		);
+		expect(
+			validateFormat(withPlayoffs({ draw: { ...msi, avoid: ["luck"] } })).ok,
+		).toBe(false);
+	});
+
+	it("only draws elimination brackets whose size is a power of two", () => {
+		invalidAt(
+			{
+				...league(),
+				stages: [{ ...league().stages[0], draw: msi }, league().stages[1]],
+			},
+			"stages.0.draw",
+		);
+		invalidAt(
+			withPlayoffs({
+				play: { type: "singleElim", size: 6, bestOf: [5, 5, 5] },
+				draw: { tiers: [[1, 2, 3, 4, 5, 6]], meet: [], avoid: [] },
+			}),
+			"stages.1.draw",
+		);
+		invalidAt(
+			withPlayoffs({
+				play: {
+					type: "doubleElim",
+					size: 8,
+					upper: [3, 3],
+					lower: [3, 3, 3],
+					drop: [
+						[0, 0],
+						[1],
+					],
+					lowerSeeds: [4],
+					grandFinal: 5,
+					reset: false,
+				},
+				draw: { ...msi },
+			}),
+			"stages.1.draw",
+		);
+	});
+
+	it("accepts competition.drawn and rejects a team facing itself", () => {
+		const parse = (fact: object) =>
+			competitionFacts.schema.safeParse(fact).success;
+		const drawn = {
+			position: 0,
+			type: "competition.drawn",
+			competition: "msi",
+			stage: "bracket",
+			tiers: [
+				{ team: "a", tier: 1 },
+				{ team: "b", tier: 4 },
+			],
+			pairs: [["a", "b"]],
+			relaxed: ["regionHalf"],
+		};
+		expect(parse(drawn)).toBe(true);
+		expect(parse({ ...drawn, pairs: [["a", "a"]] })).toBe(false);
+		expect(parse({ ...drawn, relaxed: ["luck"] })).toBe(false);
+	});
+});
