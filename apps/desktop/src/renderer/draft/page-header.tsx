@@ -79,7 +79,7 @@ export function PageHeader({
 	score?: ScoreView;
 	children?: ReactNode;
 }) {
-	const { view } = useDraftSession();
+	const { view, inSeason } = useDraftSession();
 	const { t } = useTranslation();
 	// #572: the title and the side content keep their width; long team names
 	// in the score are cut instead of wrapping the title.
@@ -97,7 +97,7 @@ export function PageHeader({
 			<div>
 				<nav aria-label={t("draft.crumb.label")}>
 					<ol className="mb-1 flex items-center gap-2 text-[13px] text-muted">
-						<li>{t("draft.crumb.root")}</li>
+						<li>{inSeason?.crumb ?? t("draft.crumb.root")}</li>
 						<li aria-hidden="true">
 							<ChevronRight className="size-3.5" />
 						</li>
