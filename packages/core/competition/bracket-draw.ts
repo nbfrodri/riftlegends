@@ -11,7 +11,7 @@ import { stageKey } from "./stage-model";
 // First-round draw of an elimination bracket (plan 12 §6, #626). The draw
 // only reorders the seed list: `bracket.ts` builds the same bracket as ever.
 
-export type DrawRule = BracketDraw["avoid"][number];
+type DrawRule = BracketDraw["avoid"][number];
 
 export interface BracketDrawRules {
 	readonly tiers: readonly (readonly number[])[];

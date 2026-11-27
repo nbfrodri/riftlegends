@@ -157,7 +157,7 @@ const potsDraw = z.strictObject({
 });
 
 /** Bracket draw constraints, in the order they are relaxed (plan 12 §6). */
-export const DRAW_RULES = ["regionHalf", "region", "rematch"] as const;
+const DRAW_RULES = ["regionHalf", "region", "rematch"] as const;
 export const drawRule = z.enum(DRAW_RULES);
 
 const tierIndex = z.int().min(1).max(32);
