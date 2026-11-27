@@ -1,7 +1,9 @@
+import { readFileSync } from "node:fs";
 import { aiContent } from "@rift-legends/contracts";
 import type { RealSnapshot } from "@rift-legends/contracts/real-snapshot";
 import { expect, it } from "vitest";
 import { deriveChampionContent } from "./champion-content.ts";
+import { readKit, readTooltips } from "./champion-kit-source.ts";
 
 type Game = RealSnapshot["games"][number];
 type Role = NonNullable<Game["lines"][number]["role"]>;
@@ -273,4 +275,36 @@ it("R3 counts only same-role opponents and allied pairs in games with a winner",
 	).toBe(
 		JSON.stringify(deriveChampionContent(catalog, games, { priorGames: 2 })),
 	);
+});
+
+it("publishes the ultimate cooldown of the kit, or the estimate without data (#622)", () => {
+	const fixture = (name: string): unknown =>
+		JSON.parse(
+			readFileSync(
+				new URL(`./fixtures/communitydragon/${name}`, import.meta.url),
+				"utf8",
+			),
+		);
+	const tooltips = readTooltips(fixture("stringtable.json"));
+	const ids = ["Yasuo", "Galio", "Jinx"];
+	const kits = new Map(
+		ids
+			.filter((id) => id !== "Jinx")
+			.map((id) => [
+				id,
+				readKit(id, fixture(`${id.toLowerCase()}.bin.json`), tooltips),
+			]),
+	);
+	const { champions } = deriveChampionContent(
+		ids.map((id, key) => ({ id, key, classes: [] })),
+		[],
+		{ kits },
+	);
+	const by = (id: string) => champions.find((champion) => champion.id === id);
+	expect(by("Yasuo")?.ultCooldownTenths).toEqual([700, 500, 300]);
+	expect(by("Yasuo")?.traitSources?.ultCooldownTenths).toBe("source");
+	expect(by("Galio")?.ultCooldownTenths).toEqual([1800, 1600, 1400]);
+	// No kit at all (Jinx): the estimate says so.
+	expect(by("Jinx")?.ultCooldownTenths).toEqual([1200, 1000, 800]);
+	expect(by("Jinx")?.traitSources?.ultCooldownTenths).toBe("estimated");
 });

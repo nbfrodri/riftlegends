@@ -97,11 +97,24 @@ const kitFacts = {
 		])
 		.refine(([a, b, c]) => a + b + c === 100, "The split must add up to 100")
 		.optional(),
+	/**
+	 * Ultimate cooldown in tenths of a second at ranks 1, 2 and 3 (levels 6, 11
+	 * and 16), never longer at a higher rank (#622). Tenths because real kits
+	 * have them (Kassadin 3.5 s, Teemo 0.3 s) and facts hold integers only.
+	 */
+	ultCooldownTenths: z
+		.tuple([z.int().positive(), z.int().positive(), z.int().positive()])
+		.refine(
+			([a, b, c]) => a >= b && b >= c,
+			"The ultimate cooldown does not grow with the rank",
+		)
+		.optional(),
 	traitSources: z
 		.strictObject({
 			ccKinds: traitSource.optional(),
 			split: traitSource.optional(),
 			kit: traitSource.optional(),
+			ultCooldownTenths: traitSource.optional(),
 		})
 		.optional(),
 };

@@ -123,6 +123,20 @@ Lee las timelines de Riot que Leaguepedia guarda por partida (`PostgameJsonMetad
 - **Cortesía:** una página cada 2 s, el mismo agente genérico y `maxlag`. La primera ejecución completa tarda cerca de una hora; las siguientes solo piden las partidas nuevas. No está en el workflow semanal.
 - **Medidas:** vivos al tomar barón, inhibidor y torre (K19); conversión de una pelea en objetivo en 60 s según el margen de bajas, con peleas de bajas separadas por 15 s como máximo (K20); peleas desde el 25:00 con 4 o más bajas que cierran la partida en 60 s y perdedor con 3 o más muertos al caer el nexo (K21); tiempos de muerte P10, P50 y P90 con la fórmula de la wiki y el nivel de cada jugador al morir (K22). La curva es la mediana de nivel en décimas mientras queden 30 partidas; en 2026 el nivel llega a 20, y la fórmula de muerte usa el valor del nivel 18 para 19 y 20 (la tabla de la wiki acaba ahí).
 
+## Hechizos de invocador y recarga de definitivas
+
+```sh
+mise exec -- pnpm data:summoners [--offline] [--through AAAA-MM-DD]
+```
+
+Publica en `packages/core/content/real/summoners.json` (validado con [real-summoners](../../packages/contracts/draft/real-summoners.ts)) lo que necesitan #339 y #374 del [plan 08](../../docs/archive/plans/08-simulacion-de-partida.md):
+
+- **Recargas:** los nueve hechizos de la Grieta (modo `CLASSIC`) de `summoner-spells.json` de CommunityDragon, del parche fijado en [champions.ts](champions.ts). Solo id y recarga en segundos; los iconos no se guardan (la caché guarda esos dos datos, no la respuesta entera). La recarga de Castigo (15 s) es la de su carga.
+- **Par habitual por campeón y rol:** de los marcadores de Leaguepedia (`ScoreboardPlayers.SummonerSpells`, CC BY-SA) de las seis ligas de la temporada. La consulta pide solo campeón, rol y hechizos: ninguna partida, equipo ni jugador llega a la caché ni al repo. Se publica el par más usado (`pairGames`) con las partidas del campeón en ese rol (`games`), mínimo 20; empate, el primero por orden alfabético. Se descartan las filas sin par válido y las que rompen la regla de Castigo (solo en jungla, y siempre en jungla). `roleDefaults` es el par más usado por rol, de respaldo para el resto.
+- **Caché:** la de los snapshots (`RIFT_LEGENDS_DATA_CACHE`), fuera del repo. Una página de 500 filas cada 11 s; la consulta lleva el día UTC (`--through`, hoy por defecto) y cambia a diario. No está en el workflow semanal.
+- **Recarga de la definitiva:** sale de `kits.json` (#340) y se publica como `ultCooldownTenths` (décimas de segundo, rangos 1, 2 y 3; décimas porque Kassadin, Kog'Maw o Teemo las tienen y los hechos solo guardan enteros) en `champions.json`, con `traitSources.ultCooldownTenths`: `source` si viene del juego, `rule` cuando aplica la regla `chargeRecharge` y `estimated` (1.200, 1.000, 800) cuando no hay dato (Udyr, Shyvana, Tahm Kench). **Regla `chargeRecharge`:** si la definitiva usa cargas (`mAmmoRechargeTime`) y una carga tarda más que la espera entre usos, se guarda la recarga de una carga y no esa espera (Teemo 35, 30 y 25 s en vez de 0,3 s; Corki 20 s); Kayn y LeBlanc llevan ese campo para otra cosa y no se tocan. Quedan por debajo de 10 s solo las que cambian de forma o acumulan por diseño (Anivia, Belveth, Elise, Jayce, Kassadin, Kog'Maw, Nidalee, Quinn, Samira, Zoe), listadas en `champions.real.test.ts`.
+- **Usos por partida (K29):** las timelines no traen los lanzamientos de hechizos y no se ha medido ninguna otra fuente; K29 sigue como banda estimada.
+
 ## Actualización semanal
 
 El [workflow](../../.github/workflows/data-snapshot.yml) se ejecuta los lunes a las 05:23 UTC y también se puede lanzar desde **Actions → Real data snapshot → Run workflow** en la rama por defecto. Las respuestas crudas viven en `actions/cache` (privada del repositorio, con clave por fecha UTC): no se suben como artefacto ni se commitean, porque los desambiguadores de `Link` pueden incluir nombres reales. Un día nuevo consulta de nuevo la fuente. Si solo cambian las fechas de consulta, se conservan los bytes y la procedencia de la última versión publicada.

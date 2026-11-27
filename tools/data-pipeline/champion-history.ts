@@ -20,6 +20,15 @@ function count(value: string | null | undefined) {
 	return n;
 }
 
+/** Maps a Leaguepedia champion name to its catalog id (undefined when unknown). */
+export function championResolver(catalog: readonly CatalogChampion[]) {
+	const ids = new Map(catalog.map(({ id }) => [normalize(id), id]));
+	return (name: string) => {
+		const key = normalize(name);
+		return ids.get(aliases.get(key) ?? key);
+	};
+}
+
 export async function championHistory(
 	client: Client,
 	catalog: readonly CatalogChampion[],
