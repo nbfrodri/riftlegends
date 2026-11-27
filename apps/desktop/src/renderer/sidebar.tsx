@@ -1,4 +1,3 @@
-import { Kbd } from "@rift-legends/ui-kit/components/kbd";
 import { Tooltip } from "@rift-legends/ui-kit/components/tooltip";
 import { cn } from "@rift-legends/ui-kit/lib/utils";
 import { useNavigate } from "@tanstack/react-router";
@@ -178,7 +177,14 @@ export function Sidebar({
 			)}
 		>
 			{/* Placeholder club until careers exist (catalog keys `placeholder.*`). */}
-			<div className="flex min-h-[84px] shrink-0 items-center gap-2.5 border-line border-b px-3">
+			<div
+				className={cn(
+					"flex min-h-[84px] shrink-0 items-center border-line border-b",
+					expanded
+						? "gap-2.5 px-3"
+						: "flex-col justify-center gap-1.5 px-1.5 py-2",
+				)}
+			>
 				<div
 					aria-hidden="true"
 					className="grid h-[38px] w-[34px] shrink-0 place-items-center bg-surface text-side-blue [clip-path:polygon(0_0,100%_0,100%_75%,50%_100%,0_75%)]"
@@ -198,6 +204,26 @@ export function Sidebar({
 						{t("placeholder.club.seasonDate")}
 					</time>
 				</div>
+				<Tooltip
+					side="right"
+					content={toggleLabel}
+					shortcut={t("shell.sidebar.shortcut")}
+				>
+					<button
+						type="button"
+						aria-label={toggleLabel}
+						aria-controls={navId}
+						aria-expanded={expanded}
+						aria-keyshortcuts="Alt+B"
+						onClick={onToggle}
+						className={cn(
+							"press grid size-8 shrink-0 cursor-pointer place-items-center rounded-control text-muted hover:bg-surface hover:text-text",
+							expanded && "ml-auto",
+						)}
+					>
+						<ToggleIcon aria-hidden="true" size={18} strokeWidth={1.65} />
+					</button>
+				</Tooltip>
 			</div>
 
 			<nav
@@ -217,33 +243,6 @@ export function Sidebar({
 					{renderSection(settings)}
 				</div>
 			</nav>
-
-			<Tooltip
-				disabled={expanded}
-				side="right"
-				content={toggleLabel}
-				shortcut={t("shell.sidebar.shortcut")}
-			>
-				<button
-					type="button"
-					aria-label={toggleLabel}
-					aria-controls={navId}
-					aria-expanded={expanded}
-					aria-keyshortcuts="Alt+B"
-					onClick={onToggle}
-					className="flex h-11 shrink-0 cursor-pointer items-center gap-[11px] border-line border-t pr-2.5 pl-[18px] text-left text-muted hover:bg-surface"
-				>
-					<ToggleIcon aria-hidden="true" size={19} strokeWidth={1.65} />
-					{expanded && (
-						<>
-							<span className="min-w-0 font-[550] text-[12px] leading-[1.15]">
-								{toggleLabel}
-							</span>
-							<Kbd className="ml-auto">{t("shell.sidebar.shortcut")}</Kbd>
-						</>
-					)}
-				</button>
-			</Tooltip>
 		</aside>
 	);
 }
