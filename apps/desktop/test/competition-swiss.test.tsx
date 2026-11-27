@@ -293,6 +293,16 @@ describe("U7: Swiss by balance", () => {
 			return [Number(d.match(/H(-?[\d.]+)$/)?.[1]), Number(y)];
 		};
 		expect(entry("2:1-0>3:1-1")).toEqual(entry("2:0-1>3:1-1"));
+		// Lines go block to block: into the target's header, never at a series.
+		const block = within(round("Round 3")).getByRole("group", { name: "1-1" });
+		const blockTop = Number.parseFloat(block.style.top);
+		const [, entryY] = entry("2:1-0>3:1-1");
+		expect(entryY).toBeGreaterThan(blockTop);
+		expect(entryY).toBeLessThan(blockTop + 24);
+		const box = screen.getByRole("region", { name: "Qualified at 2-0" });
+		const [, boxEntry] = entry("2:1-0>3:qualified");
+		expect(boxEntry).toBeGreaterThan(Number.parseFloat(box.style.top));
+		expect(boxEntry).toBeLessThan(Number.parseFloat(box.style.top) + 24);
 	});
 
 	test("Spanish names the rounds, the lists and the notices", async () => {
