@@ -429,9 +429,11 @@ test("#531: a dead player is greyed with a countdown in the face to face until h
 		const dead = faceToFace.locator("[data-lane-player][data-dead]").first();
 		await expect(dead).toBeVisible({ timeout: 120_000 });
 		await page.getByRole("button", { name: "Pausar" }).click();
-		const photo = await dead
-			.locator("[data-part=photo] [data-dim] > *")
-			.getAttribute("aria-label");
+		const handle = await dead
+			.locator("[data-part=name] > span")
+			.first()
+			.textContent();
+		expect(handle).toBeTruthy();
 		await expect(dead.locator("[data-respawn]")).toHaveText(/^\d+$/);
 		await expect(
 			dead.getByText(/^muerto, reaparece en \d+ segundos?$/),
@@ -477,7 +479,8 @@ test("#531: a dead player is greyed with a countdown in the face to face until h
 		await page.getByRole("button", { name: "Reanudar" }).click();
 		const same = faceToFace
 			.locator("[data-lane-player]")
-			.filter({ has: page.getByRole("img", { name: photo ?? "" }) });
+			.filter({ hasText: handle ?? "" });
+		await expect(same).toHaveCount(1);
 		await expect(same).not.toHaveAttribute("data-dead", /.*/, {
 			timeout: 30_000,
 		});
