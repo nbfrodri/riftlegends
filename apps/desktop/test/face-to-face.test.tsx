@@ -357,10 +357,18 @@ const renderDown = (locale = "en-US") =>
 		/>,
 		locale,
 	);
-const pictures = (cell: HTMLElement) =>
-	["photo", "champion"].map(
-		(part) => cell.querySelector<HTMLElement>(`[data-part=${part}]`)?.className,
+/** The photo and the champion badge; the countdown stays outside, at full colour. */
+const pictures = (cell: HTMLElement) => {
+	const dimmed = [...cell.querySelectorAll<HTMLElement>("[data-dim]")];
+	expect(
+		dimmed.map((el) => el.closest("[data-part]")?.getAttribute("data-part")),
+	).toEqual(
+		[...(cell.querySelector("[data-lane-player]")?.children ?? [])]
+			.map((part) => (part as HTMLElement).dataset.part)
+			.filter((part) => part !== "name"),
 	);
+	return dimmed.map((el) => el.className);
+};
 
 test("#531: a dead player's photo and champion are greyed, with the seconds to respawn over the photo", async () => {
 	await renderDown();
@@ -376,6 +384,7 @@ test("#531: a dead player's photo and champion are greyed, with the seconds to r
 	const countdown = redTop?.querySelector<HTMLElement>("[data-respawn]");
 	expect(countdown?.textContent).toBe("12");
 	expect(countdown?.getAttribute("aria-hidden")).toBe("true");
+	expect(countdown?.closest("[data-dim]")).toBeNull();
 	// Plain text: no badge, pill or glow behind the number.
 	expect(countdown?.className).not.toMatch(/\b(bg-|rounded|shadow|ring)/);
 	expect(blueMid?.querySelector("[data-respawn]")?.textContent).toBe("1");

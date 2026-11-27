@@ -401,3 +401,88 @@ test("replays a drafted game and continues to its result", async ({
 		await app.close();
 	}
 });
+
+test("#531: a dead player is greyed with a countdown in the face to face until he respawns", async ({
+	playwright,
+}, testInfo) => {
+	const app = await launchApp(
+		{ playwright },
+		{
+			profileDir: testInfo.outputPath("profile"),
+			systemLocale: "es-ES",
+			env: { RIFT_E2E_CORE: "1" },
+		},
+	);
+	try {
+		const page = await app.firstWindow();
+		await page.setViewportSize({ width: 1280, height: 720 });
+		await app.evaluate(prepareDraft);
+		await page.getByRole("button", { name: "Empezar serie" }).click();
+		await page.getByRole("button", { name: "Jugar", exact: true }).click();
+		await expect(page.getByRole("timer")).toBeVisible();
+		await page
+			.getByRole("radio", { name: "Cara a cara" })
+			.check({ force: true });
+		const faceToFace = page.getByRole("table", { name: "Cara a cara" });
+		// ×4 keeps the sampled seconds short enough to catch a death.
+		await page.getByRole("radio", { name: "×4" }).check({ force: true });
+		const dead = faceToFace.locator("[data-lane-player][data-dead]").first();
+		await expect(dead).toBeVisible({ timeout: 120_000 });
+		await page.getByRole("button", { name: "Pausar" }).click();
+		const photo = await dead
+			.locator("[data-part=photo] [data-dim] > *")
+			.getAttribute("aria-label");
+		await expect(dead.locator("[data-respawn]")).toHaveText(/^\d+$/);
+		await expect(
+			dead.getByText(/^muerto, reaparece en \d+ segundos?$/),
+		).toBeAttached();
+		// Greyed: the dimmed photo is grey and faded, the countdown is not.
+		const paint = await dead.evaluate((cell) => {
+			const style = (selector: string) => {
+				const el = cell.querySelector(selector);
+				return el ? getComputedStyle(el) : undefined;
+			};
+			return {
+				photo: style("[data-part=photo] [data-dim]")?.filter,
+				opacity: Number(style("[data-part=photo] [data-dim]")?.opacity),
+				countdown: Number(style("[data-respawn]")?.opacity),
+			};
+		});
+		expect(paint.photo).toContain("grayscale");
+		expect(paint.opacity).toBeLessThan(1);
+		expect(paint.countdown).toBe(1);
+		// Nothing moves or overflows with a dead player, at either size.
+		for (const size of [
+			{ width: 1280, height: 720 },
+			{ width: 1366, height: 768 },
+		]) {
+			await page.setViewportSize(size);
+			await expect(faceToFace).toBeInViewport({ ratio: 1 });
+			const spread = await faceToFace.evaluate((table) =>
+				["blue", "red"].flatMap((side) =>
+					["photo", "champion", "name"].map((part) => {
+						const xs = [
+							...table.querySelectorAll(
+								`[data-side=${side}] [data-part=${part}]`,
+							),
+						].map((el) => el.getBoundingClientRect().left);
+						return Math.max(...xs) - Math.min(...xs);
+					}),
+				),
+			);
+			for (const xs of spread) expect(xs).toBeLessThanOrEqual(1);
+			await expectColumnsAligned(page);
+		}
+		// He comes back when the clock reaches his respawn.
+		await page.getByRole("button", { name: "Reanudar" }).click();
+		const same = faceToFace
+			.locator("[data-lane-player]")
+			.filter({ has: page.getByRole("img", { name: photo ?? "" }) });
+		await expect(same).not.toHaveAttribute("data-dead", /.*/, {
+			timeout: 30_000,
+		});
+		await expect(same.locator("[data-respawn]")).toHaveCount(0);
+	} finally {
+		await app.close();
+	}
+});

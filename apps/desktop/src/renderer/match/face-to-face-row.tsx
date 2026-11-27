@@ -19,6 +19,10 @@ export interface LanePlayer {
 	championName: string;
 }
 
+/** Greying in and out on death and respawn; instant with reduced motion (#531). */
+const fade =
+	"transition-[filter,opacity] duration-200 motion-reduce:transition-none";
+
 /** Lanes whose vision tells the most: their rows show it next to the name (#510). */
 const visionRoles = new Set<string>(["jungle", "support"]);
 
@@ -43,10 +47,13 @@ function Player({
 	side,
 	vision,
 	showVision,
+	respawnIn,
 }: {
 	id: string;
 	player: LanePlayer | undefined;
 	side: Side;
+	/** Seconds until the player respawns; undefined while alive or unknown (#531). */
+	respawnIn: number | undefined;
 	/** The final vision score; unknown while the game plays. */
 	vision: number | undefined;
 	/** Show it in the row too, not only in the tooltip. */
@@ -54,15 +61,30 @@ function Player({
 }) {
 	const { t } = useTranslation();
 	const inRow = showVision && vision !== undefined;
+	const dead = respawnIn !== undefined;
+	const dim = `${fade} ${dead ? "grayscale opacity-40" : ""}`;
 	const parts = player && [
-		<span key="photo" data-part="photo" className="flex">
-			<PlayerPortrait id={id} handle={player.handle} size="h-12 w-[38px]" />
+		<span key="photo" data-part="photo" className="relative flex">
+			<span data-dim className={`flex ${dim}`}>
+				<PlayerPortrait id={id} handle={player.handle} size="h-12 w-[38px]" />
+			</span>
+			{/* Plain text over the dimmed photo: it never takes a track of its own. */}
+			{dead && (
+				<span
+					data-respawn
+					aria-hidden="true"
+					className="absolute inset-0 grid place-items-center font-bold text-[17px] text-text tabular-nums"
+				>
+					{respawnIn}
+				</span>
+			)}
 		</span>,
 		// A 28 px champion badge over the photo's lower inner corner leaves the name more room (#450, #502).
 		<span
 			key="champion"
 			data-part="champion"
-			className={`relative flex self-end ring-2 ring-panel [&_[role=img]]:size-7 ${side === "blue" ? "-ml-3" : "-mr-3"}`}
+			data-dim
+			className={`relative flex self-end ring-2 ring-panel [&_[role=img]]:size-7 ${side === "blue" ? "-ml-3" : "-mr-3"} ${dim}`}
 		>
 			<ChampionPortrait
 				id={player.champion}
@@ -101,13 +123,22 @@ function Player({
 						{t("draft.match.faceToFace.vision", { value: vision })}
 					</span>
 				)}
+				{dead && (
+					<span className="sr-only">
+						{t("draft.match.faceToFace.respawn", { count: respawnIn })}
+					</span>
+				)}
 			</span>
 		</Tooltip>,
 	];
 	return (
 		<td data-side={side} className="px-1!">
 			{parts && (
-				<span data-lane-player className={playerTracks[side]}>
+				<span
+					data-lane-player
+					data-dead={dead || undefined}
+					className={playerTracks[side]}
+				>
 					{side === "blue" ? parts : parts.reverse()}
 				</span>
 			)}
@@ -156,6 +187,7 @@ export function FaceToFaceRow({
 	red,
 	lineup,
 	vision,
+	down,
 	names,
 	scale,
 	format,
@@ -165,6 +197,8 @@ export function FaceToFaceRow({
 	red: Line;
 	lineup: ReadonlyMap<string, LanePlayer>;
 	vision: ReadonlyMap<string, number> | undefined;
+	/** Seconds until each dead player respawns (#531). */
+	down: ReadonlyMap<string, number> | undefined;
 	names: TeamNames;
 	scale: number;
 	format: Intl.NumberFormat;
@@ -179,6 +213,7 @@ export function FaceToFaceRow({
 				side="blue"
 				vision={vision?.get(blue.player)}
 				showVision={visionRoles.has(role)}
+				respawnIn={down?.get(blue.player)}
 			/>
 			<Kda line={blue} side="blue" />
 			<Figure side="blue">{blue.cs}</Figure>
@@ -202,6 +237,7 @@ export function FaceToFaceRow({
 				side="red"
 				vision={vision?.get(red.player)}
 				showVision={visionRoles.has(role)}
+				respawnIn={down?.get(red.player)}
 			/>
 		</tr>
 	);

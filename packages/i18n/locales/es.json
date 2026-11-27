@@ -347,6 +347,8 @@
 	"draft.match.faceToFace.and": " y ",
 	"draft.match.faceToFace.moreCs": "{{amount}} CS más",
 	"draft.match.faceToFace.vision": "Visión {{value}}",
+	"draft.match.faceToFace.respawn_one": "muerto, reaparece en {{count}} segundo",
+	"draft.match.faceToFace.respawn_other": "muerto, reaparece en {{count}} segundos",
 	"draft.match.dragonCount": "{{count}} de 4",
 	"draft.match.soul": "Alma de dragón",
 	"draft.match.killVerb": "elimina a",

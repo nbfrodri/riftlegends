@@ -56,7 +56,11 @@ test("an ace leaves all five down at once", () => {
 		20,
 		0,
 		["r-top", "r-jungle", "r-mid", "r-bot", "r-support"].map((victim, i) =>
-			kill(victim, { fightSecond: i, respawnAt: 1200 + 40, ace: i === 4 }),
+			kill(victim, {
+				fightSecond: i,
+				respawnAt: 1200 + 40,
+				...(i === 4 && { ace: true }),
+			}),
 		),
 	);
 	const down = respawnCountdowns([ace], 1145);

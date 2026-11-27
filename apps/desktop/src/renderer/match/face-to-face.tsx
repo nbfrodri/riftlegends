@@ -16,12 +16,15 @@ export function FaceToFace({
 	names,
 	lineup,
 	vision,
+	down,
 }: {
 	snapshot: MapSnapshot;
 	lineup: ReadonlyMap<string, LanePlayer>;
 	names: TeamNames;
 	/** Each player's final vision score, once the game is over (`match.ended`). */
 	vision?: ReadonlyMap<string, number> | undefined;
+	/** Seconds until each dead player respawns; unknown in older logs (#531). */
+	down?: ReadonlyMap<string, number> | undefined;
 }) {
 	const { t } = useTranslation();
 	const format = useGoldFormat();
@@ -60,6 +63,7 @@ export function FaceToFace({
 							red={red}
 							lineup={lineup}
 							vision={vision}
+							down={down}
 							names={names}
 							scale={scale}
 							format={format}
