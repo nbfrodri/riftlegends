@@ -210,7 +210,8 @@ export function SwissRounds({
 							>
 								<span
 									aria-hidden="true"
-									className="block font-semibold text-[12px] text-muted tabular-nums"
+									data-block-header
+									className="block text-center font-semibold text-[12px] text-muted tabular-nums"
 									style={{
 										lineHeight: `${POOL_HEAD}px`,
 										paddingInline: BLOCK_PAD,
@@ -303,8 +304,9 @@ function OutcomeBox({
 			style={{ left: x, top: box.y, width, height: box.height }}
 		>
 			<h3
+				data-block-header
 				className={cn(
-					"flex items-baseline justify-between font-semibold text-[11px] uppercase tracking-heading",
+					"flex items-baseline justify-center gap-2 font-semibold text-[11px] uppercase tracking-heading",
 					qualified ? "text-text" : "text-muted",
 				)}
 				style={{ lineHeight: `${POOL_HEAD}px`, paddingInline: BLOCK_PAD }}

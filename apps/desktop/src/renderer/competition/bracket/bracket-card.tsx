@@ -3,6 +3,7 @@ import { cn } from "@rift-legends/ui-kit/lib/utils";
 import type { KeyboardEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { TeamCrest } from "../../draft/team-crest";
+import { resultStyle } from "../series-result";
 import { CARD_H, CARD_W } from "./bracket-layout";
 
 type Match = BracketView["matches"][number];
@@ -39,7 +40,7 @@ export function slotTexts(
 	return [text(match.teamA, match.from[0]), text(match.teamB, match.from[1])];
 }
 
-/** One team of a series card: logo, name, score; the winner in bold. */
+/** One team of a series card: logo, name, score; the winner marked. */
 export function TeamRow({
 	team,
 	slot,
@@ -52,13 +53,13 @@ export function TeamRow({
 	result: "won" | "lost" | undefined;
 }) {
 	const { t } = useTranslation();
+	const style = resultStyle(result);
 	return (
 		<span
 			data-result={result}
 			className={cn(
 				"flex min-w-0 flex-1 items-center gap-2 px-2.5 text-[13px]",
-				result === "won" && "font-semibold text-text",
-				result === "lost" && "text-muted",
+				style.row,
 				!slot.known && "text-muted",
 			)}
 		>
@@ -73,7 +74,10 @@ export function TeamRow({
 					{t("competition.bracket.bye")}
 				</span>
 			)}
-			<span className="w-4 shrink-0 text-right tabular-nums">
+			<span
+				data-score
+				className={cn("w-4 shrink-0 text-right tabular-nums", style.score)}
+			>
 				{score ?? ""}
 			</span>
 		</span>
