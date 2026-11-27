@@ -5,10 +5,14 @@ import {
 	type Side,
 } from "@rift-legends/contracts";
 import { describe, expect, it } from "vitest";
+import { rules as content } from "../content/data";
 import { createRng } from "../rng/streams";
-import { COST, stepWindow } from "./contests/conversion";
+import { stepWindow } from "./contests/conversion";
 import { STRUCTURE_CONTESTS } from "./contests/structures";
-import { type ConversionWindow, WINDOW_DELAY } from "./conversion-window";
+import type { ConversionWindow } from "./conversion-window";
+
+const { cost: COST, delay: WINDOW_DELAY } = content.conversion;
+
 import { levelAt, respawnTime } from "./death-timer";
 import { matchSetup } from "./fixtures/setup";
 import { MATCH_CONTESTS, playMinute } from "./loop";

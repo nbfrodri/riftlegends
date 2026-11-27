@@ -18,8 +18,6 @@ const PUSH_FROM = 12;
 const TAKE = 2200;
 /** Share of that chance, in percent, that a push takes an inhibitor. */
 const INHIBITOR_PERCENT = 58;
-/** No game ends before this minute: the nexus cannot be taken earlier. */
-export const NEXUS_FROM = 21;
 /**
  * A push of the minute takes the nexus with this share, in percent, of the
  * chance, plus a share more per minute after the 30th. Most games end in the
@@ -167,7 +165,7 @@ const push: Contest = {
 				lost[loser],
 				lane,
 				state.minute,
-				state.minute >= NEXUS_FROM,
+				state.minute >= state.context.rules.conversion.nexusFrom,
 			);
 			if (!next || !roll(rng, pushChance(state, winner, next))) continue;
 			const taken = structureEvent(

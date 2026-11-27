@@ -113,7 +113,7 @@ it("R2: every streak in a played game obeys the windows, victims and deaths", ()
 				});
 			}
 		}),
-		{ numRuns: 100 },
+		{ numRuns: 200 },
 	);
 	expect(streaks).toBeGreaterThan(0);
 });

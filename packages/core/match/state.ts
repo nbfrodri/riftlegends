@@ -264,7 +264,10 @@ function mark(state: MatchState, e: MatchEvent): MatchState {
 		[e.side]: { ...won, players: players[e.side] },
 		[loserSide]: { ...lost, players: players[loserSide] },
 		objectives,
-		window: e.kind === "fight" ? openWindow(players, e) : state.window,
+		window:
+			e.kind === "fight"
+				? openWindow(players, e, rules.conversion.delay)
+				: state.window,
 		winner: e.kind === "nexus" ? e.side : state.winner,
 	};
 }

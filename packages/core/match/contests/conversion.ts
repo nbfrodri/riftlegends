@@ -1,4 +1,4 @@
-import type { Side } from "@rift-legends/contracts";
+import type { MatchContent, Side } from "@rift-legends/contracts";
 import { max } from "../../math";
 import type { Rng } from "../../rng/streams";
 import type { ConversionWindow } from "../conversion-window";
@@ -8,42 +8,12 @@ import { LANES, type Lane, type MatchState, other } from "../state";
 import { type ContestEvent, paid, roll } from "./contest";
 import { edge, outcome } from "./edge";
 import { type Objective, objectiveUp } from "./objectives";
-import {
-	type Loss,
-	NEXUS_FROM,
-	structureEvent,
-	type Target,
-	target,
-} from "./structures";
+import { type Loss, structureEvent, type Target, target } from "./structures";
+
+type Conversion = MatchContent["rules"]["conversion"];
 
 /** The contest id of the conversion: its stream is `(…, minute, 46, second)`. */
 export const CONVERSION_ID = 46;
-
-/** Seconds the winner needs for each thing it takes. Balance constants. */
-export const COST = {
-	tower: 11,
-	inhibitor: 9,
-	nexus: 9,
-	dragon: 11,
-	herald: 9,
-	baron: 14,
-	elder: 14,
-} as const;
-
-/**
- * Chance, per 10,000, that a winner who is up this many players more goes for
- * what he can take. A balance constant, tuned for K20.
- */
-const COMMIT: Readonly<Record<number, number>> = {
-	1: 6000,
-	2: 9000,
-	3: 10_000,
-	4: 10_000,
-	5: 10_000,
-};
-
-/** The nexus only falls to a window when the rival has this many up or fewer. */
-const CLOSE_WITH_UP = 2;
 
 /** The objectives a winner goes for, best first. */
 const OBJECTIVES: readonly Objective[] = ["baron", "elder", "dragon", "herald"];
@@ -83,12 +53,8 @@ function goal(state: MatchState, side: Side, closing: boolean): Goal | null {
 	return found ? { kind: "structure", ...found } : null;
 }
 
-const costOf = (taken: Goal) =>
-	taken.kind === "objective"
-		? COST[taken.objective]
-		: taken.next.kind === "tower"
-			? COST.tower
-			: COST[taken.next.kind];
+const costOf = (cost: Conversion["cost"], taken: Goal) =>
+	taken.kind === "objective" ? cost[taken.objective] : cost[taken.next.kind];
 
 /**
  * One attempt of a window at its second (plan 08, #530): the winner decides
@@ -105,6 +71,7 @@ export function stepWindow(
 	earliest = 0,
 ): { events: ContestEvent[]; window: ConversionWindow | null } {
 	const open = state.window;
+	const rules = state.context.rules.conversion;
 	if (!open) return { events: [], window: null };
 	const start = gameSecond(state.minute, 0);
 	const now = max(open.at, start + earliest);
@@ -112,13 +79,13 @@ export function stepWindow(
 		return { events: [], window: null };
 	}
 	if (now >= start + 60) return { events: [], window: open };
-	if (!open.started && !roll(rng, COMMIT[open.lead] ?? 0)) {
+	if (!open.started && !roll(rng, rules.commit[open.lead - 1] ?? 0)) {
 		return { events: [], window: null };
 	}
 	const side = open.side;
 	const closing =
-		upAt(state, now)[other(side)].length <= CLOSE_WITH_UP &&
-		state.minute >= NEXUS_FROM;
+		upAt(state, now)[other(side)].length <= rules.closeWithUp &&
+		state.minute >= rules.nexusFrom;
 	const aim = goal(state, side, closing);
 	if (!aim) return { events: [], window: null };
 	// One draw is kept apart: the contest below starts at the next one.
@@ -160,7 +127,7 @@ export function stepWindow(
 					economy,
 					base,
 				).event;
-	const next = now + costOf(aim);
+	const next = now + costOf(rules.cost, aim);
 	return {
 		events: [event],
 		window:

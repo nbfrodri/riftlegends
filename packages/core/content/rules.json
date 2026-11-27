@@ -47,6 +47,21 @@
 		],
 		"cap": 50000
 	},
+	"conversion": {
+		"delay": 15,
+		"cost": {
+			"tower": 11,
+			"inhibitor": 9,
+			"nexus": 9,
+			"dragon": 11,
+			"herald": 9,
+			"baron": 14,
+			"elder": 14
+		},
+		"commit": [6000, 9000, 10000, 10000, 10000],
+		"closeWithUp": 2,
+		"nexusFrom": 21
+	},
 	"presence": {
 		"lane": {
 			"top": { "top": 10000, "jungle": 0, "mid": 0, "bot": 0, "support": 0 },

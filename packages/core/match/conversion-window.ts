@@ -2,9 +2,6 @@ import { type MatchEvent, ROLES, type Side } from "@rift-legends/contracts";
 import { max } from "../math";
 import { gameSecond, killSecond, type SidePlayers } from "./player-state";
 
-/** Seconds after the last kill of a fight before the winner starts pushing. */
-export const WINDOW_DELAY = 15;
-
 /**
  * The time a side has to press its numbers after a fight (plan 08, #530): the
  * winner took more players than he lost and chains objectives and structures
@@ -32,12 +29,13 @@ const upAt = (players: SidePlayers, second: number) =>
 export function openWindow(
 	players: Record<Side, SidePlayers>,
 	event: MatchEvent,
+	delay: number,
 ): ConversionWindow | null {
 	const end = event.kills.reduce(
 		(latest, kill) => max(latest, killSecond(event, kill)),
 		gameSecond(event.minute, event.second),
 	);
-	const at = end + WINDOW_DELAY;
+	const at = end + delay;
 	const winner = players[event.side];
 	const loser = players[event.side === "blue" ? "red" : "blue"];
 	const lead = upAt(winner, at) - upAt(loser, at);
