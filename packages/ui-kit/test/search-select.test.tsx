@@ -109,3 +109,33 @@ test("leaves out the heading of a group without a label", async () => {
 	expect(await screen.findByRole("option", { name: "Alpha" })).toBeTruthy();
 	expect(screen.getByRole("group").getAttribute("aria-labelledby")).toBeNull();
 });
+
+test("an item's icon shows in the list and, for the chosen one, in the trigger without changing their names", async () => {
+	const user = userEvent.setup();
+	const icon = (id: string) => <img src={`${id}.png`} alt={id} />;
+	render(
+		<SearchSelect
+			label="Club"
+			searchLabel="Search"
+			empty="None"
+			groups={[
+				{
+					items: [
+						{ value: "t1", label: "T1", icon: icon("t1") },
+						{ value: "g2", label: "G2 Esports", icon: icon("g2") },
+					],
+				},
+			]}
+			value="t1"
+			onChange={() => undefined}
+		/>,
+	);
+	const trigger = screen.getByRole("combobox", { name: "Club" });
+	expect(trigger.querySelector('img[src="t1.png"]')).not.toBeNull();
+	expect(trigger.querySelector('img[src="g2.png"]')).toBeNull();
+	await user.click(trigger);
+	const g2 = await screen.findByRole("option", { name: "G2 Esports" });
+	expect(
+		g2.querySelector('img[src="g2.png"]')?.closest('[aria-hidden="true"]'),
+	).not.toBeNull();
+});

@@ -125,10 +125,21 @@ describe("U9: tournament setup", () => {
 		expect(
 			(await screen.findByRole("combobox", { name: "My team" })).textContent,
 		).toContain("Watch only");
+		// #608: a plain text field, without the +/- spin buttons.
+		expect(screen.queryByRole("spinbutton")).toBeNull();
 		expect(
-			(screen.getByRole("spinbutton", { name: "Seed" }) as HTMLInputElement)
-				.value,
+			(screen.getByRole("textbox", { name: "Seed" }) as HTMLInputElement).value,
 		).toBe("1234");
+	});
+
+	test("the seed takes only digits", async () => {
+		const { user } = await renderSetup();
+		const seed = (await screen.findByRole("textbox", {
+			name: "Seed",
+		})) as HTMLInputElement;
+		await user.clear(seed);
+		await user.type(seed, "4x2");
+		expect(seed.value).toBe("42");
 	});
 
 	test("MSI fills each slot with the best seed of its league, and a slot can change", async () => {

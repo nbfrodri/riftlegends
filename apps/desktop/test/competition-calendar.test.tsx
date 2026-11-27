@@ -282,3 +282,21 @@ describe("views", () => {
 		expect(document.body.textContent).not.toContain("·");
 	});
 });
+
+describe("sticky header", () => {
+	// #608: with collapsed borders the table paints them, so they scroll away
+	// under the sticky day names and leave a gap. Each cell draws its own.
+	it.each(["week", "month"] as const)(
+		"in the %s view each day name draws its own borders",
+		async (mode) => {
+			await show({ mode });
+			expect(grid().className).not.toContain("border-collapse");
+			expect(grid().className).toContain("border-separate");
+			for (const header of within(grid()).getAllByRole("columnheader")) {
+				expect(header.className).toContain("sticky");
+				expect(header.className).toMatch(/\bborder-t\b/);
+				expect(header.className).toMatch(/\bborder-b\b/);
+			}
+		},
+	);
+});

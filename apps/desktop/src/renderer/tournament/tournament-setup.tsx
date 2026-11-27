@@ -18,6 +18,7 @@ import {
 	useCoreQuery,
 } from "../core";
 import { teamGroups } from "../draft/setup-screen";
+import { TeamCrest } from "../draft/team-crest";
 import {
 	CUSTOM_TEAMS,
 	type CustomForm,
@@ -164,7 +165,11 @@ export function TournamentSetup(props: {
 	const humanGroups = [
 		{ items: [{ value: "", label: t("tournament.watch") }] },
 		{
-			items: teams.map((id) => ({ value: id, label: nameOf(id) })),
+			items: teams.map((id) => ({
+				value: id,
+				label: nameOf(id),
+				icon: <TeamCrest id={id} name={nameOf(id)} className="size-4" />,
+			})),
 		},
 	];
 
@@ -257,19 +262,15 @@ export function TournamentSetup(props: {
 					<Setting title={t("tournament.seed")} note={t("tournament.seedNote")}>
 						<div className="flex shrink-0 items-center gap-2">
 							<input
-								type="number"
-								min={0}
-								max={MAX_SEED}
+								type="text"
+								inputMode="numeric"
 								aria-label={t("tournament.seed")}
 								value={seed}
 								onChange={(event) => {
-									const value = Number(event.target.value);
-									if (
-										Number.isInteger(value) &&
-										value >= 0 &&
-										value <= MAX_SEED
-									)
-										setSeed(value);
+									// Digits only: a text field, without the +/- spin buttons (#608).
+									const text = event.target.value;
+									const value = Number(text);
+									if (/^\d*$/.test(text) && value <= MAX_SEED) setSeed(value);
 								}}
 								className="w-[128px] rounded-control border border-line bg-surface px-2 py-[5px] text-text tabular-nums hover:border-muted"
 							/>

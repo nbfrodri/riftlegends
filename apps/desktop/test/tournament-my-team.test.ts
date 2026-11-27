@@ -35,6 +35,7 @@ const overview = (
 			...(champion && { champion }),
 			stages: Object.entries(stages).map(([stage, status]) => ({
 				stage,
+				play: "singleElim" as const,
 				status,
 				startDay: 0,
 				endDay: 9,

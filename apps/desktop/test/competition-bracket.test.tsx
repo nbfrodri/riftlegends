@@ -1,15 +1,20 @@
-import type { BracketView } from "@rift-legends/contracts";
+import { type BracketView, CONTRACT_VERSION } from "@rift-legends/contracts";
+import { RouterProvider } from "@tanstack/react-router";
 import {
 	act,
 	cleanup,
 	fireEvent,
 	screen,
+	waitFor,
 	within,
 } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { useState } from "react";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { Bracket } from "../src/renderer/competition/bracket/bracket";
+import { createAppRouter } from "../src/renderer/router";
 import { renderInLocale } from "./render-in-locale";
+import { hostCore, renderWithCore } from "./season-core";
 
 /** Downloaded team logos; a team without one shows the own shield. */
 const logos: Record<string, string> = {
@@ -20,9 +25,12 @@ vi.mock("../src/renderer/assets", async (original) => ({
 	useTeamLogoSrc: (id: string) => logos[id],
 }));
 
+vi.setConfig({ testTimeout: 60_000 });
+
 afterEach(() => {
 	cleanup();
 	vi.restoreAllMocks();
+	window.history.replaceState(null, "", "/");
 });
 
 type Match = BracketView["matches"][number];
@@ -377,5 +385,137 @@ describe("U11: keyboard and screen reader", () => {
 				?.getAttribute("data-done"),
 		).toBe("true");
 		expect(view.container.querySelectorAll(".bracket-draw")).toHaveLength(0);
+	});
+});
+
+describe("U6: the bracket in the competition hub (#605)", () => {
+	/**
+	 * The fictional league with only a 4-team playoff of fixed teams, so the
+	 * bracket exists from day 0. `created` keeps the session and its position.
+	 */
+	function playoffCore() {
+		const created = { sessionId: 0, position: 0 };
+		const api = hostCore(async (command, send) => {
+			if (command.kind !== "season.create") return send();
+			const payload = command.payload as {
+				competitions: { stages: { id: string; window: unknown }[] }[];
+				teams: { id: string }[];
+			};
+			const [league] = payload.competitions;
+			const regular = league?.stages[0];
+			const result = await send({
+				...command,
+				payload: {
+					...payload,
+					competitions: [
+						{
+							...league,
+							stages: [
+								{
+									id: "playoffs",
+									window: regular?.window,
+									entrants: {
+										kind: "fixed",
+										teams: payload.teams.slice(0, 4).map(({ id }) => id),
+									},
+									play: { type: "singleElim", size: 4, bestOf: [3, 5] },
+								},
+							],
+						},
+					],
+				},
+			});
+			if (result.ok)
+				Object.assign(created, {
+					sessionId: command.sessionId,
+					position: result.position,
+				});
+			return result;
+		});
+		return { api, created };
+	}
+
+	async function openHub(api: ReturnType<typeof hostCore>, path: string) {
+		const router = createAppRouter(path);
+		await renderWithCore(<RouterProvider router={router} />, api);
+		return { router, user: userEvent.setup() };
+	}
+
+	const views = () => screen.getByRole("radiogroup", { name: "View" });
+
+	test("a bracket stage adds the Bracket view, which shows its series and lives in the route search", async () => {
+		const { api } = playoffCore();
+		const { router, user } = await openHub(api, "/competicion/rift-league");
+		const bracket = await within(
+			await screen.findByRole(
+				"radiogroup",
+				{ name: "View" },
+				{ timeout: 30_000 },
+			),
+		).findByRole("radio", { name: "Bracket" }, { timeout: 30_000 });
+		expect(within(views()).getAllByRole("radio")).toHaveLength(3);
+		await user.click(bracket);
+		const group = await screen.findByRole("group", { name: "Bracket" });
+		expect(
+			within(group)
+				.getAllByRole("button")
+				.map((button) => button.getAttribute("aria-label")),
+		).toEqual([
+			expect.stringMatching(/^Semifinal 1: \S.* vs \S/),
+			expect.stringMatching(/^Semifinal 2: \S.* vs \S/),
+			"Final: Winner of Semifinal 1 vs Winner of Semifinal 2",
+		]);
+		expect(router.state.location.search).toMatchObject({ view: "bracket" });
+	});
+
+	test("a played series of the hub's bracket opens its result", async () => {
+		const { api, created } = playoffCore();
+		const { router, user } = await openHub(
+			api,
+			"/competicion/rift-league?view=bracket",
+		);
+		await screen.findByRole("group", { name: "Bracket" }, { timeout: 30_000 });
+		const overview = await api.query({
+			v: CONTRACT_VERSION,
+			kind: "season.overview",
+			sessionId: created.sessionId,
+			params: {},
+		});
+		const { day } = (overview as { view: { day: number } }).view;
+		await act(async () => {
+			await api.send({
+				v: CONTRACT_VERSION,
+				kind: "season.playDay",
+				sessionId: created.sessionId,
+				expectedPosition: created.position,
+				payload: { day },
+			});
+		});
+		const [played] = await screen.findAllByRole(
+			"button",
+			{ name: /^Semifinal \d: \S.* \d–\d \S/ },
+			{ timeout: 30_000 },
+		);
+		await user.click(played as HTMLElement);
+		await waitFor(() =>
+			expect(router.state.location.pathname).toMatch(
+				/^\/competicion\/serie\/.+/,
+			),
+		);
+	});
+
+	test("a league stage has no Bracket view, and a link to it falls back to the standings", async () => {
+		await openHub(hostCore(), "/competicion/rift-league?view=bracket");
+		await screen.findByRole(
+			"table",
+			{ name: "Standings: Regular" },
+			{ timeout: 30_000 },
+		);
+		expect(
+			within(views()).queryByRole("radio", { name: "Bracket" }),
+		).toBeNull();
+		expect(
+			within(views()).getByRole("radio", { name: "Standings" }),
+		).toHaveProperty("checked", true);
 	});
 });
