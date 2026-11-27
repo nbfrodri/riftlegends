@@ -405,6 +405,8 @@ test("replays a drafted game and continues to its result", async ({
 test("#531: a dead player is greyed with a countdown in the face to face until he respawns", async ({
 	playwright,
 }, testInfo) => {
+	// Waits up to 120 s for a death and 30 s for the respawn.
+	test.setTimeout(180_000);
 	const app = await launchApp(
 		{ playwright },
 		{
@@ -427,8 +429,14 @@ test("#531: a dead player is greyed with a countdown in the face to face until h
 		// ×4 keeps the sampled seconds short enough to catch a death.
 		await page.getByRole("radio", { name: "×4" }).check({ force: true });
 		const dead = faceToFace.locator("[data-lane-player][data-dead]").first();
-		await expect(dead).toBeVisible({ timeout: 120_000 });
-		await page.getByRole("button", { name: "Pausar" }).click();
+		// He may respawn before the pause lands: resume and wait for another death.
+		await expect(async () => {
+			const resume = page.getByRole("button", { name: "Reanudar" });
+			if (await resume.isVisible()) await resume.click();
+			await expect(dead).toBeVisible({ timeout: 30_000 });
+			await page.getByRole("button", { name: "Pausar" }).click();
+			await expect(dead).toBeVisible({ timeout: 500 });
+		}).toPass({ timeout: 120_000 });
 		const handle = await dead
 			.locator("[data-part=name] > span")
 			.first()
