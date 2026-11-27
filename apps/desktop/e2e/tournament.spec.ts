@@ -81,15 +81,12 @@ test("E1: a custom tournament played with my team from start to finish", async (
 	}
 	await expect(champion).toBeVisible();
 	await expect(page.getByText(/^Final: /)).toBeVisible();
-	// Won the final, or out in the semifinal and the final watched as a spectator.
+	// Out in the semifinal and the final watched as a spectator, or the final
+	// played: won or lost, depending on the seed.
 	expect(series).toBe(spectator ? 1 : 2);
-	await expect(
-		page.getByText(
-			spectator
-				? `${mine} no lo ha ganado esta vez.`
-				: "Tu equipo ha ganado el torneo.",
-		),
-	).toBeVisible();
+	const won = page.getByText("Tu equipo ha ganado el torneo.");
+	const lost = page.getByText(`${mine} no lo ha ganado esta vez.`);
+	await expect(spectator ? lost : won.or(lost)).toBeVisible();
 	await button(page, "Nuevo torneo").click();
 	await expect(button(page, "Empezar torneo")).toBeVisible();
 });
