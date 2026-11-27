@@ -52,6 +52,7 @@ export function teamGroups(
 		value: team.id,
 		label: team.name,
 		detail: seedLabel(team.seed),
+		icon: <TeamCrest id={team.id} name={team.name} className="size-4" />,
 	});
 	const leagues = [...new Set(teams.flatMap((team) => team.league ?? []))];
 	if (leagues.length === 0) return [{ items: teams.map(item) }];

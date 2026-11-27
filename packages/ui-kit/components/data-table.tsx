@@ -41,11 +41,12 @@ export type DataTableColumn<Row extends RowData> = {
 	value: (row: Row) => string | number;
 	/** What the cell shows; defaults to the raw value. */
 	cell?: (row: Row) => ReactNode;
-	/** Right-aligned tabular figures, for amounts and counts. */
+	/** Centred tabular figures, for amounts and counts. */
 	numeric?: boolean;
 	/**
-	 * Fixed CSS width, such as "6rem". Columns without one share what is left,
-	 * so give one to every column but those that should stretch.
+	 * Fixed CSS width, such as "6rem". Columns without one share what is left.
+	 * When every column has one, the table spreads what is left over all of
+	 * them in proportion, so the spacing between columns stays even.
 	 */
 	width?: string;
 };
@@ -268,7 +269,7 @@ export function DataTable<Row extends RowData>({
 		: 0;
 
 	const cellAlign = (id: string) =>
-		numeric.has(id) ? "text-right tabular-nums" : "text-left";
+		numeric.has(id) ? "text-center tabular-nums" : "text-left";
 
 	return (
 		<section className={cn("flex min-h-0 flex-col bg-panel", className)}>
@@ -333,7 +334,7 @@ export function DataTable<Row extends RowData>({
 												onClick={column.getToggleSortingHandler()}
 												className={cn(
 													"inline-flex w-full cursor-pointer items-center gap-1 font-[inherit]",
-													numeric.has(column.id) && "justify-end",
+													numeric.has(column.id) && "justify-center",
 												)}
 											>
 												{column.columnDef.header as string}

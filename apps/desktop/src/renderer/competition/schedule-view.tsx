@@ -12,17 +12,24 @@ import {
 	SelectValue,
 } from "@rift-legends/ui-kit/components/select";
 import { useQueryClient } from "@tanstack/react-query";
-import { useMemo } from "react";
+import { type ReactNode, useMemo } from "react";
 import { useTranslation } from "react-i18next";
+import { LeagueLogo } from "../assets/league-logo";
 import {
 	CoreErrorMessage,
 	useCoreQueries,
 	useCoreQuery,
 	useFacts,
 } from "../core";
+import { TeamCrest } from "../draft/team-crest";
 import { bracketLabels, originText } from "./bracket/bracket-labels";
 import { Calendar, type CalendarMode } from "./calendar/calendar";
-import { competitionName, stageRowOf, stageText } from "./names";
+import {
+	competitionLogoId,
+	competitionName,
+	stageRowOf,
+	stageText,
+} from "./names";
 import { type SeasonOverview, useTeams } from "./season";
 
 // The season calendar with its filters (plan 31, U4; #593): the «Schedule» tab
@@ -110,7 +117,14 @@ export function ScheduleView({
 					slots.flatMap(({ teams }) => teams.filter((id) => id !== null)),
 				),
 			]
-				.map((id) => ({ value: id, label: team(id).name }))
+				.map((id) => {
+					const label = team(id).name;
+					return {
+						value: id,
+						label,
+						icon: <TeamCrest id={id} name={label} className="size-4" />,
+					};
+				})
 				.sort((a, b) => a.label.localeCompare(b.label)),
 		[slots, team],
 	);
@@ -118,13 +132,19 @@ export function ScheduleView({
 		? slots.filter(({ teams }) => teams.includes(filters.team as string))
 		: slots;
 
-	const competitions = [
+	const competitions: { value: string; label: string; icon?: ReactNode }[] = [
 		{ value: ALL, label: t("competition.schedule.allCompetitions") },
 		...overview.competitions.map(({ id }) => ({
 			value: id,
 			label: competitionName(t, id),
+			icon: (
+				<LeagueLogo id={competitionLogoId(id)} name={competitionName(t, id)} />
+			),
 		})),
 	];
+	const scopeIcon = competitions.find(
+		({ value }) => value === filters.scope,
+	)?.icon;
 
 	if (schedule.error) return <CoreErrorMessage error={schedule.error} />;
 	if (!schedule.data) return null;
@@ -152,12 +172,13 @@ export function ScheduleView({
 				<SelectTrigger
 					aria-label={t("competition.schedule.competition")}
 					className="w-52"
+					icon={scopeIcon}
 				>
 					<SelectValue />
 				</SelectTrigger>
 				<SelectContent>
-					{competitions.map(({ value, label }) => (
-						<SelectItem key={value} value={value}>
+					{competitions.map(({ value, label, icon }) => (
+						<SelectItem key={value} value={value} icon={icon}>
 							{label}
 						</SelectItem>
 					))}

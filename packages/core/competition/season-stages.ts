@@ -54,7 +54,8 @@ function swissFixtures(
 		season: year,
 	});
 	if (!pairing) return { fixtures: [] };
-	const { round, pairings, relaxed } = pairing;
+	const { round, pairings } = pairing;
+	const relaxed = pairing.relaxed.filter((rule) => rule !== "record");
 	return {
 		fixtures: pairings.map(({ a, b, bestOf, priority }, index) => ({
 			id: `swiss-${round}-${index + 1}`,
@@ -62,13 +63,14 @@ function swissFixtures(
 			round,
 			bestOf: bestOf as SeasonFixture["bestOf"],
 			priority,
+			...(relaxed.length > 0 && { relaxed }),
 		})),
 		paired: {
 			type: "competition.paired",
 			...node.ref,
 			round,
 			pairs: pairings.map(({ a, b }) => [a, b]),
-			relaxed: relaxed.filter((rule) => rule !== "record"),
+			relaxed,
 		},
 	};
 }

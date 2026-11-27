@@ -143,3 +143,28 @@ test("an open select adds no inline <style>, which the renderer CSP blocks", asy
 	await screen.findByRole("listbox");
 	expect(document.querySelectorAll("style")).toHaveLength(0);
 });
+
+test("an option's icon shows in the list and, for the chosen one, in the trigger without changing their names", async () => {
+	const user = userEvent.setup();
+	const icon = (code: string) => <img src={`${code}.png`} alt={code} />;
+	render(
+		<Select items={languages} defaultValue="es">
+			<SelectTrigger aria-label="Language" icon={icon("es")}>
+				<SelectValue />
+			</SelectTrigger>
+			<SelectContent>
+				{languages.map(({ value, label }) => (
+					<SelectItem key={value} value={value} icon={icon(value)}>
+						{label}
+					</SelectItem>
+				))}
+			</SelectContent>
+		</Select>,
+	);
+	const trigger = screen.getByRole("combobox", { name: "Language" });
+	expect(trigger.querySelector('img[src="es.png"]')).not.toBeNull();
+	await user.click(trigger);
+	const english = await screen.findByRole("option", { name: "English" });
+	const image = english.querySelector('img[src="en.png"]');
+	expect(image?.closest('[aria-hidden="true"]')).not.toBeNull();
+});

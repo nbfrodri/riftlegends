@@ -20,9 +20,10 @@ import {
 	useSeriesOptions,
 } from "../draft/session";
 import { TeamCrest } from "../draft/team-crest";
+import { useActiveSeason } from "./active-season";
 import { competitionName, dayDate, stageRowOf, stageText } from "./names";
 import type { ScheduleSlot } from "./schedule-view";
-import { useExhibitionSeason, useSeasonOverview } from "./season";
+import { useSeasonOverview } from "./season";
 
 // `/competicion/serie/$series` (plan 31, U5): a played series of the season,
 // read-only, with the result screens of the quick draft. The core plays it
@@ -34,7 +35,7 @@ const page =
 const never = () => false;
 
 export function SeriesScreen({ series }: { series: string }) {
-	const season = useExhibitionSeason();
+	const season = useActiveSeason();
 	return (
 		<section className={page}>
 			{season.error && <CoreErrorMessage error={season.error} />}

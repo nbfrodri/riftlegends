@@ -118,6 +118,22 @@ describe("match.started", () => {
 	});
 });
 
+const conversion = {
+	delay: 15,
+	cost: {
+		tower: 11,
+		inhibitor: 9,
+		nexus: 9,
+		dragon: 11,
+		herald: 9,
+		baron: 14,
+		elder: 14,
+	},
+	commit: [6000, 9000, 10_000, 10_000, 10_000],
+	closeWithUp: 2,
+	nexusFrom: 21,
+};
+
 /** Death timer of the wiki (issue #528): BRW in tenths of a second, TIF in thousandths of a point. */
 const deathTimer = {
 	brw: [
@@ -323,6 +339,7 @@ describe("MatchContent", () => {
 			},
 			inhibitorRespawn: 300,
 			deathTimer,
+			conversion,
 			presence,
 			levelCurve,
 			economy: {
@@ -408,6 +425,16 @@ describe("MatchContent", () => {
 				rules: {
 					...content.rules,
 					deathTimer: { ...deathTimer, brw: deathTimer.brw.slice(0, 17) },
+				},
+			},
+		],
+		[
+			"a conversion window with no commit chance for a lead of five",
+			{
+				...content,
+				rules: {
+					...content.rules,
+					conversion: { ...conversion, commit: conversion.commit.slice(0, 4) },
 				},
 			},
 		],

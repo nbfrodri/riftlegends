@@ -94,14 +94,17 @@ describe("schedule (U4, #593)", () => {
 			expect(screen.getByText(/^Matchday 1 of \d+$/)).toBeTruthy(),
 		);
 		await toSchedule(user);
+		// The exhibition seed is random: either team of a Bo1 can win it.
 		const [open] = within(cell(7) as HTMLElement).getAllByRole("button", {
-			name: /^Open series: \w+ 1–0 \w+$/,
+			name: /^Open series: \w+ (1–0|0–1) \w+$/,
 		});
 		if (!open) throw new Error("no played series");
 		const winner = within(open).getByText(/\w+/, { selector: "strong" });
-		expect(open.getAttribute("aria-label")).toContain(
-			`${winner.textContent} 1–0`,
-		);
+		const label = open.getAttribute("aria-label") ?? "";
+		expect(
+			label.includes(`${winner.textContent} 1–0`) ||
+				label.endsWith(`0–1 ${winner.textContent}`),
+		).toBe(true);
 
 		await user.click(open);
 		expect(

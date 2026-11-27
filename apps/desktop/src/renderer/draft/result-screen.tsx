@@ -147,7 +147,7 @@ function GameResultScreen(props: {
 
 function LoadedResult(props: { played: number; over: boolean }) {
 	const { t } = useTranslation();
-	const { sessionId, restart } = useDraftSession();
+	const { sessionId, restart, inSeason } = useDraftSession();
 	const queries = useCoreQueries<MatchView>(
 		Array.from({ length: props.played }, (_, i) => ({
 			v: CONTRACT_VERSION,
@@ -174,10 +174,14 @@ function LoadedResult(props: { played: number; over: boolean }) {
 			games={played}
 			summary={summary.data}
 			action={
-				<Button onClick={restart}>
-					{t("draft.result.newSeries")}
-					<RotateCcw aria-hidden="true" className="size-4" />
-				</Button>
+				inSeason ? (
+					<Button onClick={inSeason.onExit}>{inSeason.exit}</Button>
+				) : (
+					<Button onClick={restart}>
+						{t("draft.result.newSeries")}
+						<RotateCcw aria-hidden="true" className="size-4" />
+					</Button>
+				)
 			}
 		/>
 	) : (

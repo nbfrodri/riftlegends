@@ -15,25 +15,102 @@ import { edge, outcome } from "./edge";
 /** First minute teams push for structures, once the lanes are over. */
 const PUSH_FROM = 12;
 /** Chance, per 10,000, that a won push takes a structure. Balance constants. */
-const TAKE = 2700;
+const TAKE = 2200;
+/** Share of that chance, in percent, that a push takes an inhibitor. */
+const INHIBITOR_PERCENT = 58;
+/**
+ * A push of the minute takes the nexus with this share, in percent, of the
+ * chance, plus a share more per minute after the 30th. Most games end in the
+ * window after a won fight instead (plan 08, #530).
+ */
+const NEXUS_PERCENT = 2;
+const NEXUS_RAMP = 3;
+const NEXUS_RAMP_FROM = 30;
 const BUFF_TAKE = { herald: 2500, baron: 4000, elder: 5000 } as const;
 /** Extra chance per grub stack, and for the voidmites of the third. */
 const GRUB_TAKE = 100;
 const VOIDMITES_TAKE = 150;
 
-type Loss = Pick<MatchState["blue"], "towers" | "nexusTowers" | "inhibitors">;
+export type Loss = Pick<
+	MatchState["blue"],
+	"towers" | "nexusTowers" | "inhibitors"
+>;
 
-/** The next structure of `loser` the push in `lane` reaches, if any. */
-function target(loser: Loss, lane: Lane, minute: number) {
+export type Target =
+	| { readonly kind: "tower"; readonly tier: 1 | 2 | 3 | 4 }
+	| { readonly kind: "inhibitor" }
+	| { readonly kind: "nexus" };
+
+/**
+ * The next structure of `loser` the push in `lane` reaches, if any. The nexus
+ * is reached only when `closing`: a push of the minute never ends the game,
+ * only a window after a won fight does (plan 08, #530).
+ */
+export function target(
+	loser: Loss,
+	lane: Lane,
+	minute: number,
+	closing = false,
+): Target | null {
 	if (loser.towers[lane] < 3) {
-		return { kind: "tower", tier: loser.towers[lane] + 1 } as const;
+		return { kind: "tower", tier: (loser.towers[lane] + 1) as 1 | 2 | 3 };
 	}
-	if (loser.inhibitors[lane] <= minute) return { kind: "inhibitor" } as const;
-	if (loser.nexusTowers < 2) return { kind: "tower", tier: 4 } as const;
-	if (inhibitorDown(loser as MatchState["blue"], minute)) {
-		return { kind: "nexus" } as const;
+	if (loser.inhibitors[lane] <= minute) return { kind: "inhibitor" };
+	if (loser.nexusTowers < 2) return { kind: "tower", tier: 4 };
+	if (closing && inhibitorDown(loser as MatchState["blue"], minute)) {
+		return { kind: "nexus" };
 	}
 	return null;
+}
+
+/**
+ * What taking `next` in `lane` is: the event, with the `winner`'s gold, and
+ * the structures `loser` has left after it.
+ */
+export function structureEvent(
+	next: Target,
+	lane: Lane,
+	winner: Side,
+	loss: Loss,
+	minute: number,
+	economy: MatchState["context"]["rules"]["economy"],
+	base: Pick<ContestEvent, "side" | "second" | "kills" | "chance" | "causes">,
+): { event: ContestEvent; loss: Loss } {
+	const atBase = `base-${other(winner)}` as const;
+	if (next.kind === "nexus") {
+		return {
+			event: { ...base, kind: "nexus", zone: atBase, gold: paid(winner, 0) },
+			loss,
+		};
+	}
+	if (next.kind === "inhibitor") {
+		return {
+			event: {
+				...base,
+				kind: "inhibitor",
+				zone: `lane-${lane}`,
+				gold: paid(winner, economy.inhibitor),
+			},
+			// Down from now on; the state sets its respawn.
+			loss: { ...loss, inhibitors: { ...loss.inhibitors, [lane]: minute + 1 } },
+		};
+	}
+	const gold = paid(winner, economy.tower);
+	return next.tier < 4
+		? {
+				event: {
+					...base,
+					kind: "tower",
+					tier: next.tier,
+					zone: `lane-${lane}`,
+					gold,
+				},
+				loss: { ...loss, towers: { ...loss.towers, [lane]: next.tier } },
+			}
+		: {
+				event: { ...base, kind: "tower", tier: 4, zone: atBase, gold },
+				loss: { ...loss, nexusTowers: loss.nexusTowers + 1 },
+			};
 }
 
 /** Chance, per 10,000, that a push won by `winner` takes a structure. */
@@ -45,6 +122,16 @@ export function takeChance(state: MatchState, winner: Side) {
 		if (buffs[buff] > state.minute) chance += BUFF_TAKE[buff];
 	}
 	return chance;
+}
+
+/** Chance, per 10,000, that a push won by `winner` takes `next`. */
+function pushChance(state: MatchState, winner: Side, next: Target) {
+	const chance = takeChance(state, winner);
+	if (next.kind === "inhibitor") return (chance * INHIBITOR_PERCENT) / 100;
+	if (next.kind !== "nexus") return chance;
+	const late =
+		state.minute > NEXUS_RAMP_FROM ? state.minute - NEXUS_RAMP_FROM : 0;
+	return (chance * (NEXUS_PERCENT + NEXUS_RAMP * late)) / 100;
 }
 
 /**
@@ -74,58 +161,29 @@ const push: Contest = {
 			);
 			const winner: Side = roll(rng, result.blue) ? "blue" : "red";
 			const loser = other(winner);
-			const next = target(lost[loser], lane, state.minute);
-			if (!next || !roll(rng, takeChance(state, winner))) continue;
-			const base = {
-				side: winner,
-				second: seconds[events.length] ?? 59,
-				kills: [],
-				...outcome(result, winner),
-			};
-			const atBase = `base-${loser}` as const;
-			const loss = lost[loser];
-			if (next.kind === "tower" && next.tier < 4) {
-				lost[loser] = {
-					...loss,
-					towers: { ...loss.towers, [lane]: next.tier },
-				};
-				events.push({
-					...base,
-					kind: "tower",
-					tier: next.tier,
-					zone: `lane-${lane}`,
-					gold: paid(winner, economy.tower),
-				});
-			} else if (next.kind === "inhibitor") {
-				lost[loser] = {
-					...loss,
-					// Down from now on; the state sets its respawn.
-					inhibitors: { ...loss.inhibitors, [lane]: state.minute + 1 },
-				};
-				events.push({
-					...base,
-					kind: "inhibitor",
-					zone: `lane-${lane}`,
-					gold: paid(winner, economy.inhibitor),
-				});
-			} else if (next.kind === "tower") {
-				lost[loser] = { ...loss, nexusTowers: loss.nexusTowers + 1 };
-				events.push({
-					...base,
-					kind: "tower",
-					tier: 4,
-					zone: atBase,
-					gold: paid(winner, economy.tower),
-				});
-			} else {
-				events.push({
-					...base,
-					kind: "nexus",
-					zone: atBase,
-					gold: paid(winner, 0),
-				});
-				break;
-			}
+			const next = target(
+				lost[loser],
+				lane,
+				state.minute,
+				state.minute >= state.context.rules.conversion.nexusFrom,
+			);
+			if (!next || !roll(rng, pushChance(state, winner, next))) continue;
+			const taken = structureEvent(
+				next,
+				lane,
+				winner,
+				lost[loser],
+				state.minute,
+				economy,
+				{
+					side: winner,
+					second: seconds[events.length] ?? 59,
+					kills: [],
+					...outcome(result, winner),
+				},
+			);
+			lost[loser] = taken.loss;
+			events.push(taken.event);
 		}
 		return events;
 	},

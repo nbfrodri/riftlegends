@@ -215,9 +215,7 @@ describe.each(["control", "packaged", "real-champions", "real"] as const)(
 			}
 		});
 
-		// Pending the conversion window after a won fight (plan 08, #530): the
-		// sim only has more players up at 17–20 % of the takes, the pros at 45–68 %.
-		test.fails("K19 · alive when taking: with more players up than the rival, within 10 pp of the pro rate (pro 62 / 68 / 45 %)", () => {
+		it("K19 · alive when taking: with more players up than the rival, within 10 pp of the pro rate (pro 62 / 68 / 45 %)", () => {
 			const pro = timelines.bands.k19;
 			const takes = even.flatMap((g) => g.takes);
 			for (const kind of ["baron", "inhibitor", "tower"] as const) {
@@ -225,6 +223,33 @@ describe.each(["control", "packaged", "real-champions", "real"] as const)(
 				const more = rate(own, (t) => t.ours > t.theirs) * 100;
 				expect(gap(more, pro[kind].moreBp / 100), kind).toBeLessThanOrEqual(10);
 			}
+		});
+
+		it("K20 · conversion after a fight: the winner takes an objective in 60 s within 10 pp of the pro rate by margin (pro 39 / 58 / 81 %), growing with the margin (#530)", () => {
+			const fights = even.flatMap((g) => g.fights);
+			const rates = timelines.bands.k20.map((band, i) => {
+				const own = fights.filter((f) => f.margin === i + 1);
+				expect(own.length, band.margin).toBeGreaterThan(500);
+				const converted = rate(own, (f) => f.converted) * 100;
+				expect(gap(converted, band.bp / 100), band.margin).toBeLessThanOrEqual(
+					10,
+				);
+				return converted;
+			});
+			expect(rates[0]).toBeLessThan(rates[1] as number);
+			expect(rates[1]).toBeLessThan(rates[2] as number);
+		});
+
+		it("K21 · closing after a late ace: the game ends within 60 s in a pro-like share of late fights, and the loser has 3+ dead when the nexus falls (pro 62 / 79 %) (#530)", () => {
+			const pro = timelines.bands.k21;
+			const late = even.flatMap((g) => g.fights).filter((f) => f.late);
+			expect(late.length).toBeGreaterThan(100);
+			expect(
+				gap(rate(late, (f) => f.closed) * 100, pro.lateFights.bp / 100),
+			).toBeLessThanOrEqual(12);
+			expect(
+				gap(rate(even, (g) => g.deadAtEnd >= 3) * 100, pro.nexus.bp / 100),
+			).toBeLessThanOrEqual(10);
 		});
 
 		it("K8 · role rating means are 56–64 and at most 5 points apart", () => {
