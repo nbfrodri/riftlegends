@@ -30,6 +30,16 @@ it("reads the attack range and the ultimate cooldown per rank", () => {
 	expect(kit("Thresh").attackRange).toBe(450);
 });
 
+it("takes the recharge of one charge for ultimates with charges (#622)", () => {
+	// Teemo's R has a 0.25 s cooldown between uses, but each mushroom charges
+	// back in 35, 30 and 25 s: that is the wait the draft and the match need.
+	const teemo = kit("Teemo");
+	expect(teemo.ultCooldown).toEqual([35, 30, 25]);
+	expect(teemo.ultCooldown?.every((seconds) => seconds * 10 >= 200)).toBe(true);
+	expect(teemo.ultRule).toBe("chargeRecharge");
+	expect(kit("Galio").ultRule).toBeNull();
+});
+
 it("reads the crowd control of each ability from the official tooltips", () => {
 	expect(kit("Galio").slots.e.statuses).toEqual(["knockup"]);
 	expect(kit("Galio").slots.w.statuses).toEqual(["slow", "taunt"]);

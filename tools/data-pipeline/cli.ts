@@ -3,6 +3,7 @@ import { homedir } from "node:os";
 import { isAbsolute, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
+import { catalogUrl, communityDragonPatch, readCatalog } from "./champions.ts";
 import { Client } from "./client.ts";
 import { history } from "./history.ts";
 import { internationals } from "./internationals.ts";
@@ -13,6 +14,7 @@ import { nationalities } from "./nationality.ts";
 import { writePhotos } from "./photos.ts";
 import { seasonOf } from "./season.ts";
 import { snapshot } from "./snapshot.ts";
+import { writeSummoners } from "./summoners.ts";
 import { writeTimelines } from "./timelines.ts";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
@@ -42,7 +44,7 @@ try {
 	});
 	if (values.help) {
 		console.log(
-			"pnpm data:(snapshot|logos|photos|leagues|league-formats|internationals|timelines) [--offline] [--cache-dir <path>] [--max-attempts <n>]",
+			"pnpm data:(snapshot|logos|photos|leagues|league-formats|internationals|timelines|summoners) [--offline] [--cache-dir <path>] [--max-attempts <n>]",
 		);
 	} else if (positionals[0] === "league-formats") {
 		writeLeagueFormats();
@@ -111,6 +113,30 @@ try {
 				}),
 			);
 			console.log(`${result.games} games`, result.counts);
+		} else if (positionals[0] === "summoners") {
+			const season = await snapshotSeason(outputDir);
+			const through = values.through ?? new Date().toISOString().slice(0, 10);
+			if (!/^\d{4}-\d{2}-\d{2}$/.test(through))
+				throw new Error("--through must be a UTC day (YYYY-MM-DD)");
+			const client = new Client({
+				...imageOptions,
+				fetch: (input, init) => {
+					console.error(`Fetching ${new URL(String(input)).hostname}`);
+					return fetch(input, init);
+				},
+			});
+			const catalog = await client.get(catalogUrl, readCatalog);
+			const result = await writeSummoners(
+				imageOptions,
+				catalog,
+				season,
+				through,
+				communityDragonPatch,
+				client,
+			);
+			console.log(
+				`${result.pairs} champion and role pairs from ${result.rows} rows (${result.skipped} skipped)`,
+			);
 		} else if (positionals[0] === "internationals") {
 			const season = await snapshotSeason(outputDir);
 			const result = await internationals(

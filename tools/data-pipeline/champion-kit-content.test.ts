@@ -55,12 +55,14 @@ it("publishes kit traits, CC kinds, damage split and provenance on each champion
 		ccKinds: "rule",
 		split: "rule",
 		kit: "rule",
+		ultCooldownTenths: "source",
 	});
 	// No kit data: the estimates are published and marked as such.
 	expect(byId.get("Jinx")?.traitSources).toEqual({
 		ccKinds: "estimated",
 		split: "estimated",
 		kit: "estimated",
+		ultCooldownTenths: "estimated",
 	});
 	expect(byId.get("Jinx")?.kit).toBeDefined();
 });

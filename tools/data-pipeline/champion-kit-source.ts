@@ -22,6 +22,8 @@ export interface ChampionKit {
 	attackRange: number;
 	/** Seconds at ultimate ranks 1 to 3; null when the fourth slot is no ultimate. */
 	ultCooldown: [number, number, number] | null;
+	/** `chargeRecharge` when the cooldown is the recharge of one charge (#622). */
+	ultRule: "chargeRecharge" | null;
 	slots: Record<SlotId, KitSlot>;
 }
 
@@ -239,22 +241,34 @@ export function readKit(
 		const entry = ultimate ? byName.get(ultimate.toLowerCase()) : undefined;
 		return entry ? spellOf(record(entry, "ability").mRootSpell) : undefined;
 	})();
-	const cooldowns = (rootSpell?.cooldownTime as unknown[] | undefined)?.slice(
-		1,
-		4,
-	);
+	const rank = (values: unknown) =>
+		(values as unknown[] | undefined)?.slice(1, 4);
+	const positive = (values: unknown[] | undefined) =>
+		values?.length === 3 && values.every((v) => typeof v === "number" && v > 0)
+			? (values as number[])
+			: null;
+	// Rule chargeRecharge: an ultimate with charges is gated by the time one
+	// charge takes to come back, not by the short wait between uses.
+	// Only when a charge takes longer than the wait between uses: Kayn's and
+	// LeBlanc's recharge fields time something else, below their cooldown.
+	const plain = positive(rank(rootSpell?.cooldownTime));
+	const charges = positive(rank(rootSpell?.mAmmoRechargeTime));
+	const recharge =
+		charges && plain && charges.every((v, i) => v > (plain[i] ?? 0))
+			? charges
+			: null;
+	const cooldowns = recharge ?? plain;
 	const isUltimate = (
 		(rootSpell?.mSpellTags as unknown[] | undefined) ?? []
 	).includes("Trait_Ultimate");
 	const ultCooldown =
-		isUltimate &&
-		cooldowns?.length === 3 &&
-		cooldowns.every((v) => typeof v === "number" && v > 0)
-			? (cooldowns.map((v) => Math.round((v as number) * 10) / 10) as [
+		isUltimate && cooldowns
+			? (cooldowns.map((v) => Math.round(v * 10) / 10) as [
 					number,
 					number,
 					number,
 				])
 			: null;
-	return { id, attackRange, ultCooldown, slots };
+	const ultRule = ultCooldown && recharge ? ("chargeRecharge" as const) : null;
+	return { id, attackRange, ultCooldown, ultRule, slots };
 }

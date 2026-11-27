@@ -11,7 +11,8 @@
 		"./real-logos": "./draft/real-logos.ts",
 		"./real-internationals": "./draft/real-internationals.ts",
 		"./real-photos": "./draft/real-photos.ts",
-		"./real-timelines": "./draft/real-timelines.ts"
+		"./real-timelines": "./draft/real-timelines.ts",
+		"./real-summoners": "./draft/real-summoners.ts"
 	},
 	"dependencies": {
 		"zod": "4.6.7"
