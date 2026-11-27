@@ -162,9 +162,36 @@ function profile(
 	return { phases: pick(PHASES), contests: pick(CONTESTS), players };
 }
 
+const staticMemo = new WeakMap<Scored, readonly MatchCause[]>();
+
 /** The causes of a profile part that do not depend on who is up. */
-export const staticCauses = (scored: Scored) =>
-	scored.causes.filter(({ key }) => !ATTRIBUTE_FACTORS.has(key));
+export function staticCauses(scored: Scored): readonly MatchCause[] {
+	let causes = staticMemo.get(scored);
+	if (!causes) {
+		causes = scored.causes.filter(({ key }) => !ATTRIBUTE_FACTORS.has(key));
+		staticMemo.set(scored, causes);
+	}
+	return causes;
+}
+
+interface LiveTerm {
+	readonly key: MatchCauseKey;
+	/** The weight of the factor in the part, as a fixed-point share. */
+	readonly weight: Fixed;
+}
+
+/** The attribute factors of each part with their weights, read once. */
+const LIVE_TERMS = Object.fromEntries(
+	Object.entries(WEIGHTS).map(([part, weights]) => [
+		part,
+		Object.entries(weights).flatMap(([factor, weight]): LiveTerm[] => {
+			const key = (factor.split(".")[0] ?? factor) as MatchCauseKey;
+			return ATTRIBUTE_FACTORS.has(key)
+				? [{ key, weight: (weight * PERCENT) as Fixed }]
+				: [];
+		}),
+	]),
+) as unknown as Record<Contest | Phase, readonly LiveTerm[]>;
 
 /**
  * The attribute causes of a contest or phase for the players that are up, with
@@ -179,9 +206,10 @@ export function liveCauses(
 	weights: Readonly<Record<Role, number>>,
 	up: readonly Role[],
 ): MatchCause[] {
-	return Object.entries(WEIGHTS[part]).flatMap(([factor, weight]) => {
-		const key = (factor.split(".")[0] ?? factor) as MatchCauseKey;
-		if (!ATTRIBUTE_FACTORS.has(key)) return [];
+	const terms = LIVE_TERMS[part];
+	const causes: MatchCause[] = new Array(terms.length);
+	for (let i = 0; i < terms.length; i++) {
+		const { key, weight } = terms[i] as LiveTerm;
 		let value: number;
 		if (key === "jungler") {
 			// A contest that does not count the jungler (a lane) keeps his factor.
@@ -198,13 +226,9 @@ export function liveCauses(
 			}
 			value = (value - (value % SCALE)) / SCALE;
 		}
-		return [
-			{
-				key,
-				points: mul((value - 50 * SCALE) as Fixed, (weight * PERCENT) as Fixed),
-			},
-		];
-	});
+		causes[i] = { key, points: mul((value - 50 * SCALE) as Fixed, weight) };
+	}
+	return causes;
 }
 
 /** Strength of each team by phase and contest, with its breakdown (F1–F5). */

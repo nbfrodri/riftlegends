@@ -11,12 +11,19 @@ import {
 	type Weights,
 	weightsOf,
 } from "../presence";
-import { type CONTESTS, liveCauses, staticCauses } from "../profile";
+import {
+	type CONTESTS,
+	liveCauses,
+	type PHASES,
+	type Profile,
+	staticCauses,
+} from "../profile";
 import { LANES, type Lane, type MatchState, SOUL } from "../state";
 import { chance } from "./chance";
 import { goldLead } from "./gold";
 
 type Contest = (typeof CONTESTS)[number];
+type Phase = (typeof PHASES)[number];
 
 /** Points of each buff in the contests it helps. Balance constants. */
 const DRAGON_POINTS = 20_000;
@@ -49,6 +56,33 @@ const LATE_GAME = 26;
 const phaseOf = (minute: number) =>
 	minute < MID_GAME ? "early" : minute < LATE_GAME ? "mid" : "late";
 
+const staticMemo = new WeakMap<
+	Profile,
+	Map<string, ReadonlyMap<MatchCauseKey, number>>
+>();
+
+/** The draft's own points of a contest in a phase, summed once per game. */
+function staticPoints(profile: Profile, contest: Contest, phase: Phase) {
+	let byPart = staticMemo.get(profile);
+	if (!byPart) {
+		byPart = new Map();
+		staticMemo.set(profile, byPart);
+	}
+	const name = `${contest}/${phase}`;
+	let points = byPart.get(name);
+	if (!points) {
+		const sums = new Map<MatchCauseKey, number>();
+		for (const part of [profile.contests[contest], profile.phases[phase]]) {
+			for (const { key, points } of staticCauses(part)) {
+				sums.set(key, (sums.get(key) ?? 0) + points);
+			}
+		}
+		byPart.set(name, sums);
+		points = sums;
+	}
+	return points;
+}
+
 function strength(
 	state: MatchState,
 	side: Side,
@@ -59,14 +93,11 @@ function strength(
 ) {
 	const { profile } = state.context[side];
 	const phase = phaseOf(state.minute);
-	const byKey = new Map<MatchCauseKey, number>();
-	const add = (key: MatchCauseKey, points: number) =>
-		byKey.set(key, (byKey.get(key) ?? 0) + points);
 	// The draft's factors stay as they are; the players' attributes count only
 	// the ones that are up (plan 08, #529).
-	for (const part of [profile.contests[contest], profile.phases[phase]]) {
-		for (const { key, points } of staticCauses(part)) add(key, points);
-	}
+	const byKey = new Map(staticPoints(profile, contest, phase));
+	const add = (key: MatchCauseKey, points: number) =>
+		byKey.set(key, (byKey.get(key) ?? 0) + points);
 	for (const part of [contest, phase] as const) {
 		for (const { key, points } of liveCauses(profile, part, weights, up)) {
 			add(key, points);
