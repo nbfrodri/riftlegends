@@ -11,18 +11,18 @@ export type SwissSeries = Swiss["rounds"][number]["series"][number];
 type Outcome = "qualified" | "eliminated";
 type Result = "win" | "loss";
 
-export const CARD_H = 40;
+export const CARD_H = 38;
 const CARD_GAP = 8;
 /** Inner padding of a block around its cards and rows. */
 export const BLOCK_PAD = 6;
 /** The block header, inside the block: its balance (and outcome). */
-export const POOL_HEAD = 22;
+export const POOL_HEAD = 20;
 const POOL_GAP = 10;
 export const ROUND_HEAD = 24;
 export const NOTE_H = 30;
 export const ROW_H = 20;
 const ROW_GAP = 2;
-const BOX_GAP = 10;
+const BOX_GAP = 8;
 export const COL_GAP = 32;
 
 interface PlacedPool {
