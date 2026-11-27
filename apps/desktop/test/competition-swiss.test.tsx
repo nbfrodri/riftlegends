@@ -6,6 +6,7 @@ import { afterEach, describe, expect, test, vi } from "vitest";
 import { SwissRounds } from "../src/renderer/competition/swiss/swiss-rounds";
 import { createAppRouter } from "../src/renderer/router";
 import { renderInLocale } from "./render-in-locale";
+import { expectWinnerMarker } from "./result-marker";
 import { hostCore, renderWithCore } from "./season-core";
 
 // Plan 31, U7 and U11 (#487): the Swiss stage in columns by balance, as the
@@ -151,6 +152,19 @@ describe("U7: Swiss by balance", () => {
 		expect(alpha?.firstElementChild?.tagName).toBe("svg");
 		expect(delta?.firstElementChild?.getAttribute("src")).toBe(logos.d);
 		expect(played.dataset.tooltip).toBe(played.getAttribute("aria-label"));
+		expectWinnerMarker(played);
+	});
+
+	test("block headers are centred", async () => {
+		await show();
+		const header = within(round("Round 1"))
+			.getByRole("group", { name: "0-0" })
+			.querySelector("[data-block-header]");
+		expect(header?.className).toContain("text-center");
+		const box = screen
+			.getByRole("region", { name: "Qualified at 2-0" })
+			.querySelector("[data-block-header]");
+		expect(box?.className).toContain("justify-center");
 	});
 
 	test("teams that qualify or are eliminated appear after the round that decides it, under their record", async () => {

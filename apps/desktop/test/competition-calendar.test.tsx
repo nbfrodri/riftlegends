@@ -8,6 +8,7 @@ import {
 } from "../src/renderer/competition/calendar/calendar";
 import type { ScheduleSlot } from "../src/renderer/competition/schedule-view";
 import { renderInLocale } from "./render-in-locale";
+import { expectWinnerMarker } from "./result-marker";
 
 // #593: the calendar of the season in three views, day, week and month. Day 0
 // is the 1st of January 2026 (a Thursday); day 40 is Tuesday 10 February.
@@ -144,6 +145,7 @@ describe("week view", () => {
 		});
 		expect(within(played).getByText("GEN").tagName).toBe("STRONG");
 		expect(within(played).getByText("T1").tagName).not.toBe("STRONG");
+		expectWinnerMarker(played);
 		await user.click(played);
 		expect(open).toHaveBeenCalledWith(
 			expect.objectContaining({ id: "played" }),
