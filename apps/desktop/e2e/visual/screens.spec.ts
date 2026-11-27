@@ -359,7 +359,7 @@ test.describe("Competición", () => {
 		await nav(appWindow).getByRole("button", { name: "Competición" }).click();
 		await expect(
 			appWindow
-				.getByRole("list", { name: "Competitions" })
+				.getByRole("list", { name: "Competiciones" })
 				.getByRole("heading", { name: "Rift League" }),
 		).toBeVisible({ timeout: 30_000 });
 		// Play the regular stage so the standings, the calendar and the teams have results.
