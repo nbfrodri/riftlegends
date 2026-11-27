@@ -344,3 +344,35 @@ test("tournament.check answers the error a create would give, without creating",
 	});
 	created(core, valid);
 });
+
+test("custom stages carry catalog names: the knockout is the elimination", () => {
+	const names = (stages: object[], teams: string[]) => {
+		const core = client();
+		created(core, custom(stages, teams));
+		const overview = core.query("season.overview", {}) as {
+			view: { competitions: { stages: { stage: string; name?: object }[] }[] };
+		};
+		return overview.view.competitions[0]?.stages.map(({ stage, name }) => [
+			stage,
+			name,
+		]);
+	};
+	expect(
+		names(
+			[
+				{ type: "roundRobin", bestOf: 1 },
+				{ type: "singleElim", size: 4, bestOf: 3 },
+			],
+			fictional,
+		),
+	).toEqual([
+		["league", { stage: "league" }],
+		["playoffs", { stage: "elimination" }],
+	]);
+	expect(
+		names([{ type: "doubleElim", bestOf: 1 }], fictional.slice(0, 4)),
+	).toEqual([["bracket", { stage: "elimination" }]]);
+	expect(names([{ type: "swiss", bestOf: 1 }], fictional)).toEqual([
+		["swiss", { stage: "swiss" }],
+	]);
+});

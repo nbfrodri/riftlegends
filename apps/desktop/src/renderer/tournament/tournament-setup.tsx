@@ -32,7 +32,6 @@ import {
 	sameField,
 } from "./tournament-form";
 import { CustomEditor, Setting } from "./tournament-format";
-import { TournamentReady } from "./tournament-ready";
 import { CustomTeams, FieldError, PresetSlots } from "./tournament-teams";
 
 const noFact = () => false;
@@ -73,7 +72,8 @@ function useErrorText() {
 /** U9: preset or custom, teams, my team or watch only, fearless and seed. */
 export function TournamentSetup(props: {
 	sessionId: number;
-	onNew: () => void;
+	/** The tournament exists: the session's position, and the user's team if any. */
+	onCreated: (position: number, humanTeam: string | null) => void;
 }) {
 	const { t } = useTranslation();
 	const { sessionId } = props;
@@ -110,7 +110,6 @@ export function TournamentSetup(props: {
 	const [human, setHuman] = useState("");
 	const [fearless, setFearless] = useState<(typeof FEARLESS)[number]>("hard");
 	const [seed, setSeed] = useState(randomSeed);
-	const [created, setCreated] = useState<number | null>(null);
 	const [rejected, setRejected] = useState<CoreRequestError | null>(null);
 	const { mutateAsync, isPending } = useCoreCommand();
 	const errorText = useErrorText();
@@ -147,7 +146,7 @@ export function TournamentSetup(props: {
 			sessionId,
 			params: payload ?? {},
 		},
-		{ affectedBy: noFact, enabled: payload !== null && created === null },
+		{ affectedBy: noFact, enabled: payload !== null },
 	);
 	const error = check.data?.error ?? null;
 	const stageIds = preset === null ? customStageIds(custom) : [];
@@ -192,7 +191,7 @@ export function TournamentSetup(props: {
 				expectedPosition: 0,
 				payload,
 			});
-			setCreated(result.position);
+			props.onCreated(result.position, humanTeam || null);
 		} catch (caught) {
 			if (!(caught instanceof CoreRequestError)) throw caught;
 			setRejected(caught);
@@ -200,15 +199,6 @@ export function TournamentSetup(props: {
 	}
 
 	if (!options.data) return null;
-	if (created !== null)
-		return (
-			<TournamentReady
-				name={t(preset ? `tournament.preset.${preset}` : "tournament.custom")}
-				count={teams.length}
-				team={humanTeam ? nameOf(humanTeam) : null}
-				onNew={props.onNew}
-			/>
-		);
 
 	const modes: Mode[] = [...TOURNAMENT_PRESETS, "custom"];
 	const generalError =

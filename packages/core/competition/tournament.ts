@@ -126,6 +126,15 @@ const STAGE_IDS: Record<CustomStage["type"], string> = {
 	doubleElim: "bracket",
 };
 
+/** Keys of the `competition.stage` catalog: the knockout reads «Eliminatoria». */
+const STAGE_NAMES: Record<CustomStage["type"], string> = {
+	roundRobin: "league",
+	groups: "groups",
+	swiss: "swiss",
+	singleElim: "elimination",
+	doubleElim: "elimination",
+};
+
 /** The plan 12 block for one stage of the editor, or `undefined` if it cannot be built. */
 function playOf({ type, bestOf, groups }: CustomStage, size: number) {
 	switch (type) {
@@ -192,6 +201,7 @@ function customFormat(
 		if (!play) return invalid(`stages.${index}.play.size`);
 		built.push({
 			id: index === 0 ? STAGE_IDS[stage.type] : "playoffs",
+			name: { stage: STAGE_NAMES[stage.type] },
 			window: WINDOWS[index],
 			entrants:
 				index === 0

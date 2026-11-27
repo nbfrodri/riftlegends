@@ -3,6 +3,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import type { CoreFact } from "../../../shared/bridge";
 import { CoreErrorMessage, useCoreQuery } from "../../core";
+import { useActiveSeason } from "../active-season";
 import { useTeams } from "../season";
 import { Bracket } from "./bracket";
 
@@ -22,6 +23,8 @@ export function StageBracket({
 }) {
 	const { t } = useTranslation();
 	const navigate = useNavigate();
+	// The tournament opens its series under /torneo, the exhibition season under /competicion.
+	const { seriesRoute } = useActiveSeason();
 	const team = useTeams(sessionId);
 	const bracket = useCoreQuery<BracketView | null>(
 		{
@@ -44,7 +47,7 @@ export function StageBracket({
 			team={team}
 			onOpenSeries={(series) =>
 				void navigate({
-					to: "/competicion/serie/$series",
+					to: seriesRoute,
 					params: { series },
 				})
 			}
