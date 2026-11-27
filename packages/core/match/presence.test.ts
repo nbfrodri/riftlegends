@@ -325,7 +325,7 @@ describe("the events say who was down (#529)", () => {
 
 	it("gives the numbers cause to the side with more presence, seen from the winner", () => {
 		let checked = 0;
-		for (let seed = 0; seed < 25; seed++) {
+		for (let seed = 0; seed < 40; seed++) {
 			const { events } = playMatch(matchSetup({ seed }), MATCH_CONTESTS);
 			for (const event of events) {
 				if (event.kind !== "fight" || !event.down) continue;

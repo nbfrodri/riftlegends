@@ -5,6 +5,7 @@ import { describe, expect, it } from "vitest";
 import { checkInternational } from "./international-check.ts";
 import {
 	buildInternationalFormats,
+	formatSources,
 	internationalFormatFiles,
 	unverifiedFormats,
 } from "./international-formats.ts";
@@ -128,7 +129,7 @@ describe("R1 each format reproduces the 2026 series", () => {
 describe("R2 unconfirmed data is marked and listed", () => {
 	it("marks the formats as not verified and lists the reasons", () => {
 		const list = unverifiedFormats(formats);
-		expect(list.map(({ id }) => id)).toEqual(["first-stand", "msi", "worlds"]);
+		expect(list.map(({ id }) => id)).toEqual(["msi", "worlds"]);
 		for (const { id, reasons } of list) {
 			expect(formats[id as keyof typeof formats].verified).toBe(false);
 			expect(reasons.length).toBeGreaterThan(0);
@@ -145,7 +146,10 @@ describe("R2 unconfirmed data is marked and listed", () => {
 		expect(byId.msi).toMatch(/11 play-in teams/);
 		expect(byId.worlds).toMatch(/19 teams/);
 		expect(byId.worlds).toMatch(/Swiss/);
-		expect(byId["first-stand"]).toMatch(/seeding/);
+		expect(byId.msi).toMatch(/First Stand/);
+		expect(byId.msi).toMatch(/draw/);
+		expect(byId.worlds).toMatch(/tiebreak/i);
+		expect(byId.worlds).toMatch(/quarterfinal/i);
 		for (const text of Object.values(byId))
 			expect(text).not.toMatch(/not read from the rulebook yet/);
 	});
@@ -157,7 +161,7 @@ describe("R2 unconfirmed data is marked and listed", () => {
 		} as typeof formats.msi;
 		expect(
 			unverifiedFormats({ ...formats, msi: verified }).map(({ id }) => id),
-		).toEqual(["first-stand", "worlds"]);
+		).toEqual(["worlds"]);
 	});
 
 	it("models the First Stand groups as GSL without a grand final", () => {
@@ -169,6 +173,16 @@ describe("R2 unconfirmed data is marked and listed", () => {
 			expect(play).toMatchObject({ type: "doubleElim", grandFinal: null });
 		const reasons = unverifiedFormats(formats).flatMap((f) => f.reasons);
 		expect(reasons.join(" ")).not.toMatch(/grand final/i);
+	});
+
+	it("verifies First Stand and cites a source for every verified format", () => {
+		expect(formats["first-stand"].verified).toBe(true);
+		for (const [id, competition] of Object.entries(formats)) {
+			if (!competition.verified) continue;
+			const sources = formatSources(id as keyof typeof formats);
+			expect(sources.length).toBeGreaterThan(0);
+			for (const url of sources) expect(url).toMatch(/^https:\/\//);
+		}
 	});
 });
 

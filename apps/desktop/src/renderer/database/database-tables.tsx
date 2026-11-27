@@ -118,7 +118,7 @@ export function PlayerTable({
 						<CellText>{country(player.nationality)}</CellText>
 					</span>
 				),
-				width: "8.75rem",
+				width: "7.25rem",
 			},
 			{
 				id: "age",
@@ -128,7 +128,7 @@ export function PlayerTable({
 					playerAge(player.birthDate) ?? Number.MAX_SAFE_INTEGER,
 				cell: (player) => <PlayerAge birthDate={player.birthDate} />,
 				numeric: true,
-				width: "3.75rem",
+				width: "5.25rem",
 			},
 			{
 				id: "role",
@@ -147,6 +147,7 @@ export function PlayerTable({
 				header: t("market.column.team"),
 				value: (player) => player.teamName,
 				cell: (player) => <TeamCell id={player.team} name={player.teamName} />,
+				width: "9.5rem",
 			},
 			{
 				id: "league",
@@ -241,12 +242,14 @@ export function CoachTable({ teams }: { teams: readonly Team[] }) {
 				cell: (team) => (
 					<span className="font-semibold">{team.coach.name}</span>
 				),
+				width: "9.5rem",
 			},
 			{
 				id: "team",
 				header: t("market.column.team"),
 				value: (team) => team.name,
 				cell: (team) => <TeamCell id={team.id} name={team.name} />,
+				width: "9.5rem",
 			},
 			{
 				id: "league",

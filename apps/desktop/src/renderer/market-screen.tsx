@@ -115,6 +115,7 @@ export function MarketScreen({
 				id: "name",
 				header: t("market.column.player"),
 				value: (player) => player.name,
+				width: "7rem",
 			},
 			{
 				id: "role",
@@ -148,6 +149,7 @@ export function MarketScreen({
 						<CellText>{player.team}</CellText>
 					</CellFilter>
 				),
+				width: "7rem",
 			},
 			{
 				id: "age",
@@ -200,7 +202,7 @@ export function MarketScreen({
 				header: t("market.column.contractEnd"),
 				value: (player) => player.contractEnd,
 				cell: (player) => month.format(new Date(player.contractEnd)),
-				width: "7.5rem",
+				width: "6.5rem",
 			},
 			{
 				id: "salary",
@@ -208,7 +210,7 @@ export function MarketScreen({
 				value: (player) => player.salary,
 				cell: (player) => euros.format(player.salary),
 				numeric: true,
-				width: "8.5rem",
+				width: "7rem",
 			},
 		];
 	}, [t, language, euros]);

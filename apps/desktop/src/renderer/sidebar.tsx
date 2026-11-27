@@ -1,4 +1,3 @@
-import { Kbd } from "@rift-legends/ui-kit/components/kbd";
 import { Tooltip } from "@rift-legends/ui-kit/components/tooltip";
 import { cn } from "@rift-legends/ui-kit/lib/utils";
 import { useNavigate } from "@tanstack/react-router";
@@ -71,8 +70,14 @@ const sections: readonly Section[] = [
 	{ label: "shell.nav.competition", icon: Trophy, to: "/competicion" },
 	{ label: "shell.nav.news", icon: Newspaper },
 	{ label: "shell.nav.history", icon: History },
-	{ label: "shell.nav.settings", icon: SlidersHorizontal, to: "/ajustes" },
 ];
+
+/** Pinned at the foot of the sidebar, below the sections that scroll. */
+const settings: Section = {
+	label: "shell.nav.settings",
+	icon: SlidersHorizontal,
+	to: "/ajustes",
+};
 
 const keyboardMoves: Record<string, (index: number, count: number) => number> =
 	{
@@ -118,6 +123,51 @@ export function Sidebar({
 	);
 	const ToggleIcon = expanded ? PanelLeftClose : PanelLeftOpen;
 
+	const renderSection = ({ label: key, icon: Icon, to }: Section) => {
+		const label = t(key);
+		const current =
+			to !== undefined && (pathname === to || pathname.startsWith(`${to}/`));
+		return (
+			<Tooltip
+				key={key}
+				disabled={expanded}
+				side="right"
+				heading={to ? undefined : label}
+				content={to ? label : comingSoon}
+			>
+				<button
+					type="button"
+					aria-label={label}
+					aria-current={current ? "page" : undefined}
+					aria-disabled={to ? undefined : true}
+					aria-describedby={to ? undefined : comingSoonId}
+					tabIndex={to ? undefined : -1}
+					onClick={to ? () => void navigate({ to }) : undefined}
+					className={cn(
+						"flex h-[clamp(38px,4.8vh,44px)] shrink-0 items-center gap-[11px] whitespace-nowrap px-3 text-left font-[550]",
+						to
+							? "press cursor-pointer text-text hover:bg-surface"
+							: "cursor-default text-muted",
+						current &&
+							"bg-surface text-action shadow-[inset_2px_0_var(--color-action)]",
+					)}
+				>
+					<Icon {...icon} className="shrink-0" />
+					{expanded && (
+						<span className="min-w-0">
+							<span className="block text-[14px] leading-[1.15]">{label}</span>
+							{!to && (
+								<span className="mt-0.5 block font-normal text-[11px] leading-[1.15]">
+									{comingSoon}
+								</span>
+							)}
+						</span>
+					)}
+				</button>
+			</Tooltip>
+		);
+	};
+
 	return (
 		<aside
 			aria-label={t("shell.sidebar.label")}
@@ -127,7 +177,14 @@ export function Sidebar({
 			)}
 		>
 			{/* Placeholder club until careers exist (catalog keys `placeholder.*`). */}
-			<div className="flex min-h-[84px] shrink-0 items-center gap-2.5 border-line border-b px-3">
+			<div
+				className={cn(
+					"flex min-h-[84px] shrink-0 items-center border-line border-b",
+					expanded
+						? "gap-2.5 px-3"
+						: "flex-col justify-center gap-1.5 px-1.5 py-2",
+				)}
+			>
 				<div
 					aria-hidden="true"
 					className="grid h-[38px] w-[34px] shrink-0 place-items-center bg-surface text-side-blue [clip-path:polygon(0_0,100%_0,100%_75%,50%_100%,0_75%)]"
@@ -147,93 +204,45 @@ export function Sidebar({
 						{t("placeholder.club.seasonDate")}
 					</time>
 				</div>
+				<Tooltip
+					side="right"
+					content={toggleLabel}
+					shortcut={t("shell.sidebar.shortcut")}
+				>
+					<button
+						type="button"
+						aria-label={toggleLabel}
+						aria-controls={navId}
+						aria-expanded={expanded}
+						aria-keyshortcuts="Alt+B"
+						onClick={onToggle}
+						className={cn(
+							"press grid size-8 shrink-0 cursor-pointer place-items-center rounded-control text-muted hover:bg-surface hover:text-text",
+							expanded && "ml-auto",
+						)}
+					>
+						<ToggleIcon aria-hidden="true" size={18} strokeWidth={1.65} />
+					</button>
+				</Tooltip>
 			</div>
 
 			<nav
 				id={navId}
 				aria-label={t("shell.nav.label")}
 				onKeyDown={moveFocus}
-				className="flex min-h-0 flex-1 flex-col gap-0.5 overflow-x-hidden overflow-y-auto px-1.5 pt-2.5 pb-1.5"
+				className="flex min-h-0 flex-1 flex-col"
 			>
 				<span id={comingSoonId} hidden>
 					{comingSoon}
 				</span>
-				{sections.map(({ label: key, icon: Icon, to }) => {
-					const label = t(key);
-					const current =
-						to !== undefined &&
-						(pathname === to || pathname.startsWith(`${to}/`));
-					return (
-						<Tooltip
-							key={key}
-							disabled={expanded}
-							side="right"
-							heading={to ? undefined : label}
-							content={to ? label : comingSoon}
-						>
-							<button
-								type="button"
-								aria-label={label}
-								aria-current={current ? "page" : undefined}
-								aria-disabled={to ? undefined : true}
-								aria-describedby={to ? undefined : comingSoonId}
-								tabIndex={to ? undefined : -1}
-								onClick={to ? () => void navigate({ to }) : undefined}
-								className={cn(
-									"flex h-[clamp(38px,4.8vh,44px)] shrink-0 items-center gap-[11px] whitespace-nowrap px-3 text-left font-[550]",
-									to
-										? "press cursor-pointer text-text hover:bg-surface"
-										: "cursor-default text-muted",
-									current &&
-										"bg-surface text-action shadow-[inset_2px_0_var(--color-action)]",
-									to === "/ajustes" && "mt-auto",
-								)}
-							>
-								<Icon {...icon} className="shrink-0" />
-								{expanded && (
-									<span className="min-w-0">
-										<span className="block text-[14px] leading-[1.15]">
-											{label}
-										</span>
-										{!to && (
-											<span className="mt-0.5 block font-normal text-[11px] leading-[1.15]">
-												{comingSoon}
-											</span>
-										)}
-									</span>
-								)}
-							</button>
-						</Tooltip>
-					);
-				})}
+				<div className="flex min-h-0 flex-1 flex-col gap-0.5 overflow-x-hidden overflow-y-auto px-1.5 pt-2.5 pb-1.5">
+					{sections.map(renderSection)}
+				</div>
+				{/* Ajustes is pinned below the sections, always visible (#614). */}
+				<div className="shrink-0 border-line border-t px-1.5 py-1.5">
+					{renderSection(settings)}
+				</div>
 			</nav>
-
-			<Tooltip
-				disabled={expanded}
-				side="right"
-				content={toggleLabel}
-				shortcut={t("shell.sidebar.shortcut")}
-			>
-				<button
-					type="button"
-					aria-label={toggleLabel}
-					aria-controls={navId}
-					aria-expanded={expanded}
-					aria-keyshortcuts="Alt+B"
-					onClick={onToggle}
-					className="flex h-11 shrink-0 cursor-pointer items-center gap-[11px] border-line border-t pr-2.5 pl-[18px] text-left text-muted hover:bg-surface"
-				>
-					<ToggleIcon aria-hidden="true" size={19} strokeWidth={1.65} />
-					{expanded && (
-						<>
-							<span className="min-w-0 font-[550] text-[12px] leading-[1.15]">
-								{toggleLabel}
-							</span>
-							<Kbd className="ml-auto">{t("shell.sidebar.shortcut")}</Kbd>
-						</>
-					)}
-				</button>
-			</Tooltip>
 		</aside>
 	);
 }

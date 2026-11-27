@@ -26,6 +26,8 @@ const DRAGON_POINTS = 20_000;
  * leader ahead in gold too (K16).
  */
 const STRUCTURE_POINTS = 1_300_000;
+/** Share of those points a fight counts for the side that opened the base (#530). */
+const FIGHT_STRUCTURE_PERCENT = 160;
 const SOUL_POINTS = 60_000;
 const BUFF_POINTS: Record<
 	"herald" | "baron" | "elder",
@@ -39,7 +41,6 @@ const BUFF_POINTS: Record<
 const EDGE_SCALE = 1550 as Fixed;
 const RISK_SCALE = { safe: 18_000, balanced: 10_000, risky: 2000 } as const;
 const AGGRESSION_SCALE = 28;
-const FIGHT_PUSH_POINTS = 500_000;
 const SPREE_POINTS = 500;
 const XP_POINTS = 20;
 export const MID_GAME = 14;
@@ -94,17 +95,18 @@ function strength(
 		}
 	}
 	const own = state[side];
-	if (
-		contest === "siege" &&
-		state.minute > 0 &&
-		own.fightPushAt === state.minute
-	)
-		add("fight", FIGHT_PUSH_POINTS);
 	const rival = state[side === "blue" ? "red" : "blue"];
 	const base =
 		rival.nexusTowers +
 		LANES.filter((lane) => rival.inhibitors[lane] > state.minute).length;
 	if (contest === "siege") add("structures", base * STRUCTURE_POINTS);
+	else if (contest === "fight") {
+		// The side that has the rival's base open fights with the map behind it.
+		add(
+			"structures",
+			(base * STRUCTURE_POINTS * FIGHT_STRUCTURE_PERCENT) / 100,
+		);
+	}
 	add("dragons", own.dragons * DRAGON_POINTS);
 	if (own.dragons >= SOUL) add("soul", SOUL_POINTS);
 	for (const buff of ["herald", "baron", "elder"] as const) {

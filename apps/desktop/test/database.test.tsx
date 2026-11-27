@@ -243,3 +243,18 @@ it("shows the age in the player card, in Spanish too", async () => {
 	);
 	expect(card.getByText("31 años")).toBeTruthy();
 });
+
+// Every column declares its width, so the space left over is spread over
+// all of them instead of pushing League and Rating to the far right.
+it("gives every column a width so the spacing between columns is even", async () => {
+	const user = await open();
+	const widths = () =>
+		Array.from(document.querySelectorAll("colgroup col")).map(
+			(col) => (col as HTMLElement).style.width,
+		);
+	expect(widths().length).toBeGreaterThan(0);
+	expect(widths().every(Boolean)).toBe(true);
+	await user.click(tab("Coaches"));
+	expect(widths().length).toBeGreaterThan(0);
+	expect(widths().every(Boolean)).toBe(true);
+});

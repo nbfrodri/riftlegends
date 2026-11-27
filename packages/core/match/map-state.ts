@@ -8,8 +8,6 @@ export interface SideMap {
 	/** Towers this side has lost in each lane (0–3) and at its nexus (0–2). */
 	readonly towers: Readonly<Record<Lane, number>>;
 	readonly nexusTowers: number;
-	/** Minute the side can press its advantage after a fight. */
-	readonly fightPushAt: number;
 	/** Minute each lost inhibitor is back; it is down while that is later. */
 	readonly inhibitors: Readonly<Record<Lane, number>>;
 }

@@ -6,7 +6,10 @@ import { type Contest, paid, roll } from "./contest";
 import { edge, outcome } from "./edge";
 import { trySteal } from "./steal";
 
-type Objective = "dragon" | "herald" | "baron" | "elder";
+export type Objective = "dragon" | "herald" | "baron" | "elder";
+
+/** Chance, per 10,000 and minute, that a spawned baron or elder is contested without a fight. */
+const UNFORCED_PIT = 2500;
 
 /** Edge of a team whose strategy puts this objective first. A balance constant. */
 const PRIORITY_POINTS = 30_000;
@@ -22,6 +25,10 @@ const AVAILABLE: Record<Objective, (state: MatchState) => boolean> = {
 	elder: soul,
 };
 
+/** Whether the objective has spawned and can be taken now. */
+export const objectiveUp = (state: MatchState, kind: Objective) =>
+	state.minute >= state.objectives[kind] && AVAILABLE[kind](state);
+
 const FAVOURED_BY: Record<Objective, "dragon" | "baron"> = {
 	dragon: "dragon",
 	elder: "dragon",
@@ -32,9 +39,12 @@ const FAVOURED_BY: Record<Objective, "dragon" | "baron"> = {
 /** The opening contest decides who controls the pit and starts the objective. */
 const objective = (kind: Objective, id: number): Contest => ({
 	id,
-	due: (state) =>
-		state.minute >= state.objectives[kind] && AVAILABLE[kind](state),
+	due: (state) => objectiveUp(state, kind),
 	resolve(state, rng, second) {
+		// Nobody walks into the pit on its own: the big objectives are mostly
+		// taken in the window after a won fight (plan 08, #530).
+		if ((kind === "baron" || kind === "elder") && !roll(rng, UNFORCED_PIT))
+			return [];
 		const priority = (side: Side): MatchCause | undefined =>
 			state.context[side].strategy.objectives === FAVOURED_BY[kind]
 				? { key: "strategy", points: PRIORITY_POINTS }
