@@ -235,17 +235,18 @@ test("keeps row navigation inside the filtered rows", async () => {
 	expect(document.activeElement).toBe(shown[2]);
 });
 
-test("right-aligns numeric columns with tabular figures, left-aligns the rest", () => {
+// Centred numbers keep the gap even on both sides of a numeric column (#609).
+test("centres numeric columns with tabular figures, left-aligns the rest", () => {
 	render(<Table />);
 	const [firstRow] = rows();
 	const cells = within(firstRow as HTMLElement).getAllByRole("cell");
 	const [name, , age] = cells as HTMLElement[];
 	for (const element of [age, header("Age")] as HTMLElement[]) {
-		expect(element.classList.contains("text-right")).toBe(true);
+		expect(element.classList.contains("text-center")).toBe(true);
 		expect(element.classList.contains("tabular-nums")).toBe(true);
 	}
-	expect(name?.classList.contains("text-right")).toBe(false);
-	expect(header("Player").classList.contains("text-right")).toBe(false);
+	expect(name?.classList.contains("text-center")).toBe(false);
+	expect(header("Player").classList.contains("text-center")).toBe(false);
 });
 
 // Virtualised window: a 240px region shows 10 rows plus 8 of overscan, so the

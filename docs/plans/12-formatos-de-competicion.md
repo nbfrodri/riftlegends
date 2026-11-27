@@ -81,7 +81,7 @@ Las letras agrupan por módulo. Cada fila es un test (o varios) que se escribe a
 | B3 | Doble eliminación: el perdedor cae al cuadro inferior en el hueco que fija el formato | Cuadro de 4, 6 y 8 |
 | B4 | La final no se repite si gana el que viene del cuadro inferior (sin reset, como en LoL) | Opción `reset` disponible para el modo Torneo |
 | B5 | El Bo de cada ronda sale del formato | Bo3 en las primeras rondas y Bo5 después (LEC Versus) |
-| B6 | Cuadro fijo por sembrado, sin elección de rival; el mejor sembrado tiene la prioridad del game 1 (decisiones 3 y 8) | Cruce entre equipos con el mismo sembrado en grupos distintos: lo decide la clasificación de origen |
+| B6 | Cuadro fijo por sembrado, sin elección de rival (los internacionales con sorteo, en la [§6](#6-sorteos-reales-de-los-internacionales-27-11-2026)); el mejor sembrado tiene la prioridad del game 1 (decisiones 3 y 8) | Cruce entre equipos con el mismo sembrado en grupos distintos: lo decide la clasificación de origen |
 
 ### Encadenado, sembrado y plazas (`core/competition/season.ts`, `qualification.ts`)
 
@@ -266,7 +266,7 @@ No se implementan aquí (plan 24), pero el esquema ya los cubre: la serie de pro
 
 Se conservan los cupos del #424 en orden LCK, LPL, LEC, LCP, LCS y CBLOL. First Stand usa 2/2/1/1/1/1, MSI 2/2/2/2/2/1 y Worlds 4/4/3/3/3/2. Las plazas bajan por la clasificación de la fase que las decide. Se aplica el desempate Bo3 en cortes y el cuadro fijo por sembrado. Los desempates, el sembrado exacto y las vías oficiales que dependen de puntos siguen pendientes. Los JSON los marcan con `verified: false` y guardan los motivos.
 
-**Verificación contra los reglamentos (25-11-2026, #427 R2).** Los reglamentos oficiales de 2026 de casi todas las ligas no se pudieron leer (están en sitios dinámicos o en documentos no publicados). Solo el LCK tiene reglamento oficial accesible, y es el de 2025. Ningún formato pasa a `verified: true`.
+**Verificación contra los reglamentos (25-11-2026, #427 R2).** Los reglamentos oficiales de 2026 de casi todas las ligas no se pudieron leer (están en sitios dinámicos o en documentos no publicados). Solo el LCK tiene reglamento oficial accesible, y es el de 2025. Solo First Stand pasa a `verified: true` (27-11, #427); MSI y Worlds siguen en `false` por los puntos que se indican.
 
 | Competición | Regla confirmada | Fuente | Qué cambió |
 | --- | --- | --- | --- |
@@ -277,6 +277,9 @@ Se conservan los cupos del #424 en orden LCK, LPL, LEC, LCP, LCS y CBLOL. First 
 | Worlds | 19 equipos (3 de LCK, LCS, LCP, LEC y LPL; 2 de CBLOL; campeón de MSI y una plaza de la región subcampeona) y play-in Bo5 de 4 | [MSI y Worlds](https://lolesports.com/en-US/news/msi-and-worlds-updates) | Ya coincidía (4/4/3/3/3/2). Faltan los Bo del Swiss y de los cuartos, el sembrado y los desempates |
 | First Stand | Dos grupos de doble eliminación y Bo5 en todo | [Cobertura de Dot Esports](https://dotesports.com/league-of-legends/news/league-of-legends-esports-first-stand-2026-format-changes-first-selection) (secundaria) | Motivo más concreto |
 | LEC | Tras igualar en victorias, enfrentamiento directo, puestos de splits anteriores, fuerza de victoria, tiempo de victoria y sorteo | [Bo3.gg](https://bo3.gg/lol/news/riot-games-changed-the-rules-of-the-lec-summer-split-right-in-the-middle-of-the-season) (secundaria, 2025) | Implementado en #535. Se usan las tablas de fase regular, de la más reciente a la más antigua. La fuerza suma las series ganadas por los rivales vencidos. El tiempo suma los segundos de los mapas ganados en series ganadas y se omite si faltan duraciones. En un corte, si los criterios dejan un empate, se juega Bo3 antes del sorteo. |
+| First Stand | Dos grupos GSL de 4 (misma región nunca junta; grupo A: LPL1, LEC1, LCP1, LCK2; B: LCK1, LCS1, CBLOL1, LPL2), Bo5 en todo y semifinales cruzadas (A1–B2, B1–A2) y final. **Verificado** | [Wikipedia](https://en.wikipedia.org/wiki/2026_First_Stand_Tournament), [lolesports](https://lolesports.com/en-US/news/msi-and-worlds-updates) | `first-stand.json` pasa a `verified: true`. El reparto en grupos es un sorteo real y aquí va fijo por región. El GSL no tiene desempates |
+| MSI (#427) | Play-in GSL de 4 en Bo5 (2º de LCK, LCS, LCP y LEC) y cuadro de 8 en doble eliminación Bo5 con gran final Bo5; entran directos los primeros de las seis regiones y el segundo de la región mejor clasificada en First Stand | [lolesports](https://lolesports.com/en-US/news/msi-and-worlds-updates), [Wikipedia](https://en.wikipedia.org/wiki/2026_Mid-Season_Invitational) | Estructura ya coincidía; sigue `verified: false`: la región que salta el play-in está fijada en LPL en vez de leerse de First Stand, el cuadro real sale de un sorteo por cuatro niveles (1–4, 2–3, misma región en lados opuestos) y el juego usa cuadro fijo por sembrado; no hay desempates ni reset publicados |
+| Worlds (#427) | Play-in de 4 en doble eliminación Bo5 con sorteo libre (pasa 1); Swiss de 16, 5 rondas a 3 victorias o derrotas (Bo1; Bo3 si clasifica o elimina), ronda 1 por bombos (1–4 y 2–3) sin misma región, sin revanchas; eliminatoria Bo5 | [Primer de lolesports](https://lolesports.com/en-US/news/worlds-2026-primer) | Estructura ya coincidía; sigue `verified: false`: los desempates del Swiss no están publicados y los cuartos son un sorteo (3-0 contra 3-2, el resto al azar) que el juego sustituye por cuadro fijo por puesto del Swiss |
 | LPL, LCS, CBLOL | Reglamentos oficiales de 2026 pendientes | — | Se conservan los criterios provisionales. |
 
 Los detalles de cálculo de LEC y el desempate entre grupos de la LCK Cup quedan provisionales hasta confirmarlos en el reglamento.
@@ -309,9 +312,96 @@ Volumen de un año real: unas **2.400 partidas** de liga en el snapshot, más un
 | --- | --- | --- |
 | 1 | Sección «Competición» y modo Torneo | Plan aparte dentro de la Fase 4, no en este |
 | 2 | Empate en un corte (clasificar o quedar fuera) | Serie de desempate con Bo configurable por formato (Bo1, Bo3 o Bo5); **Bo3 por defecto** en los personalizados y el del reglamento en los reales. Fuera de los cortes, criterios y después sorteo |
-| 3 | Elección de rival en playoffs (LCK, LPL) | **No.** Cuadro fijo por sembrado |
+| 3 | Elección de rival en playoffs (LCK, LPL) | **No.** Cuadro fijo por sembrado. En MSI y Worlds lo sustituyen los sorteos reales ([§6](#6-sorteos-reales-de-los-internacionales-27-11-2026), decisión del usuario del 27-11) |
 | 4 | Formato personalizado que no cabe en el calendario | Más series por día, hasta 4 en total. Si aún no cabe, se rechaza al crear la carrera con una sugerencia para quitar una vuelta o reducir el número de equipos. La temporada nunca se alarga |
 | 5 | Presupuesto de un año IA contra IA | ≤ 60 s en el Arch del usuario; en el CI, un split con un límite proporcional |
 | 6 | Formatos internacionales | El pipeline trae sus páginas de Leaguepedia y se comprueban como las ligas |
 | 7 | Invitados de un solo split | Cada formato se adapta ahora a los equipos de su liga; los invitados de segunda división llegan en la Fase 6 |
 | 8 | Prioridad del game 1 | El mejor sembrado en eliminatorias; sorteo en liga y Swiss |
+
+## 6. Sorteos reales de los internacionales (27-11-2026)
+
+**Decisión del usuario (27-11):** MSI y Worlds simulan sus **sorteos reales** en lugar del cuadro fijo por sembrado. La decisión 3 sigue para las ligas (sin elección de rival y cuadro fijo). Fuentes de las reglas: [primer de Worlds 2026](https://lolesports.com/en-US/news/worlds-2026-primer) y [MSI y Worlds](https://lolesports.com/en-US/news/msi-and-worlds-updates), resumidas en #620.
+
+| Fase | Sorteo real | Restricciones |
+| --- | --- | --- |
+| MSI, cuadro de 8 | Cuatro niveles de 2 equipos; nivel 1 contra 4 y 2 contra 3 | Misma región en mitades opuestas del cuadro |
+| Worlds, play-in de 4 | Sorteo libre | Ninguna |
+| Worlds, cuartos | Los 3-0 contra los 3-2; el resto, al azar | Sin revancha del Swiss |
+| First Stand, grupos | Bombos con el sorteo de grupos actual | Misma región nunca en el mismo grupo |
+
+Entregables: [#626](https://github.com/nbfrodri/riftlegends/issues/626) (núcleo), [#627](https://github.com/nbfrodri/riftlegends/issues/627) (formatos y pipeline) [#628](https://github.com/nbfrodri/riftlegends/issues/628) (hub) y [#631](https://github.com/nbfrodri/riftlegends/issues/631) (grupos de First Stand).
+
+### Lista de tests
+
+| # | Comportamiento | Caso límite |
+| --- | --- | --- |
+| SO1 | Misma semilla, mismo sorteo; con otra semilla puede cambiar | Propiedad con fast-check sobre semillas |
+| SO2 | El sorteo usa su propio ámbito RNG (`stageDraw`): no mueve ningún otro flujo (Swiss, desempates, prioridad, calendario) | Una temporada sin sorteo de cuadro da los mismos hechos que antes, salvo `SIM_VERSION` |
+| SO3 | Cada equipo de un nivel de `meet` juega contra uno del nivel que le toca; los que sobran se cruzan al azar | MSI 1–4 y 2–3; Worlds: los dos 3-0 contra dos 3-2 y el 3-2 sobrante contra un 3-1 |
+| SO4 | `regionHalf`: dos equipos de la misma región caen en mitades opuestas del cuadro | MSI con LPL1 y LPL2. Tres equipos de una región en un cuadro de 4: se relaja |
+| SO5 | `region`: dos equipos de la misma región no se cruzan en la primera ronda | |
+| SO6 | `rematch`: dos equipos que ya jugaron en otra fase de la misma competición no se cruzan en la primera ronda | Worlds: rivales del Swiss nunca en cuartos si hay otro sorteo posible |
+| SO7 | Sorteo imposible: se quitan las restricciones en el orden de `avoid` y el hecho las lista en `relaxed`. Los niveles y `meet` nunca se relajan | Caso construido: un 3-0 que ya jugó contra los tres 3-2 |
+| SO8 | Propiedad: con cualquier resultado previo siempre hay sorteo y cada equipo aparece una sola vez | Cuadros de 4 y 8; doble y simple eliminación |
+| SO9 | El sorteo solo reordena el sembrado: `bracket.ts` no cambia. En cada cruce, el mejor nivel (a igual nivel, el mejor puesto de origen) es el mejor sembrado y tiene la prioridad del game 1 | Cruce de dos 3-1 |
+| SO10 | Sin sorteo de cuadro en el formato, el cuadro fijo por sembrado de siempre | Ligas y torneos personalizados que no lo activan |
+| SO11 | Validación: los niveles cubren cada puesto de 1 a `size` una vez; `meet` usa niveles que existen y el primero no es mayor que el segundo; solo en eliminatorias de tamaño potencia de dos. Si no, `invalid-format` con la ruta | Niveles que se solapan; `meet` repetido |
+| SO12 | Un torneo creado desde el preset de MSI o Worlds hereda el sorteo, también con plazas editadas | `tournament.create` |
+| SO13 | R1 del pipeline acepta el cuadro real de 2026 si cumple niveles y restricciones, en vez de exigir el cruce por sembrado | Un cruce real que rompe las reglas hace fallar R1 |
+| SO14 | Hecho `competition.drawn` (fase, nivel de cada equipo, cruces y `relaxed`) el día en que termina la última fase de la que depende, antes de su primera serie | Consultar una serie ya jugada (`series.summary` con `series`) da el mismo detalle |
+| SO15 | El hub muestra el sorteo antes de la primera serie: cruces, nivel de cada equipo y, si se relajó algo, el motivo en palabras. El lector lo lee como frases («Cuartos: Gen.G, 3-0, contra Team Liquid, 3-2») | ES y EN, sin «·» |
+| SO16 | Play-in de Worlds: un solo nivel de 4 y sin `meet`, emparejamiento libre | |
+| SO17 | First Stand: los grupos salen del sorteo por bombos que ya existe (`pots`, `avoidSameLeague`); misma semilla, mismos grupos y sin dos equipos de la misma región en un grupo | R1 acepta los grupos reales de 2026 |
+
+### Diseño
+
+**Formato.** `draw` de la fase pasa a ser una de dos formas:
+
+| Forma | Uso | Campos |
+| --- | --- | --- |
+| Bombos (la de hoy) | Grupos y ronda 1 del Swiss | `pots`, `avoidSameLeague` |
+| Cuadro (nueva) | `singleElim` y `doubleElim` | `tiers`: puestos de la lista de entrada por nivel. `meet`: parejas de niveles que se cruzan. `avoid`: restricciones en el orden en que se relajan (`regionHalf`, `region`, `rematch`) |
+
+```jsonc
+// MSI, cuadro
+"draw": { "tiers": [[1, 2], [3, 4], [5, 6], [7, 8]], "meet": [[1, 4], [2, 3]], "avoid": ["regionHalf"] }
+// Worlds, play-in
+"draw": { "tiers": [[1, 2, 3, 4]], "meet": [], "avoid": [] }
+// Worlds, cuartos (la entrada es el Swiss del 1 al 8: puestos 1-2 son 3-0, 3-5 son 3-1 y 6-8 son 3-2)
+"draw": { "tiers": [[1, 2], [3, 4, 5], [6, 7, 8]], "meet": [[1, 3]], "avoid": ["rematch"] }
+```
+
+Los niveles usan puestos y no balances: con 16 equipos a 3-3 los balances de los 8 que pasan son siempre 2, 3 y 3, y un torneo personalizado puede declarar los suyos.
+
+**Cómo se sortea** (`stage-draw.ts`, junto a `seedStage`, en `resolveStage`):
+
+1. Se barajan los equipos con el flujo `stageDraw`.
+2. Se forman los cruces de `meet`; los sobrantes se cruzan entre sí.
+3. Los cruces se colocan en los huecos de la primera ronda (1-8, 4-5, 2-7, 3-6), que fijan las mitades.
+4. Una búsqueda con vuelta atrás exige `avoid`, como el Swiss. Si no hay solución, quita la primera restricción de la lista y repite; `relaxed` guarda lo que el resultado rompe.
+5. En cada cruce, el mejor nivel toma el mejor sembrado del hueco. La lista sembrada pasa al cuadro de siempre.
+
+**Efectos.**
+
+| Tema | Efecto |
+| --- | --- |
+| RNG | Ámbito nuevo `stageDraw = 10` en `SCOPES`, con ids (competición, temporada, fase). Los demás flujos no cambian (SO2) |
+| `SIM_VERSION` | Sube en #626: el cuadro de MSI y los cruces de Worlds cambian para la misma semilla y aparece `competition.drawn` |
+| Contenido | Los formatos reales cambian en #627. Una temporada empezada no cambia, porque copia sus formatos en el hecho que la crea (P4) |
+| Goldens | Los de draft y partida no cambian. El golden del año (#429) se genera después de #626 o se regenera en su PR |
+| #428 | Sin cambios de reglas: el sorteo vive en la resolución de la fase, que ya usa el dispatcher |
+| Repetir una serie (#481) | Sin cambio: el registro guarda el cruce y la semilla de la serie |
+| Hub (#628) | El sorteo se ve en el cuadro de la fase desde que se conocen sus equipos, con el nivel de cada uno, y en una línea por cruce para el lector |
+
+### Decisiones del usuario (27-11-2026)
+
+Aprobadas por el usuario con el PR #629.
+
+| Tema | Decisión |
+| --- | --- |
+| Grupos de First Stand | Sorteo por bombos con `avoidSameLeague` (#631), en vez del reparto fijo por región |
+| Procedimiento | Resultado al azar entre los sorteos válidos, no la extracción equipo a equipo de la ceremonia |
+| Torneos personalizados | Solo los presets heredan el sorteo; el editor no lo ofrece por ahora |
+| Cuartos de Worlds | Sin restricción de región; solo sin revancha del Swiss. Mitades al azar |
+| Niveles del MSI | Siguen el orden de las plazas del formato (LCK1 y LPL1 en el nivel 1, y así hasta LPL2 y el ganador del play-in) hasta que se publique el reglamento de 2026 |

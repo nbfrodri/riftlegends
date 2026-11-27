@@ -1,16 +1,18 @@
 import type { MatchEvent } from "@rift-legends/contracts";
+import { max } from "../math";
 import { int } from "../rng/helpers";
 import { SCOPES } from "../rng/scopes";
 import { deriveSeed } from "../rng/seeds";
-import { createRng } from "../rng/streams";
-import type { Contest } from "./contests/contest";
+import { createRng, type Rng } from "../rng/streams";
+import type { Contest, ContestEvent } from "./contests/contest";
+import { CONVERSION_ID, stepWindow } from "./contests/conversion";
 import { FIGHT_CONTEST } from "./contests/fights";
 import { LANE_CONTESTS } from "./contests/lane";
 import { OBJECTIVE_CONTESTS } from "./contests/objectives";
 import { STRUCTURE_CONTESTS } from "./contests/structures";
 import { recordPlays } from "./events";
 import { recordMultikills } from "./multikills";
-import { timeDeaths } from "./player-state";
+import { gameSecond, timeDeaths } from "./player-state";
 import { trackSnapshots } from "./snapshot";
 import {
 	applyEvents,
@@ -37,12 +39,23 @@ const RUNAWAY = 120;
 export const matchDuration = (last: MatchEvent | undefined): number =>
 	last ? (last.minute - 1) * 60 + last.second : 0;
 
+/** One thing to resolve in a minute: a due contest or an attempt of a window. */
+type Step = {
+	readonly second: number;
+	readonly id: number;
+	readonly contest?: Contest;
+};
+
+const byOrder = (a: Step, b: Step) => a.second - b.second || a.id - b.id;
+
 /**
  * Plays one more minute. Each due contest draws from its own stream
  * `(seed, match, game, minute, contest)`, so adding one never moves the rest,
  * and its first draw is the second it happens at. The contests then resolve
  * one by one in (second, id) order, each over the state the earlier ones
- * left: their deaths, objectives and gold (plan 08, #528).
+ * left: their deaths, objectives and gold (plan 08, #528). A fight won in
+ * numbers opens a window whose attempts take their place in that order, one at
+ * a time, and may go on into the next minute (#530).
  */
 export function playMinute(
 	state: MatchState,
@@ -50,33 +63,69 @@ export function playMinute(
 ): { state: MatchState; events: MatchEvent[] } {
 	const { seed, game } = state.context;
 	const minute = state.minute + 1;
+	const start = gameSecond(minute, 0);
 	let current: MatchState = {
 		...state,
 		minute,
 		blue: earnPassive(state, "blue", minute),
 		red: earnPassive(state, "red", minute),
 	};
-	const due = contests
+	const streams = new Map<Contest, Rng>();
+	const queue: Step[] = contests
 		.filter((contest) => contest.due(current))
 		.map((contest) => {
 			const rng = createRng(
 				deriveSeed(seed, SCOPES.match, game, minute, contest.id),
 			);
-			return { contest, rng, second: int(rng, 0, 59) };
-		})
-		.sort((a, b) => a.second - b.second || a.contest.id - b.contest.id);
+			streams.set(contest, rng);
+			return { contest, id: contest.id, second: int(rng, 0, 59) };
+		});
+	/** The next attempt of the window, if it falls in this minute. */
+	const schedule = () => {
+		// One attempt waits at a time: a new window replaces the old one.
+		const stale = queue.findIndex((step) => !step.contest);
+		if (stale >= 0) queue.splice(stale, 1);
+		const at = current.window ? current.window.at - start : 60;
+		if (at < 60) queue.push({ id: CONVERSION_ID, second: at > 0 ? at : 0 });
+	};
+	schedule();
 	const events: MatchEvent[] = [];
 	// Nothing happens from the second the nexus falls.
 	let end = 60;
-	for (const { contest, rng, second } of due) {
-		if (second >= end) continue;
-		const resolved: MatchEvent[] = contest
-			.resolve(current, rng, second)
+	while (queue.length > 0) {
+		queue.sort(byOrder);
+		const step = queue.shift() as Step;
+		if (step.second >= end) continue;
+		const before = current.window;
+		let resolved: ContestEvent[];
+		let window = current.window;
+		if (step.contest) {
+			const rng = streams.get(step.contest) as Rng;
+			if (!step.contest.due(current)) continue;
+			resolved = step.contest.resolve(current, rng, step.second);
+		} else {
+			const rng = createRng(
+				deriveSeed(
+					seed,
+					SCOPES.match,
+					game,
+					minute,
+					CONVERSION_ID,
+					step.second,
+				),
+			);
+			({ events: resolved, window } = stepWindow(
+				current,
+				rng,
+				events.reduce((latest, e) => max(latest, e.second), 0),
+			));
+		}
+		const clipped: MatchEvent[] = resolved
 			.map((event) => ({ game, minute, ...event }))
 			.filter((event) => event.second < end);
-		const nexus = resolved.findIndex((e) => e.kind === "nexus");
-		if (nexus >= 0) resolved.length = nexus + 1;
-		const timed = resolved.map((event) => timeDeaths(current, event));
+		const nexus = clipped.findIndex((e) => e.kind === "nexus");
+		if (nexus >= 0) clipped.length = nexus + 1;
+		const timed = clipped.map((event) => timeDeaths(current, event));
 		const recorded = recordPlays(current, timed.map(recordMultikills));
 		current = applyEvents(
 			{ ...current, plays: recorded.plays },
@@ -86,6 +135,10 @@ export function playMinute(
 		if (current.winner !== null) {
 			end = recorded.events.find((e) => e.kind === "nexus")?.second ?? end;
 		}
+		if (!step.contest) {
+			current = { ...current, window };
+			schedule();
+		} else if (current.window !== before) schedule();
 	}
 	// Stable: events of the same second keep the order they resolved in.
 	return { state: current, events: events.sort((a, b) => a.second - b.second) };
