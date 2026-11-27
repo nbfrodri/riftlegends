@@ -231,6 +231,31 @@ const presenceTable = z
 		"the weights of a contest add up to 10,000",
 	);
 
+/**
+ * What a won fight lets its winner take before the rival is level (plan 08,
+ * #530). Times are in seconds; chances are per 10,000.
+ */
+const conversion = z.strictObject({
+	/** Seconds after the last kill of the fight before the winner starts. */
+	delay: seconds,
+	/** What each thing taken costs the winner in seconds. */
+	cost: z.strictObject({
+		tower: seconds,
+		inhibitor: seconds,
+		nexus: seconds,
+		dragon: seconds,
+		herald: seconds,
+		baron: seconds,
+		elder: seconds,
+	}),
+	/** Chance that a winner up 1 to 5 players more goes for what he can take. */
+	commit: z.array(z.int().min(0).max(10_000)).length(5),
+	/** The nexus falls to a window only against this many up or fewer. */
+	closeWithUp: z.int().min(0).max(4),
+	/** No window takes the nexus before this minute. */
+	nexusFrom: z.int().min(1),
+});
+
 /** Everything the simulation reads besides the draft content (plan 07). */
 export const matchContent = z
 	.strictObject({
@@ -285,6 +310,7 @@ export const matchContent = z
 			}),
 			inhibitorRespawn: seconds,
 			deathTimer,
+			conversion,
 			/**
 			 * Weight of each role among the players up in each contest, so that
 			 * a missing player costs what he is worth there (issue #529). In a
