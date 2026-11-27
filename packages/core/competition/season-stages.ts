@@ -85,10 +85,20 @@ export function advanceStage(
 	seed: number,
 	year: number,
 	tiebreakerBestOf: SeasonFixture["bestOf"],
-): { progress?: StageProgress; paired?: Emitted; error?: CoreError } {
+): {
+	progress?: StageProgress;
+	drawn?: Emitted;
+	paired?: Emitted;
+	error?: CoreError;
+} {
 	const resolved = resolveStage(graph, node.ref, outcomes, seed, year);
 	if (resolved.status === "pending") return {};
 	if (resolved.status === "error") return { error: resolved.error };
+	// Announced once, when the stage first knows its teams (SO14).
+	const drawn: Emitted | undefined =
+		!previous && resolved.draw
+			? { type: "competition.drawn", ...node.ref, ...resolved.draw }
+			: undefined;
 	const entrants = resolved.entrants.map(({ team: id, league, region }) => ({
 		id,
 		league,
@@ -233,6 +243,7 @@ export function advanceStage(
 			ties,
 			done: final && !tables.pending.length,
 		},
+		...(drawn && { drawn }),
 		...(paired && { paired }),
 	};
 }

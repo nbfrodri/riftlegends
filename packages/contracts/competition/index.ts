@@ -7,6 +7,7 @@ import {
 	type Competition,
 	competitionCriterion,
 	competitionSchema,
+	drawRule,
 } from "./format";
 import { tournamentCreate, tournamentPreset } from "./tournament";
 
@@ -189,6 +190,17 @@ const factCatalog = defineFacts({
 		rule: z.enum(["stageWinner", "standing", "points"]),
 		via: z.enum(["direct", "cascade"]),
 	},
+	/** A bracket draw, before the first series of its stage (plan 12 §6). */
+	"competition.drawn": {
+		competition: id,
+		stage: id,
+		/** Teams from the best seed down, with their 1-based tier. */
+		tiers: z.array(z.strictObject({ team: teamId, tier: z.int().min(1) })),
+		/** First-round series in bracket order, better seed first. */
+		pairs: z.array(pair(teamId)),
+		/** Constraints the draw had to break, in their order. */
+		relaxed: z.array(drawRule),
+	},
 	"competition.paired": {
 		competition: id,
 		stage: id,
@@ -209,7 +221,8 @@ export const competitionFacts = {
 		)
 		.refine(
 			(fact) =>
-				fact.type !== "competition.paired" ||
+				(fact.type !== "competition.paired" &&
+					fact.type !== "competition.drawn") ||
 				fact.pairs.every(([a, b]) => a !== b),
 			{ error: "a team cannot face itself" },
 		),
