@@ -68,6 +68,16 @@ describe("T5: sidebar sections", () => {
 		).toEqual(sectionsEs);
 	});
 
+	// Ajustes is pinned at the foot of the sidebar: when the sections do not
+	// fit (1280×720) they scroll, and Ajustes stays visible below them.
+	test("pins Ajustes outside the list of sections that scrolls", async () => {
+		await renderShell();
+		const list = section("Inicio").closest(".overflow-y-auto");
+		expect(list).toBeTruthy();
+		expect(list?.contains(section("Ajustes"))).toBe(false);
+		expect(sections().contains(section("Ajustes"))).toBe(true);
+	});
+
 	// #399: Draft and Campeones looked alike at 16 px (BookOpen and Columns2).
 	test("every section has its own icon; Campeones uses swords", async () => {
 		await renderShell();
@@ -194,6 +204,17 @@ describe("T5: sidebar sections", () => {
 });
 
 describe("T6: collapsing and keyboard", () => {
+	// The toggle is an icon button in the club header, so the foot is only
+	// Ajustes; its name, shortcut and state stay for the screen reader.
+	test("the toggle is an icon button in the header, above the sections", async () => {
+		await renderShell();
+		expect(toggle().textContent).toBe("");
+		expect(
+			toggle().compareDocumentPosition(sections()) &
+				Node.DOCUMENT_POSITION_FOLLOWING,
+		).toBeTruthy();
+	});
+
 	test("the toggle collapses the sidebar to icons and expands it again", async () => {
 		const { user } = await renderShell("/mercado");
 		expect(toggle().getAttribute("aria-expanded")).toBe("true");

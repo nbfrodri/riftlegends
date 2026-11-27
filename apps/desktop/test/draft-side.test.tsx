@@ -165,7 +165,7 @@ function Driver({
 					fearless,
 					timer: false,
 					pool: options.pool,
-					seed: 7,
+					seed: 13,
 					ai: ["coach", "coach"],
 				});
 			} else if (view.phase === "result") {
