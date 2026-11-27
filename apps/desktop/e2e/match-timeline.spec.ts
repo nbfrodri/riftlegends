@@ -401,3 +401,126 @@ test("replays a drafted game and continues to its result", async ({
 		await app.close();
 	}
 });
+
+test("#531: a dead player is greyed with a countdown in the face to face until he respawns", async ({
+	playwright,
+}, testInfo) => {
+	// Waits up to 120 s for a death and 30 s for the respawn.
+	test.setTimeout(180_000);
+	const app = await launchApp(
+		{ playwright },
+		{
+			profileDir: testInfo.outputPath("profile"),
+			systemLocale: "es-ES",
+			env: { RIFT_E2E_CORE: "1" },
+		},
+	);
+	try {
+		const page = await app.firstWindow();
+		await page.setViewportSize({ width: 1280, height: 720 });
+		await app.evaluate(prepareDraft);
+		await page.getByRole("button", { name: "Empezar serie" }).click();
+		await page.getByRole("button", { name: "Jugar", exact: true }).click();
+		await expect(page.getByRole("timer")).toBeVisible();
+		await page
+			.getByRole("radio", { name: "Cara a cara" })
+			.check({ force: true });
+		const faceToFace = page.getByRole("table", { name: "Cara a cara" });
+		// ×4 keeps the sampled seconds short enough to catch a death.
+		await page.getByRole("radio", { name: "×4" }).check({ force: true });
+		const dead = faceToFace.locator("[data-lane-player][data-dead]").first();
+		// He may respawn before the pause lands: resume and wait for another death.
+		await expect(async () => {
+			const resume = page.getByRole("button", { name: "Reanudar" });
+			if (await resume.isVisible()) await resume.click();
+			await expect(dead).toBeVisible({ timeout: 30_000 });
+			await page.getByRole("button", { name: "Pausar" }).click();
+			await expect(dead).toBeVisible({ timeout: 500 });
+		}).toPass({ timeout: 120_000 });
+		const handle = await dead
+			.locator("[data-part=name] > span")
+			.first()
+			.textContent();
+		expect(handle).toBeTruthy();
+		await expect(dead.locator("[data-respawn]")).toHaveText(/^\d+$/);
+		await expect(
+			dead.getByText(/^muerto, reaparece en \d+ segundos?$/),
+		).toBeAttached();
+		// Greyed: the dimmed photo is grey and faded, the countdown is not.
+		const paint = await dead.evaluate((cell) => {
+			const style = (selector: string) => {
+				const el = cell.querySelector(selector);
+				return el ? getComputedStyle(el) : undefined;
+			};
+			return {
+				photo: style("[data-part=photo] [data-dim]")?.filter,
+				opacity: Number(style("[data-part=photo] [data-dim]")?.opacity),
+				countdown: Number(style("[data-respawn]")?.opacity),
+			};
+		});
+		expect(paint.photo).toContain("grayscale");
+		expect(paint.opacity).toBeLessThan(1);
+		expect(paint.countdown).toBe(1);
+		// Nothing moves or overflows with a dead player, at either size.
+		for (const size of [
+			{ width: 1280, height: 720 },
+			{ width: 1366, height: 768 },
+		]) {
+			await page.setViewportSize(size);
+			await expect(faceToFace).toBeInViewport({ ratio: 1 });
+			const spread = await faceToFace.evaluate((table) =>
+				["blue", "red"].flatMap((side) =>
+					["photo", "champion", "name"].map((part) => {
+						const xs = [
+							...table.querySelectorAll(
+								`[data-side=${side}] [data-part=${part}]`,
+							),
+						].map((el) => el.getBoundingClientRect().left);
+						return Math.max(...xs) - Math.min(...xs);
+					}),
+				),
+			);
+			for (const xs of spread) expect(xs).toBeLessThanOrEqual(1);
+			// On both sides the champion badge paints over the photo, not behind it.
+			const hidden = await faceToFace.evaluate((table) =>
+				[...table.querySelectorAll<HTMLElement>("[data-part=champion]")]
+					.filter((badge) => {
+						// The middle of the area the badge shares with the photo.
+						const box = badge.getBoundingClientRect();
+						const photo = badge
+							.closest("[data-lane-player]")
+							?.querySelector("[data-part=photo]")
+							?.getBoundingClientRect();
+						if (!photo) return true;
+						const left = Math.max(box.left, photo.left);
+						const right = Math.min(box.right, photo.right);
+						const top = Math.max(box.top, photo.top);
+						const bottom = Math.min(box.bottom, photo.bottom);
+						const hit = document.elementFromPoint(
+							(left + right) / 2,
+							(top + bottom) / 2,
+						);
+						return !(hit && badge.contains(hit));
+					})
+					.map((badge) => badge.closest("td")?.dataset.side),
+			);
+			expect(hidden).toEqual([]);
+			await page.screenshot({
+				path: testInfo.outputPath(`531-dead-${size.width}x${size.height}.png`),
+			});
+			await expectColumnsAligned(page);
+		}
+		// He comes back when the clock reaches his respawn.
+		await page.getByRole("button", { name: "Reanudar" }).click();
+		const same = faceToFace
+			.locator("[data-lane-player]")
+			.filter({ hasText: handle ?? "" });
+		await expect(same).toHaveCount(1);
+		await expect(same).not.toHaveAttribute("data-dead", /.*/, {
+			timeout: 30_000,
+		});
+		await expect(same.locator("[data-respawn]")).toHaveCount(0);
+	} finally {
+		await app.close();
+	}
+});

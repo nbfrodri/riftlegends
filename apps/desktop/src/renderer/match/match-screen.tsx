@@ -20,6 +20,7 @@ import { EventFeed } from "./event-feed";
 import { FaceToFace } from "./face-to-face";
 import { GoldChart } from "./gold-chart";
 import { clockTime, speeds, usePlayback } from "./playback";
+import { respawnCountdowns } from "./respawns";
 import { sides, TeamTotals } from "./scoreboard";
 import { teamMap } from "./team-map";
 import { TeamPanel } from "./team-panel";
@@ -143,6 +144,7 @@ function Replay({ match, entry }: { match: MatchView; entry: DraftView }) {
 							names={names}
 							lineup={lineup}
 							vision={player.ended ? vision : undefined}
+							down={respawnCountdowns(match.facts, player.second)}
 						/>
 					</div>
 				</div>
