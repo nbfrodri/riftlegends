@@ -101,17 +101,38 @@ const fourTeams = (grandFinal: 5 | null): Stage["play"] => ({
 	reset: false,
 });
 
-const unverified = {
+/** Official pages the verified rules were read from (R2). */
+const sources: Record<EventId, readonly string[]> = {
 	"first-stand": [
-		"Two GSL groups and Bo5 everywhere match lolesports coverage; the group seeding, the 2-slot LCK and LPL routes and the tiebreakers are not in a published 2026 rulebook we could read.",
+		"https://en.wikipedia.org/wiki/2026_First_Stand_Tournament",
+		"https://lolesports.com/en-US/news/msi-and-worlds-updates",
 	],
 	msi: [
-		"lolesports confirms 11 play-in teams (2 each from LCK, LCS, LCP, LEC and LPL, 1 from CBLOL), a Bo5 four-team double-elimination play-in and an eight-team bracket. Which second seeds bypass depends on First Stand results (LPL 2 is assumed), and the seeding is unpublished.",
+		"https://lolesports.com/en-US/news/msi-and-worlds-updates",
+		"https://en.wikipedia.org/wiki/2026_Mid-Season_Invitational",
 	],
 	worlds: [
-		"lolesports confirms 19 teams (3 each from LCK, LCS, LCP, LEC and LPL, 2 from CBLOL, the MSI champion and one from the MSI runner-up region) and a Bo5 four-team play-in. The Swiss and knockout best-of formats, the seeding by MSI results and the tiebreakers are not published.",
+		"https://lolesports.com/en-US/news/worlds-2026-primer",
+		"https://lolesports.com/en-US/news/msi-and-worlds-updates",
 	],
 };
+
+// First Stand has no reason left: groups (same region apart), GSL double
+// elimination, Bo5 everywhere and the cross knockout (A1 v B2, B1 v A2) match
+// the event page, whose cited sources are lolesports stage pages. The groups
+// are a draw in real life and fixed by region here; GSL has no tiebreakers.
+const unverified = {
+	"first-stand": [],
+	msi: [
+		"Checked (lolesports MSI and Worlds Updates, Wikipedia): 11 play-in teams (2 each from LCK, LCS, LCP, LEC and LPL, 1 from CBLOL), Bo5 four-team GSL play-in, eight-team Bo5 double-elimination bracket with a Bo5 final. Pending: the highest-ranked region at First Stand (second seed skips the play-in) is fixed to LPL instead of read from First Stand; and the real bracket comes from a draw by four tiers (1 v 4, 2 v 3, same region on opposite sides) that the game replaces with a fixed bracket by seed. No tiebreakers or bracket reset are published.",
+	],
+	worlds: [
+		"Checked (lolesports Worlds 2026 primer): 19 teams, Bo5 four-team double-elimination play-in with a random draw, 16-team five-round Swiss to three wins or losses (Bo1, Bo3 to qualify or be eliminated), round 1 pots 1 v 4 and 2 v 3 with no same region, no rematches, Bo5 knockout. Pending: the Swiss tiebreakers are not published; the quarterfinals are a draw (3-0 teams against 3-2 teams, the rest at random) that the game replaces with a fixed bracket by Swiss rank, and the bracket type after the quarterfinals is not described.",
+	],
+} satisfies Record<EventId, string[]>;
+
+/** Source URLs of the rules read for an event. */
+export const formatSources = (id: EventId) => sources[id];
 
 export const internationalDefinitions: Record<EventId, Definition> = {
 	"first-stand": {

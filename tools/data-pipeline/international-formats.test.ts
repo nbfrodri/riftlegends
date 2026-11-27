@@ -5,8 +5,8 @@ import { describe, expect, it } from "vitest";
 import { checkInternational } from "./international-check.ts";
 import {
 	buildInternationalFormats,
-	internationalFormatFiles,
 	formatSources,
+	internationalFormatFiles,
 	unverifiedFormats,
 } from "./international-formats.ts";
 
