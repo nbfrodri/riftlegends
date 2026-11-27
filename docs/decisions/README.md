@@ -169,7 +169,7 @@ Resumen de las decisiones **vigentes**, para empezar cualquier sesión sin volve
 | Fecha | Decisión | Fuente |
 | --- | --- | --- |
 | 2026-11-19 | Ventana **sin marco** con barra de título propia; **solo tema oscuro**; i18n ES/EN con selector en Ajustes; tests visuales con capturas en el CI de Linux | [plan 02](../archive/plans/02-ui-kit-shell.md) |
-| 2026-11-20 | Ventana de **1280×720 como mínimo** (1366×768 por defecto); el botón de plegar la barra lateral dice «Contraer» / «Collapse» | PR de este cambio |
+| 2026-11-20 | Ventana de **1280×720 como mínimo** (1366×768 por defecto); el botón de plegar la barra lateral se llama «Contraer» / «Collapse». Desde el 27-11 es **un botón solo icono en la cabecera**, junto al club (debajo del escudo con la barra plegada), con el nombre y Alt+B en el tooltip; **Ajustes queda fijo en el pie**, fuera del scroll (#614) | PR de este cambio, #614 |
 | 2026-11-20 | Posiciones con **jerga competitiva**: Top, Jungla/Jungle, Mid, ADC y Support en ES y EN (el identificador interno sigue siendo `bot`) | PR de este cambio |
 | 2026-11-20 | **Iconos de rol propios** en el estilo Caja, que funcionan sin red y en el modo ficticio; los oficiales se descargarán de CommunityDragon en el modo LoL real (plan 10) | PR de este cambio |
 | 2026-11-22 | Iconos de **estadísticas** (KDA, oro, súbditos, daño y visión) del cliente oficial: set SVG del marcador de fin de partida en la caché de CommunityDragon; sin caché, iconos de Lucide. Los **objetivos** usan su icono oficial en todas las pantallas | [plan 11](../plans/11-datos-reales.md), #293 |
