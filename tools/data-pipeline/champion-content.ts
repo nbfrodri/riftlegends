@@ -198,7 +198,8 @@ export function deriveChampionContent(
 	);
 	const entries = scored.map(({ id, profile, scores }) => {
 		const { damage, power, archetypes, cc, mobility, frontline } = profile;
-		const ultCooldown = kits.get(id)?.ultCooldown;
+		const kit = kits.get(id);
+		const ultCooldown = kit?.ultCooldown;
 		const champion: Champion = {
 			id,
 			name: id,
@@ -223,7 +224,11 @@ export function deriveChampionContent(
 					])
 				: [...estimatedUltCooldownTenths],
 			traitSources: {
-				ultCooldownTenths: ultCooldown ? "source" : "estimated",
+				ultCooldownTenths: ultCooldown
+					? kit?.ultRule
+						? "rule"
+						: "source"
+					: "estimated",
 				ccKinds: profile.sources.cc,
 				split: profile.sources.split,
 				kit: profile.sources.kit,

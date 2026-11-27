@@ -156,6 +156,42 @@ it("#340 takes control, damage and the ultimate cooldown from the game data", ()
 		const damage = Object.values(slots).some((slot) => slot.damage.length);
 		expect(traitsToReview.includes(id), id).toBe(!damage);
 	}
+	// No ultimate waits under 10 s unless its short cooldown is by design: it
+	// swaps forms, stacks or recasts (#622). Charged ultimates take the recharge
+	// of one charge (rule chargeRecharge), so Teemo waits 25 s or more.
+	const shortByDesign = new Set([
+		"Anivia",
+		"Belveth",
+		"Elise",
+		"Jayce",
+		"Kassadin",
+		"KogMaw",
+		"Nidalee",
+		"Quinn",
+		"Samira",
+		"Zoe",
+	]);
+	const rows = read("champions") as {
+		id: string;
+		ultCooldownTenths: number[];
+	}[];
+	const tooShort = rows.filter(
+		({ id, ultCooldownTenths }) =>
+			Math.min(...ultCooldownTenths) < 100 && !shortByDesign.has(id),
+	);
+	expect(tooShort.map(({ id }) => id)).toEqual([]);
+	expect(
+		rows
+			.find(({ id }) => id === "Teemo")
+			?.ultCooldownTenths.every((t) => t >= 200),
+	).toBe(true);
+	const published = read("champions") as {
+		id: string;
+		traitSources: Record<string, string>;
+	}[];
+	expect(
+		published.find(({ id }) => id === "Teemo")?.traitSources.ultCooldownTenths,
+	).toBe("rule");
 	// Few champions lack the data; the list is the review queue.
 	expect(kitSource.noUltimateCooldown.length).toBeLessThanOrEqual(5);
 	expect(traitsToReview.length).toBeLessThanOrEqual(5);
