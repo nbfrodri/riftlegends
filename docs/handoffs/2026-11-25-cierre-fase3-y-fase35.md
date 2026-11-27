@@ -8,7 +8,7 @@ Decisiones en el [registro](../decisions/README.md). Reglas del usuario: respues
 ## ▶ Estado para retomar (27-11, 02:20) — leer esto primero
 
 - **En `main` (26-11 noche):** #604, #597, #606 (página de equipo), #611 (calendario sin hueco, logos en selectores, semilla sin +/−), #613 (cuadro en el hub), #607 (torneo con mi equipo). CI de `main` en verde tras #607.
-- **Cola** (`~/.cache/rift-ship/queue.sh`, logs `~/.cache/rift-tmp/queue-*.log`): **#612** (#530, `queue-612b.log`) → **#616** (#487 Swiss, `queue-616b.log`) → **#617** (arregla E2E E1 del torneo, inestable) → **#610** (#609 columnas; `queue-617.log`). Todos aprobados. Si #612 o #616 fallan en E1 del torneo, es el fallo que arregla #617: relanzar tras fusionarlo.
+- **Cola** (`~/.cache/rift-ship/queue.sh`, logs `~/.cache/rift-tmp/queue-*.log`): **#616** (#487 Swiss, `queue-616b.log`) → **#617** (arregla E2E E1 del torneo, inestable) → **#610** (#609 columnas; `queue-617.log`) → **#612** (#530, `queue-612c.log`; cayó en E1). Todos aprobados. Si #612 o #616 fallan en E1 del torneo, es el fallo que arregla #617: relanzar tras fusionarlo.
 - **#612** (#530 ventana de conversión, `SIM_VERSION` 18, `../riftlegends-530`): **aprobado** por el usuario (capturas vistas). Falló `core-windows` por timeouts (runner lento, 9,5 min); relanzado y en verde (1,5 min): era el runner. **En la cola tras #610** (`queue-612b.log`), y después **#616** (#487 Swiss, aprobado; arreglado test U5 inestable, `queue-616b.log`).
 - **#615** (#614 Ajustes fijo en el pie de la barra lateral, `../riftlegends-settings`): **falta el visto bueno** del usuario (capturas `~/.cache/rift-tmp/614-sidebar-*.png`).
 - **#601** (Dependabot): pedido `@dependabot rebase`; se fusiona solo si pasa.
