@@ -24,8 +24,11 @@ export interface SeasonHandle {
 
 const exhibitionKey = ["competition", "exhibition"] as const;
 
-/** Opens the session and creates the exhibition season, once per app run. */
-export function useExhibitionSeason() {
+/**
+ * Opens the session and creates the exhibition season, once per app run;
+ * not while `enabled` is false (a screen that reads another season).
+ */
+export function useExhibitionSeason(enabled = true) {
 	const core = useCore();
 	const client = useQueryClient();
 	const content = appContent();
@@ -33,6 +36,7 @@ export function useExhibitionSeason() {
 		queryKey: [...exhibitionKey, content],
 		staleTime: Number.POSITIVE_INFINITY,
 		gcTime: Number.POSITIVE_INFINITY,
+		enabled,
 		queryFn: async () => {
 			const opened = await core.open();
 			if (!opened.ok) throw new CoreRequestError(opened.error);

@@ -76,10 +76,18 @@ const seasonEnd = (overview: SeasonOverview) =>
 		),
 	);
 
-export function useSeasonAdvance(season: SeasonHandle) {
+/** Where the pending series is kept, when it must outlive the screen (U10). */
+export interface PendingStore {
+	readonly pending: PendingSeries | null;
+	setPending(pending: PendingSeries | null): void;
+}
+
+export function useSeasonAdvance(season: SeasonHandle, store?: PendingStore) {
 	const core = useCore();
 	const [run, setRun] = useState<AdvanceRun | null>(null);
-	const [pending, setPending] = useState<PendingSeries | null>(null);
+	const [local, setLocal] = useState<PendingSeries | null>(null);
+	const pending = store ? store.pending : local;
+	const setPending = store ? store.setPending : setLocal;
 	const [error, setError] = useState<CoreRequestError | null>(null);
 	const stopped = useRef(false);
 	const mounted = useRef(true);
@@ -154,7 +162,7 @@ export function useSeasonAdvance(season: SeasonHandle) {
 				if (mounted.current) setRun(null);
 			}
 		},
-		[core, overview, season],
+		[core, overview, season, setPending],
 	);
 
 	const stop = useCallback(() => {

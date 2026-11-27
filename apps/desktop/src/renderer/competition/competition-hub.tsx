@@ -9,9 +9,11 @@ import {
 } from "@rift-legends/ui-kit/components/select";
 import { cn } from "@rift-legends/ui-kit/lib/utils";
 import { useNavigate } from "@tanstack/react-router";
+import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { LeagueLogo } from "../assets/league-logo";
 import { CoreErrorMessage } from "../core";
+import { useActiveSeason } from "./active-season";
 import { StageBracket } from "./bracket/stage-bracket";
 import {
 	competitionLogoId,
@@ -24,11 +26,7 @@ import {
 	parseCalendarSearch,
 	ScheduleView,
 } from "./schedule-view";
-import {
-	type CompetitionOverview,
-	useExhibitionSeason,
-	useSeasonOverview,
-} from "./season";
+import { type CompetitionOverview, useSeasonOverview } from "./season";
 import { StageStandings } from "./standings/stage-standings";
 import { StageSwiss } from "./swiss/stage-swiss";
 
@@ -71,36 +69,41 @@ export function CompetitionHub({
 	competition,
 	search = {},
 	onSearch,
+	header,
 }: {
 	competition: string;
 	search?: HubSearch;
 	/** Replaces the hub's search in place (no new history entry). */
 	onSearch: (search: HubSearch) => Promise<void>;
+	/** Replaces the logo, name and back button (the tournament's own controls). */
+	header?: ReactNode;
 }) {
 	const { t } = useTranslation();
 	const navigate = useNavigate();
-	const season = useExhibitionSeason();
+	const season = useActiveSeason();
 	const name = competitionName(t, competition);
 	return (
 		<section className="flex h-full min-h-0 flex-col gap-[clamp(10px,1.6vh,20px)] px-[clamp(14px,1.35vw,28px)] py-[clamp(14px,2.1vh,24px)]">
-			<header className="flex flex-wrap items-center justify-between gap-3">
-				<div className="flex min-w-0 items-center gap-3">
-					<LeagueLogo
-						id={competitionLogoId(competition)}
-						name={name}
-						className="size-[clamp(32px,3vw,48px)]"
-					/>
-					<h1 className="min-w-0 truncate font-bold font-display text-[clamp(29px,2.5vw,48px)] uppercase leading-none tracking-heading">
-						{name}
-					</h1>
-				</div>
-				<Button
-					variant="secondary"
-					onClick={() => void navigate({ to: "/competicion" })}
-				>
-					{t("competition.hub.back")}
-				</Button>
-			</header>
+			{header ?? (
+				<header className="flex flex-wrap items-center justify-between gap-3">
+					<div className="flex min-w-0 items-center gap-3">
+						<LeagueLogo
+							id={competitionLogoId(competition)}
+							name={name}
+							className="size-[clamp(32px,3vw,48px)]"
+						/>
+						<h1 className="min-w-0 truncate font-bold font-display text-[clamp(29px,2.5vw,48px)] uppercase leading-none tracking-heading">
+							{name}
+						</h1>
+					</div>
+					<Button
+						variant="secondary"
+						onClick={() => void navigate({ to: "/competicion" })}
+					>
+						{t("competition.hub.back")}
+					</Button>
+				</header>
+			)}
 			{season.data && (
 				<HubViews
 					sessionId={season.data.sessionId}
@@ -197,6 +200,7 @@ function Schedule({
 	onSearch: (search: HubSearch) => Promise<void>;
 }) {
 	const navigate = useNavigate();
+	const { seriesRoute } = useActiveSeason();
 	const overview = useSeasonOverview(sessionId);
 	if (!overview.data) return null;
 	return (
@@ -221,7 +225,7 @@ function Schedule({
 			}
 			onOpen={(slot) =>
 				void navigate({
-					to: "/competicion/serie/$series",
+					to: seriesRoute,
 					params: { series: slot.id },
 				})
 			}

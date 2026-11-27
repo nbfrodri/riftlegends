@@ -1,17 +1,11 @@
-import { Button } from "@rift-legends/ui-kit/components/button";
-import { Tooltip } from "@rift-legends/ui-kit/components/tooltip";
 import { useNavigate } from "@tanstack/react-router";
 import { useId } from "react";
 import { useTranslation } from "react-i18next";
 import { CoreErrorMessage } from "../core";
-import {
-	type AdvanceMode,
-	type AdvanceRun,
-	stageTarget,
-	useSeasonAdvance,
-} from "./advance";
+import { useSeasonAdvance } from "./advance";
+import { AdvanceControls, RunProgress } from "./advance-controls";
 import { CompetitionCard } from "./competition-card";
-import { competitionName, dayDate, isInternational, stageText } from "./names";
+import { dayDate, isInternational } from "./names";
 import {
 	type SeasonHandle,
 	useExhibitionSeason,
@@ -92,10 +86,6 @@ function Season({
 		);
 	}
 
-	const over = view.day === null;
-	const busy = run !== null || pending !== null || over;
-	const target = stageTarget(view);
-	const play = (mode: AdvanceMode) => () => void start(mode);
 	const leagues = view.competitions.filter(({ id }) => !isInternational(id));
 	const events = view.competitions.filter(({ id }) => isInternational(id));
 	const groups = (
@@ -130,64 +120,19 @@ function Season({
 						)}
 					</p>
 				</Heading>
-				<fieldset
-					aria-label={t("competition.advance.label")}
-					className="m-0 flex flex-wrap items-center gap-2 border-0 p-0"
-				>
-					{pending && (
-						<>
-							<span className="text-[14px]">
-								{t("competition.advance.pending", {
-									a: teamName(pending.teams[0]),
-									b: teamName(pending.teams[1]),
-								})}
-							</span>
-							<Button
-								disabled={!onPlayMySeries}
-								onClick={() => onPlayMySeries?.(pending.series)}
-							>
-								{t("competition.advance.mySeries")}
-							</Button>
-						</>
-					)}
-					{run && (
-						<Button variant="secondary" onClick={stop}>
-							{t("competition.advance.stop")}
-						</Button>
-					)}
-					<Button
-						variant={pending ? "secondary" : "default"}
-						disabled={busy}
-						onClick={play("day")}
-					>
-						{t("competition.advance.day")}
-					</Button>
-					<Tooltip
-						disabled={busy || !target}
-						content={
-							target
-								? t("competition.advance.stageHint", {
-										competition: competitionName(t, target.competition),
-										stage: stageText(t, target),
-									})
-								: ""
-						}
-					>
-						<Button variant="secondary" disabled={busy} onClick={play("stage")}>
-							{t("competition.advance.stage")}
-						</Button>
-					</Tooltip>
-					<Button variant="secondary" disabled={busy} onClick={play("season")}>
-						{t("competition.advance.season")}
-					</Button>
-					{over && (
-						<Button variant="secondary" onClick={onRestart}>
-							{t("competition.newSeason")}
-						</Button>
-					)}
-				</fieldset>
+				<AdvanceControls
+					view={view}
+					scope="season"
+					run={run}
+					pending={pending}
+					onStart={(mode) => void start(mode)}
+					onStop={stop}
+					teamName={teamName}
+					onPlayMySeries={onPlayMySeries}
+					onRestart={onRestart}
+				/>
 			</header>
-			{run && <RunProgress run={run} year={view.year} />}
+			{run && <RunProgress run={run} year={view.year} scope="season" />}
 			{error && <CoreErrorMessage error={error} />}
 			<div className="flex min-h-0 flex-1 flex-col gap-[clamp(14px,2.2vh,26px)] overflow-y-auto scroll-edge">
 				{groups.map(({ key, competitions }) => (
@@ -228,53 +173,5 @@ function Season({
 				))}
 			</div>
 		</>
-	);
-}
-
-function RunProgress({ run, year }: { run: AdvanceRun; year: number }) {
-	const { t, i18n } = useTranslation();
-	const total = Math.max(1, run.toDay - run.fromDay);
-	const done = Math.min(total, Math.max(0, run.day - run.fromDay));
-	const goal =
-		run.mode === "season"
-			? t("competition.advance.until.season")
-			: run.mode === "day"
-				? t("competition.advance.until.day")
-				: t("competition.advance.until.stage", {
-						competition: competitionName(t, run.target?.competition ?? ""),
-						stage: run.target ? stageText(t, run.target) : "",
-					});
-	return (
-		<div className="min-w-0">
-			<p className="mb-1.5 flex min-w-0 items-baseline gap-3 text-[13px]">
-				<b className="shrink-0 font-semibold text-text">
-					{t("competition.advance.playingDay", {
-						day: run.day,
-						date: dayDate(year, run.day, i18n.language),
-					})}
-				</b>
-				<span className="min-w-0 truncate text-muted">{goal}</span>
-				<span className="ml-auto shrink-0 text-muted tabular-nums">
-					{t("competition.advance.days", { done, total })}
-				</span>
-			</p>
-			<div
-				role="progressbar"
-				aria-label={t("competition.advance.progress")}
-				aria-valuemin={0}
-				aria-valuemax={total}
-				aria-valuenow={done}
-				aria-valuetext={t("competition.advance.playing", {
-					day: run.day,
-					end: run.toDay,
-				})}
-				className="h-1 overflow-hidden bg-line"
-			>
-				<div
-					className="h-full bg-action transition-[width] duration-[420ms] ease-lock motion-reduce:transition-none"
-					style={{ width: `${(done / total) * 100}%` }}
-				/>
-			</div>
-		</div>
 	);
 }
