@@ -13,7 +13,7 @@ Decisiones en el [registro](../decisions/README.md). Reglas del usuario: respues
 - **#615** (#614 Ajustes fijo en el pie de la barra lateral, `../riftlegends-settings`): **falta el visto bueno** del usuario (capturas `~/.cache/rift-tmp/614-sidebar-*.png`).
 - **#601** (Dependabot): pedido `@dependabot rebase`; se fusiona solo si pasa.
 - **Stryker:** relanzado el 27-11 a las 03:05 sobre `main` (el de las 03:00 abortó por F13 > 15 s); el patch excluye ahora también `match/risk.test.ts` (F13, K4; decisión del usuario). Log `~/.cache/rift-tmp/stryker.log`. Con el resultado: PR que cierra la Fase 3 (patch + nota en el plan 05).
-- **#618** (Contraer como icono en la cabecera, sobre #615): esperando visto bueno (capturas `collapse-*.png`); encolar tras #615.
+- **#618** (Contraer como icono en la cabecera): aprobado, en la cola tras #615 (`queue-618.log`).
 - **Subagentes ligeros (sin tests pesados por Stryker):** #427 reglamentos internacionales (Sonnet, `../riftlegends-427`), planes de #339/#374 (Opus, `../riftlegends-339-plan`), preparación de #491 (Sonnet, `../riftlegends-491`).
 - **Siguiente tras #612 (desde las 09:00, máx. 4–5 subagentes, el usuario elige modelo y effort):** #531 (muertos en gris en el cara a cara), abaratar la simulación para #584/#532 (año ≤ 60 s), #339/#374, #540; Fase 4: #491 (capturas y cierre del plan 31), #429 (al final de la 3.5), #427 (verificar internacionales).
 - **Reglas del usuario (26–27-11):** sin «·» ni otros separadores; nada de estética «AI slop»; no ensanchar bandas, no subir límites de tests **ni reducir muestras**; no ajustar constantes a la semilla; visto bueno con capturas antes de encolar; títulos de PR en inglés.
