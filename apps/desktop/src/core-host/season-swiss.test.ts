@@ -9,7 +9,7 @@ type Core = ReturnType<typeof client>;
 
 const [league] = season.competitions;
 const stage = league?.stages[0];
-/** Four teams of one region to 2 wins or 2 losses: round 1 cannot keep regions apart. */
+/** Four teams of one region to 2 wins or 2 losses: no region constraint exists (#635). */
 const swiss = {
 	...season,
 	competitions: [
@@ -55,7 +55,7 @@ function playAll(core: Core) {
 		accepted(core.send("season.playDay", { day }));
 }
 
-test("U7: before any series, round 1 pairs everyone at 0-0 and says it relaxed the regions", () => {
+test("U7: before any series, round 1 pairs everyone at 0-0 and relaxes nothing with a single region", () => {
 	const core = client();
 	accepted(core.send("season.create", swiss));
 	expect(standings(core).swiss).toEqual({
@@ -66,7 +66,7 @@ test("U7: before any series, round 1 pairs everyone at 0-0 and says it relaxed t
 		rounds: [
 			{
 				round: 1,
-				relaxed: ["region"],
+				relaxed: [],
 				series: [
 					{ teams: [expect.any(String), expect.any(String)], record: [0, 0] },
 					{ teams: [expect.any(String), expect.any(String)], record: [0, 0] },

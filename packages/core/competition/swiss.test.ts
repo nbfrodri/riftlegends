@@ -277,7 +277,7 @@ describe("pairSwissRound game 1 priority", () => {
 });
 
 describe("pairSwissRound relaxation", () => {
-	test("S6: with no pairing that keeps the regions apart, region is dropped first and recorded", () => {
+	test("S6: with a single region the constraint does not exist, so nothing is recorded (#635)", () => {
 		const round = pairSwissRound(
 			teamsOf(8, () => "LCK"),
 			[],
@@ -285,6 +285,13 @@ describe("pairSwissRound relaxation", () => {
 			1,
 			SCOPE,
 		);
+		expect(round?.relaxed).toEqual([]);
+		expect(round?.pairings).toHaveLength(4);
+	});
+
+	test("S6: with mixed regions and no pairing that keeps them apart, region is dropped first and recorded", () => {
+		const teams = teamsOf(8, (i) => (i < 7 ? "LCK" : "LPL"));
+		const round = pairSwissRound(teams, [], RULES, 1, SCOPE);
 		expect(round?.relaxed).toEqual(["region"]);
 		expect(round?.pairings).toHaveLength(4);
 	});

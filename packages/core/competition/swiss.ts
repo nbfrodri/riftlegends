@@ -203,11 +203,16 @@ export function pairSwissRound(
 	// Asymmetric thresholds can leave an odd active field. The last team
 	// in the seeded record order sits out without changing its record.
 	if (order.length % 2 !== 0) order.pop();
+	// With one region (or league) for everyone the constraint does not exist.
+	const mixedRegions = teams.some((x, i) =>
+		teams.slice(i + 1).some((y) => !sameAffiliation(x, y)),
+	);
+	const avoidRegion = rules.avoid.includes("region") && mixedRegions;
 	// Constraints in the order they are dropped: region, then rematch.
 	const relaxed: ("region" | "rematch" | "record")[] = [];
 	let kept: ("region" | "rematch" | "record")[] = [
 		...(["region", "rematch"] as const).filter((rule) =>
-			rules.avoid.includes(rule),
+			rule === "region" ? avoidRegion : rules.avoid.includes(rule),
 		),
 		"record",
 	];
@@ -233,7 +238,7 @@ export function pairSwissRound(
 	// Report only the constraints the final pairing really breaks, in drop order.
 	const breaks = {
 		region: ([x, y]: [SwissTeam, SwissTeam]) =>
-			round === 1 && rules.avoid.includes("region") && sameAffiliation(x, y),
+			round === 1 && avoidRegion && sameAffiliation(x, y),
 		rematch: ([x, y]: [SwissTeam, SwissTeam]) =>
 			rules.avoid.includes("rematch") && met.has(pairKey(x.id, y.id)),
 		record: ([x, y]: [SwissTeam, SwissTeam]) => !sameRecord(x.id, y.id),
