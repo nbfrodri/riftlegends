@@ -62,3 +62,21 @@ test("shows nothing when every ultimate was ready, and never the middle dot", as
 	);
 	expect(full.container.textContent).not.toContain("·");
 });
+
+test("leaves out a role both sides were missing, and says nothing if that was all", async () => {
+	const { container } = await renderInLocale(
+		note("baron", ["top"], ["top"]),
+		"es-ES",
+	);
+	expect(container.textContent).toBe("");
+	cleanup();
+	await renderInLocale(
+		note("fight", ["top", "mid"], ["top", "jungle"]),
+		"es-ES",
+	);
+	expect(
+		screen.getByText(
+			"Pelearon sin la ulti de su jungla. Los rivales tampoco tenían la ulti de su mid.",
+		),
+	).toBeTruthy();
+});
