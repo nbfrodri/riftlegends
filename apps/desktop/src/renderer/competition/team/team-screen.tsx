@@ -66,7 +66,7 @@ function LoadedTeam({ sessionId, team }: { sessionId: number; team: string }) {
 			)}
 			<div className="grid min-h-0 flex-1 grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] grid-rows-[minmax(0,1fr)] gap-[clamp(12px,1.4vw,24px)]">
 				<div className="flex min-h-0 flex-col gap-[clamp(10px,1.6vh,20px)]">
-					<TeamRoster profile={data} />
+					<TeamRoster profile={data} sessionId={sessionId} />
 					{data.stats.champions.length > 0 && (
 						<TeamChampions champions={data.stats.champions} />
 					)}
