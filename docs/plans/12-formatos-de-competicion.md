@@ -350,7 +350,7 @@ Entregables: [#626](https://github.com/nbfrodri/riftlegends/issues/626) (núcleo
 | SO12 | Un torneo creado desde el preset de MSI o Worlds hereda el sorteo, también con plazas editadas | `tournament.create` |
 | SO13 | R1 del pipeline acepta el cuadro real de 2026 si cumple niveles y restricciones, en vez de exigir el cruce por sembrado. Busca un reparto de los equipos reales en las plazas de entrada (por región, ganador de otra fase o balance del Swiss) que cumpla niveles y `meet` | Un cruce real que rompe las reglas hace fallar R1 |
 | SO14 | Hecho `competition.drawn` (fase, nivel de cada equipo, cruces y `relaxed`) el día en que termina la última fase de la que depende, antes de su primera serie | Consultar una serie ya jugada (`series.summary` con `series`) da el mismo detalle |
-| SO15 | El hub muestra el sorteo antes de la primera serie: cruces, nivel de cada equipo y, si se relajó algo, el motivo en palabras. El lector lo lee como frases («Cuartos: Gen.G, 3-0, contra Team Liquid, 3-2») | ES y EN, sin «·» |
+| SO15 | El hub resume el sorteo y los motivos de las reglas relajadas. En la primera ronda, cada fila muestra el nivel y el logo de liga, y el lector anuncia los nombres, niveles y ligas de ambos equipos | ES y EN. El cuadro MSI cabe a 1280×720 y 1366×768 |
 | SO16 | Play-in de Worlds: un solo nivel de 4 y sin `meet`, emparejamiento libre | |
 | SO17 | First Stand: los grupos salen del sorteo por bombos que ya existe (`pots`, `avoidSameLeague`); misma semilla, mismos grupos y sin dos equipos de la misma región en un grupo | R1 acepta los grupos reales de 2026 |
 
@@ -393,7 +393,7 @@ Los niveles usan puestos y no balances: con 16 equipos a 3-3 los balances de los
 | Goldens | Los de draft y partida no cambian. El golden del año (#429) se genera después de #626 o se regenera en su PR |
 | #428 | Sin cambios de reglas: el sorteo vive en la resolución de la fase, que ya usa el dispatcher |
 | Repetir una serie (#481) | Sin cambio: el registro guarda el cruce y la semilla de la serie |
-| Hub (#628) | El sorteo se ve en el cuadro de la fase desde que se conocen sus equipos, con el nivel de cada uno, y en una línea por cruce para el lector |
+| Hub (#628) | El cuadro muestra el sorteo desde que se conocen los equipos. Véase la decisión «Sorteo en el hub» en el [registro](../decisions/README.md#fase-4--competición) |
 
 ### Decisiones del usuario (27-11-2026)
 

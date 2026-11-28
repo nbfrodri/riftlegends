@@ -39,24 +39,38 @@ for (const [width, height] of [
 			.getByRole("radiogroup", { name: "Vista" })
 			.getByRole("radio", { name: "Cuadro" })
 			.check({ force: true });
-		const draw = page.getByRole("region", { name: /^Sorteo: / });
-		await expect(draw).toBeVisible({ timeout: 60_000 });
-		for (const line of await draw.getByRole("listitem").allTextContents())
-			expect(line).toMatch(/^.+, nivel [1-4], contra .+, nivel [1-4]$/);
-		await expect(draw.getByRole("listitem")).toHaveCount(4);
-		expect(await draw.textContent()).not.toContain("·");
-		expect(
-			await page
-				.getByRole("main")
-				.evaluate(
-					(el) =>
-						el.scrollWidth === el.clientWidth &&
-						el.scrollHeight === el.clientHeight,
-				),
-		).toBe(true);
+		await expect(
+			page.getByText("Sorteo por niveles: 1 contra 4, 2 contra 3", {
+				exact: true,
+			}),
+		).toBeVisible({ timeout: 60_000 });
+		const bracket = page.getByRole("group", { name: "Cuadro", exact: true });
+		const drawn = bracket.getByRole("button", {
+			name: /: .+, nivel [1-4], [A-Z]+, contra .+, nivel [1-4], [A-Z]+$/,
+		});
+		await expect(drawn).toHaveCount(4);
+		await expect(bracket.getByText(/^N[1-4]$/)).toHaveCount(8);
+		for (const container of [page.getByRole("main"), bracket]) {
+			const size = await container.evaluate((el) => ({
+				width: el.clientWidth,
+				height: el.clientHeight,
+				scrollWidth: el.scrollWidth,
+				scrollHeight: el.scrollHeight,
+			}));
+			expect([size.scrollWidth, size.scrollHeight], String(container)).toEqual([
+				size.width,
+				size.height,
+			]);
+		}
+		const cardWidths = await bracket
+			.getByRole("button")
+			.evaluateAll((cards) =>
+				cards.map((card) => card.getBoundingClientRect().width),
+			);
+		expect(new Set(cardWidths)).toEqual(new Set([168]));
 		if (process.env.RIFT_DRAW_SHOTS)
 			await page.screenshot({
-				path: `${process.env.RIFT_DRAW_SHOTS}/628-${width}x${height}.png`,
+				path: `${process.env.RIFT_DRAW_SHOTS}/628b-${width}x${height}.png`,
 			});
 	});
 }

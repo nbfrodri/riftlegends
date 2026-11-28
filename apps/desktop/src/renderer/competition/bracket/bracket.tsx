@@ -12,7 +12,12 @@ import {
 import { useTranslation } from "react-i18next";
 import { pacing } from "../../draft/broadcast/pacing";
 import { TeamCrest } from "../../draft/team-crest";
-import { BracketCard, slotTexts, type TeamNames } from "./bracket-card";
+import {
+	BracketCard,
+	type SlotText,
+	slotTexts,
+	type TeamNames,
+} from "./bracket-card";
 import {
 	bracketLabels,
 	type Label,
@@ -71,6 +76,9 @@ export function Bracket({
 	const { t } = useTranslation();
 	const layout = useMemo(() => layoutBracket(bracket), [bracket]);
 	const labels = useMemo(() => bracketLabels(bracket.matches), [bracket]);
+	const tiers = new Map(
+		bracket.draw?.tiers.map(({ team, tier }) => [team, tier]),
+	);
 	const done = useMemo(
 		() => layout.connectors.filter((c) => c.done).map((c) => c.id),
 		[layout],
@@ -87,6 +95,13 @@ export function Bracket({
 	const nameOf = (id: string) => matchName(t, labels, id);
 	const origin = (slot: Slot, short: boolean) =>
 		originText(t, labels, slot, short);
+	const drawTeamName = ({ name, draw }: SlotText) => {
+		if (!draw) return name;
+		const team = t("competition.draw.teamTier", { name, tier: draw.tier });
+		return draw.league
+			? t("competition.draw.teamLeague", { team, league: draw.league })
+			: team;
+	};
 
 	const move = (id: string) => (event: KeyboardEvent<HTMLButtonElement>) => {
 		const direction = KEYS[event.key as keyof typeof KEYS];
@@ -151,18 +166,38 @@ export function Bracket({
 					</span>
 				))}
 				{layout.placed.map(({ match, x, y }) => {
-					const slots = slotTexts(match, team, origin);
+					const slots = slotTexts(
+						match,
+						team,
+						origin,
+						match.side === "upper" && match.round === 1 ? tiers : undefined,
+					);
 					const [a, b] = slots.map((slot) => slot.name);
 					const round = nameOf(match.id);
-					const label = match.score
-						? t("competition.bracket.result", {
-								round,
-								a,
-								b,
-								scoreA: match.score[0],
-								scoreB: match.score[1],
-							})
-						: t("competition.bracket.versus", { round, a, b });
+					const score = match.score && {
+						scoreA: match.score[0],
+						scoreB: match.score[1],
+					};
+					const label = slots.some((slot) => slot.draw)
+						? t(
+								score
+									? "competition.draw.playedMatch"
+									: "competition.draw.match",
+								{
+									round,
+									a: drawTeamName(slots[0]),
+									b: drawTeamName(slots[1]),
+									...score,
+								},
+							)
+						: score
+							? t("competition.bracket.result", {
+									round,
+									a,
+									b,
+									...score,
+								})
+							: t("competition.bracket.versus", { round, a, b });
 					const series = match.series;
 					return (
 						<Tooltip key={match.id} content={label}>
