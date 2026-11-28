@@ -68,10 +68,11 @@ test("E1: a custom tournament played with my team from start to finish", async (
 		name: "Jugar día",
 		disabled: false,
 	});
-	for (let step = 0; step < 30; step++) {
-		// After a day the hub settles into one of three states; read it only
-		// then, or a pending series can still be on its way.
-		await expect(champion.or(play).or(playDay).first()).toBeVisible();
+	// The hub knows the day's state once the advance panel is no longer busy
+	// (#664): my pending series, «Jugar día» or, at the end, the champion.
+	const settled = advance.and(page.locator('[aria-busy="false"]'));
+	for (let step = 0; step < 12; step++) {
+		await expect(champion.or(settled)).toBeVisible();
 		if (await champion.isVisible()) break;
 		if (await play.isVisible()) {
 			await play.click();
@@ -83,14 +84,7 @@ test("E1: a custom tournament played with my team from start to finish", async (
 			spectator ||= await out.isVisible();
 			continue;
 		}
-		// «Jugar día» can be enabled for a moment after my series, before the
-		// next pending one arrives; if the click misses, read the hub again.
-		const clicked = await playDay
-			.click({ timeout: 5_000 })
-			.then(() => true)
-			.catch(() => false);
-		if (!clicked) continue;
-		await expect(advance.getByRole("button", { name: "Parar" })).toBeHidden();
+		await playDay.click();
 	}
 	await expect(champion).toBeVisible();
 	await expect(page.getByText(/^Final: /)).toBeVisible();

@@ -93,6 +93,59 @@ describe("U10: play a tournament", { timeout: 30_000 }, () => {
 		expect(played?.payload).toMatchObject({ timer: false });
 	});
 
+	test("the advance stays disabled and the panel busy until the day state is known (#664)", async () => {
+		const { api, user } = await startTournament(false);
+		// Hold the overview the advance reads before and after each day.
+		const query = api.query.getMockImplementation();
+		if (!query) throw new Error("no query");
+		const held: (() => void)[] = [];
+		api.query.mockImplementation((request) =>
+			request.kind === "season.overview"
+				? new Promise((resolve) => {
+						held.push(() => resolve(query(request)));
+					})
+				: query(request),
+		);
+		const names = ["Play day", "Until end of stage", "Whole tournament"];
+		const buttons = () =>
+			names.map((name) => within(advance()).getByRole("button", { name }));
+		// Any moment, after the click, with «Play day» enabled before my series shows.
+		let early = false;
+		const watch = new MutationObserver(() => {
+			const panel = screen.queryByRole("group", { name: "Advance" });
+			if (!panel) return;
+			const mine = within(panel).queryByRole("button", {
+				name: "Play my series",
+			});
+			const day = within(panel).queryByRole("button", { name: "Play day" });
+			if (!mine && day && !day.hasAttribute("disabled")) early = true;
+		});
+		await user.click(
+			within(advance()).getByRole("button", { name: "Play day" }),
+		);
+		watch.observe(document.body, {
+			subtree: true,
+			childList: true,
+			attributes: true,
+		});
+		try {
+			for (const button of buttons())
+				expect(button.hasAttribute("disabled")).toBe(true);
+			expect(advance().getAttribute("aria-busy")).toBe("true");
+
+			api.query.mockImplementation(query);
+			for (const release of held.splice(0)) release();
+			await within(advance()).findByRole("button", { name: "Play my series" });
+			await new Promise((resolve) => setTimeout(resolve, 50));
+		} finally {
+			watch.disconnect();
+		}
+		expect(early).toBe(false);
+		for (const button of buttons())
+			expect(button.hasAttribute("disabled")).toBe(true);
+		expect(advance().getAttribute("aria-busy")).toBe("false");
+	});
+
 	test("watching only, the whole tournament ends on the champion, then the hub or a new one", async () => {
 		const { user } = await startTournament(true);
 		expect(

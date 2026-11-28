@@ -217,6 +217,7 @@ function TournamentHub({
 					scope="tournament"
 					run={advance.run}
 					pending={advance.pending}
+					busy={advance.busy}
 					onStart={(mode) => void advance.start(mode)}
 					onStop={advance.stop}
 					teamName={teamName}
