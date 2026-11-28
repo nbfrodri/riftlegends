@@ -37,10 +37,15 @@ interface Definition {
 
 const bo5 = (n: number) => Array<5>(n).fill(5);
 type LeaguePlace = readonly [league: string, place: number];
-const pool = (competition: EventId, ...places: LeaguePlace[]) => ({
+const pool = (
+	competition: EventId,
+	places: readonly LeaguePlace[],
+	group?: { index: number; count: number },
+) => ({
 	kind: "qualified" as const,
 	competition,
 	places: places.map(([league, place]) => ({ league, place })),
+	...(group && { group }),
 });
 
 const winner = (stage: string, match: string) =>
@@ -64,8 +69,8 @@ function playInRoutes(
 		}
 	}
 	return {
-		opening: pool(event, ...playIn),
-		main: [pool(event, ...direct), winner("playin", "GF")],
+		opening: pool(event, playIn),
+		main: [pool(event, direct), winner("playin", "GF")],
 	};
 }
 
@@ -158,7 +163,19 @@ const worldsKnockoutDraw: Stage["draw"] = {
 // First Stand has no reason left: groups (same region apart), GSL double
 // elimination, Bo5 everywhere and the cross knockout (A1 v B2, B1 v A2) match
 // the event page, whose cited sources are lolesports stage pages. The groups
-// are a draw in real life and fixed by region here; GSL has no tiebreakers.
+// are drawn from four pots of two (plan 12 §6, #631), one team of each pot per
+// group and never two of a league; GSL has no tiebreakers.
+const firstStandPots: LeaguePlace[] = [
+	["LPL", 1],
+	["LCK", 1],
+	["LEC", 1],
+	["LCS", 1],
+	["LCP", 1],
+	["CBLOL", 1],
+	["LCK", 2],
+	["LPL", 2],
+];
+const firstStandDraw: Stage["draw"] = { pots: 4, avoidSameLeague: true };
 const unverified = {
 	"first-stand": [],
 	msi: [
@@ -181,26 +198,16 @@ export const internationalDefinitions: Record<EventId, Definition> = {
 				id: "groupA",
 				tabs: [1, 2, 3, 4, 5].map((day) => `Groups Day ${day}`),
 				group: 0,
-				entrants: pool(
-					"first-stand",
-					["LPL", 1],
-					["LEC", 1],
-					["LCP", 1],
-					["LCK", 2],
-				),
+				entrants: pool("first-stand", firstStandPots, { index: 1, count: 2 }),
+				draw: firstStandDraw,
 				play: fourTeams(null),
 			},
 			{
 				id: "groupB",
 				tabs: [1, 2, 3, 4, 5].map((day) => `Groups Day ${day}`),
 				group: 1,
-				entrants: pool(
-					"first-stand",
-					["LCK", 1],
-					["LCS", 1],
-					["CBLOL", 1],
-					["LPL", 2],
-				),
+				entrants: pool("first-stand", firstStandPots, { index: 2, count: 2 }),
+				draw: firstStandDraw,
 				play: fourTeams(null),
 			},
 			{

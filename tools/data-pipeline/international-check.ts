@@ -7,6 +7,7 @@ import {
 import { resolveBracket } from "../../packages/core/competition/bracket-state.ts";
 import {
 	checkDraw,
+	checkGroupDraw,
 	type DrawContext,
 	metKey,
 } from "./international-draw-check.ts";
@@ -206,6 +207,8 @@ export function checkInternational(
 		const draw = stage.draw;
 		if (!found.length && replay.seeds && draw && "tiers" in draw)
 			found.push(...checkDraw(stage, draw, replay.seeds, context, regions));
+		if (!found.length)
+			found.push(...checkGroupDraw(stage, [...teams], regions));
 		problems.push(...found.map((message) => `${stage.id}: ${message}`));
 		if (replay.results) context.results.set(stage.id, replay.results);
 		if (replay.records) context.records.set(stage.id, replay.records);

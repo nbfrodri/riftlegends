@@ -106,10 +106,23 @@ const play = z.discriminatedUnion("type", [
 	doubleElim,
 ]);
 
+/**
+ * The stage takes group `index` of `count` groups drawn from all the teams of
+ * the source by the stage's pots (First Stand, plan 12 §6). Sibling stages
+ * repeat the same source.
+ */
+const groupOfDraw = z
+	.strictObject({
+		index: z.int().min(1).max(8),
+		count: z.int().min(2).max(8),
+	})
+	.refine(({ index, count }) => index <= count);
+
 const source = z.discriminatedUnion("kind", [
 	z.strictObject({
 		kind: z.literal("fixed"),
 		teams: z.array(teamId).min(1).max(32),
+		group: groupOfDraw.optional(),
 	}),
 	/** Teams ranked `from` to `to` (1-based) in an earlier stage. */
 	z.strictObject({
@@ -142,6 +155,7 @@ const source = z.discriminatedUnion("kind", [
 			.min(1)
 			.max(32)
 			.optional(),
+		group: groupOfDraw.optional(),
 	}),
 	/** Qualified teams of these competitions, drawn from `pots` pots by region and place. */
 	z.strictObject({

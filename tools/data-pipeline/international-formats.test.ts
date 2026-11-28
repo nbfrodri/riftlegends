@@ -314,6 +314,54 @@ describe("SO12–SO16 MSI and Worlds declare their real draws", () => {
 	});
 });
 
+describe("SO17 First Stand draws its groups from pots", () => {
+	it("declares four pots of two, one per group slot, and no league twice", () => {
+		for (const [index, id] of ["groupA", "groupB"].entries()) {
+			const stage = stageOf("first-stand", id);
+			expect(stage.draw).toEqual({ pots: 4, avoidSameLeague: true });
+			const source = stage.entrants as unknown as {
+				places: { league: string; place: number }[];
+				group: object;
+			};
+			expect(source.group).toEqual({ index: index + 1, count: 2 });
+			expect(source.places.map((p) => `${p.league}${p.place}`)).toEqual([
+				"LPL1",
+				"LCK1",
+				"LEC1",
+				"LCS1",
+				"LCP1",
+				"CBLOL1",
+				"LCK2",
+				"LPL2",
+			]);
+		}
+	});
+
+	it("R1 accepts the real 2026 groups as a valid draw", () => {
+		expect(check(event("first-stand"), formats["first-stand"])).toEqual([]);
+	});
+
+	it("R1 rejects a group with two teams of one league", () => {
+		// JD Gaming (LPL) joins Bilibili Gaming (LPL) in group A.
+		expect(
+			check(
+				swapped("first-stand", "G2 Esports", "JD Gaming"),
+				formats["first-stand"],
+			).join("\n"),
+		).toMatch(/groupA: draw breaks league/);
+	});
+
+	it("R1 rejects a group with two teams of one pot", () => {
+		// LOUD and Team Secret Whales are both from pot 3 and share group A.
+		expect(
+			check(
+				swapped("first-stand", "Bilibili Gaming", "LOUD"),
+				formats["first-stand"],
+			).join("\n"),
+		).toMatch(/groupA: draw breaks pots/);
+	});
+});
+
 describe("Q4–Q5 international seeding and stage links", () => {
 	it("crosses the two First Stand group winners with the opposite runners-up", () => {
 		expect(formats["first-stand"].stages.at(-1)?.entrants).toEqual([

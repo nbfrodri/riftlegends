@@ -7,8 +7,9 @@ import {
 	type StageOutcome,
 	type StageOutcomes,
 } from "./qualification";
-import { seedGroups, seedStage } from "./stage-draw";
+import { drawStageGroup, seedGroups, seedStage } from "./stage-draw";
 import {
+	drawnGroup,
 	type IncomingPlace,
 	type StageGraph,
 	type StageNode,
@@ -195,7 +196,8 @@ export function resolveStage(
 			error: stageError(node, "invalid-format", { path: "entrants" }),
 		};
 	}
-	const needed = node.stage.play.size;
+	const group = drawnGroup(node);
+	const needed = node.stage.play.size * (group?.count ?? 1);
 	if (entries.length !== needed) {
 		return {
 			status: "error",
@@ -215,6 +217,16 @@ export function resolveStage(
 			region: team.region,
 		};
 	});
+	if (group) {
+		const { entrants, relaxed } = drawStageGroup(
+			node,
+			ordered,
+			group,
+			rootSeed,
+			season,
+		);
+		return { status: "ready", entrants, groups: undefined, relaxed };
+	}
 	const drawn = drawStage(graph, node, ordered, outcomes, rootSeed, season);
 	const seeded = drawn?.entrants ?? seedStage(node, ordered, rootSeed, season);
 	const { groups, relaxed } = seedGroups(node, seeded);
