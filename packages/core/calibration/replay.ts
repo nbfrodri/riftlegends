@@ -16,7 +16,8 @@ export const COMPONENT_KEYS = [
 	"flex",
 	"identity",
 	"fearlessReserve",
-	"side",
+	"firstPick",
+	"lastPick",
 	"targetBan",
 	"threatBan",
 ] as const;

@@ -1,11 +1,17 @@
 import { ROLES, type Role } from "@rift-legends/contracts";
-import { DRAFT_ORDER, phaseAt } from "../draft/order";
 import { SCALE } from "../math";
 import { compositionFor } from "./components/composition";
 import { fearlessReserve } from "./components/fearless-reserve";
 import { flex } from "./components/flex";
 import { identityFor } from "./components/identity";
 import { rivalsInRole, worstMatchup } from "./components/matchup";
+import {
+	counterPoints,
+	keepableLanes,
+	keepCost,
+	orderPlan,
+	securePoints,
+} from "./components/side";
 import { synergy } from "./components/synergy";
 import {
 	type Champion,
@@ -77,16 +83,8 @@ export function replyScorer(base: AiContext, free: readonly string[]) {
 		}
 		return ok;
 	};
-	const turn = DRAFT_ORDER[base.step];
-	const sideTurn = turn?.order === base.order && turn.action === "pick";
-	const sideKind =
-		sideTurn && base.order === "first" && phaseAt(base.step) === "picks1"
-			? "flex"
-			: sideTurn &&
-					base.order === "last" &&
-					base.step === DRAFT_ORDER.length - 1
-				? "matchup"
-				: "none";
+	const plan = orderPlan(base);
+	const keepable = plan === "keep" ? keepableLanes(allies) : undefined;
 	const poolIds = new Set<string>();
 	for (const player of roster?.values() ?? [])
 		for (const id of [...player.mains, ...player.secondary]) poolIds.add(id);
@@ -118,11 +116,13 @@ export function replyScorer(base: AiContext, free: readonly string[]) {
 		const flexBound = trustedRoles > 1 ? (trustedRoles - 1) * 2 * SCALE : 0;
 		let laneBound = 0;
 		let matchupBound = 0;
+		let metaBound = 0;
 		if (lanes.length) {
 			laneBound = Number.NEGATIVE_INFINITY;
 			for (const lane of lanes) {
 				const top = lane.row ? topOf(lane.row) : 0;
 				if (top > matchupBound) matchupBound = top;
+				if (lane.meta > metaBound) metaBound = lane.meta;
 				const laneTop = lane.meta + lane.comfort + top;
 				if (laneTop > laneBound) laneBound = laneTop;
 			}
@@ -133,10 +133,11 @@ export function replyScorer(base: AiContext, free: readonly string[]) {
 			identity: identity(candidate),
 			fearless: fearlessReserve(base, candidate),
 		};
+		// Keeping a lane only costs points, so it adds nothing to the bound.
 		const sideBound =
-			sideKind === "flex"
-				? flexBound
-				: sideKind === "matchup"
+			plan === "secure"
+				? securePoints(flexBound, metaBound)
+				: plan === "counter"
 					? matchupBound
 					: 0;
 		return {
@@ -171,6 +172,7 @@ export function replyScorer(base: AiContext, free: readonly string[]) {
 			}
 			return list;
 		};
+		const keep = keepable ? keepCost(keepable, rivals) : undefined;
 		const lastInPools = poolIds.has(last);
 		let unavailable: Set<string> | undefined;
 		let best: string | undefined;
@@ -183,13 +185,16 @@ export function replyScorer(base: AiContext, free: readonly string[]) {
 			let laneMeta = 0;
 			let laneComfort = 0;
 			let laneMatchup = 0;
+			let laneKeep = 0;
 			for (const lane of item.lanes) {
 				const matchup = worstMatchup(lane.row, rivalsIn(lane.role));
-				const total = lane.meta + lane.comfort + matchup;
+				const keepPoints = keep?.(lane.role) ?? 0;
+				const total = lane.meta + lane.comfort + matchup + keepPoints;
 				if (total > laneBest) {
 					laneMeta = lane.meta;
 					laneComfort = lane.comfort;
 					laneMatchup = matchup;
+					laneKeep = keepPoints;
 					laneBest = total;
 				}
 			}
@@ -215,13 +220,13 @@ export function replyScorer(base: AiContext, free: readonly string[]) {
 					flexPoints = item.baseFlex;
 				}
 			}
-			const sidePoints =
-				sideKind === "flex"
-					? flexPoints
-					: sideKind === "matchup"
-						? laneMatchup > 0
-							? laneMatchup
-							: 0
+			const firstPick =
+				plan === "secure" ? securePoints(flexPoints, laneMeta) : 0;
+			const lastPick =
+				plan === "counter"
+					? counterPoints(laneMatchup)
+					: plan === "keep"
+						? laneKeep
 						: 0;
 			// The order of the sum is the one of `pickTotal`.
 			const total =
@@ -233,7 +238,8 @@ export function replyScorer(base: AiContext, free: readonly string[]) {
 				flexPoints +
 				item.identity +
 				item.fearless +
-				sidePoints;
+				firstPick +
+				lastPick;
 			if (
 				total > bestTotal ||
 				(total === bestTotal && (best === undefined || item.champion < best))

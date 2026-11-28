@@ -1,4 +1,4 @@
-import { expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 import type { AiContext } from "../context";
 import { points, scenario } from "../fixtures/scenario";
 import { scoreBan } from "./ban";
@@ -32,23 +32,60 @@ it.each(["soft", "hard"] as const)(
 	},
 );
 
-it("B4 rewards blue roster-backed flex only during the first pick phase", () => {
-	const side = (id: string, overrides: Partial<AiContext>) =>
-		pick("side", id, overrides);
-	expect(side("rimefoil", { step: 9 })).toBeGreaterThan(0);
-	expect(side("rimefoil", { team: "shoal", rival: "forge", step: 9 })).toBe(0);
-	expect(side("rimefoil", { step: 17 })).toBe(0);
-	expect(side("rimefoil", { order: "last", step: 7 })).toBe(0);
-	expect(side("cragbell", { step: 6 })).toBe(0);
+it("B4 first pick secures top-tier or roster-backed flex champions in the first pick phase", () => {
+	const first = (id: string, overrides: Partial<AiContext> = {}) =>
+		pick("firstPick", id, overrides);
+	expect(first("suncord")).toBeGreaterThan(first("cragbell"));
+	expect(first("cragbell")).toBeGreaterThan(0);
+	expect(first("copperfin")).toBe(0);
+	expect(first("rimefoil", { step: 9 })).toBeGreaterThan(0);
+	expect(first("rimefoil", { team: "shoal", rival: "forge", step: 9 })).toBe(0);
+	expect(first("suncord", { step: 17 })).toBe(0);
+	expect(first("suncord", { order: "last", step: 7 })).toBe(0);
+	expect(pick("lastPick", "suncord", {})).toBe(0);
 });
 
-it("B4 rewards red's final counter only when it can meet that opponent in lane", () => {
-	const side = (step: number, shoal: string[]) =>
-		pick("side", "glasswake", { order: "last", step, picks: { shoal } });
-	expect(side(19, ["rimefoil"])).toBeGreaterThan(0);
-	expect(side(16, ["rimefoil"])).toBe(0);
-	expect(side(19, ["rimefoil", "prismoth"])).toBe(0);
-	expect(side(19, ["waxblade"])).toBe(0);
+it("B4 rewards the last pick's final counter only when it can meet that opponent in lane", () => {
+	const last = (step: number, shoal: string[]) =>
+		pick("lastPick", "glasswake", { order: "last", step, picks: { shoal } });
+	expect(last(19, ["rimefoil"])).toBeGreaterThan(0);
+	expect(last(19, ["rimefoil", "prismoth"])).toBe(0);
+	expect(last(19, ["waxblade"])).toBe(0);
+	expect(pick("firstPick", "glasswake", { order: "last", step: 19 })).toBe(0);
+});
+
+describe("B4 the last pick keeps a lane whose opponent is still hidden", () => {
+	// Forge has top and mid open. Shoal has shown its top, not its mid.
+	const board = {
+		forge: ["duskroot", "copperfin", "bronzehook"],
+		shoal: ["saltspire", "coalstride", "suncord"],
+	};
+	const last = (id: string, overrides: Partial<AiContext> = {}) =>
+		pick("lastPick", id, {
+			order: "last",
+			step: 16,
+			picks: board,
+			...overrides,
+		});
+
+	it("costs a pick that fills the hidden lane and leaves only a known one", () => {
+		expect(last("glasswake")).toBeLessThan(0);
+		expect(last("cragbell")).toBe(0);
+	});
+
+	it("costs nothing when no lane is hidden, at the final pick or for the first pick", () => {
+		const shown = { ...board, shoal: [...board.shoal, "prismoth"] };
+		expect(last("glasswake", { picks: shown })).toBe(0);
+		expect(last("glasswake", { step: 19 })).toBe(0);
+		expect(pick("lastPick", "glasswake", { step: 16, picks: board })).toBe(0);
+	});
+
+	it("does not count a hidden lane the team can no longer keep open", () => {
+		// With only mid open, picking it is forced.
+		const forced = { ...board, forge: [...board.forge, "cragbell"] };
+		expect(last("glasswake", { picks: forced, step: 19 })).toBe(0);
+		expect(last("glasswake", { picks: forced, step: 11 })).toBe(0);
+	});
 });
 
 it("emits a unique key and a nonzero fixed-point integer for each pick and ban contribution", () => {

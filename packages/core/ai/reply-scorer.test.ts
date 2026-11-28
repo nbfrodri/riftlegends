@@ -53,6 +53,33 @@ it.each([
 			shoal: ["waxblade", "mosshelm"],
 		},
 	},
+	// The replying team's pick-order plan (#364): secure, keep and counter.
+	{
+		step: 9,
+		order: "last",
+		picks: { forge: ["reedclaw"], shoal: ["cragbell"] },
+	},
+	{
+		step: 16,
+		order: "first",
+		picks: {
+			forge: ["saltspire", "coalstride"],
+			shoal: ["duskroot", "copperfin", "bronzehook"],
+		},
+	},
+	{
+		step: 11,
+		order: "first",
+		picks: { forge: ["waxblade"], shoal: ["reedclaw", "copperfin"] },
+	},
+	{
+		step: 19,
+		order: "first",
+		picks: {
+			forge: ["waxblade", "mosshelm", "coalstride", "suncord"],
+			shoal: ["glasswake", "reedclaw", "cragbell", "copperfin"],
+		},
+	},
 ] as const)(
 	"replies like the one by one scoring at step $step",
 	({ step, order, picks }) => {

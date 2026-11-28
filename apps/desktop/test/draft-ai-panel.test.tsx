@@ -57,6 +57,8 @@ const reasonLabels: Record<string, string> = {
 	identity: "Fit with team strategy",
 	fearlessReserve: "Value in later games",
 	side: "Impact of draft side",
+	firstPick: "Securing it with first pick",
+	lastPick: "Last-pick counter",
 	blueSide: "Blue map advantage",
 	targetBan: "Rival player’s best champions",
 	threatBan: "Threat to the team",

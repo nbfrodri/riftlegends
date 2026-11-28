@@ -32,7 +32,7 @@
 | B1 | **Objetivo:** banear el comfort de un rival fuerte suma según su nivel | En fácil no conoce los pools rivales |
 | B2 | **Amenaza:** banear lo que castiga la composición propia suma, más en la fase 2 | |
 | B3 | **Reserva fearless:** guardar un campeón S para otro game resta al usarlo pronto | Desaparece si el game puede cerrar o eliminar la serie |
-| B4 | **Lado:** azul valora flex en la primera fase; rojo valora el counter en el último pick | |
+| B4 | **Orden de draft** (#364): first pick asegura campeones S o S+ y flex en la primera fase; last pick guarda una línea con el rival aún oculto y la counterea en su último pick | Sin línea oculta que guardar, o con una sola línea libre: sin coste |
 
 ### Elección y dificultad
 
@@ -159,3 +159,15 @@ Los pesos se ajustan con datos, no a mano. Los drafts salen del snapshot de Leag
 - **Se aplica solo si mejora el top 3 de validación.** `pnpm calibrate` reproduce el informe (`CALIBRATION_OUT` elige el fichero).
 - **Variedad:** cada personalidad sigue eligiendo distinto en los casos de referencia (`profiles.test.ts`); `shipped.test.ts` fija que los pesos actuales mejoran los anteriores en drafts fuera de la búsqueda.
 
+
+## Plan por orden de draft (#364, parte 1)
+
+El orden de draft (no el lado del mapa, desde #305) cambia lo que busca cada pick. Dos componentes propios en `ai.decided`, que sustituyen a `side`. Sus pesos de base salen de `pnpm calibrate` (`firstPick` ×1,2, `lastPick` ×0,6):
+
+| Componente | Cuándo | Puntos |
+| --- | --- | --- |
+| `firstPick` | Picks del equipo con first pick en la primera fase | Flex respaldado por la plantilla (como antes) más el tier por encima de A en su línea: S suma 1 punto, S+ suma 2 |
+| `lastPick` | Último pick del equipo con last pick | El counter de su línea, solo si gana el enfrentamiento (como antes) |
+| `lastPick` | Picks anteriores del equipo con last pick | −2 puntos si llena la última línea libre cuyo rival aún puede ocultarse, cuando otra línea la habría guardado |
+
+Una línea está oculta si el rival puede repartir sus picks sin usarla. El coste entra en la elección de línea de los campeones flex. Con el cambio se aplicó la búsqueda de `pnpm calibrate` a `matchup`, `fearlessReserve`, `lastPick` y la personalidad meta. Su propuesta para laterales (identidad ×1,19) no se aplica porque rompe D1. Validación: top 1 igual (7,00 %) y top 3 de 17,52 % a 17,99 %. La parte del **lado del mapa** (plan de objetivos y `decideSide`) espera a #363.
