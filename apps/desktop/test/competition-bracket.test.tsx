@@ -510,6 +510,49 @@ describe("U6: the bracket in the competition hub (#605)", () => {
 		);
 	});
 
+	test("Back from a series opened in the bracket leaves the bracket view and stage in place (#623)", async () => {
+		const { api, created } = playoffCore();
+		const { router, user } = await openHub(
+			api,
+			"/competicion/rift-league?view=bracket&stage=playoffs",
+		);
+		await screen.findByRole("group", { name: "Bracket" }, { timeout: 30_000 });
+		const overview = await api.query({
+			v: CONTRACT_VERSION,
+			kind: "season.overview",
+			sessionId: created.sessionId,
+			params: {},
+		});
+		const { day } = (overview as { view: { day: number } }).view;
+		await act(async () => {
+			await api.send({
+				v: CONTRACT_VERSION,
+				kind: "season.playDay",
+				sessionId: created.sessionId,
+				expectedPosition: created.position,
+				payload: { day },
+			});
+		});
+		const [played] = await screen.findAllByRole(
+			"button",
+			{ name: /^Semifinal \d: \S.* \d–\d \S/ },
+			{ timeout: 30_000 },
+		);
+		await user.click(played as HTMLElement);
+		await screen.findByRole("tab", { name: "Full series" });
+
+		await user.click(screen.getByRole("button", { name: "Back" }));
+		await screen.findByRole("group", { name: "Bracket" }, { timeout: 30_000 });
+		expect(router.state.location.pathname).toBe("/competicion/rift-league");
+		expect(router.state.location.search).toMatchObject({
+			view: "bracket",
+			stage: "playoffs",
+		});
+		expect(
+			within(views()).getByRole("radio", { name: "Bracket" }),
+		).toHaveProperty("checked", true);
+	});
+
 	test("a league stage has no Bracket view, and a link to it falls back to the standings", async () => {
 		await openHub(hostCore(), "/competicion/rift-league?view=bracket");
 		await screen.findByRole(
