@@ -82,6 +82,7 @@ const humanStep =
 		const log = openDayLog(season);
 		const played = {
 			facts,
+			human: step.state,
 			...seriesResult(human.series.fixture, step.state, facts),
 		};
 		recordSeries(log, human.slot, human.series, played);

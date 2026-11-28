@@ -1,4 +1,5 @@
 import { viewMatch } from "../draft/match-view";
+import type { SeriesState } from "../draft/series";
 import { summarizeSeries } from "../draft/summary";
 import type { Emitted } from "../server/dispatcher";
 import { QueryRejection } from "../server/dispatcher";
@@ -23,6 +24,8 @@ interface GameLine {
  * What the season keeps of a played series: its result and the lines of each
  * game, for the team profiles, plus its fixture and seed to play it again
  * (the same inputs give the same games) when a view asks for its detail.
+ * The coach AI cannot replay the user's decisions, so the user's series keeps
+ * its final draft state instead (#649).
  */
 export interface SeriesRecord {
 	readonly id: string;
@@ -35,6 +38,7 @@ export interface SeriesRecord {
 	readonly fixture: SeasonFixture;
 	readonly seed: number;
 	readonly fearless: Fearless;
+	readonly human?: SeriesState;
 	readonly games: readonly {
 		readonly duration: number;
 		readonly lines: readonly GameLine[];
@@ -59,6 +63,7 @@ function replay(state: SeasonSession, series: string) {
 	const record = season?.records.get(series);
 	if (!season || !record)
 		return new QueryRejection({ code: "unknown-series", params: { series } });
+	if (record.human) return record.human;
 	const played = playSeasonSeries(
 		season.content,
 		record.fixture,
