@@ -10,7 +10,7 @@ const LAST_STEP = DRAFT_ORDER.length - 1;
 /** Tier points above A: what securing an S or S+ champion is worth to the first pick. */
 const SECURED_FROM = meta("A");
 /** What the last pick loses by filling the lane it could still counter at the end. */
-export const KEEP_COUNTER = 2 * SCALE;
+const KEEP_COUNTER = 2 * SCALE;
 
 /**
  * What the pick order asks of this pick (issue #364). The first pick secures
