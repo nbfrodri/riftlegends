@@ -1,3 +1,4 @@
+import { CONTRACT_VERSION, type SeriesSummary } from "@rift-legends/contracts";
 import { RouterProvider } from "@tanstack/react-router";
 import { cleanup, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -124,6 +125,59 @@ describe("U10: play a tournament", { timeout: 30_000 }, () => {
 		);
 		expect(
 			await screen.findByRole("button", { name: "Start tournament" }),
+		).toBeTruthy();
+	});
+
+	test("the champion screen shows the final's MVP, from the champion team, with the final's figures (#624)", async () => {
+		const { api, user } = await startTournament(true);
+		await user.click(
+			within(advance()).getByRole("button", { name: "Whole tournament" }),
+		);
+		const champion = await screen.findByRole(
+			"region",
+			{ name: /./ },
+			{ timeout: 10_000 },
+		);
+		const mvp = await within(champion).findByRole(
+			"region",
+			{ name: "Series MVP" },
+			{ timeout: 10_000 },
+		);
+		const name = within(champion).getAllByRole("heading", {
+			level: 2,
+		})[0]?.textContent;
+
+		// The same figures the core gives for the last played series.
+		const sessionId = api.send.mock.calls.at(-1)?.[0].sessionId ?? 0;
+		const schedule = (await api.query({
+			v: CONTRACT_VERSION,
+			kind: "competition.schedule",
+			sessionId,
+			params: {},
+		})) as { view: { id: string; status: string }[] };
+		const final = schedule.view
+			.filter(({ status }) => status === "played")
+			.at(-1);
+		const summary = (await api.query({
+			v: CONTRACT_VERSION,
+			kind: "series.summary",
+			sessionId,
+			params: { series: final?.id },
+		})) as { view: SeriesSummary };
+		const expected = summary.view.mvp;
+		if (!expected) throw new Error("the final has no MVP");
+
+		expect(
+			within(mvp).getByText(
+				`${expected.kills}/${expected.deaths}/${expected.assists}`,
+			),
+		).toBeTruthy();
+		expect(
+			within(mvp).getByRole("heading", { level: 2 }).textContent,
+		).toBeTruthy();
+		// The MVP plays for the champion.
+		expect(
+			within(mvp).getByText(new RegExp(`of ${name}'s kills`)),
 		).toBeTruthy();
 	});
 });
