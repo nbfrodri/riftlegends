@@ -159,3 +159,36 @@ test("highlights only the role with the biggest gap", async () => {
 	expect(row("top").hasAttribute("data-biggest")).toBe(false);
 	expect(row("bot").hasAttribute("data-biggest")).toBe(false);
 });
+
+/** Five rows flagged as gaps but those in `calm`. */
+const allRoles = (calm: string[]): RoleGap[] =>
+	(["top", "jungle", "mid", "bot", "support"] as const).map((role) => ({
+		role,
+		team: "forge",
+		points: calm.includes(role) ? 5 : 20,
+		gold: 500,
+		gap: !calm.includes(role),
+		players: players(role, 70, 50),
+	}));
+
+test.each([
+	[[], "Gran diferencia en todos los roles"],
+	[["bot"], "Gran diferencia en todos salvo ADC"],
+	[["bot", "top"], "Gran diferencia en Jungla, Mid y Support"],
+])(
+	"names the gaps in one short line when many roles have them (#339): calm %j",
+	async (calm, call) => {
+		await renderInLocale(
+			<AssetsProvider api={fakeAssets().api}>
+				<GapsTable
+					name="Diferencias por rol"
+					options={options}
+					sideOf={(team) => (team === "forge" ? "blue" : "red")}
+					gaps={allRoles(calm)}
+				/>
+			</AssetsProvider>,
+			"es-ES",
+		);
+		expect(screen.getByText(call)).toBeTruthy();
+	},
+);

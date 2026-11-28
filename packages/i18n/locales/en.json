@@ -714,6 +714,8 @@
 	"draft.result.gaps.evenGold": "Even on gold",
 	"draft.result.gaps.biggest": "The biggest difference",
 	"draft.result.gaps.call": "Big difference in {{roles}}",
+	"draft.result.gaps.all": "Big difference in every role",
+	"draft.result.gaps.allBut": "Big difference in every role but {{role}}",
 	"draft.result.gaps.none": "No big differences",
 	"draft.result.gaps.average": "Average of all the maps.",
 	"draft.result.gaps.even": "Even",
