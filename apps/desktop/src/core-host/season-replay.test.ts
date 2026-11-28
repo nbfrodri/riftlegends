@@ -16,18 +16,18 @@ import { realSeason, replayDigest } from "./season-replay.fixtures";
 // fact of these days changed; SIM_VERSION 19 is for the drawn brackets.
 // #339 changed it on purpose (SIM_VERSION 20): ultimates count and are spent in
 // contests, events carry `spent` and `onCooldown`, and the rules gained
-// `ultHaste` and `cooldowns`, with `blueSide` and the top's assist weight recalibrated.
+// `ultHaste` and `cooldowns`, with `blueSide`, the tower gold and the top's assist weight recalibrated.
 
 test("the first match days of the real season keep their fact log", () => {
 	expect(replayDigest(realSeason(9), 3)).toEqual({
 		played: 3,
-		digest: "b421a70c43841e8a99e5e58e995543331ee266324f54809bb9f7919fef81a8be",
+		digest: "0d186ab199af97991dbb8092ce0d94fa12e7dafc7a097c329c7d48e7ba4a85fe",
 	});
 }, 120_000);
 
 test("playing the days in batches of series keeps the same fact log", () => {
 	expect(replayDigest(realSeason(9), 3, undefined, { size: 2 })).toEqual({
 		played: 3,
-		digest: "b421a70c43841e8a99e5e58e995543331ee266324f54809bb9f7919fef81a8be",
+		digest: "0d186ab199af97991dbb8092ce0d94fa12e7dafc7a097c329c7d48e7ba4a85fe",
 	});
 }, 120_000);

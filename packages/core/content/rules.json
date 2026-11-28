@@ -103,9 +103,9 @@
 	],
 	"cooldowns": {
 		"ult": {
-			"points": 600,
-			"keyPoints": 900,
-			"cap": 1800,
+			"points": 400,
+			"keyPoints": 600,
+			"cap": 1200,
 			"team": 3,
 			"local": 1,
 			"window": 15,
@@ -143,7 +143,7 @@
 		"passive": 1230,
 		"kill": 100,
 		"assist": 50,
-		"tower": 1600,
+		"tower": 1500,
 		"inhibitor": 500,
 		"grub": 150,
 		"dragon": 400,

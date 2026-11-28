@@ -988,16 +988,17 @@ Cabe en 1280×720 con las columnas de #502 y #548. Los textos nuevos no llevan f
 | --- | --- |
 | Código | `match/ultimates.ts`: estado (`locked`, `ready`, `cooldown`), recarga, qué cuenta en cada disputa y la ventana. `PlayerState.ultReadyAt`; `MatchContext` guarda por rol la recarga por rango y si es portador clave (`engage` o `wombo`). |
 | Reglas | `rules.ultHaste` (curva por minuto, estimada hasta #338: 0 hasta el minuto 8 y 60 desde el 35) y `rules.cooldowns.ult`. |
-| Valor | **600** por 10.000 de un jugador vivo de su rol (**900** si es clave), tope **1.800** del jugador que más vale en la disputa. El ¼ y ⅜ de partida daban +30 pp por definitiva y rompían K12: con `NUMBERS_POINTS` calibrado para K19, un jugador vivo decide casi cualquier disputa. Se fijaron en el centro de K12. |
+| Valor | **400** por 10.000 de un jugador vivo de su rol (**600** si es clave), tope **1.200** del jugador que más vale en la disputa. El ¼ y ⅜ de partida daban +30 pp por definitiva y rompían K12: con `NUMBERS_POINTS` calibrado para K19, un jugador vivo decide casi cualquier disputa. Con 600 / 900 (centro de K12) K4 caía por debajo del 15 % en el contenido ficticio: el equipo con dos campeones `engage` ganaba en cada disputa y las remontadas bajaban. Con 400 / 600 K12 queda en la mitad baja de la banda y K4 vuelve. |
 | Orden | Cuentan las de más valor; empate, clave y después `ROLES`. Así se cumple U2 aunque el peso del rol cambie entre disputas. |
 | Dónde | Pelea y objetivos: hasta 3 por lado. Línea, gank y asedio: 1. Un empuje con varias estructuras gasta solo en la primera. |
 | Ventana | +15 % por definitiva lista de diferencia (hasta +45 %) en la tirada de pelea y en la de barón o anciano sin pelea. |
 | Hechos | `spent` (rol, recurso, `readyAt`) y `onCooldown` en `match.event`; `ultReadyAt` en el snapshot. Causa `ultimates`; nota «Pelearon sin la ulti de su jungla» en el registro. |
-| K12 | Pelea con una definitiva lista frente a la misma en recarga (pool real, 200 partidas): **+1,9 pp**, clave **+3,6 pp**. |
+| K12 | Pelea con una definitiva lista frente a la misma en recarga (pool real, 200 partidas): **+1,3 pp**, clave **+2,4 pp**. |
 | K13 | Con el rival recién gastado: peleas **+4,7 pp**, foso **+3,75 pp**. |
 | K5 | La varianza de las definitivas diluye la ventaja del lado azul (4.000 partidas, pool real: 51,9 % a 51,1 %). `blueSide` pasa de 45.000 a **80.000**: 52,1–53,0 % en los cuatro pools. K5 se mide ahora sobre **4.000 partidas** (antes 1.000): con 1.000 el ruido es de ±1,6 pp, casi la mitad de la banda, y las 1.000 primeras semillas del pool real quedan 2,8 pp por debajo de la media. La banda no cambia. |
 | K6 | La participación del top ya era la cifra de K6 más lejos del pro (media +5,5 pp, P10 +8 pp sobre 27,3 %) y con las definitivas pasaba el límite. `ASSIST_BASE` del top baja de 12 a 8: media 57,1 % (pro 51,8 %). |
-| C1 | Con los puntos y la ventana a 0, la partida de la semilla 42 es la de antes de #339 byte a byte, con el único otro cambio (el peso de asistencia del top) aplicado (`test/fixtures/neutral-42.golden`). |
+| K16 | La mediana de la ventaja del ganador ya estaba arriba (12,5 k en 4.000 partidas, pro 10,6 k; banda hasta 13 k) y la muestra fija la pasaba. El oro de la torre baja de 1.600 a **1.500**: 12,0 k. |
+| C1 | Con los puntos y la ventana a 0, la partida de la semilla 42 es la de antes de #339 byte a byte, con el único otro cambio de código (el peso de asistencia del top) aplicado; el oro de la torre es regla y el test lo devuelve a 1.600 (`test/fixtures/neutral-42.golden`). |
 | Versión | `SIM_VERSION` **20**: el 19 lo tomó #627 (sorteos de MSI y Worlds) antes de fusionar esta entrega; #374 pasa a 21. |
 | C4 | Coste propio de las definitivas: ~3 % de CPU de `playMatch`; la ventana añade ~5 % de peleas. |
 | Pendiente | Iconos y recargas en el cara a cara (C3), con #358. |

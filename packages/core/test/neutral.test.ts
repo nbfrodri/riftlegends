@@ -23,6 +23,8 @@ it("C1 · with the ultimates worth nothing and no window, a game is the one befo
 			cooldowns: {
 				ult: { ...rules.cooldowns.ult, points: 0, keyPoints: 0, window: 0 },
 			},
+			// The tower gold of K16 (#339) goes back to what it was.
+			economy: { ...rules.economy, tower: 1600 },
 		},
 	};
 	const facts = playGame(matchSetup({ match: neutral })).facts.map(
