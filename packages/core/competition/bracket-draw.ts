@@ -113,7 +113,9 @@ function search(
 	return pairUp() ? (line as DrawEntrant[]) : undefined;
 }
 
-function broken(rule: DrawRule, line: readonly DrawEntrant[], met: Met) {
+type Placed = Pick<DrawEntrant, "team" | "region">;
+
+function broken(rule: DrawRule, line: readonly Placed[], met: Met) {
 	const n = line.length;
 	return line.some((a, i) =>
 		line.some((b, j) => {
@@ -124,6 +126,18 @@ function broken(rule: DrawRule, line: readonly DrawEntrant[], met: Met) {
 			return rule === "region" ? a.region === b.region : met(a.team, b.team);
 		}),
 	);
+}
+
+/**
+ * Rules of `avoid` that a first round breaks. `line` holds the teams in
+ * bracket order (1-8, 4-5, 2-7, 3-6): pairs side by side, halves split in two.
+ */
+export function brokenRules(
+	avoid: readonly DrawRule[],
+	line: readonly Placed[],
+	met: Met,
+): DrawRule[] {
+	return avoid.filter((rule) => broken(rule, line, met));
 }
 
 /**
@@ -188,7 +202,7 @@ export function drawBracket(
 			(ordered[2 * i] as DrawEntrant).team,
 			(ordered[2 * i + 1] as DrawEntrant).team,
 		]),
-		relaxed: rules.avoid.filter((rule) => broken(rule, ordered, met)),
+		relaxed: brokenRules(rules.avoid, ordered, met),
 	};
 }
 

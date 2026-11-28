@@ -48,15 +48,17 @@ const winner = (stage: string, match: string) =>
 
 const leagues = ["LCK", "LPL", "LEC", "LCP", "LCS", "CBLOL"];
 
+/** Direct places by place, then by league in `ranking` order. */
 function playInRoutes(
 	event: EventId,
 	slots: readonly number[],
 	playIn: LeaguePlace[],
+	ranking: readonly string[] = leagues,
 ): { opening: Stage["entrants"]; main: Stage["entrants"] } {
 	const direct: LeaguePlace[] = [];
 	for (let place = 1; place <= Math.max(...slots); place++) {
-		for (const [index, league] of leagues.entries()) {
-			if ((slots[index] ?? 0) < place) continue;
+		for (const league of ranking) {
+			if ((slots[leagues.indexOf(league)] ?? 0) < place) continue;
 			if (!playIn.some(([l, p]) => l === league && p === place))
 				direct.push([league, place]);
 		}
@@ -68,6 +70,9 @@ function playInRoutes(
 }
 
 // Places inferred from the participating leagues and openings in the snapshot.
+// The MSI bracket tiers follow the region ranking of the 2026 First Stand
+// (Wikipedia, 2026 MSI): LPL 1 and LEC 1, LCK 1 and LCS 1, LCP 1 and CBLOL 1,
+// and LPL 2 with the play-in winner.
 const msiRoutes = playInRoutes(
 	"msi",
 	[2, 2, 2, 2, 2, 1],
@@ -77,6 +82,7 @@ const msiRoutes = playInRoutes(
 		["LCP", 2],
 		["LCS", 2],
 	],
+	["LPL", "LEC", "LCK", "LCS", "LCP", "CBLOL"],
 );
 const worldsRoutes = playInRoutes(
 	"worlds",
@@ -117,6 +123,38 @@ const sources: Record<EventId, readonly string[]> = {
 	],
 };
 
+/** Plan 12 §6: tiers hold places of the entry list; `avoid` in relax order. */
+const msiDraw: Stage["draw"] = {
+	tiers: [
+		[1, 2],
+		[3, 4],
+		[5, 6],
+		[7, 8],
+	],
+	meet: [
+		[1, 4],
+		[2, 3],
+	],
+	avoid: ["regionHalf"],
+};
+const worldsPlayInDraw: Stage["draw"] = {
+	tiers: [[1, 2, 3, 4]],
+	meet: [],
+	avoid: [],
+};
+// The knockout takes the Swiss 1 to 8: 1-2 went 3-0, 3-5 went 3-1, 6-8 went
+// 3-2. The primer names no rematch or region rule, and the real 2026 draw had a
+// Swiss rematch (Gen.G v LYON) although others were possible.
+const worldsKnockoutDraw: Stage["draw"] = {
+	tiers: [
+		[1, 2],
+		[3, 4, 5],
+		[6, 7, 8],
+	],
+	meet: [[1, 3]],
+	avoid: [],
+};
+
 // First Stand has no reason left: groups (same region apart), GSL double
 // elimination, Bo5 everywhere and the cross knockout (A1 v B2, B1 v A2) match
 // the event page, whose cited sources are lolesports stage pages. The groups
@@ -124,10 +162,10 @@ const sources: Record<EventId, readonly string[]> = {
 const unverified = {
 	"first-stand": [],
 	msi: [
-		"Checked (lolesports MSI and Worlds Updates, Wikipedia): 11 play-in teams (2 each from LCK, LCS, LCP, LEC and LPL, 1 from CBLOL), Bo5 four-team GSL play-in, eight-team Bo5 double-elimination bracket with a Bo5 final. Pending: the highest-ranked region at First Stand (second seed skips the play-in) is fixed to LPL instead of read from First Stand; and the real bracket comes from a draw by four tiers (1 v 4, 2 v 3, same region on opposite sides) that the game replaces with a fixed bracket by seed. No tiebreakers or bracket reset are published.",
+		"Checked (lolesports MSI and Worlds Updates, Wikipedia): 11 play-in teams (2 each from LCK, LCS, LCP, LEC and LPL, 1 from CBLOL), Bo5 four-team GSL play-in, eight-team Bo5 double-elimination bracket with a Bo5 final, drawn by four tiers (1 v 4, 2 v 3, same region on opposite sides). Pending: the highest-ranked region at First Stand (second seed skips the play-in) and the tier order are fixed to the 2026 First Stand ranking (LPL, LEC, LCK, LCS, LCP, CBLOL) instead of read from First Stand. No tiebreakers or bracket reset are published.",
 	],
 	worlds: [
-		"Checked (lolesports Worlds 2026 primer): 19 teams, Bo5 four-team double-elimination play-in with a random draw, 16-team five-round Swiss to three wins or losses (Bo1, Bo3 to qualify or be eliminated), round 1 pots 1 v 4 and 2 v 3 with no same region, no rematches, Bo5 knockout. Pending: the Swiss tiebreakers are not published; the quarterfinals are a draw (3-0 teams against 3-2 teams, the rest at random) that the game replaces with a fixed bracket by Swiss rank, and the bracket type after the quarterfinals is not described.",
+		"Checked (lolesports Worlds 2026 primer): 19 teams, Bo5 four-team double-elimination play-in with a random draw, 16-team five-round Swiss to three wins or losses (Bo1, Bo3 to qualify or be eliminated), round 1 pots 1 v 4 and 2 v 3 with no same region, no rematches, Bo5 knockout whose quarterfinals are drawn (3-0 teams against 3-2 teams, the rest at random). Pending: the Swiss tiebreakers are not published, and the bracket type after the quarterfinals is not described.",
 	],
 } satisfies Record<EventId, string[]>;
 
@@ -198,6 +236,7 @@ export const internationalDefinitions: Record<EventId, Definition> = {
 					"Finals",
 				],
 				entrants: msiRoutes.main,
+				draw: msiDraw,
 				play: {
 					type: "doubleElim",
 					size: 8,
@@ -226,6 +265,7 @@ export const internationalDefinitions: Record<EventId, Definition> = {
 				tournament: "Play-In",
 				tabs: ["Round 1", "Round 2", "Round 3"],
 				entrants: worldsRoutes.opening,
+				draw: worldsPlayInDraw,
 				play: fourTeams(5),
 			},
 			{
@@ -250,6 +290,7 @@ export const internationalDefinitions: Record<EventId, Definition> = {
 				tournament: "Main Event",
 				tabs: ["Quarterfinals", "Semifinals", "Finals"],
 				entrants: { kind: "standing", stage: "swiss", from: 1, to: 8 },
+				draw: worldsKnockoutDraw,
 				play: { type: "singleElim", size: 8, bestOf: bo5(3) },
 			},
 		],
