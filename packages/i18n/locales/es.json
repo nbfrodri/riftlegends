@@ -456,7 +456,7 @@
 	"draft.match.ultimates.contest": "Disputaron sin {{ults}}.",
 	"draft.match.ultimates.of_one": "la ulti de {{roles}}",
 	"draft.match.ultimates.of_other": "las ultis de {{roles}}",
-	"draft.match.ultimates.rivals": "Los rivales tampoco tenían {{ults}}.",
+	"draft.match.ultimates.rivals": "Los rivales no tenían {{ults}}.",
 	"draft.match.cause.ultimates": "las ultis listas",
 	"draft.result.cause.ultimates": "más ultis listas",
 	"draft.match.cause.experience": "la experiencia",

@@ -35,7 +35,7 @@ test("lists every ultimate on cooldown of the side that missed more", async () =
 	await renderInLocale(note("fight", ["support"], ["jungle", "mid"]), "es-ES");
 	expect(
 		screen.getByText(
-			"Pelearon sin las ultis de su jungla y su mid. Los rivales tampoco tenían la ulti de su support.",
+			"Pelearon sin las ultis de su jungla y su mid. Los rivales no tenían la ulti de su support.",
 		),
 	).toBeTruthy();
 });
@@ -76,7 +76,16 @@ test("leaves out a role both sides were missing, and says nothing if that was al
 	);
 	expect(
 		screen.getByText(
-			"Pelearon sin la ulti de su jungla. Los rivales tampoco tenían la ulti de su mid.",
+			"Pelearon sin la ulti de su jungla. Los rivales no tenían la ulti de su mid.",
+		),
+	).toBeTruthy();
+});
+
+test("names the rivals' different missing ultimate in English too", async () => {
+	await renderInLocale(note("fight", ["bot"], ["jungle"], "blue"));
+	expect(
+		screen.getByText(
+			"Fought without the ultimate of their ADC. The other side was missing the ultimate of their jungle.",
 		),
 	).toBeTruthy();
 });
