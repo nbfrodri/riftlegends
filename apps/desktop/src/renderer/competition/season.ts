@@ -141,7 +141,7 @@ export function useSeasonSchedule(sessionId: number): SeasonSchedule {
 	}, [schedule.data]);
 }
 
-/** The content's teams by id: name and, when it has one, short name. */
+/** The content's teams by id, including their short names and leagues. */
 export function useTeams(sessionId: number) {
 	const database = useCoreQuery<ContentDatabase>(
 		{
@@ -153,9 +153,11 @@ export function useTeams(sessionId: number) {
 		{ affectedBy: noFact },
 	);
 	return useCallback(
-		(id: string): { name: string; short?: string | undefined } => {
+		(id: string) => {
 			const team = database.data?.teams.find((team) => team.id === id);
-			return team ? { name: team.name, short: team.short } : { name: id };
+			return team
+				? { name: team.name, short: team.short, league: team.league }
+				: { name: id };
 		},
 		[database.data],
 	);

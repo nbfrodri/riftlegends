@@ -24,6 +24,8 @@ const logos: Record<string, string> = {
 vi.mock("../src/renderer/assets", async (original) => ({
 	...(await original<typeof import("../src/renderer/assets")>()),
 	useTeamLogoSrc: (id: string) => logos[id],
+	useLeagueLogoSrc: (id: string) =>
+		id === "LEC" ? "rift-asset://logos/leagues/lec.png" : undefined,
 }));
 
 vi.setConfig({ testTimeout: 60_000 });
@@ -165,6 +167,52 @@ async function renderBracket(first: BracketView) {
 
 const series = () => screen.getAllByRole("button");
 const card = (name: RegExp) => screen.getByRole("button", { name });
+
+test.each([
+	["en-US", "T", /Alpha, tier 1, LPL, against Delta, tier 4, LEC/, /2 to 0/],
+	["es-ES", "N", /Alpha, nivel 1, LPL, contra Delta, nivel 4, LEC/, /2 a 0/],
+])(
+	"SO15: %s adds the draw tiers and leagues only to the drawn round",
+	async (locale, prefix, label, score) => {
+		const bracket: BracketView = {
+			...doubleElim("pending"),
+			draw: {
+				tiers: [
+					{ team: "a", tier: 1 },
+					{ team: "b", tier: 2 },
+					{ team: "c", tier: 3 },
+					{ team: "d", tier: 4 },
+				],
+				pairs: [
+					["a", "d"],
+					["b", "c"],
+				],
+				relaxed: [],
+			},
+		};
+		const drawTeam = (id: string) => ({
+			...team(id),
+			league: id === "d" ? "LEC" : "LPL",
+		});
+		await renderInLocale(<Bracket bracket={bracket} team={drawTeam} />, locale);
+
+		const round = card(label);
+		expect(round.getAttribute("aria-label")).toMatch(score);
+		const inside = within(round);
+		for (const tier of [1, 4]) {
+			expect(
+				inside.getByText(`${prefix}${tier}`).closest('[aria-hidden="true"]'),
+			).toBeTruthy();
+		}
+		expect(screen.getAllByText(new RegExp(`^${prefix}[1-4]$`))).toHaveLength(4);
+		expect(inside.queryByRole("img")).toBeNull();
+		expect(round.querySelector(`img[src="${logos.d}"]`)).toBeTruthy();
+		expect(
+			round.querySelector('img[src="rift-asset://logos/leagues/lec.png"]'),
+		).toBeTruthy();
+		expect(round.querySelector('svg[aria-label="LPL"]')).toBeTruthy();
+	},
+);
 
 describe("U6: bracket", () => {
 	test("a card shows each team's logo and short name; the full names are in the tooltip and the reading", async () => {
@@ -508,6 +556,49 @@ describe("U6: the bracket in the competition hub (#605)", () => {
 				/^\/competicion\/serie\/.+/,
 			),
 		);
+	});
+
+	test("Back from a series opened in the bracket leaves the bracket view and stage in place (#623)", async () => {
+		const { api, created } = playoffCore();
+		const { router, user } = await openHub(
+			api,
+			"/competicion/rift-league?view=bracket&stage=playoffs",
+		);
+		await screen.findByRole("group", { name: "Bracket" }, { timeout: 30_000 });
+		const overview = await api.query({
+			v: CONTRACT_VERSION,
+			kind: "season.overview",
+			sessionId: created.sessionId,
+			params: {},
+		});
+		const { day } = (overview as { view: { day: number } }).view;
+		await act(async () => {
+			await api.send({
+				v: CONTRACT_VERSION,
+				kind: "season.playDay",
+				sessionId: created.sessionId,
+				expectedPosition: created.position,
+				payload: { day },
+			});
+		});
+		const [played] = await screen.findAllByRole(
+			"button",
+			{ name: /^Semifinal \d: \S.* \d–\d \S/ },
+			{ timeout: 30_000 },
+		);
+		await user.click(played as HTMLElement);
+		await screen.findByRole("tab", { name: "Full series" });
+
+		await user.click(screen.getByRole("button", { name: "Back" }));
+		await screen.findByRole("group", { name: "Bracket" }, { timeout: 30_000 });
+		expect(router.state.location.pathname).toBe("/competicion/rift-league");
+		expect(router.state.location.search).toMatchObject({
+			view: "bracket",
+			stage: "playoffs",
+		});
+		expect(
+			within(views()).getByRole("radio", { name: "Bracket" }),
+		).toHaveProperty("checked", true);
 	});
 
 	test("a league stage has no Bracket view, and a link to it falls back to the standings", async () => {
