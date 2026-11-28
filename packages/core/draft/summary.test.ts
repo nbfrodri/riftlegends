@@ -245,16 +245,31 @@ describe("series.summary", () => {
 			s.state.matches.map((_, i) => i + 1),
 		);
 		expect(view.mvp?.games).toBe(s.state.matches.length);
-		// The MVP has the best mean rating of every player in the series.
+		// The MVP has the best mean rating among the series winner's players (#437).
 		const totals = new Map<string, number>();
+		const wins = new Map<string, number>();
 		for (const facts of s.state.matches) {
 			for (const f of facts) {
 				if (f.type !== "match.ended") continue;
-				for (const p of f.players as { player: string; rating: number }[]) {
+				const winner = f.winner as string;
+				wins.set(winner, (wins.get(winner) ?? 0) + 1);
+			}
+		}
+		const [winner] = [...wins].sort((a, b) => b[1] - a[1])[0] ?? [];
+		for (const facts of s.state.matches) {
+			for (const f of facts) {
+				if (f.type !== "match.ended") continue;
+				for (const p of f.players as {
+					player: string;
+					team: string;
+					rating: number;
+				}[]) {
+					if (p.team !== winner) continue;
 					totals.set(p.player, (totals.get(p.player) ?? 0) + p.rating);
 				}
 			}
 		}
+		expect(view.mvp?.team).toBe(winner);
 		const best = [...totals.values()].reduce((a, b) => (a > b ? a : b));
 		expect(totals.get(view.mvp?.player ?? "")).toBe(best);
 	});

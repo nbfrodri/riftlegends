@@ -647,6 +647,8 @@
 	"draft.aiPanel.factor.identity": "Encaje con la estrategia",
 	"draft.aiPanel.factor.fearlessReserve": "Valor en mapas posteriores",
 	"draft.aiPanel.factor.side": "Efecto del lado en el draft",
+	"draft.aiPanel.factor.firstPick": "Asegurarlo con el primer pick",
+	"draft.aiPanel.factor.lastPick": "Counter del último pick",
 	"draft.aiPanel.factor.targetBan": "Mejores campeones del rival",
 	"draft.aiPanel.factor.threatBan": "Amenaza para el equipo",
 	"draft.aiPanel.factor.lookahead": "Efecto de la respuesta prevista",

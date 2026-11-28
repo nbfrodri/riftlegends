@@ -12,7 +12,13 @@ import { fearlessReserve } from "./fearless-reserve";
 import { flex } from "./flex";
 import { identityFor } from "./identity";
 import { rivalsInRole, worstMatchup } from "./matchup";
-import { side } from "./side";
+import {
+	counterPoints,
+	keepableLanes,
+	keepCost,
+	orderPlan,
+	securePoints,
+} from "./side";
 import { synergy } from "./synergy";
 
 /**
@@ -62,9 +68,13 @@ export function pickScorer(ctx: AiContext) {
 		flex: 0,
 		identity: 0,
 		fearlessReserve: 0,
-		side: 0,
+		firstPick: 0,
+		lastPick: 0,
 	};
 	const trusted = roster?.size === ROLES.length;
+	const plan = orderPlan(ctx);
+	const keep =
+		plan === "keep" ? keepCost(keepableLanes(allies), rivals) : undefined;
 	/** Fills a shared record: read it before scoring the next champion. */
 	return (champion: string): typeof scores | undefined => {
 		const candidate = index.champions.get(champion);
@@ -73,6 +83,7 @@ export function pickScorer(ctx: AiContext) {
 		// a main or a counter in another would explain an impossible pick.
 		let best = Number.MIN_SAFE_INTEGER;
 		let playable = 0;
+		let laneKeep = 0;
 		scores.meta = scores.comfort = scores.matchup = 0;
 		for (const lane of lanesOf(index, ctx.team, champion)) {
 			const { role } = lane;
@@ -81,11 +92,13 @@ export function pickScorer(ctx: AiContext) {
 			const laneMeta = lane.meta;
 			const laneComfort = lane.comfort;
 			const laneMatchup = worstMatchup(lane.row, rivalsIn(role));
-			const total = laneMeta + laneComfort + laneMatchup;
+			const keepPoints = keep?.(role) ?? 0;
+			const total = laneMeta + laneComfort + laneMatchup + keepPoints;
 			if (total > best) {
 				scores.meta = laneMeta;
 				scores.comfort = laneComfort;
 				scores.matchup = laneMatchup;
+				laneKeep = keepPoints;
 				best = total;
 			}
 		}
@@ -103,7 +116,14 @@ export function pickScorer(ctx: AiContext) {
 		scores.composition = composition(candidate);
 		scores.identity = identity(candidate);
 		scores.fearlessReserve = fearlessReserve(ctx, candidate);
-		scores.side = side(ctx, scores.flex, scores.matchup);
+		scores.firstPick =
+			plan === "secure" ? securePoints(scores.flex, scores.meta) : 0;
+		scores.lastPick =
+			plan === "counter"
+				? counterPoints(scores.matchup)
+				: plan === "keep"
+					? laneKeep
+					: 0;
 		return scores;
 	};
 }

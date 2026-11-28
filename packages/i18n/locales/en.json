@@ -647,6 +647,8 @@
 	"draft.aiPanel.factor.identity": "Fit with team strategy",
 	"draft.aiPanel.factor.fearlessReserve": "Value in later games",
 	"draft.aiPanel.factor.side": "Impact of draft side",
+	"draft.aiPanel.factor.firstPick": "Securing it with first pick",
+	"draft.aiPanel.factor.lastPick": "Last-pick counter",
 	"draft.aiPanel.factor.targetBan": "Rival player’s best champions",
 	"draft.aiPanel.factor.threatBan": "Threat to the team",
 	"draft.aiPanel.factor.lookahead": "Impact of the expected reply",

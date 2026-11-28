@@ -21,18 +21,20 @@ const balanced: Profile = {
 
 /**
  * Weights every personality shares for the components it does not name.
- * Calibrated against pro drafts (issue #468, `pnpm calibrate`).
+ * Calibrated against pro drafts (issue #468, `pnpm calibrate`); recalibrated
+ * with the pick-order plan (issue #364).
  */
 export const BASE_WEIGHTS: Weights = {
-	fearlessReserve: 2_500 as Fixed,
-	matchup: 2_500 as Fixed,
+	fearlessReserve: 2_750 as Fixed,
+	matchup: 3_250 as Fixed,
 	synergy: 2_500 as Fixed,
 	composition: 2_500 as Fixed,
 	identity: 2_500 as Fixed,
 	threatBan: 2_500 as Fixed,
 	targetBan: 11_000 as Fixed,
 	comfort: 12_000 as Fixed,
-	side: 12_000 as Fixed,
+	firstPick: 12_000 as Fixed,
+	lastPick: 6_000 as Fixed,
 	flex: 5_000 as Fixed,
 };
 
@@ -42,9 +44,9 @@ export const PROFILE_DEFINITIONS: Record<Personality, Profile> = {
 	// One draw policy covers picks and bans. Use DraftSim's pick settings where they differ.
 	meta: {
 		weights: {
-			meta: 22_400 as Fixed,
-			comfort: 8_400 as Fixed,
-			matchup: 6_300 as Fixed,
+			meta: 20_160 as Fixed,
+			comfort: 11_088 as Fixed,
+			matchup: 5_443 as Fixed,
 		},
 		temperature: 4_500,
 		pool: -1,
