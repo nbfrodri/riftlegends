@@ -104,3 +104,31 @@ export function drawPots(node: StageNode): number | undefined {
 	const draw = node.stage.draw;
 	return (draw && "pots" in draw ? draw.pots : undefined) ?? pots;
 }
+
+/** The group of a drawn group stage this stage takes (First Stand, plan 12 §6). */
+export function drawnGroup(node: StageNode) {
+	for (const source of sourcesOf(node.stage))
+		if (
+			(source.kind === "qualified" || source.kind === "fixed") &&
+			source.group
+		)
+			return source.group;
+	return undefined;
+}
+
+/**
+ * Teams one stage takes from a source that is drawn into groups, or `size`
+ * itself without groups. Undefined when the source does not split into groups
+ * of the stage's size by the pots, or is not the only one (the caller then
+ * keeps the whole size, which no stage accepts). Sibling stages repeat the
+ * places; the first owns them.
+ */
+export function sizePerGroup(node: StageNode, size: number) {
+	const group = drawnGroup(node);
+	if (!group) return size;
+	const valid =
+		sourcesOf(node.stage).length === 1 &&
+		size % group.count === 0 &&
+		drawPots(node) === node.stage.play.size;
+	return valid ? size / group.count : undefined;
+}

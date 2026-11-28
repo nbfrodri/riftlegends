@@ -22,7 +22,15 @@
 						"place": 1
 					},
 					{
+						"league": "LCK",
+						"place": 1
+					},
+					{
 						"league": "LEC",
+						"place": 1
+					},
+					{
+						"league": "LCS",
 						"place": 1
 					},
 					{
@@ -30,10 +38,22 @@
 						"place": 1
 					},
 					{
+						"league": "CBLOL",
+						"place": 1
+					},
+					{
 						"league": "LCK",
 						"place": 2
+					},
+					{
+						"league": "LPL",
+						"place": 2
 					}
-				]
+				],
+				"group": {
+					"index": 1,
+					"count": 2
+				}
 			},
 			"play": {
 				"type": "doubleElim",
@@ -58,6 +78,10 @@
 				"lowerSeeds": [],
 				"grandFinal": null,
 				"reset": false
+			},
+			"draw": {
+				"pots": 4,
+				"avoidSameLeague": true
 			}
 		},
 		{
@@ -76,7 +100,15 @@
 				"competition": "first-stand",
 				"places": [
 					{
+						"league": "LPL",
+						"place": 1
+					},
+					{
 						"league": "LCK",
+						"place": 1
+					},
+					{
+						"league": "LEC",
 						"place": 1
 					},
 					{
@@ -84,14 +116,26 @@
 						"place": 1
 					},
 					{
+						"league": "LCP",
+						"place": 1
+					},
+					{
 						"league": "CBLOL",
 						"place": 1
+					},
+					{
+						"league": "LCK",
+						"place": 2
 					},
 					{
 						"league": "LPL",
 						"place": 2
 					}
-				]
+				],
+				"group": {
+					"index": 2,
+					"count": 2
+				}
 			},
 			"play": {
 				"type": "doubleElim",
@@ -116,6 +160,10 @@
 				"lowerSeeds": [],
 				"grandFinal": null,
 				"reset": false
+			},
+			"draw": {
+				"pots": 4,
+				"avoidSameLeague": true
 			}
 		},
 		{

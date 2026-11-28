@@ -98,6 +98,23 @@ describe("Q9: presets fill the slots by region with the best seeds", () => {
 		}
 	});
 
+	test("the First Stand preset keeps the drawn groups with fixed teams", () => {
+		const core = client();
+		const slots = slotsOf(core, "first-stand");
+		const [event] = created(core, preset("first-stand")).competitions;
+		const teams = slots.map(({ team }) => team);
+		expect(event?.stages[0]?.entrants).toEqual({
+			kind: "fixed",
+			teams,
+			group: { index: 1, count: 2 },
+		});
+		expect(event?.stages[1]?.entrants).toEqual({
+			kind: "fixed",
+			teams,
+			group: { index: 2, count: 2 },
+		});
+	});
+
 	test("creating a preset without teams uses the filled slots as fixed entrants", () => {
 		const core = client();
 		const slots = slotsOf(core, "msi");

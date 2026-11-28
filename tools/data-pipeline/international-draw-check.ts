@@ -135,3 +135,39 @@ export function checkDraw(
 	);
 	return [...problems, ...broken.map((rule) => `draw breaks ${rule}`)];
 }
+
+/**
+ * Problems of one real group of a stage drawn by pots (plan 12 §6, SO17): the
+ * teams must fill the pots one each and share no league. The pots are the
+ * consecutive runs of the entry places; a place is told apart by its league.
+ */
+export function checkGroupDraw(
+	stage: Stage,
+	teams: readonly string[],
+	regions: ReadonlyMap<string, string>,
+): string[] {
+	const source = sourcesOf(stage).find(
+		(s) => s.kind === "qualified" && s.group,
+	);
+	const draw = stage.draw;
+	if (source?.kind !== "qualified" || !source.places || !draw) return [];
+	if (!("pots" in draw)) return [];
+	const size = source.places.length / draw.pots;
+	const pots = Array.from({ length: draw.pots }, (_, pot) =>
+		source.places?.slice(pot * size, (pot + 1) * size).map((p) => p.league),
+	);
+	const leagues = teams.map((team) => regions.get(team));
+	const problems: string[] = [];
+	const seat = (k: number, taken: Set<number>): boolean => {
+		if (k === leagues.length) return true;
+		for (const [pot, accepts] of pots.entries()) {
+			if (taken.has(pot) || !accepts?.includes(leagues[k] as string)) continue;
+			if (seat(k + 1, new Set(taken).add(pot))) return true;
+		}
+		return false;
+	};
+	if (!seat(0, new Set())) problems.push("draw breaks pots");
+	if (draw.avoidSameLeague && new Set(leagues).size !== leagues.length)
+		problems.push("draw breaks league");
+	return problems;
+}

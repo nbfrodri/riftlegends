@@ -58,7 +58,8 @@ const invalid = (path: string) => fail("invalid-format", { path });
 function presetPlaces(format: Competition) {
 	return format.stages.flatMap((stage) =>
 		sourcesOf(stage).flatMap((source) =>
-			source.kind === "qualified"
+			// Sibling group stages repeat the places of the first.
+			source.kind === "qualified" && (source.group?.index ?? 1) === 1
 				? (source.places ?? []).map((place) => ({ stage: stage.id, ...place }))
 				: [],
 		),
@@ -95,12 +96,20 @@ export function presetSlots(
 function fixPreset(preset: Preset, teams: readonly string[]): unknown {
 	const format = competitionSchema.parse(PRESETS[preset]);
 	let next = 0;
+	let shared: string[] = [];
 	const stages = format.stages.map((stage) => {
 		const sources = sourcesOf(stage).map((source) => {
 			if (source.kind !== "qualified") return source;
 			const count = source.places?.length ?? 0;
-			next += count;
-			return { kind: "fixed", teams: teams.slice(next - count, next) };
+			if ((source.group?.index ?? 1) === 1) {
+				next += count;
+				shared = teams.slice(next - count, next);
+			}
+			return {
+				kind: "fixed",
+				teams: shared,
+				...(source.group && { group: source.group }),
+			};
 		});
 		return {
 			...stage,

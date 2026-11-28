@@ -155,11 +155,43 @@ function separate<T extends DrawTeam & { pot?: number }>(
 	}
 }
 
+/** Snake the seeded teams into `count` groups, keeping a league apart if it can. */
+function snakeGroups<T extends DrawTeam & { pot?: number }>(
+	teams: readonly T[],
+	count: number,
+	avoid: boolean,
+) {
+	const byId = new Map(teams.map((team) => [team.team, team]));
+	let groups = assignGroups(
+		teams.map(({ team }) => ({ id: team })),
+		{ count },
+	).map((group) => group.map((id) => byId.get(id) as T));
+	if (avoid) groups = separate(groups);
+	const position = new Map(teams.map((entry, index) => [entry.team, index]));
+	return {
+		groups: groups.map((group) =>
+			[...group].sort(
+				(a, b) =>
+					(position.get(a.team) as number) - (position.get(b.team) as number),
+			),
+		),
+		relaxed:
+			avoid && groups.some((group) => collisions(group) > 0)
+				? ["league" as const]
+				: [],
+	};
+}
+
+const avoidsLeague = (node: StageNode) => {
+	const { draw } = node.stage;
+	return (draw && "pots" in draw && draw.avoidSameLeague) ?? false;
+};
+
 export function seedGroups<T extends DrawTeam & { pot?: number }>(
 	node: StageNode,
 	teams: readonly T[],
 ) {
-	const { play, draw } = node.stage;
+	const { play } = node.stage;
 	if (play.type !== "groups") return { groups: undefined, relaxed: [] };
 	if (play.seeding === "ranked")
 		return {
@@ -169,26 +201,53 @@ export function seedGroups<T extends DrawTeam & { pot?: number }>(
 			),
 			relaxed: [],
 		};
-	const byId = new Map(teams.map((team) => [team.team, team]));
-	let groups = assignGroups(
-		teams.map(({ team }) => ({ id: team })),
-		{ count: play.count },
-	).map((group) => group.map((id) => byId.get(id) as T));
-	const avoid = (draw && "pots" in draw && draw.avoidSameLeague) ?? false;
-	if (avoid) groups = separate(groups);
-	const position = new Map(teams.map((entry, index) => [entry.team, index]));
+	const { groups, relaxed } = snakeGroups(
+		teams,
+		play.count,
+		avoidsLeague(node),
+	);
 	return {
-		groups: groups.map((group) =>
-			[...group]
-				.sort(
-					(a, b) =>
-						(position.get(a.team) as number) - (position.get(b.team) as number),
-				)
-				.map((entry) => entry.team),
+		groups: groups.map((group) => group.map(({ team }) => team)),
+		relaxed,
+	};
+}
+
+const GROUP_DRAW_ROUND = 0xfffffffc;
+
+/**
+ * Group `index` of a draw of `teams` (every place of the sibling stages) by
+ * pots. The stream is shared by the siblings, so they agree on one draw.
+ */
+export function drawStageGroup<T extends DrawTeam>(
+	node: StageNode,
+	teams: readonly T[],
+	group: { readonly index: number; readonly count: number },
+	seed: number,
+	season: number,
+) {
+	const rng = createRng(
+		deriveSeed(
+			seed,
+			SCOPES.stageDraw,
+			node.competitionIndex,
+			season,
+			GROUP_DRAW_ROUND,
 		),
-		relaxed:
-			avoid && groups.some((group) => collisions(group) > 0)
-				? ["league" as const]
-				: [],
+	);
+	const pots = drawPots(node) ?? 1;
+	const potted = split(teams, pots).flatMap((pot, index) =>
+		shuffle(rng, pot).map((entry) => ({ ...entry, pot: index + 1 })),
+	);
+	const { groups, relaxed } = snakeGroups(
+		potted,
+		group.count,
+		avoidsLeague(node),
+	);
+	return {
+		entrants: (groups[group.index - 1] ?? []).map((entry, index) => ({
+			...entry,
+			seed: index + 1,
+		})),
+		relaxed,
 	};
 }

@@ -6,6 +6,7 @@ import {
 import { bracketFor } from "./bracket";
 import {
 	type AwardRule,
+	drawnGroup,
 	drawPots,
 	type IncomingPlace,
 	type SeasonTeam,
@@ -13,6 +14,7 @@ import {
 	type StageNode,
 	type StageRef,
 	selectedPlaces,
+	sizePerGroup,
 	sourceRef,
 	sourcesOf,
 	stageError,
@@ -104,6 +106,7 @@ function collectEdges(
 	};
 	let size = 0;
 	let qualification = false;
+	const grouped = drawnGroup(node);
 	for (const stage of node.stage.tiebreakHistory ?? []) {
 		if (!add({ competition: node.ref.competition, stage }))
 			return stageError(node, "invalid-stage-ref", { stage });
@@ -158,7 +161,7 @@ function collectEdges(
 			for (const place of places) {
 				if (edges.ownPlaces.has(place))
 					return stageError(node, "slots-mismatch");
-				edges.ownPlaces.add(place);
+				if ((grouped?.index ?? 1) === 1) edges.ownPlaces.add(place);
 				size++;
 				for (const rule of graph.awards
 					.get(node.ref.competition)
@@ -169,6 +172,7 @@ function collectEdges(
 			}
 		}
 	}
+	size = sizePerGroup(node, size) ?? size;
 	if (qualification && size !== stage.play.size)
 		return stageError(node, "slots-mismatch", {
 			actual: size,
