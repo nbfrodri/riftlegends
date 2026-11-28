@@ -13,6 +13,7 @@ import {
 } from "../presence";
 import { type CONTESTS, liveCauses, staticCauses } from "../profile";
 import { LANES, type Lane, type MatchState, SOUL } from "../state";
+import { type Ultimates, ultimatesIn } from "../ultimates";
 import { chance } from "./chance";
 import { goldLead } from "./gold";
 
@@ -123,6 +124,9 @@ export interface Edge {
 	readonly causes: readonly MatchCause[];
 	/** Who counted for the contest and was down, when anyone was. */
 	readonly down?: Record<Side, Role[]>;
+	/** Ultimates spent and on cooldown among who took part (#339). */
+	readonly spent?: Ultimates["spent"];
+	readonly onCooldown?: Ultimates["onCooldown"];
 }
 
 /**
@@ -183,6 +187,11 @@ export function edge(
 	if (gold !== 0) causes.push({ key: "gold", points: gold });
 	const numbers = numbersPoints(contest, present.blue, present.red);
 	if (numbers !== 0) causes.push({ key: "numbers", points: numbers });
+	// A state of the moment, like the players up: counted once, before the risk.
+	const ultimates = ultimatesIn(state, contest, weights, up, at);
+	if (ultimates.points !== 0) {
+		causes.push({ key: "ultimates", points: ultimates.points });
+	}
 	const total = causes.reduce((sum, c) => sum + c.points, 0);
 	// Both teams affect how decisive the contest is, independently of who leads.
 	const risk = (side: Side) => {
@@ -197,8 +206,21 @@ export function edge(
 		blue: chance(mul(adjusted, EDGE_SCALE)),
 		causes,
 		...(down ? { down } : {}),
+		...used(ultimates),
 	};
 }
+
+/** The fields of an event about the resources of a contest, when it has any. */
+export const used = ({
+	spent,
+	onCooldown,
+}: {
+	readonly spent?: Ultimates["spent"] | undefined;
+	readonly onCooldown?: Ultimates["onCooldown"] | undefined;
+}) => ({
+	...(spent ? { spent } : {}),
+	...(onCooldown ? { onCooldown } : {}),
+});
 
 /** The winner's chance and causes, seen from the winner. */
 export function outcome(result: Edge, winner: Side) {
@@ -207,5 +229,6 @@ export function outcome(result: Edge, winner: Side) {
 		chance: winner === "blue" ? result.blue : 10000 - result.blue,
 		causes: result.causes.map((c) => ({ key: c.key, points: c.points * flip })),
 		...(result.down ? { down: result.down } : {}),
+		...used(result),
 	};
 }

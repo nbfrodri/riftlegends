@@ -183,7 +183,9 @@ const push: Contest = {
 				},
 			);
 			lost[loser] = taken.loss;
-			events.push(taken.event);
+			// One push uses the ultimates once, on the first structure it takes.
+			const { spent: _, ...rest } = taken.event;
+			events.push(events.length === 0 ? taken.event : rest);
 		}
 		return events;
 	},

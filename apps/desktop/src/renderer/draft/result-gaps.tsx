@@ -146,6 +146,8 @@ function Lead(props: {
  * leads whom. The role with the biggest rating gap is highlighted; the gaps
  * over the core's threshold are named in the call-out.
  */
+const ROLE_COUNT = 5;
+
 export function GapsTable(props: {
 	gaps: readonly RoleGap[];
 	options: SeriesOptions;
@@ -163,6 +165,19 @@ export function GapsTable(props: {
 		style: "long",
 		type: "conjunction",
 	}).format(flagged.map((gap) => roleLabel(gap.role)));
+	// Four or five roles would wrap the line and grow the panel at 1280×720:
+	// say "every role" or "every role but one" instead (#339).
+	const calm = props.gaps.filter((gap) => !gap.gap);
+	const gapCall = () =>
+		flagged.length === 0
+			? t("draft.result.gaps.none")
+			: props.gaps.length === ROLE_COUNT && calm.length === 0
+				? t("draft.result.gaps.all")
+				: props.gaps.length === ROLE_COUNT && calm.length === 1
+					? t("draft.result.gaps.allBut", {
+							role: roleLabel((calm[0] as RoleGap).role),
+						})
+					: t("draft.result.gaps.call", { roles });
 	const scale = {
 		rating: Math.max(MIN_SCALE.rating, ...props.gaps.map((g) => g.points)),
 		gold: Math.max(MIN_SCALE.gold, ...props.gaps.map((g) => Math.abs(g.gold))),
@@ -197,9 +212,7 @@ export function GapsTable(props: {
 				<strong
 					className={`text-right text-[13px] ${flagged.length > 0 ? "text-action" : "text-muted"}`}
 				>
-					{flagged.length > 0
-						? t("draft.result.gaps.call", { roles })
-						: t("draft.result.gaps.none")}
+					{gapCall()}
 				</strong>
 			</div>
 			{props.note && <p className="text-[12px] text-muted">{props.note}</p>}

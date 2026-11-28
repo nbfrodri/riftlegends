@@ -62,6 +62,20 @@ const MATCH_ROLES = ["top", "jungle", "mid", "bot", "support"] as const;
 const perSide = <T extends z.ZodType>(item: T) =>
 	z.strictObject({ blue: item, red: item });
 
+/** Resources a player spends in a contest and recovers with time (#339; spells come with #374). */
+const resource = z.enum(["ult"]);
+/** One list per side, present only when one of them has something. */
+const listedPerSide = <T extends z.ZodType>(item: T, what: string) =>
+	z
+		.strictObject({
+			blue: z.array(item).max(5),
+			red: z.array(item).max(5),
+		})
+		.refine(
+			({ blue, red }) => blue.length + red.length > 0,
+			`list ${what} only when there is any`,
+		);
+
 const teamProfile = z.strictObject({
 	phases: z.strictObject({ early: points, mid: points, late: points }),
 	contests: z.strictObject({
@@ -137,6 +151,23 @@ export const matchEventFact = {
 			"list who was down only when someone was",
 		)
 		.optional(),
+	/**
+	 * Resources that counted in the contest and went on cooldown, win or lose,
+	 * with the second of the game each is ready again (#339); absent in older logs.
+	 */
+	spent: listedPerSide(
+		z.strictObject({
+			role: z.enum(MATCH_ROLES),
+			resource,
+			readyAt: position,
+		}),
+		"what was spent",
+	).optional(),
+	/** Who took part with a resource on cooldown (#339); absent in older logs. */
+	onCooldown: listedPerSide(
+		z.strictObject({ role: z.enum(MATCH_ROLES), resource }),
+		"what was on cooldown",
+	).optional(),
 	/** Gold each side earned from the event. */
 	gold: perSide(z.int().nonnegative()),
 	/** Chance `side` had of winning the event. */
@@ -327,6 +358,33 @@ export const matchContent = z
 				objective: presenceTable,
 				siege: presenceTable,
 			}),
+			/**
+			 * Ultimate haste per minute of the game, estimated until #338 brings
+			 * item builds (plan 08, #339). The last minute serves longer games.
+			 */
+			ultHaste: z.array(z.int().min(0).max(500)).min(1),
+			/**
+			 * What a resource ready is worth in a contest (plan 08, #339). Points
+			 * are per 10,000 of one player up of the carrier's role in that contest.
+			 */
+			cooldowns: z.strictObject({
+				ult: z.strictObject({
+					/** Worth of each ultimate that counts. */
+					points: share,
+					/** Worth of one whose champion is `engage` or has `wombo`. */
+					keyPoints: share,
+					/** Cap of the difference between sides, of the contest's top player. */
+					cap: share,
+					/** Most ultimates per side in a fight or an objective. */
+					team: z.int().min(0).max(5),
+					/** Most per side in a lane, a gank or a siege. */
+					local: z.int().min(0).max(5),
+					/** Rise of the fight and pit chance, in %, per ultimate ready of difference. */
+					window: z.int().min(0).max(100),
+					/** Cap of that rise, in %. */
+					windowCap: z.int().min(0).max(300),
+				}),
+			}),
 			/** Median level per role and minute, in tenths, until #338 levels players. */
 			levelCurve: z
 				.strictObject({
@@ -444,6 +502,8 @@ export const mapSnapshot = z.strictObject({
 			cs: position,
 			/** Second of the game the player comes back; alive when it is not ahead. */
 			respawnAt: position.optional(),
+			/** Second of the game the ultimate is ready again, once learned (#339). */
+			ultReadyAt: position.optional(),
 		}),
 	),
 });

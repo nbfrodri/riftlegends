@@ -8,6 +8,7 @@ import { attribute, type Engagement } from "../attribution/attribute";
 import { KILL_BASE } from "../attribution/weights";
 import { aliveRoles, gameSecond } from "../player-state";
 import { type MatchState, other } from "../state";
+import { windowBoost } from "../ultimates";
 import { type Contest, roll } from "./contest";
 import { edge, MID_GAME, outcome } from "./edge";
 import { kill } from "./lane";
@@ -175,29 +176,36 @@ function killTimes(
 /** A player who died up to this many seconds before a kill still assists it. */
 export const ASSIST_WINDOW = 10;
 
+/**
+ * Chance, per 10,000, that a fight starts at `now`. Nobody starts one
+ * shorthanded: it follows the side with fewer players up, over the base tuned
+ * for full teams (`FULL_TEAM_BOOST`). The side with more ultimates ready looks
+ * for it more often (#339).
+ */
+export function fightChance(state: MatchState, now: number) {
+	const { blue, red } = state.context;
+	const frequency =
+		(TEMPO_CHANCE[blue.strategy.tempo] + TEMPO_CHANCE[red.strategy.tempo]) / 2;
+	const present = min(
+		aliveRoles(state, "blue", now).length,
+		aliveRoles(state, "red", now).length,
+	);
+	const chance =
+		(frequency * present * present * FULL_TEAM_BOOST) /
+		(ROLES.length * ROLES.length * 100);
+	const boost = windowBoost(state, now);
+	const rise = boost.blue + boost.red;
+	// Level sides keep the chance as it was, to the last bit.
+	return rise > 0 ? (chance * (100 + rise)) / 100 : chance;
+}
+
 export const FIGHT_CONTEST: Contest = {
 	id: FIGHT_ID,
 	due: (state) => state.minute >= MID_GAME,
 	resolve(state, rng, second) {
-		const { blue, red, rules } = state.context;
-		const frequency =
-			(TEMPO_CHANCE[blue.strategy.tempo] + TEMPO_CHANCE[red.strategy.tempo]) /
-			2;
-		// Nobody starts a fight shorthanded: the chance follows the side with
-		// fewer players up, over the base tuned for full teams (`FULL_TEAM_BOOST`).
+		const { rules } = state.context;
 		const now = gameSecond(state.minute, second);
-		const present = min(
-			aliveRoles(state, "blue", now).length,
-			aliveRoles(state, "red", now).length,
-		);
-		if (
-			!roll(
-				rng,
-				(frequency * present * present * FULL_TEAM_BOOST) /
-					(ROLES.length * ROLES.length * 100),
-			)
-		)
-			return [];
+		if (!roll(rng, fightChance(state, now))) return [];
 
 		const result = edge(state, "fight", {}, undefined, now);
 		const winner = roll(rng, result.blue) ? "blue" : "red";

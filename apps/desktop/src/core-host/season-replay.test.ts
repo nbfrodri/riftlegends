@@ -2,7 +2,7 @@ import { expect, test } from "vitest";
 import { realSeason, replayDigest } from "./season-replay.fixtures";
 
 // Speed work on the season (#584) must not change a single fact: the log of a
-// fixed seed hashes the same before and after (it changes with SIM_VERSION, 19 since #627).
+// fixed seed hashes the same before and after (it changes with SIM_VERSION, 20 since #339).
 // #583 changed it once: the real formats now carry stage names and the format
 // travels in `season.create`. Without those names the digest is the one of main
 // (f85b2437...), so no simulated fact changed.
@@ -14,17 +14,20 @@ import { realSeason, replayDigest } from "./season-replay.fixtures";
 // reorders its direct places), and `season.create` carries those formats. With
 // the MSI and Worlds formats of main the digest is ecac326e... again, so no
 // fact of these days changed; SIM_VERSION 19 is for the drawn brackets.
+// #339 changed it on purpose (SIM_VERSION 20): ultimates count and are spent in
+// contests, events carry `spent` and `onCooldown`, and the rules gained
+// `ultHaste` and `cooldowns`, with `blueSide`, the tower gold and the top's assist weight recalibrated.
 
 test("the first match days of the real season keep their fact log", () => {
 	expect(replayDigest(realSeason(9), 3)).toEqual({
 		played: 3,
-		digest: "c20badb564eddfbd8b6b02c84067b0c4e58573c35298070c4ffaaea6d0493118",
+		digest: "0d186ab199af97991dbb8092ce0d94fa12e7dafc7a097c329c7d48e7ba4a85fe",
 	});
 }, 120_000);
 
 test("playing the days in batches of series keeps the same fact log", () => {
 	expect(replayDigest(realSeason(9), 3, undefined, { size: 2 })).toEqual({
 		played: 3,
-		digest: "c20badb564eddfbd8b6b02c84067b0c4e58573c35298070c4ffaaea6d0493118",
+		digest: "0d186ab199af97991dbb8092ce0d94fa12e7dafc7a097c329c7d48e7ba4a85fe",
 	});
 }, 120_000);

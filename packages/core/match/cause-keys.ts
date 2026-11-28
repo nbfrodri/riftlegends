@@ -50,6 +50,7 @@ export const MATCH_CAUSE_KEYS = [
 	"synergy",
 	"teamfight",
 	"tempo",
+	"ultimates",
 	"vision",
 	"waves",
 ] as const;

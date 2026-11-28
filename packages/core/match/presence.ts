@@ -21,6 +21,12 @@ const NUMBERS_POINTS: Readonly<Record<Contest, number>> = {
 	siege: 10_000_000,
 };
 
+/** What one player up of `weight` is worth in `contest`, as `numbers` counts him. */
+export const playerPoints = (contest: Contest, weight: number) => {
+	const scaled = NUMBERS_POINTS[contest] * weight;
+	return (scaled - (scaled % 10_000)) / 10_000;
+};
+
 /** The weights a contest counts its players by; a lane counts its own two. */
 export const weightsOf = (
 	rules: MatchContent["rules"],
