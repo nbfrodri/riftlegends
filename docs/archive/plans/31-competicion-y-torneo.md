@@ -1,8 +1,8 @@
 # Plan 31 — Sección «Competición» y modo Torneo
 
-- **Estado:** aprobado (25-11-2026) con las [decisiones del usuario](#5-decisiones-del-usuario-25-11-2026).
-- **Fase:** 4 · Competición ([plan general](00-plan-general.md#fase-4--competición)). Issue #431.
-- **Depende de:** [plan 12](12-formatos-de-competicion.md), sobre todo el entregable 10 (#428: temporada en el despachador y consultas) y el 9 (#427: formatos internacionales).
+- **Estado:** hecho (28-11-2026): #431, cerrado con #491. Aprobado el 25-11-2026 con las [decisiones del usuario](#5-decisiones-del-usuario-25-11-2026).
+- **Fase:** 4 · Competición ([plan general](../../plans/00-plan-general.md#fase-4--competición)). Issue #431.
+- **Depende de:** [plan 12](../../plans/12-formatos-de-competicion.md), sobre todo el entregable 10 (#428: temporada en el despachador y consultas) y el 9 (#427: formatos internacionales).
 
 ## 1. Objetivo y alcance
 
