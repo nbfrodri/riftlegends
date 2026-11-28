@@ -141,9 +141,9 @@ export function useSeasonSchedule(sessionId: number): SeasonSchedule {
 	}, [schedule.data]);
 }
 
-/** The content's teams by id, including their short names and leagues. */
-export function useTeams(sessionId: number) {
-	const database = useCoreQuery<ContentDatabase>(
+/** The content database (teams and players) of the season's session. */
+export function useContentDatabase(sessionId: number) {
+	return useCoreQuery<ContentDatabase>(
 		{
 			v: CONTRACT_VERSION,
 			kind: "content.database",
@@ -152,6 +152,11 @@ export function useTeams(sessionId: number) {
 		},
 		{ affectedBy: noFact },
 	);
+}
+
+/** The content's teams by id, including their short names and leagues. */
+export function useTeams(sessionId: number) {
+	const database = useContentDatabase(sessionId);
 	return useCallback(
 		(id: string) => {
 			const team = database.data?.teams.find((team) => team.id === id);

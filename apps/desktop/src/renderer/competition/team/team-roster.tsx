@@ -3,12 +3,19 @@ import {
 	DataTable,
 	type DataTableColumn,
 } from "@rift-legends/ui-kit/components/data-table";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { GameRoleIcon } from "../../assets/game-role-icon";
+import {
+	type DatabasePlayer,
+	databasePlayers,
+} from "../../database/database-filters";
+import { type OpenPlayer, PlayerDialog } from "../../database/player-dialog";
 import { PlayerPortrait } from "../../draft/board/player-card";
 import { CountryFlag } from "../../draft/country-flag";
+import { useSeriesOptions } from "../../draft/session";
 import { levelColor, levelOf } from "../../level-scale";
+import { useContentDatabase } from "../season";
 import type { TeamProfile } from "./team-text";
 
 // The roster with each player's season: photo (silhouette without one), flag,
@@ -18,8 +25,31 @@ type Player = TeamProfile["players"][number];
 type Line = TeamProfile["stats"]["players"][number];
 type Row = Player & { line: Line | undefined };
 
-export function TeamRoster({ profile }: { profile: TeamProfile }) {
+export function TeamRoster({
+	profile,
+	sessionId,
+}: {
+	profile: TeamProfile;
+	sessionId: number;
+}) {
 	const { t, i18n } = useTranslation();
+	const { champions } = useSeriesOptions();
+	const database = useContentDatabase(sessionId);
+	const cards = useMemo(
+		() =>
+			new Map<string, DatabasePlayer>(
+				(database.data ? databasePlayers(database.data) : []).map((player) => [
+					player.id,
+					player,
+				]),
+			),
+		[database.data],
+	);
+	const championNames = useMemo(
+		() => new Map(champions.map((c) => [c.id, c.name])),
+		[champions],
+	);
+	const [open, setOpen] = useState<OpenPlayer | null>(null);
 	const rows = useMemo<Row[]>(
 		() =>
 			[...profile.players]
@@ -108,17 +138,39 @@ export function TeamRoster({ profile }: { profile: TeamProfile }) {
 		[t],
 	);
 	return (
-		<DataTable
-			className="min-h-0 flex-1"
-			rowHeight="h-[clamp(36px,6vh,52px)]"
-			label={t("competition.team.roster")}
-			data={rows}
-			columns={columns}
-			getRowId={(row) => row.id}
-			filterable={false}
-			emptyText={t("competition.team.empty")}
-			locale={i18n.language}
-		/>
+		<>
+			<DataTable
+				className="min-h-0 flex-1"
+				rowHeight="h-[clamp(36px,6vh,52px)]"
+				label={t("competition.team.roster")}
+				data={rows}
+				columns={columns}
+				getRowId={(row) => row.id}
+				filterable={false}
+				emptyText={t("competition.team.empty")}
+				locale={i18n.language}
+				onRowActivate={(row) => {
+					const player = cards.get(row.id);
+					if (player)
+						setOpen({
+							player,
+							trigger:
+								document.activeElement instanceof HTMLElement
+									? document.activeElement
+									: null,
+						});
+				}}
+				rowActionLabel={() => t("database.openCard")}
+			/>
+			{open && (
+				<PlayerDialog
+					key={open.player.id}
+					open={open}
+					championNames={championNames}
+					onClose={() => setOpen(null)}
+				/>
+			)}
+		</>
 	);
 }
 

@@ -53,6 +53,29 @@ describe("team page (U8)", () => {
 		expect(screen.queryByRole("list", { name: "Series" })).toBeNull();
 	});
 
+	it("opens the player card from a roster row and gives the focus back", async () => {
+		const { user } = await render("/competicion/equipo/forge");
+		await heading("Forge");
+		const roster = screen.getByRole("table", { name: "Roster" });
+		const rows = () => within(roster).getAllByRole("row").slice(1);
+		await user.click(rows()[0] as HTMLElement);
+		const card = await screen.findByRole("dialog", {
+			name: "Player card: Emberjaw",
+		});
+		expect(within(card).getByText("Top")).toBeTruthy();
+		await user.keyboard("{Escape}");
+		await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+		expect(document.activeElement).toBe(rows()[0]);
+
+		// Enter opens the card of the focused row, whichever it is.
+		(rows()[1] as HTMLElement).focus();
+		await user.keyboard("{Enter}");
+		const second = await screen.findByRole("dialog", {
+			name: /^Player card: /,
+		});
+		expect(second.getAttribute("aria-label")).not.toBe("Player card: Emberjaw");
+	});
+
 	it("speaks Spanish", async () => {
 		await render("/competicion/equipo/forge", "es-ES");
 		await heading("Forge");
