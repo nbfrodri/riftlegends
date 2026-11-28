@@ -5,6 +5,7 @@ import { SCOPES } from "../rng/scopes";
 import { deriveSeed } from "../rng/seeds";
 import { createRng } from "../rng/streams";
 import type { Emitted } from "../server/dispatcher";
+import type { BracketDrawResult } from "./bracket-draw";
 import { resolveBracket } from "./bracket-state";
 import type { CalendarStage } from "./calendar";
 import { type FixtureSlot, stageFixtures } from "./calendar-fixtures";
@@ -22,6 +23,8 @@ export interface StageProgress extends StageOutcome {
 	readonly standings: NonNullable<StageOutcome["standings"]>;
 	readonly ties: readonly FixtureSlot[];
 	readonly done: boolean;
+	/** The bracket draw of the stage, kept for its view (SO15). */
+	readonly draw?: Omit<BracketDrawResult, "order">;
 }
 
 function swissFixtures(
@@ -242,6 +245,7 @@ export function advanceStage(
 			fixtures,
 			ties,
 			done: final && !tables.pending.length,
+			...(resolved.draw && { draw: resolved.draw }),
 		},
 		...(drawn && { drawn }),
 		...(paired && { paired }),
