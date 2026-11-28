@@ -21,6 +21,7 @@ export function AdvanceControls({
 	scope,
 	run,
 	pending,
+	busy: working,
 	onStart,
 	onStop,
 	teamName,
@@ -31,6 +32,8 @@ export function AdvanceControls({
 	scope: AdvanceScope;
 	run: AdvanceRun | null;
 	pending: PendingSeries | null;
+	/** From the click until the day state is known (#664). */
+	busy: boolean;
 	onStart: (mode: AdvanceMode) => void;
 	onStop: () => void;
 	teamName: (id: string) => string;
@@ -41,12 +44,13 @@ export function AdvanceControls({
 }) {
 	const { t } = useTranslation();
 	const over = view.day === null;
-	const busy = run !== null || pending !== null || over;
+	const busy = working || run !== null || pending !== null || over;
 	const target = stageTarget(view);
 	const play = (mode: AdvanceMode) => () => onStart(mode);
 	return (
 		<fieldset
 			aria-label={t("competition.advance.label")}
+			aria-busy={working}
 			className="m-0 flex flex-wrap items-center gap-2 border-0 p-0"
 		>
 			{pending && (

@@ -73,7 +73,7 @@ function Season({
 	const navigate = useNavigate();
 	const listId = useId();
 	const overview = useSeasonOverview(season.sessionId);
-	const { run, pending, error, start, stop } = useSeasonAdvance(season);
+	const { run, pending, busy, error, start, stop } = useSeasonAdvance(season);
 	const schedule = useSeasonSchedule(season.sessionId);
 	const teamName = useTeamNames(season.sessionId);
 	const view = overview.data;
@@ -125,6 +125,7 @@ function Season({
 					scope="season"
 					run={run}
 					pending={pending}
+					busy={busy}
 					onStart={(mode) => void start(mode)}
 					onStop={stop}
 					teamName={teamName}

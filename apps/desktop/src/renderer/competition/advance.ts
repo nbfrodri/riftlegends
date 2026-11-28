@@ -89,6 +89,9 @@ export function useSeasonAdvance(season: SeasonHandle, store?: PendingStore) {
 	const pending = store ? store.pending : local;
 	const setPending = store ? store.setPending : setLocal;
 	const [error, setError] = useState<CoreRequestError | null>(null);
+	// From the click until the day state is known: the run, then the pending
+	// series in the store, which can show up a moment after the run ends (#664).
+	const [busy, setBusy] = useState(false);
 	const stopped = useRef(false);
 	const mounted = useRef(true);
 	useEffect(() => {
@@ -113,6 +116,8 @@ export function useSeasonAdvance(season: SeasonHandle, store?: PendingStore) {
 		async (mode: AdvanceMode) => {
 			stopped.current = false;
 			setError(null);
+			setBusy(true);
+			let handedOff = false;
 			try {
 				let current = await overview();
 				const fromDay = current.day;
@@ -144,6 +149,7 @@ export function useSeasonAdvance(season: SeasonHandle, store?: PendingStore) {
 							series: waiting.series as string,
 							teams: waiting.teams as [string, string],
 						});
+						handedOff = true;
 						break;
 					}
 					// A day that is not closed yet goes on after «Parar»; the run ends at a batch.
@@ -159,11 +165,19 @@ export function useSeasonAdvance(season: SeasonHandle, store?: PendingStore) {
 				if (!(caught instanceof CoreRequestError)) throw caught;
 				if (mounted.current) setError(caught);
 			} finally {
-				if (mounted.current) setRun(null);
+				if (mounted.current) {
+					setRun(null);
+					if (!handedOff) setBusy(false);
+				}
 			}
 		},
 		[core, overview, season, setPending],
 	);
+
+	// The pending series is in the store: it keeps the advance disabled now.
+	useEffect(() => {
+		if (pending) setBusy(false);
+	}, [pending]);
 
 	const stop = useCallback(() => {
 		stopped.current = true;
@@ -176,5 +190,5 @@ export function useSeasonAdvance(season: SeasonHandle, store?: PendingStore) {
 		[],
 	);
 
-	return { run, pending, error, start, stop };
+	return { run, pending, busy, error, start, stop };
 }
