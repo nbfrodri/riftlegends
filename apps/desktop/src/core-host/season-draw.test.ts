@@ -96,3 +96,35 @@ test("SO14: competition.drawn comes once, after its source stage and before its 
 		expect(summary.mvp?.team).toBe(recorded.winner);
 	}
 });
+
+test("SO15: the bracket view carries the draw of its stage, and only that", () => {
+	const core = client();
+	const facts = [...accepted(core.send("season.create", drawn)).facts];
+	const ask = (stage: string) =>
+		competitionViews.bracket.parse(
+			view(core, "competition.bracket", { competition: "league", stage }),
+		);
+	for (
+		let day = competitionViews.overview.parse(
+			view(core, "season.overview"),
+		).day;
+		day !== null;
+		day = competitionViews.overview.parse(view(core, "season.overview")).day
+	) {
+		facts.push(...accepted(core.send("season.playDay", { day })).facts);
+		const bracket = facts.some((f) => f.type === "competition.drawn")
+			? ask("playoffs")
+			: null;
+		const fact = facts.find((f) => f.type === "competition.drawn") as
+			| { tiers: unknown; pairs: unknown; relaxed: unknown }
+			| undefined;
+		// Before, during and after its series the view tells the same draw.
+		if (bracket && fact)
+			expect(bracket.draw).toEqual({
+				tiers: fact.tiers,
+				pairs: fact.pairs,
+				relaxed: fact.relaxed,
+			});
+	}
+	expect(facts.some((f) => f.type === "competition.drawn")).toBe(true);
+});

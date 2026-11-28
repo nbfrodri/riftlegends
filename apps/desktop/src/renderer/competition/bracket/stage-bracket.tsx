@@ -6,6 +6,8 @@ import { CoreErrorMessage, useCoreQuery } from "../../core";
 import { useActiveSeason } from "../active-season";
 import { useTeams } from "../season";
 import { Bracket } from "./bracket";
+import { BracketDraw } from "./bracket-draw";
+import { bracketLabels } from "./bracket-labels";
 
 // The bracket of one stage of the exhibition season (#605), read again after
 // every played day. Before its teams are known the stage has no bracket (`null`).
@@ -41,16 +43,24 @@ export function StageBracket({
 		return (
 			<p className="text-muted">{t("competition.standings.notStarted")}</p>
 		);
+	const { draw, matches } = bracket.data;
+	const first = matches.find(
+		(match) => match.round === 1 && match.side === "upper",
+	);
+	const round = first && bracketLabels(matches).get(first.id)?.round;
 	return (
-		<Bracket
-			bracket={bracket.data}
-			team={team}
-			onOpenSeries={(series) =>
-				void navigate({
-					to: seriesRoute,
-					params: { series },
-				})
-			}
-		/>
+		<>
+			{draw && round && <BracketDraw draw={draw} round={round} team={team} />}
+			<Bracket
+				bracket={bracket.data}
+				team={team}
+				onOpenSeries={(series) =>
+					void navigate({
+						to: seriesRoute,
+						params: { series },
+					})
+				}
+			/>
+		</>
 	);
 }
