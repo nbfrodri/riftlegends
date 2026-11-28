@@ -11,3 +11,4 @@
 | [plans/](plans/) | Plan general y planes específicos por sistema ([00 · plan general](plans/00-plan-general.md)) |
 | [research/](research/) | Investigación archivada ([stack, noviembre de 2026](research/stack-2026-11/README.md), [inventario de DraftSim](research/draftsim-inventario.md)) |
 | [handoffs/](handoffs/) | Traspasos de trabajo en curso entre sesiones o agentes |
+| [audits/](audits/) | Auditorías con sus hallazgos y el issue de cada uno ([mantenibilidad, 28-11-2026](audits/2026-11-28-improvement-proyecto.md)) |
