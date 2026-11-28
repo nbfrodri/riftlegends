@@ -21,6 +21,41 @@ const event = (id: string) => {
 	return found;
 };
 const clone = <T>(value: T): T => structuredClone(value);
+const regions = new Map<string, string>(
+	(
+		JSON.parse(readFileSync(new URL("teams.json", content), "utf8")) as {
+			id: string;
+			league: string;
+		}[]
+	).map(({ id, league }) => [id, league]),
+);
+const check = (
+	e: Parameters<typeof checkInternational>[0],
+	competition: Parameters<typeof checkInternational>[1],
+) => checkInternational(e, competition, regions);
+/** The event with two team names swapped in every series. */
+function swapped(id: string, a: string, b: string) {
+	const changed = clone(event(id));
+	const swap = (team: string) => (team === a ? b : team === b ? a : team);
+	for (const m of changed.matches) {
+		m.team1 = swap(m.team1);
+		m.team2 = swap(m.team2);
+	}
+	return changed;
+}
+const stageOf = (id: keyof typeof formats, stage: string) => {
+	const found = formats[id].stages.find((s) => s.id === stage);
+	if (!found) throw new Error(`No ${id} ${stage}`);
+	return found;
+};
+/** `id` with `draw` replacing the draw of one stage. */
+function withDraw(id: keyof typeof formats, stage: string, draw: object) {
+	const changed = clone(formats[id]);
+	const target = changed.stages.find((s) => s.id === stage);
+	if (!target) throw new Error(`No ${id} ${stage}`);
+	Object.assign(target, { draw });
+	return changed;
+}
 
 describe("V1 the 2026 international formats pass the validation", () => {
 	it("builds First Stand, MSI and Worlds as valid competitions", () => {
@@ -63,7 +98,7 @@ describe("V1 the 2026 international formats pass the validation", () => {
 describe("R1 each format reproduces the 2026 series", () => {
 	for (const id of ["first-stand", "msi", "worlds"] as const) {
 		it(`${id}: teams, series per stage and Bo per round match`, () => {
-			expect(checkInternational(event(id), formats[id])).toEqual([]);
+			expect(check(event(id), formats[id])).toEqual([]);
 		});
 	}
 
@@ -88,9 +123,7 @@ describe("R1 each format reproduces the 2026 series", () => {
 		const final = changed.matches.at(-1);
 		if (!final) throw new Error("no final");
 		Object.assign(final, { bestOf: 3, score1: 2, score2: 0 });
-		expect(checkInternational(changed, formats.msi).join("\n")).toMatch(
-			/best of/i,
-		);
+		expect(check(changed, formats.msi).join("\n")).toMatch(/best of/i);
 	});
 
 	it("detects a pairing the bracket does not allow", () => {
@@ -98,9 +131,7 @@ describe("R1 each format reproduces the 2026 series", () => {
 		const quarter = changed.matches.find((m) => m.tab === "Semifinals");
 		if (!quarter) throw new Error("no semifinal");
 		quarter.team2 = "Cloud9";
-		expect(checkInternational(changed, formats.worlds).length).toBeGreaterThan(
-			0,
-		);
+		expect(check(changed, formats.worlds).length).toBeGreaterThan(0);
 	});
 
 	it("detects a series that no stage describes", () => {
@@ -110,9 +141,9 @@ describe("R1 each format reproduces the 2026 series", () => {
 		extra.tab = "Wildcard";
 		extra.id = "extra";
 		changed.matches.push(extra);
-		expect(
-			checkInternational(changed, formats["first-stand"]).join("\n"),
-		).toMatch(/no stage/i);
+		expect(check(changed, formats["first-stand"]).join("\n")).toMatch(
+			/no stage/i,
+		);
 	});
 
 	it("detects a team count that differs from the stage size", () => {
@@ -120,9 +151,7 @@ describe("R1 each format reproduces the 2026 series", () => {
 		changed.matches = changed.matches.filter(
 			(m) => !(m.tab === "Quarterfinals" && m.team1 === "Gen.G"),
 		);
-		expect(checkInternational(changed, formats.worlds).join("\n")).toMatch(
-			/teams/i,
-		);
+		expect(check(changed, formats.worlds).join("\n")).toMatch(/teams/i);
 	});
 });
 
@@ -147,9 +176,10 @@ describe("R2 unconfirmed data is marked and listed", () => {
 		expect(byId.worlds).toMatch(/19 teams/);
 		expect(byId.worlds).toMatch(/Swiss/);
 		expect(byId.msi).toMatch(/First Stand/);
-		expect(byId.msi).toMatch(/draw/);
 		expect(byId.worlds).toMatch(/tiebreak/i);
-		expect(byId.worlds).toMatch(/quarterfinal/i);
+		// The draws are modelled (#627): no reason cites a fixed bracket any more.
+		for (const text of Object.values(byId))
+			expect(text).not.toMatch(/fixed bracket/i);
 		for (const text of Object.values(byId))
 			expect(text).not.toMatch(/not read from the rulebook yet/);
 	});
@@ -183,6 +213,104 @@ describe("R2 unconfirmed data is marked and listed", () => {
 			expect(sources.length).toBeGreaterThan(0);
 			for (const url of sources) expect(url).toMatch(/^https:\/\//);
 		}
+	});
+});
+
+describe("SO12–SO16 MSI and Worlds declare their real draws", () => {
+	it("MSI draws its bracket by four tiers, 1 v 4 and 2 v 3, same region on opposite sides", () => {
+		expect(stageOf("msi", "bracket").draw).toEqual({
+			tiers: [
+				[1, 2],
+				[3, 4],
+				[5, 6],
+				[7, 8],
+			],
+			meet: [
+				[1, 4],
+				[2, 3],
+			],
+			avoid: ["regionHalf"],
+		});
+	});
+
+	it("MSI tiers follow the 2026 First Stand region ranking, then LPL 2 and the play-in winner", () => {
+		const [direct] = stageOf("msi", "bracket").entrants as unknown as [
+			{ places: { league: string; place: number }[] },
+		];
+		expect(direct.places.map((p) => `${p.league}${p.place}`)).toEqual([
+			"LPL1",
+			"LEC1",
+			"LCK1",
+			"LCS1",
+			"LCP1",
+			"CBLOL1",
+			"LPL2",
+		]);
+	});
+
+	it("SO16: Worlds draws its play-in freely, one tier of four", () => {
+		expect(stageOf("worlds", "playin").draw).toEqual({
+			tiers: [[1, 2, 3, 4]],
+			meet: [],
+			avoid: [],
+		});
+	});
+
+	it("Worlds draws the 3-0 teams against 3-2 teams and the rest at random", () => {
+		expect(stageOf("worlds", "knockout").draw).toEqual({
+			tiers: [
+				[1, 2],
+				[3, 4, 5],
+				[6, 7, 8],
+			],
+			meet: [[1, 3]],
+			avoid: [],
+		});
+	});
+
+	it("SO13: a real first round that breaks the tiers fails R1", () => {
+		// G2 (tier 1) takes the place of Hanwha Life (tier 2) against Team Secret Whales (tier 3).
+		const problems = check(
+			swapped("msi", "G2 Esports", "Hanwha Life Esports"),
+			formats.msi,
+		).join("\n");
+		expect(problems).toMatch(/bracket: draw/);
+		expect(problems).toMatch(/tier/);
+	});
+
+	it("SO13: a real first round with one region in the same half fails R1", () => {
+		// LYON moves to the half of T1, and Hanwha Life (LCK) joins T1 there.
+		expect(
+			check(
+				swapped("msi", "LYON (2024 American Team)", "Hanwha Life Esports"),
+				formats.msi,
+			).join("\n"),
+		).toMatch(/bracket: draw breaks regionHalf/);
+	});
+
+	it("SO13: a Worlds quarterfinal outside the declared tiers fails R1", () => {
+		const threeOneAgainstThreeO = withDraw("worlds", "knockout", {
+			tiers: [
+				[1, 2],
+				[3, 4, 5],
+				[6, 7, 8],
+			],
+			meet: [[1, 2]],
+			avoid: [],
+		});
+		expect(check(event("worlds"), threeOneAgainstThreeO).join("\n")).toMatch(
+			/knockout: draw/,
+		);
+	});
+
+	it("the real 2026 quarterfinals had a Swiss rematch (Gen.G v LYON), so Worlds avoids none", () => {
+		const noRematch = withDraw("worlds", "knockout", {
+			...stageOf("worlds", "knockout").draw,
+			avoid: ["rematch"],
+		});
+		expect(check(event("worlds"), noRematch).join("\n")).toMatch(
+			/knockout: draw breaks rematch/,
+		);
 	});
 });
 

@@ -77,10 +77,6 @@
 					"competition": "msi",
 					"places": [
 						{
-							"league": "LCK",
-							"place": 1
-						},
-						{
 							"league": "LPL",
 							"place": 1
 						},
@@ -89,11 +85,15 @@
 							"place": 1
 						},
 						{
-							"league": "LCP",
+							"league": "LCK",
 							"place": 1
 						},
 						{
 							"league": "LCS",
+							"place": 1
+						},
+						{
+							"league": "LCP",
 							"place": 1
 						},
 						{
@@ -145,6 +145,39 @@
 				"lowerSeeds": [],
 				"grandFinal": 5,
 				"reset": false
+			},
+			"draw": {
+				"tiers": [
+					[
+						1,
+						2
+					],
+					[
+						3,
+						4
+					],
+					[
+						5,
+						6
+					],
+					[
+						7,
+						8
+					]
+				],
+				"meet": [
+					[
+						1,
+						4
+					],
+					[
+						2,
+						3
+					]
+				],
+				"avoid": [
+					"regionHalf"
+				]
 			}
 		}
 	],
