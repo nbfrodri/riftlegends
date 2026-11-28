@@ -6,6 +6,11 @@ import {
 } from "../../packages/core/competition/bracket.ts";
 import { resolveBracket } from "../../packages/core/competition/bracket-state.ts";
 import {
+	checkDraw,
+	type DrawContext,
+	metKey,
+} from "./international-draw-check.ts";
+import {
 	internationalDefinitions,
 	stageMatches,
 } from "./international-formats.ts";
@@ -22,11 +27,20 @@ type Play = Competition["stages"][number]["play"];
 const winnerOf = (m: InternationalMatch) =>
 	m.score1 > m.score2 ? m.team1 : m.team2;
 
+interface Replay {
+	problems: string[];
+	/** Teams by bracket seed. */
+	seeds?: string[];
+	/** Winner and loser by match id. */
+	results?: Map<string, [string, string]>;
+	records?: Map<string, { w: number; l: number }>;
+}
+
 /** Seeds the bracket so that its first round is the real first round. */
 function replayBracket(
 	play: Extract<Play, { type: "singleElim" | "doubleElim" }>,
 	matches: readonly InternationalMatch[],
-): string[] {
+): Replay {
 	const bracket =
 		play.type === "singleElim" ? buildSingleElim(play) : buildDoubleElim(play);
 	const seen = new Set<string>();
@@ -40,9 +54,11 @@ function replayBracket(
 		(m) => m.side === "upper" && m.round === 1,
 	);
 	if (first.length !== opening.length) {
-		return [
-			`first round has ${opening.length} series, the bracket has ${first.length}`,
-		];
+		return {
+			problems: [
+				`first round has ${opening.length} series, the bracket has ${first.length}`,
+			],
+		};
 	}
 	const teams: string[] = [];
 	first.forEach((m, k) => {
@@ -54,6 +70,7 @@ function replayBracket(
 		}
 	});
 	const results: Record<string, string> = {};
+	const played = new Map<string, [string, string]>();
 	for (const m of matches) {
 		const state = resolveBracket(bracket, teams, results);
 		const hit = state.matches.find(
@@ -62,30 +79,51 @@ function replayBracket(
 				[x.teamA, x.teamB].sort().join() === [m.team1, m.team2].sort().join(),
 		);
 		if (!hit) {
-			return [
-				`series ${m.team1} vs ${m.team2} (${m.tab}) is not a ready match of the bracket`,
-			];
+			return {
+				problems: [
+					`series ${m.team1} vs ${m.team2} (${m.tab}) is not a ready match of the bracket`,
+				],
+			};
 		}
 		if (hit.bestOf !== m.bestOf) {
-			return [
-				`${hit.id}: best of ${m.bestOf} played, the bracket has best of ${hit.bestOf}`,
-			];
+			return {
+				problems: [
+					`${hit.id}: best of ${m.bestOf} played, the bracket has best of ${hit.bestOf}`,
+				],
+			};
 		}
-		results[hit.id] = winnerOf(m);
+		const winner = winnerOf(m);
+		results[hit.id] = winner;
+		played.set(hit.id, [winner, winner === m.team1 ? m.team2 : m.team1]);
 	}
 	const rest = resolveBracket(bracket, teams, results)
 		.matches.filter((x) => x.status !== "done" && x.status !== "skipped")
 		.map((x) => x.id);
-	return rest.length
-		? [`bracket series left unplayed: ${rest.join(", ")}`]
-		: [];
+	return {
+		problems: rest.length
+			? [`bracket series left unplayed: ${rest.join(", ")}`]
+			: [],
+		seeds: teams,
+		results: played,
+	};
 }
 
 function replaySwiss(
 	play: Extract<Play, { type: "swiss" }>,
 	matches: readonly InternationalMatch[],
-): string[] {
+): Replay {
 	const record = new Map<string, { w: number; l: number }>();
+	return {
+		problems: swissProblems(play, matches, record),
+		records: record,
+	};
+}
+
+function swissProblems(
+	play: Extract<Play, { type: "swiss" }>,
+	matches: readonly InternationalMatch[],
+	record: Map<string, { w: number; l: number }>,
+): string[] {
 	const met = new Set<string>();
 	const get = (team: string) => {
 		const found = record.get(team) ?? { w: 0, l: 0 };
@@ -127,12 +165,19 @@ function replaySwiss(
 		: [];
 }
 
+/** R1 for one event; `regions` gives the league of each real team (SO13). */
 export function checkInternational(
 	event: Event,
 	competition: Competition,
+	regions: ReadonlyMap<string, string>,
 ): string[] {
 	const problems: string[] = [];
 	const assigned = new Set<string>();
+	const context: DrawContext = {
+		results: new Map(),
+		records: new Map(),
+		met: new Set(),
+	};
 	for (const stage of competition.stages) {
 		const def = internationalDefinitions[event.id].stages.find(
 			(s) => s.id === stage.id,
@@ -151,13 +196,20 @@ export function checkInternational(
 			continue;
 		}
 		const { play } = stage;
-		const found =
+		const replay: Replay =
 			play.type === "swiss"
 				? replaySwiss(play, matches)
 				: play.type === "singleElim" || play.type === "doubleElim"
 					? replayBracket(play, matches)
-					: [`${play.type} stages are not checked yet`];
+					: { problems: [`${play.type} stages are not checked yet`] };
+		const found = [...replay.problems];
+		const draw = stage.draw;
+		if (!found.length && replay.seeds && draw && "tiers" in draw)
+			found.push(...checkDraw(stage, draw, replay.seeds, context, regions));
 		problems.push(...found.map((message) => `${stage.id}: ${message}`));
+		if (replay.results) context.results.set(stage.id, replay.results);
+		if (replay.records) context.records.set(stage.id, replay.records);
+		for (const m of matches) context.met.add(metKey(m.team1, m.team2));
 	}
 	for (const m of event.matches) {
 		if (!assigned.has(m.id)) problems.push(`no stage has series ${m.id}`);

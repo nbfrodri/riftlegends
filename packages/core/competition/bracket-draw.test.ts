@@ -145,6 +145,19 @@ describe("drawBracket", () => {
 		}
 	});
 
+	it("SO7b: with every pair already met the rematch rule does not exist and is not relaxed", () => {
+		const teams = field(Array(4).fill("A"));
+		for (const seed of SEEDS)
+			expect(
+				run(
+					{ tiers: [[1, 2, 3, 4]], meet: [], avoid: ["rematch"] },
+					teams,
+					seed,
+					() => true,
+				).relaxed,
+			).toEqual([]);
+	});
+
 	it("SO6: rematch avoids Swiss rivals whenever another draw exists", () => {
 		const teams = field(["A", "B", "C", "D", "E", "F", "G", "H"]);
 		const rivals = new Set(["t1|t6", "t1|t7", "t2|t8"]);

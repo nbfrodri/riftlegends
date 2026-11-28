@@ -134,6 +134,45 @@ describe("Q9: presets fill the slots by region with the best seeds", () => {
 		});
 	});
 
+	test("SO12: the MSI and Worlds presets keep their real draws, also with edited slots", () => {
+		const core = client();
+		const teams = slotsOf(core, "msi").map(({ team }) => team);
+		const outsider = bestOf("LCK").find((id) => !teams.includes(id));
+		if (!outsider) throw new Error("every LCK team is in");
+		teams[4] = outsider;
+		const [msi] = created(core, preset("msi", { teams })).competitions;
+		expect(msi?.stages[1]?.entrants).toMatchObject([
+			{ teams: [outsider, ...teams.slice(5)] },
+			{ kind: "bracket" },
+		]);
+		expect(msi?.stages[1]).toMatchObject({
+			draw: {
+				meet: [
+					[1, 4],
+					[2, 3],
+				],
+				avoid: ["regionHalf"],
+			},
+		});
+		const [worlds] = created(client(), preset("worlds")).competitions;
+		const draws = worlds?.stages.map(
+			(stage) => (stage as { draw?: object }).draw,
+		);
+		expect(draws).toEqual([
+			{ tiers: [[1, 2, 3, 4]], meet: [], avoid: [] },
+			{ pots: 4 },
+			{
+				tiers: [
+					[1, 2],
+					[3, 4, 5],
+					[6, 7, 8],
+				],
+				meet: [[1, 3]],
+				avoid: [],
+			},
+		]);
+	});
+
 	test("the same team twice is rejected at its second slot", () => {
 		const core = client();
 		const teams = slotsOf(core, "msi").map(({ team }) => team);

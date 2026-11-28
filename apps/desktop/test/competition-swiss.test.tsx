@@ -431,8 +431,9 @@ describe("U7: the Swiss stage in the competition hub", () => {
 				"button",
 			),
 		).toHaveLength(4);
+		// One league: the same-region constraint does not exist (#635).
 		expect(
-			within(first).getByText("Same-region pairing: no other was possible"),
-		).toBeTruthy();
+			within(first).queryByText("Same-region pairing: no other was possible"),
+		).toBeNull();
 	});
 });

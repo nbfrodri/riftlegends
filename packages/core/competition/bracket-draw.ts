@@ -113,7 +113,9 @@ function search(
 	return pairUp() ? (line as DrawEntrant[]) : undefined;
 }
 
-function broken(rule: DrawRule, line: readonly DrawEntrant[], met: Met) {
+type Placed = Pick<DrawEntrant, "team" | "region">;
+
+function broken(rule: DrawRule, line: readonly Placed[], met: Met) {
 	const n = line.length;
 	return line.some((a, i) =>
 		line.some((b, j) => {
@@ -124,6 +126,18 @@ function broken(rule: DrawRule, line: readonly DrawEntrant[], met: Met) {
 			return rule === "region" ? a.region === b.region : met(a.team, b.team);
 		}),
 	);
+}
+
+/**
+ * Rules of `avoid` that a first round breaks. `line` holds the teams in
+ * bracket order (1-8, 4-5, 2-7, 3-6): pairs side by side, halves split in two.
+ */
+export function brokenRules(
+	avoid: readonly DrawRule[],
+	line: readonly Placed[],
+	met: Met,
+): DrawRule[] {
+	return avoid.filter((rule) => broken(rule, line, met));
 }
 
 /**
@@ -138,6 +152,11 @@ export function drawBracket(
 	rng: Rng,
 ): BracketDrawResult {
 	const n = teams.length;
+	// With every pair already met a rematch cannot be avoided: the rule does not exist.
+	const mixed = teams.some((a, i) =>
+		teams.slice(i + 1).some((b) => !met(a.team, b.team)),
+	);
+	const avoid = rules.avoid.filter((rule) => rule !== "rematch" || mixed);
 	const byPlace = new Map(teams.map((entry) => [entry.initialSeed, entry]));
 	const tierOf = new Map<DrawEntrant, number>();
 	const tiers = rules.tiers.map((places, index) =>
@@ -158,7 +177,7 @@ export function drawBracket(
 	);
 	let line: DrawEntrant[] | undefined;
 	for (let skip = 0; !line; skip += 1) {
-		const active = new Set(rules.avoid.slice(skip));
+		const active = new Set(avoid.slice(skip));
 		line = search(n, rules, tiers, pool, slots, active, met);
 	}
 	// Swapping the two halves of any sub-bracket keeps every crossing: the better one
@@ -188,7 +207,7 @@ export function drawBracket(
 			(ordered[2 * i] as DrawEntrant).team,
 			(ordered[2 * i + 1] as DrawEntrant).team,
 		]),
-		relaxed: rules.avoid.filter((rule) => broken(rule, ordered, met)),
+		relaxed: brokenRules(avoid, ordered, met),
 	};
 }
 

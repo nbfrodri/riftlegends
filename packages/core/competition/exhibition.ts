@@ -45,15 +45,6 @@ function fictionalLeague(teams: readonly string[]): Competition {
 				window: window(6, 2),
 				entrants: { kind: "standing", stage: "regular", from: 1, to: 4 },
 				play: { type: "singleElim", size: 4, bestOf: [3, 5] },
-				// Seeds 1 and 2 against 3 and 4, so the offline hub shows a draw (#628).
-				draw: {
-					tiers: [
-						[1, 2],
-						[3, 4],
-					],
-					meet: [[1, 2]],
-					avoid: ["rematch"],
-				},
 			},
 		],
 	} as Competition;
