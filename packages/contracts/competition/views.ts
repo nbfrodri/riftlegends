@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { ROLES } from "../draft/index";
-import { competitionCriterion, stageNameSchema } from "./format";
+import { competitionCriterion, drawRule, stageNameSchema } from "./format";
 
 // What the view queries of plan 31 answer (#481).
 
@@ -137,6 +137,17 @@ const bracket = z.strictObject({
 	champion: id.nullable(),
 	/** Series lost by each team so far. */
 	losses: z.record(id, count),
+	/** The draw that ordered the first round, for stages that have one (#628). */
+	draw: z
+		.strictObject({
+			/** Teams from the best seed down, with their 1-based tier. */
+			tiers: z.array(z.strictObject({ team: id, tier: z.int().min(1) })),
+			/** First-round series in bracket order, better seed first. */
+			pairs: z.array(z.tuple([id, id])),
+			/** Constraints the draw had to break, in their order. */
+			relaxed: z.array(drawRule),
+		})
+		.optional(),
 });
 
 export type BracketView = z.infer<typeof bracket>;

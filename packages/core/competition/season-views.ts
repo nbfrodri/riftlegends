@@ -131,6 +131,7 @@ export function stageView(
 		return stage.bracket && source
 			? {
 					...stage.bracket,
+					...(stage.draw && { draw: stage.draw }),
 					matches: stage.bracket.matches.map((match, index) => {
 						const record = records.get(match.id);
 						const [a, b] = record?.score ?? [0, 0];
