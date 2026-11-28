@@ -1,3 +1,4 @@
+import type { SeriesState } from "../draft/series";
 import { SCOPES } from "../rng/scopes";
 import { deriveSeed } from "../rng/seeds";
 import type { Emitted } from "../server/dispatcher";
@@ -73,6 +74,8 @@ interface PlayedSeries {
 	readonly score: readonly [number, number];
 	readonly winner: string;
 	readonly result: Played["result"];
+	/** The final state of the user's series; AI series are replayed instead. */
+	readonly human?: SeriesState;
 }
 
 /** Writes a finished series in the log: the same facts whoever played it. */
@@ -106,6 +109,7 @@ export function recordSeries(
 		seed,
 		fearless,
 		games: gamesOf(played.facts),
+		...(played.human ? { human: played.human } : {}),
 	});
 	const results = log.today.get(key) ?? [];
 	results.push({ fixture, winner: played.winner, result: played.result });
