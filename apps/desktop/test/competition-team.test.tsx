@@ -58,6 +58,12 @@ describe("team page (U8)", () => {
 		await heading("Forge");
 		expect(screen.getByText("Sembrado 1")).toBeTruthy();
 		expect(screen.getByRole("table", { name: "Plantilla" })).toBeTruthy();
+		expect(
+			within(screen.getByRole("table", { name: "Plantilla" })).getByRole(
+				"columnheader",
+				{ name: "Nivel" },
+			),
+		).toBeTruthy();
 		expect(screen.getByText("Aún no ha jugado")).toBeTruthy();
 	});
 
@@ -103,6 +109,13 @@ describe("team page (U8)", () => {
 
 		// Per-player stats of the season in the roster.
 		const roster = screen.getByRole("table", { name: "Roster" });
+		// The player's level is the «Rating» of the market and the database (#625).
+		expect(
+			within(roster).getByRole("columnheader", { name: "Rating" }),
+		).toBeTruthy();
+		expect(
+			within(roster).queryByRole("columnheader", { name: "Level" }),
+		).toBeNull();
 		const first = within(roster).getAllByRole("row")[1] as HTMLElement;
 		expect(within(first).getByText(/^\d+\/\d+\/\d+$/)).toBeTruthy();
 		expect(

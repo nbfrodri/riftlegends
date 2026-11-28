@@ -1144,7 +1144,7 @@
 	"competition.team.roster": "Roster",
 	"competition.team.empty": "No players",
 	"competition.team.column.player": "Player",
-	"competition.team.column.level": "Level",
+	"competition.team.column.rating": "Rating",
 	"competition.team.column.kda": "K/D/A",
 	"competition.team.form": "Form",
 	"competition.team.short.won": "W",

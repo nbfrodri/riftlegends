@@ -69,7 +69,7 @@ export function TeamRoster({ profile }: { profile: TeamProfile }) {
 			},
 			{
 				id: "level",
-				header: t("competition.team.column.level"),
+				header: t("competition.team.column.rating"),
 				value: (row) => row.level,
 				cell: (row) => {
 					const level = levelOf(row.level);

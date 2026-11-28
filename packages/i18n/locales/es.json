@@ -1144,7 +1144,7 @@
 	"competition.team.roster": "Plantilla",
 	"competition.team.empty": "Sin jugadores",
 	"competition.team.column.player": "Jugador",
-	"competition.team.column.level": "Nivel",
+	"competition.team.column.rating": "Nivel",
 	"competition.team.column.kda": "K/D/A",
 	"competition.team.form": "Forma",
 	"competition.team.short.won": "V",
