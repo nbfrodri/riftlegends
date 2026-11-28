@@ -2,6 +2,7 @@ import type { BracketView } from "@rift-legends/contracts";
 import { cn } from "@rift-legends/ui-kit/lib/utils";
 import type { KeyboardEvent } from "react";
 import { useTranslation } from "react-i18next";
+import { LeagueLogo } from "../../assets/league-logo";
 import { TeamCrest } from "../../draft/team-crest";
 import { resultStyle } from "../series-result";
 import { CARD_H, CARD_W } from "./bracket-layout";
@@ -13,6 +14,7 @@ type Slot = Match["from"][number];
 export interface TeamNames {
 	name: string;
 	short?: string | undefined;
+	league?: string | undefined;
 }
 
 export interface SlotText {
@@ -23,6 +25,7 @@ export interface SlotText {
 	known: boolean;
 	/** A top seed that skipped the first round. */
 	bye: boolean;
+	draw?: { tier: number; league: string | undefined };
 }
 
 /** The two slots of a series, in the order of `teamA` and `teamB`. */
@@ -30,13 +33,19 @@ export function slotTexts(
 	match: Match,
 	team: (id: string) => TeamNames,
 	origin: (slot: Slot, short: boolean) => string,
+	tiers: ReadonlyMap<string, number> | undefined,
 ): [SlotText, SlotText] {
-	const text = (id: string | null, slot: Slot): SlotText => ({
-		name: id ? team(id).name : origin(slot, false),
-		label: id ? (team(id).short ?? team(id).name) : origin(slot, true),
-		known: team !== null,
-		bye: slot.kind === "seed" && match.side === "upper" && match.round > 1,
-	});
+	const text = (id: string | null, slot: Slot): SlotText => {
+		const entry = id ? team(id) : undefined;
+		const tier = id ? tiers?.get(id) : undefined;
+		return {
+			name: entry?.name ?? origin(slot, false),
+			label: entry?.short ?? entry?.name ?? origin(slot, true),
+			known: team !== null,
+			bye: slot.kind === "seed" && match.side === "upper" && match.round > 1,
+			...(tier !== undefined && { draw: { tier, league: entry?.league } }),
+		};
+	};
 	return [text(match.teamA, match.from[0]), text(match.teamB, match.from[1])];
 }
 
@@ -72,6 +81,23 @@ export function TeamRow({
 			{slot.bye && (
 				<span className="shrink-0 rounded-[3px] border border-line px-1 text-[10px] text-muted uppercase leading-4">
 					{t("competition.bracket.bye")}
+				</span>
+			)}
+			{slot.draw && (
+				<span
+					aria-hidden="true"
+					className="grid w-9 shrink-0 grid-cols-[1fr_14px] items-center gap-1 text-right font-normal text-[11px] text-muted tabular-nums"
+				>
+					<span>
+						{t("competition.draw.tierShort", { tier: slot.draw.tier })}
+					</span>
+					{slot.draw.league && (
+						<LeagueLogo
+							id={slot.draw.league}
+							name={slot.draw.league}
+							className="size-3.5"
+						/>
+					)}
 				</span>
 			)}
 			<span

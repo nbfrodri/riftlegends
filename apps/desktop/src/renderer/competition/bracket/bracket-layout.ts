@@ -55,6 +55,7 @@ const below = (placed: Placed) => placed.y + CARD_H + ROW_GAP + HEADER_H;
 function placeSide(
 	matches: readonly Match[],
 	top: number,
+	rowGap: number,
 	at: Map<string, Placed>,
 	headers: Header[],
 ): number {
@@ -66,7 +67,7 @@ function placeSide(
 		const column = matches.filter((m) => m.round === round);
 		const x = col * PITCH;
 		headers.push({ match: column[0] as Match, x, y: top });
-		let previous = top + HEADER_H - CARD_H - ROW_GAP;
+		let previous = top + HEADER_H - CARD_H - rowGap;
 		for (const match of column) {
 			const feeders = match.from.flatMap((slot) => {
 				const placed = slot.kind === "winner" ? at.get(slot.match) : undefined;
@@ -77,7 +78,7 @@ function placeSide(
 			const level = feeders.length
 				? feeders.reduce((a, b) => a + b, 0) / feeders.length - CARD_H / 2
 				: -Infinity;
-			const y = Math.max(level, previous + CARD_H + ROW_GAP);
+			const y = Math.max(level, previous + CARD_H + rowGap);
 			at.set(match.id, { match, x, y });
 			previous = y;
 			bottom = Math.max(bottom, y + CARD_H);
@@ -95,9 +96,12 @@ export function layoutBracket(bracket: BracketView): Layout {
 	const headers: Header[] = [];
 	const upper = matches.filter((m) => m.side === "upper");
 	const lower = matches.filter((m) => m.side === "lower");
-	let height = placeSide(upper, 0, at, headers);
+	// The draw summary shares the vertical budget of the bracket.
+	const rowGap = bracket.draw ? 8 : ROW_GAP;
+	const sectionGap = bracket.draw ? 20 : SECTION_GAP;
+	let height = placeSide(upper, 0, rowGap, at, headers);
 	if (lower.length)
-		height = placeSide(lower, height + SECTION_GAP, at, headers);
+		height = placeSide(lower, height + sectionGap, rowGap, at, headers);
 	// The grand final gets its own column; its reset and the champion stack under it.
 	const col = Math.max(columns(matches, "upper"), columns(matches, "lower"));
 	let decider: Placed | undefined = [...at.values()]
