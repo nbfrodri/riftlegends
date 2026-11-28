@@ -23,13 +23,18 @@ export interface PlayerState {
 	 * the exchange that resolved before it.
 	 */
 	readonly busyUntil: number;
+	/** Second of the game the ultimate is back; it runs while the player is dead (#339). */
+	readonly ultReadyAt: number;
 }
 
 export type SidePlayers = Readonly<Record<Role, PlayerState>>;
 
 export const startPlayers = (): SidePlayers =>
 	Object.fromEntries(
-		ROLES.map((role) => [role, { respawnAt: 0, diedAt: 0, busyUntil: 0 }]),
+		ROLES.map((role) => [
+			role,
+			{ respawnAt: 0, diedAt: 0, busyUntil: 0, ultReadyAt: 0 },
+		]),
 	) as Record<Role, PlayerState>;
 
 /** Second of the game of `second` in `minute` (minutes count from 1). */
@@ -120,4 +125,20 @@ export function markDeaths(
 		}));
 	}
 	return players;
+}
+
+/** Puts on cooldown, on both sides, the ultimates a contest counted (#339). */
+export function markSpent(
+	players: Record<Side, SidePlayers>,
+	event: MatchEvent,
+): Record<Side, SidePlayers> {
+	const { spent } = event;
+	if (!spent) return players;
+	const next = { blue: { ...players.blue }, red: { ...players.red } };
+	for (const side of ["blue", "red"] as const) {
+		for (const { role, readyAt } of spent[side]) {
+			next[side][role] = { ...next[side][role], ultReadyAt: readyAt };
+		}
+	}
+	return next;
 }

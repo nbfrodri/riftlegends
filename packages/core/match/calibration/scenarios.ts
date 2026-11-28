@@ -165,8 +165,9 @@ export function scenario(edge: number, seed: number, pool: Pool): MatchSetup {
 }
 
 /** Many games of a scenario, with what the calibration bands read. */
-export function sample(games: number, edge: number, pool: Pool) {
-	return Array.from({ length: games }, (_, seed) => {
+export function sample(games: number, edge: number, pool: Pool, from = 0) {
+	return Array.from({ length: games }, (_, index) => {
+		const seed = from + index;
 		const setup = scenario(edge, seed, pool);
 		const { state, events } = playMatch(setup, MATCH_CONTESTS);
 		const at20 = { blue: 0, red: 0 };

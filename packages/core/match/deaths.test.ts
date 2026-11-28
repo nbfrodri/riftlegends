@@ -59,7 +59,12 @@ describe("D2 · every kill sets when the victim comes back (#528)", () => {
 				...base.blue,
 				players: {
 					...base.blue.players,
-					mid: { respawnAt: 100, diedAt: 40, busyUntil: 40 },
+					mid: {
+						...base.blue.players.mid,
+						respawnAt: 100,
+						diedAt: 40,
+						busyUntil: 40,
+					},
 				},
 			},
 		};

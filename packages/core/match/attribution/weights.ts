@@ -15,7 +15,7 @@ export const KILL_BASE: Readonly<Record<Role, number>> = {
 	support: 10,
 };
 export const ASSIST_BASE: Readonly<Record<Role, number>> = {
-	top: 12,
+	top: 8,
 	jungle: 25,
 	mid: 55,
 	bot: 60,

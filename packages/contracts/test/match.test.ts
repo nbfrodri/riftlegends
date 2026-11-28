@@ -209,6 +209,31 @@ describe("match.event", () => {
 		rejects({ ...fact, down: { blue: [], red: [] } });
 	});
 
+	it("records the ultimates spent and the ones on cooldown, and still reads logs without them (#339)", () => {
+		roundTrips({
+			...fact,
+			spent: {
+				blue: [{ role: "jungle", resource: "ult", readyAt: 512 }],
+				red: [],
+			},
+			onCooldown: { blue: [], red: [{ role: "mid", resource: "ult" }] },
+		});
+		roundTrips(fact);
+		rejects({ ...fact, spent: { blue: [], red: [] } });
+		rejects({ ...fact, onCooldown: { blue: [], red: [] } });
+		rejects({
+			...fact,
+			spent: {
+				blue: [{ role: "mid", resource: "dance", readyAt: 1 }],
+				red: [],
+			},
+		});
+		rejects({
+			...fact,
+			spent: { blue: [{ role: "mid", resource: "ult", readyAt: -1 }], red: [] },
+		});
+	});
+
 	it("carries a structure tier for towers", () =>
 		roundTrips({
 			...fact,
@@ -342,6 +367,18 @@ describe("MatchContent", () => {
 			conversion,
 			presence,
 			levelCurve,
+			ultHaste: [0, 0, 10, 20],
+			cooldowns: {
+				ult: {
+					points: 200,
+					keyPoints: 300,
+					cap: 600,
+					team: 3,
+					local: 1,
+					window: 15,
+					windowCap: 45,
+				},
+			},
 			economy: {
 				passive: 1200,
 				kill: 300,
@@ -469,6 +506,29 @@ describe("MatchContent", () => {
 			},
 		],
 		[
+			"rules without the ultimate cooldowns",
+			{
+				...content,
+				rules: (({ cooldowns: _, ...rest }) => rest)(content.rules),
+			},
+		],
+		[
+			"an empty haste curve",
+			{ ...content, rules: { ...content.rules, ultHaste: [] } },
+		],
+		[
+			"more ultimates per side than players",
+			{
+				...content,
+				rules: {
+					...content.rules,
+					cooldowns: {
+						ult: { ...content.rules.cooldowns.ult, team: 6 },
+					},
+				},
+			},
+		],
+		[
 			"a zero full build",
 			{ ...content, rules: { ...content.rules, fullBuildGold: 0 } },
 		],
@@ -517,7 +577,7 @@ const player = {
 const snapshot = { minute: 1, blue: side, red: side, players: [player] };
 const withRespawn = {
 	...snapshot,
-	players: [{ ...player, respawnAt: 95 }],
+	players: [{ ...player, respawnAt: 95, ultReadyAt: 640 }],
 };
 
 describe("match.view", () => {

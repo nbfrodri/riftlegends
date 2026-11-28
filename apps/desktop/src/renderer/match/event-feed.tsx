@@ -13,6 +13,7 @@ import type { LanePlayer } from "./face-to-face";
 import { NumbersNote } from "./numbers-note";
 import { clockTime } from "./playback";
 import type { TeamNames } from "./scoreboard";
+import { UltimatesNote } from "./ultimates-note";
 
 /** A player in the feed: who they are, what they play and in which role. */
 export interface EventPlayer extends LanePlayer {
@@ -242,6 +243,7 @@ const EventRow = memo(function EventRow({
 					<p className="text-muted">{summary}</p>
 				)}
 				<NumbersNote event={event} />
+				<UltimatesNote event={event} />
 				{event.causes.some(({ key }) => key === "ace") && (
 					<p className="text-muted">{t("draft.match.cause.ace")}</p>
 				)}

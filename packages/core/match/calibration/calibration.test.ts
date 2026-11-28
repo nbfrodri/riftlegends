@@ -3,6 +3,7 @@ import { describe, expect, it, test } from "vitest";
 import { loadRealContent } from "../../content/real";
 import timelines from "../../content/real/timelines.json";
 import { sample, scenario } from "./scenarios";
+import { ultimateProbes } from "./ultimates";
 
 // Monte Carlo bands of plan 08. Seeds are fixed, so each run is the
 // same sample: a failure means a change moved the balance, never bad luck.
@@ -98,11 +99,16 @@ describe.each(["control", "packaged", "real-champions", "real"] as const)(
 	(pool) => {
 		const even = sample(1000, 0, pool);
 
-		it("K5 · with balanced sides, blue wins 50–54 %", () => {
-			const blue = rate(even, (g) => g.winner === "blue");
+		it("K5 · with balanced sides, blue wins 50–54 % over 4,000 games", () => {
+			// 1,000 games leave ±1.6 pp of noise, close to half the band, so the
+			// side rate takes 3,000 more (#339).
+			const blue = rate(
+				[...even, ...sample(3000, 0, pool, 1000)],
+				(g) => g.winner === "blue",
+			);
 			expect(blue).toBeGreaterThanOrEqual(0.5);
 			expect(blue).toBeLessThanOrEqual(0.54);
-		});
+		}, 600_000);
 
 		it("K2 · games last 28–34 min at the median, 90 % within 22–45", () => {
 			const minutes = even.map((g) => g.minutes);
@@ -305,9 +311,29 @@ describe.each(["control", "packaged", "real-champions", "real"] as const)(
 			test.todo("K10 · play mix by composition");
 			test.todo("K15 · power curves and early fade");
 
-			// https://github.com/nbfrodri/riftlegends/issues/339
-			test.todo("K12 · contest advantage with an ultimate ready");
-			test.todo("K13 · opportunities after the enemy uses an ultimate");
+			describe("K12–K13 · ultimates as a fight resource (#339)", () => {
+				const probes = ultimateProbes(200);
+				const mean = (values: number[]) =>
+					values.reduce((sum, v) => sum + v, 0) / values.length;
+
+				it("K12 · one ultimate ready against the same on cooldown lifts the fight chance 0–4 pp, and 0–6 pp for engage and wombo", () => {
+					expect(probes.plain.length).toBeGreaterThan(1000);
+					expect(probes.key.length).toBeGreaterThan(1000);
+					expect(probes.plain.every((gain) => gain >= 0)).toBe(true);
+					expect(mean(probes.plain)).toBeGreaterThan(0);
+					expect(mean(probes.plain)).toBeLessThanOrEqual(4);
+					expect(mean(probes.key)).toBeGreaterThan(mean(probes.plain));
+					expect(mean(probes.key)).toBeLessThanOrEqual(6);
+				});
+
+				it("K13 · once the rival spends an ultimate, fights and pits start 3–15 pp more often", () => {
+					expect(probes.fights.length).toBeGreaterThan(1000);
+					for (const rise of [mean(probes.fights), mean(probes.pits)]) {
+						expect(rise).toBeGreaterThanOrEqual(3);
+						expect(rise).toBeLessThanOrEqual(15);
+					}
+				});
+			});
 		}
 
 		it("K4 · 3,000 gold behind at minute 20, a team wins 15–30 %", () => {

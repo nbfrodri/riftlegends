@@ -25,8 +25,14 @@ import {
 	type SideObjectives,
 	startObjectives,
 } from "./objective-state";
-import { markDeaths, type SidePlayers, startPlayers } from "./player-state";
+import {
+	markDeaths,
+	markSpent,
+	type SidePlayers,
+	startPlayers,
+} from "./player-state";
 import { type Lineup, type Profile, profiles } from "./profile";
+import { type UltKit, ultKit } from "./ultimates";
 
 export { earnPassive } from "./economy";
 export { inhibitorDown, LANES, type Lane } from "./map-state";
@@ -66,6 +72,8 @@ interface SideContext {
 	readonly attribution: Readonly<
 		Record<Role, { kill: number; assist: number }>
 	>;
+	/** Each role's ultimate: its cooldown by rank and whether it is key (#339). */
+	readonly ultimates: Readonly<Record<Role, UltKit>>;
 }
 
 /** What stays fixed during a game. */
@@ -181,6 +189,9 @@ export function createMatch(setup: MatchSetup): MatchState {
 					),
 				]),
 			) as SideContext["attribution"],
+			ultimates: Object.fromEntries(
+				ROLES.map((role) => [role, ultKit(champions.get(lineup.roles[role]))]),
+			) as SideContext["ultimates"],
 			aggression: average("aggression"),
 			positioning: average("positioning"),
 		};
@@ -258,7 +269,7 @@ function mark(state: MatchState, e: MatchEvent): MatchState {
 			));
 			break;
 	}
-	const players = markDeaths(state, e);
+	const players = markSpent(markDeaths(state, e), e);
 	return {
 		...state,
 		[e.side]: { ...won, players: players[e.side] },

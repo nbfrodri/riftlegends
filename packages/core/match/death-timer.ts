@@ -9,7 +9,7 @@ const MAX_LEVEL = 18;
 const WHOLE = 100_000;
 
 /** `numerator / denominator` rounded half to even, for non-negative integers. */
-function roundHalfEven(numerator: number, denominator: number): number {
+export function roundHalfEven(numerator: number, denominator: number): number {
 	const rest = numerator % denominator;
 	const whole = (numerator - rest) / denominator;
 	if (rest * 2 < denominator) return whole;
