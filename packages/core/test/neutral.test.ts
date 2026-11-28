@@ -5,13 +5,16 @@ import { fictionalMatchContent } from "../match/fixtures/content";
 import { matchSetup } from "../match/fixtures/setup";
 import { playGame } from "../match/play";
 
-/** The match golden of seed 42 as `SIM_VERSION` 18 left it, before #339. */
+/**
+ * The match golden of seed 42 before #339 (main at `SIM_VERSION` 19), with the
+ * only other change of #339 applied: the top's assist weight of K6 (12 to 8).
+ */
 const before = readFileSync(
-	new URL("./fixtures/sim18-42.golden", import.meta.url),
+	new URL("./fixtures/neutral-42.golden", import.meta.url),
 	"utf8",
 );
 
-it("C1 · with the ultimates worth nothing and no window, a game is the one of SIM_VERSION 18 byte for byte (#339)", () => {
+it("C1 · with the ultimates worth nothing and no window, a game is the one before #339 byte for byte", () => {
 	const { rules } = fictionalMatchContent;
 	const neutral = {
 		...fictionalMatchContent,

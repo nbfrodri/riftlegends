@@ -21,13 +21,13 @@ import { realSeason, replayDigest } from "./season-replay.fixtures";
 test("the first match days of the real season keep their fact log", () => {
 	expect(replayDigest(realSeason(9), 3)).toEqual({
 		played: 3,
-		digest: "84d3ce07a211e0eeb00dc8b6d86bcf711576208c1417547db6904e0c4575f78d",
+		digest: "b421a70c43841e8a99e5e58e995543331ee266324f54809bb9f7919fef81a8be",
 	});
 }, 120_000);
 
 test("playing the days in batches of series keeps the same fact log", () => {
 	expect(replayDigest(realSeason(9), 3, undefined, { size: 2 })).toEqual({
 		played: 3,
-		digest: "84d3ce07a211e0eeb00dc8b6d86bcf711576208c1417547db6904e0c4575f78d",
+		digest: "b421a70c43841e8a99e5e58e995543331ee266324f54809bb9f7919fef81a8be",
 	});
 }, 120_000);

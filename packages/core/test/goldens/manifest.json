@@ -1,11 +1,11 @@
 {
-	"sim_version": 19,
+	"sim_version": 20,
 	"goldens": {
 		"rng/0.golden": "cebebdf879cdd1aec32cd3ff4be8783db7872de4d4ffe06d09dc52bf0a205a99",
 		"rng/2.golden": "dbe9beb2ed95786aadc8ed25de8e11190ce97dc6f01c119063b794397ed6e103",
 		"rng/4294967295.golden": "6b491d8775754ac8686f0e8d47debe02e3adb75c0791ba234ae22953ef77a060",
-		"draft/2026.golden": "347ba8f34a76adabfa3c33bf9ef8f172ee8ac946c22abc5dc4cd9e9c35b417e7",
-		"draft-ai/7.golden": "6fc3eefd346210deae36703c38a4dcbdd4e7f30f5de521e8fd9eb45ec9187c29",
-		"match/42.golden": "a1beaf049b350fbcadef2b16bbd7f06561ca06d2085190ed023bf20fb720bfb8"
+		"draft/2026.golden": "69513bc48e3bea465014310fe79276cba55db465869b2063f59efe1299030394",
+		"draft-ai/7.golden": "496511d20ad04fefd7d3191890f0da81f3cd75a2d3bf09a961975cf0dbc8de44",
+		"match/42.golden": "7c58942e1ab8302b431e9e6e4db1e32d23612f04ab01e051b9e882671fc4ec24"
 	}
 }

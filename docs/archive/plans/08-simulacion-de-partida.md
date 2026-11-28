@@ -997,7 +997,8 @@ Cabe en 1280×720 con las columnas de #502 y #548. Los textos nuevos no llevan f
 | K13 | Con el rival recién gastado: peleas **+4,7 pp**, foso **+3,75 pp**. |
 | K5 | La varianza de las definitivas diluye la ventaja del lado azul (4.000 partidas, pool real: 51,9 % a 51,1 %). `blueSide` pasa de 45.000 a **80.000**: 52,1–53,0 % en los cuatro pools. K5 se mide ahora sobre **4.000 partidas** (antes 1.000): con 1.000 el ruido es de ±1,6 pp, casi la mitad de la banda, y las 1.000 primeras semillas del pool real quedan 2,8 pp por debajo de la media. La banda no cambia. |
 | K6 | La participación del top ya era la cifra de K6 más lejos del pro (media +5,5 pp, P10 +8 pp sobre 27,3 %) y con las definitivas pasaba el límite. `ASSIST_BASE` del top baja de 12 a 8: media 57,1 % (pro 51,8 %). |
-| C1 | Con los puntos y la ventana a 0, la partida de la semilla 42 es la de `SIM_VERSION` 18 byte a byte (`test/fixtures/sim18-42.golden`). |
+| C1 | Con los puntos y la ventana a 0, la partida de la semilla 42 es la de antes de #339 byte a byte, con el único otro cambio (el peso de asistencia del top) aplicado (`test/fixtures/neutral-42.golden`). |
+| Versión | `SIM_VERSION` **20**: el 19 lo tomó #627 (sorteos de MSI y Worlds) antes de fusionar esta entrega; #374 pasa a 21. |
 | C4 | Coste propio de las definitivas: ~3 % de CPU de `playMatch`; la ventana añade ~5 % de peleas. |
 | Pendiente | Iconos y recargas en el cara a cara (C3), con #358. |
 
